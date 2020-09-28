@@ -689,7 +689,11 @@
                   {{line.percentToday}}
                 </div>
 
-                <div :class="line.percentTodayState + '_arrow'" class="funnel-arrow"></div>
+                <v-icon v-show="line.percentToday !== '0%'" :color="line.percentTodayState"
+                        :style="{'transform': line.percentTodayState === 'green' ? 'none' : 'rotateX(180deg)'}"
+                        class="funnel-arrow">
+                  mdi-triangle
+                </v-icon>
               </div>
             </td>
 
@@ -707,7 +711,11 @@
                   {{line.percent7}}
                 </div>
 
-                <div :class="line.percent7state + '_arrow'" class="funnel-arrow"></div>
+                <v-icon v-show="line.percent7 !== '0%'" :color="line.percent7state"
+                        :style="{'transform': line.percent7state === 'green' ? 'none' : 'rotateX(180deg)'}"
+                        class="funnel-arrow">
+                  mdi-triangle
+                </v-icon>
               </div>
             </td>
 
@@ -725,37 +733,20 @@
                   {{line.percent30}}
                 </div>
 
-                <div :class="line.percent30state + '_arrow'" class="funnel-arrow"></div>
+                <v-icon v-show="line.percent30 !== '0%'" :color="line.percent30state"
+                        :style="{'transform': line.percent30state === 'green' ? 'none' : 'rotateX(180deg)'}"
+                        class="funnel-arrow">
+                  mdi-triangle
+                </v-icon>
               </div>
             </td>
 
             <!-- CUSTOM DATE RANGE COUNT -->
-            <td v-show="!showCustomPercentage"
-                class="funnel-td"
+            <td class="funnel-td"
                 :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
                 :title="line.customDayHover"
                 @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
               {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
-            </td>
-
-            <td v-show="showCustomPercentage"
-                class="funnel-td"
-                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
-                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
-              <div>
-                <div class="funnel-count" :style="{color: line.count30state}"
-                     :title="line.customDayHover">
-                  {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
-                </div>
-
-                <div class="funnel-percentage" :style="{color: line.percentCustomState}"
-                     :title="line.percentCustomHover">
-                  {{line.percentCustom}}
-                </div>
-
-                <div :class="line.percentCustomState + '_arrow'" class="funnel-arrow"
-                     :title="line.percentCustomHover"></div>
-              </div>
             </td>
           </tr>
         </table>
@@ -989,7 +980,6 @@
       pipeline_dt2: moment().format('YYYY-MM-DD'),
       pipeline_dt2_formatted: moment().format('M/D/YY'),
       pipeline_menu2: false,
-      showCustomPercentage: false,
       expectedInstalls: 1,
       expectationTimeout: 0,
       funnelStats: [],
@@ -1727,6 +1717,10 @@
         return b.diff(a, 'days')
       },
 
+      getCountHover (count, expectation) {
+        return count < expectation ? 'Worse than expectation' : 'Better than expectation'
+      },
+
       getPercentColor (percent) {
         if (percent < 0) return 'red'
         return 'green'
@@ -1734,20 +1728,20 @@
 
       getPercentHover (percent, dayNum) {
         let state = ''
-        if (percent < 0) state = 'worse'
-        else if (percent > 0) state = 'better'
-        else return ''
+        if (percent < 0) {
+          state = 'worse'
+        } else if (percent > 0) {
+          state = 'better'
+        } else {
+          return ''
+        }
+
         let previousTime = 'last ' + dayNum + ' days'
         if (dayNum === 1) {
           previousTime = 'yesterday'
         }
-        return '% ' + state + ' than ' + previousTime
-      },
 
-      getCountHover (count, expectation) {
-        return count < expectation
-          ? 'Worse than Expectation'
-          : 'Better than Expectation'
+        return '% ' + state + ' than ' + previousTime
       },
 
       funnelAllReps () {
@@ -1786,30 +1780,36 @@
 
         try {
           await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
-            for (let i = 0; i < data.length; ++i) {
-              data[i]['countTodayState'] = data[i]['today_day_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['todayHover'] = this.getCountHover(data[i]['today_day_count'], data[i]['expectation'])
-              data[i]['percentToday'] = data[i]['today_percent'] ? data[i]['today_percent'] + '%' : '0%'
-              data[i]['percentTodayState'] = this.getPercentColor(data[i]['today_percent'])
-              data[i]['percent7'] = data[i]['seven_percent'] ? data[i]['seven_percent'] + '%' : '0%'
-              data[i]['percent7state'] = this.getPercentColor(data[i]['seven_percent'])
-              data[i]['count7state'] = data[i]['seven_day_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['sevenDayHover'] = this.getCountHover(data[i]['seven_day_count'], data[i]['expectation'])
-              data[i]['percent30'] = data[i]['thirty_day_percent'] ? data[i]['thirty_day_percent'] + '%' : '0%'
-              data[i]['percent30state'] = this.getPercentColor(data[i]['thirty_day_percent'])
-              data[i]['count30state'] = data[i]['thirty_day_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['thirtyDayHover'] = this.getCountHover(data[i]['thirty_day_count'], data[i]['expectation'])
-              data[i]['customCountState'] = data[i]['custom_date_range_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['customDayHover'] = this.getCountHover(data[i]['custom_date_range_count'], data[i]['expectation'])
-              data[i]['percent7hover'] = this.getPercentHover(data[i]['seven_percent'], 7)
-              data[i]['percent30hover'] = this.getPercentHover(data[i]['thirty_day_percent'], 30)
-              data[i]['percentTodayHover'] = this.getPercentHover(data[i]['today_percent'], 1)
-              data[i]['expectation'] = this.roundTenth(data[i]['expectation'])
-              data[i]['percentCustomState'] = this.getPercentColor(data[i]['custom_date_range_percent'])
-              data[i]['percentCustomHover'] = this.getPercentHover(data[i]['custom_date_range_percent'], this.daysBetween(start, end))
-              data[i]['percentCustom'] = data[i]['custom_date_range_percent'] ? data[i]['custom_date_range_percent'] + '%' : '0%'
-              data[i]['custom_date_range_count'] = Math.round(data[i]['custom_date_range_count'])
-            }
+            data.forEach(row => {
+              // EXPECTATION column
+              row.expectation = this.roundTenth(row.expectation)
+
+              // TODAY column
+              row.countTodayState = row.today_day_count < row.expectation ? 'red' : 'green'
+              row.todayHover = this.getCountHover(row.today_day_count, row.expectation)
+              row.percentToday = row.today_percent ? row.today_percent + '%' : '0%'
+              row.percentTodayState = this.getPercentColor(row.today_percent)
+              row.percentTodayHover = this.getPercentHover(row.today_percent, 1)
+
+              // LAST 7 DAYS column
+              row.count7state = row.seven_day_count < row.expectation ? 'red' : 'green'
+              row.sevenDayHover = this.getCountHover(row.seven_day_count, row.expectation)
+              row.percent7 = row.seven_percent ? row.seven_percent + '%' : '0%'
+              row.percent7state = this.getPercentColor(row.seven_percent)
+              row.percent7hover = this.getPercentHover(row.seven_percent, 7)
+
+              // LAST 30 DAYS column
+              row.count30state = row.thirty_day_count < row.expectation ? 'red' : 'green'
+              row.thirtyDayHover = this.getCountHover(row.thirty_day_count, row.expectation)
+              row.percent30 = row.thirty_day_percent ? row.thirty_day_percent + '%' : '0%'
+              row.percent30state = this.getPercentColor(row.thirty_day_percent)
+              row.percent30hover = this.getPercentHover(row.thirty_day_percent, 30)
+
+              // CUSTOM DATE RANGE column
+              row.custom_date_range_count = Math.round(row.custom_date_range_count)
+              row.customCountState = row.custom_date_range_count < row.expectation ? 'red' : 'green'
+              row.customDayHover = this.getCountHover(row.custom_date_range_count, row.expectation)
+            })
 
             this.funnelStats = data
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1877,8 +1877,7 @@
         this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
       },
 
-      updatePipelineCalendar (showCustom) {
-        this.showCustomPercentage = showCustom
+      updatePipelineCalendar () {
         this.pipeline_menu1 = false
         this.pipeline_menu2 = false
         this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
@@ -3036,6 +3035,10 @@
           .funnel-percentage {
             margin: 3px;
           }
+
+          .funnel-arrow {
+            font-size: 6px;
+          }
         }
       }
     }
@@ -3597,6 +3600,10 @@
             .funnel-percentage {
               margin: 5px;
             }
+
+            .funnel-arrow {
+              font-size: 10px;
+            }
           }
         }
       }
@@ -3944,6 +3951,10 @@
             .funnel-count,
             .funnel-percentage {
               margin: 10px;
+            }
+
+            .funnel-arrow {
+              font-size: 12px;
             }
           }
         }
