@@ -53,7 +53,8 @@ public class InstallAgreementController {
             return ResponseEntity.badRequest().body(result.toString());
         }
     } catch (Exception e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        result.put("message", e.getMessage());
+        return ResponseEntity.badRequest().body(result.toString());
     }
   }
 
