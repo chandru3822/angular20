@@ -9,7 +9,11 @@
       </v-toolbar-items>
     </v-toolbar>
     <AppNav v-if="$route.name !== 'login'"/>
-    <router-view id="portal"/>
+    <v-content>
+      <v-container class="router-container">
+        <router-view class="router-view" />
+      </v-container>
+    </v-content>
   </v-app>
 </template>
 
@@ -62,13 +66,13 @@
 <style lang="scss">
 @import "@/styles/main.scss";
 
-#portal .v-slide-group__prev {
+#app .v-slide-group__prev {
   display: none !important;
 }
 </style>
 
 <style scoped lang="scss">
-#portal {
+#app {
   font-family: 'Lato', sans-serif;
   letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;
@@ -83,7 +87,7 @@
 }
 
 @media (min-width: 769px) {
-  #portal{
+  #app{
     .app-title {
       font-size: 35px;
     }
