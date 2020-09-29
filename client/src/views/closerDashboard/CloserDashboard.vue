@@ -3618,6 +3618,7 @@
 
         .funnel-td {
           cursor: pointer;
+          text-align: center;
           font-size: 7px;
           width: 90px;
         }

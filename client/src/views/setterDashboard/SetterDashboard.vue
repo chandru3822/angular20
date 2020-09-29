@@ -419,22 +419,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="regionLoad(false)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllDistricts(true)">
+                      @input="regionLoad(false)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ districtModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="districtData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllDistricts()">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ districtSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllDistricts(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -449,9 +446,6 @@
                     {{ data.item.org_name }}
                   </v-list-item-title>
                 </v-list-item-content>
-              </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ districtModel.length }} Checked</span>
               </template>
             </v-select>
 
@@ -466,22 +460,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="officeLoad(false)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllRegions(true)">
+                      @input="officeLoad(false)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ regionModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="regionData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllRegions()">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ regionSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllRegions(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -496,9 +487,6 @@
                     {{ data.item.org_name }}
                   </v-list-item-title>
                 </v-list-item-content>
-              </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ regionModel.length }} Checked</span>
               </template>
             </v-select>
 
@@ -513,22 +501,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="repLoad(false)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllOffices(true)">
+                      @input="repLoad(false)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ officeModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="officeData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllOffices()">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ officeSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllOffices(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -544,9 +529,6 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ officeModel.length }} Checked</span>
-              </template>
             </v-select>
 
             <v-select class="pipeline-dropdown"
@@ -560,22 +542,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllReps(true)">
+                      @input="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ repModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="repData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllReps()">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ repSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllReps(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -590,9 +569,6 @@
                     {{ data.item.name }}
                   </v-list-item-title>
                 </v-list-item-content>
-              </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ repModel.length }} Checked</span>
               </template>
             </v-select>
 
@@ -919,16 +895,12 @@
       numOffices: 0,
       districtModel: [],
       districtData: [],
-      checkAllDistricts: false,
       regionModel: [],
       regionData: [],
-      checkAllRegions: false,
       officeModel: [],
       officeData: [],
-      checkAllOffices: false,
       repModel: [],
       repData: [],
-      checkAllReps: false,
       pipelineDateRanges: [
         {
           label: 'Yesterday',
@@ -1019,16 +991,65 @@
       milestoneDrilldownTitle () {
         return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Pitches - Q' + this.selectedQuarter
       },
-      allDistrictsSelected () {
+      selectAllDistricts () {
         return this.districtModel.length === this.districtData.length
       },
-      someDistrictsSelected () {
-        return this.districtModel.length > 0 && !this.allDistrictsSelected
+      selectSomeDistricts () {
+        return this.districtModel.length > 0 && !this.selectAllDistricts
       },
-      icon () {
-        if (this.allDistrictsSelected) return 'mdi-close-box'
-        if (this.someDistrictsSelected) return 'mdi-minus-box'
-        return 'mdi-checkbox-blank-outline'
+      districtSelectIcon () {
+        if (this.districtModel.length === this.districtData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeDistricts) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllRegions () {
+        return this.regionModel.length === this.regionData.length
+      },
+      selectSomeRegions () {
+        return this.regionModel.length > 0 && !this.selectAllRegions
+      },
+      regionSelectIcon () {
+        if (this.regionModel.length === this.regionData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeRegions) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllOffices () {
+        return this.officeModel.length === this.officeData.length
+      },
+      selectSomeOffices () {
+        return this.officeModel.length > 0 && !this.selectAllOffices
+      },
+      officeSelectIcon () {
+        if (this.officeModel.length === this.officeData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeOffices) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllReps () {
+        return this.repModel.length === this.repData.length
+      },
+      selectSomeReps () {
+        return this.repModel.length > 0 && !this.selectAllReps
+      },
+      repSelectIcon () {
+        if (this.repModel.length === this.repData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeReps) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
       },
       visibleFunnelDrilldownHeaders () {
         return this.funnelDrilldownHeaders.filter(header => header.show === true)
@@ -1617,7 +1638,19 @@
           }
         })
 
-        if (districts?.length === 0) return
+        if (!this.selectAllDistricts) {
+          this.regionModel = []
+          this.regionData = []
+          this.officeModel = []
+          this.officeData = []
+          this.repModel = []
+          this.repData = []
+          this.funnelStats = []
+
+          if (districts?.length === 0) return
+        }
+
+        this.repModel = [] // in case the user previously clicked the 'All Reps' button
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterRegions(this.currentUserId, JSON.stringify(districts)).then(res => {
@@ -1645,7 +1678,15 @@
           }
         })
 
-        if (regions?.length === 0) return
+        if (!this.selectAllRegions) {
+          this.officeModel = []
+          this.officeData = []
+          this.repModel = []
+          this.repData = []
+          this.funnelStats = []
+
+          if (regions?.length === 0) return
+        }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterOffices(this.currentUserId, JSON.stringify(regions)).then(res => {
@@ -1681,7 +1722,13 @@
           }
         })
 
-        if (offices?.length === 0) return
+        if (!this.selectAllOffices) {
+          this.repModel = []
+          this.repData = []
+          this.funnelStats = []
+
+          if (offices?.length === 0) return
+        }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
@@ -1745,6 +1792,10 @@
       },
 
       funnelAllReps () {
+        this.districtModel = []
+        this.regionModel = []
+        this.officeModel = []
+
         this.repModel = [
           {user_id: -1, name: 'All Reps', active: true}
         ]
@@ -1984,7 +2035,7 @@
       },
 
       loadFunnel () {
-        if(!this.showDashboard && this.funnelStats?.length === 0) {
+        if (!this.showDashboard && this.funnelStats?.length === 0) {
           if (this.isSetter) {
             this.districtLoad(true)
           } else {
@@ -1993,54 +2044,68 @@
         }
       },
 
-      toggleAllDistricts (checkAll) {
-        if (checkAll) {
-          this.districtModel = cloneDeep(this.districtData)
-          this.regionLoad(false)
-        } else {
-          this.districtModel = []
-          this.regionData = []
-          this.regionModel = []
-          this.officeData = []
-          this.officeModel = []
-          this.repData = []
-          this.repModel = []
-        }
+      toggleSelectAllDistricts () {
+        this.$nextTick(() => {
+          if (this.selectAllDistricts) {
+            this.districtModel = []
+            this.regionData = []
+            this.regionModel = []
+            this.officeData = []
+            this.officeModel = []
+            this.repData = []
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.districtModel = cloneDeep(this.districtData)
+            this.repModel = [] // in case the user previously clicked the 'All Reps' button
+            this.regionLoad(false)
+          }
+        })
       },
 
-      toggleAllRegions (checkAll) {
-        if (checkAll) {
-          this.regionModel = cloneDeep(this.regionData)
-          this.officeLoad(false)
-        } else {
-          this.regionModel = []
-          this.officeData = []
-          this.officeModel = []
-          this.repData = []
-          this.repModel = []
-        }
+      toggleSelectAllRegions () {
+        this.$nextTick(() => {
+          if (this.selectAllRegions) {
+            this.regionModel = []
+            this.officeData = []
+            this.officeModel = []
+            this.repData = []
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.regionModel = cloneDeep(this.regionData)
+            this.officeLoad(false)
+          }
+        })
       },
 
-      toggleAllOffices (checkAll) {
-        if (checkAll) {
-          this.officeModel = cloneDeep(this.officeData)
-          this.repLoad(false)
-        } else {
-          this.officeModel = []
-          this.repData = []
-          this.repModel = []
-        }
+      toggleSelectAllOffices () {
+        this.$nextTick(() => {
+          if (this.selectAllOffices) {
+            this.officeModel = []
+            this.repData = []
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.officeModel = cloneDeep(this.officeData)
+            this.repLoad(false)
+          }
+        })
       },
 
-      toggleAllReps (checkAll) {
-        if (checkAll) {
-          this.repModel = cloneDeep(this.repData)
-        } else {
-          this.repModel = []
-        }
+      toggleSelectAllReps () {
+        this.$nextTick(() => {
+          if (this.selectAllReps) {
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.repModel = cloneDeep(this.repData)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+          }
+        })
       },
 
-        async funnelDrilldown (funnelId, dateRange, funnelName) {
+      async funnelDrilldown (funnelId, dateRange, funnelName) {
         let reps = []
         let orgs = []
         let start, end
@@ -2988,6 +3053,7 @@
         }
 
         .funnel-expectation {
+          text-align: center;
           width: 75px;
         }
 
@@ -2995,6 +3061,7 @@
           cursor: default !important;
           position: relative;
           z-index: 7;
+          text-align: center;
           height: 38px;
         }
 
@@ -3025,6 +3092,7 @@
 
         .funnel-td {
           font-size: 7px;
+          text-align: center;
 
           div {
             display: flex;
