@@ -45,7 +45,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import { UserActions } from '@/stores/UserStore'
+import {UserActions, UserMutations} from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
@@ -133,6 +133,7 @@ export default {
         }
         const {data} = await getRequest(url)
         this.companies = data
+        this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
         this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user.details.companyId)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

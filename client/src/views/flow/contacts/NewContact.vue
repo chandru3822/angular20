@@ -1,6 +1,6 @@
 <template>
-  <v-container>
-    <v-card class="pa-3">
+  <v-container class="mt-4">
+    <v-card class="px-3">
       <v-card-title>
         Add Contact
         <v-spacer></v-spacer>
@@ -77,7 +77,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
@@ -103,10 +103,11 @@ export default {
       customFieldGroups: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
-      companyId: this.$store.state.user.details.companyId,
+      companyId: this.$route.query.cid || this.$store.state.user.details.companyId,
     }
   },
   created () {
+    console.log('paramamsmsmam', this.$route.query.cid)
     //todo: use only for testing
     if(VUE_APP_ENV === 'local') {
       this.setFakeContact()
@@ -124,7 +125,11 @@ export default {
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldGroup/getContactInsertFields`)
+        const {data} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
+          params: {
+            companyId: this.companyId
+          }
+        })
         this.customFieldGroups = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -161,6 +166,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.contact.customFieldGroups = this.customFieldGroups
       try {
+        this.contact.companyId = this.companyId
         const {data} = await postRequest(`/contact`, this.contact)
         if(data && data.id) {
           await postRequest(`/customFieldValues/contact/${data.id}`, this.dirtyCfvs)

@@ -561,6 +561,7 @@ export default new Router({
     }, {
       path: '/newContact',
       name: 'newContact',
+      props: true,
       component: () => {
         if(store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD')) {
           return import (/*webpackChunkName: "contact" */ './views/flow/contacts/NewContact.vue')
