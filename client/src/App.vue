@@ -14,7 +14,6 @@
         <router-view class="router-view" />
       </v-container>
     </v-content>
-    <router-view id="portal"/>
   </v-app>
 </template>
 
