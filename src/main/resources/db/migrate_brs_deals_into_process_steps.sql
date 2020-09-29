@@ -1,3 +1,28 @@
+insert into flow.resource_appointment(company_id, user_id, start_time, end_time,all_day, description, created_by_id,date_created)
+    (select (select company_id from flow.user_company uc
+             where uc.user_id = u.id and is_default is true limit 1),u.id,
+            a.start_date,a.end_date,case when a.all_day =1 then true else false end,a.name,2350555,now()
+     from base_mysql.appointments a
+              inner join blueraven.user u on  u.user_base_oid = a.user_id or u.user_base_setter_oid= a.user_id
+              left join base_mysql.appointment_contexts ac on ac.appointment_id = a.id
+     where ac.id is null
+       and a.local_deleted = 0
+       and u.id != 2355131);
+INSERT INTO brs.proposal_log (id, proposal_date, source, proposal, project_id, proposal_nbr)
+    (SELECT pl.id, pl.proposal_date, pl.source, pl.proposal, d.id, pl.proposal_nbr
+     FROM blueraven.proposal_log pl
+              inner join blueraven.deal d on d.deal_base_oid = pl.deal_base_oid);
+SELECT setval('brs.proposal_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.proposal_log), 1), false);
+insert into brs.design_log_bom(id,project_id, reference_nbr, bom, note, created_by, time_submitted, delivery_time, email_sent)
+    (select dlb.id ,dlb.deal_id,coalesce(dlb.reference_nbr,1001), bom, note, created_by, time_submitted, delivery_time, email_sent
+     from blueraven.design_log_bom dlb);
+SELECT setval('brs.design_log_bom_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.design_log_bom), 1), false);
+INSERT INTO brs.design_log (id, design_date, design, source, project_id, design_nbr,bom)
+    (SELECT dl.id, dl.design_date, dl.design,dl.source, d.id, dl.design_nbr,dl.bom
+     FROM blueraven.design_log dl
+              inner join blueraven.deal d on d.deal_base_oid = dl.deal_base_oid);
+SELECT setval('brs.design_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.design_log), 1), false);
+
 create temp table appointment_dates as
 with one_record as (
     select resource_id,max(appointment_id) as appointment_id
@@ -16,9 +41,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             1,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -26,6 +49,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
      where appointment_date is null  AND originator_id = 1
+         and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]'))
       )returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -98,9 +122,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             2,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -109,7 +131,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                          ON project.id = d.id
      where appointment_date is not null
        and appointment_outcome is null
-       and  originator_id = 1)returning *),
+       and  originator_id = 1  and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')))returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -125,8 +147,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 4 then (select id from flow.list_of_value where parent_id = 1
                                                                                                        and name = d2.appointment_outcome)
-         when p.custom_field_group_assignment_id = 1050 then (select id from blueraven.proposal_log_history plh
-                                                                                 where plh.proposal_id = d2.proposal_nbr)
+         when p.custom_field_group_assignment_id = 1050 then (select plh.id from brs.proposal_log_history plh
+                                                                        inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
+                                                                                 where d2.id = d3.id and plh.project_id =d2.id limit 1)
                 else null end,
             case when p.custom_field_group_assignment_id = 1294 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
@@ -169,8 +192,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 4 then (select id from flow.list_of_value where parent_id = 1
                                                                                                        and name = d2.appointment_outcome)
-                 when p.custom_field_group_assignment_id = 1050 then (select id from blueraven.proposal_log_history plh
-                                                                      where plh.proposal_id = d2.proposal_nbr)
+                 when p.custom_field_group_assignment_id = 1050 then (select plh.id from brs.proposal_log_history plh
+                                                                                             inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
+                                                                      where d2.id = d3.id and plh.project_id =d2.id limit 1)
                 else null end,
             case when p.custom_field_group_assignment_id = 1294 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
@@ -184,9 +208,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             3,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -198,7 +220,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
             (d.proposal_complete_date is null and d.proposal_status = 'Complete'))
        and (d.appointment_outcome is null or
             (d.appointment_outcome != 'Cancelled' and d.appointment_outcome != 'No Go'))
-       AND originator_id = 1 )returning *),
+       AND originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) )returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -277,9 +299,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             4,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -288,7 +308,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                          ON project.id = d.id
      where d.appointment_outcome = 'Pitched' and
            installation_agreement_signed_date is null
-       AND originator_id = 1)returning *),
+       AND originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')))returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -300,7 +320,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,date_value,
-                                                         int_value,numeric_value,text_value, date_created, date_modified, created_by_id, modified_by_id)
+                                                         int_value,numeric_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 482 then ((installation_agreement_request_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
@@ -330,13 +350,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.secondary_financier)
                  when p.custom_field_group_assignment_id = 58 then (select id from flow.list_of_value where parent_id = 423
                                                                                                         and name::integer = d2.loan_term)
+                 when p.custom_field_group_assignment_id = 1299 then (select id from flow.list_of_value where parent_id = 1072
+                                                                                                          and name = d2.inverter_rating)
                  when p.custom_field_group_assignment_id = 54 then d2.number_of_promotion_payments
                  when p.custom_field_group_assignment_id = 1183 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 1184 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 172 then (select id from flow.list_of_value where parent_id = 292
-                                                                                                         and name::integer = d2.product)
+                                                                                                         and name = d2.product)
                  when p.custom_field_group_assignment_id = 1150 then (select id from flow.list_of_value where parent_id = 124
-                                                                                                          and name::integer = d2.hoa_approval_needed)
+                                                                                                          and name = d2.hoa_approval_needed)
                  else null end,
             case when p.custom_field_group_assignment_id = 46 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 48 then d2.interest_rate
@@ -347,7 +369,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 52 then d2.total_cash_down_payment
                  when p.custom_field_group_assignment_id = 53 then d2.total_ancillary_cost_with_fees
                  else null end,
-            case when p.custom_field_group_assignment_id = 1299 then d2.inverter_rating else 1=1 end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -381,7 +402,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,date_value,
-                                                         int_value,numeric_value,text_value, date_created, date_modified, created_by_id, modified_by_id)
+                                                         int_value,numeric_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 482 then ((installation_agreement_request_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
@@ -411,13 +432,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.secondary_financier)
                  when p.custom_field_group_assignment_id = 58 then (select id from flow.list_of_value where parent_id = 423
                                                                                                         and name::integer = d2.loan_term)
+                 when p.custom_field_group_assignment_id = 1299 then (select id from flow.list_of_value where parent_id = 1072
+                                                                                                          and name = d2.inverter_rating)
                  when p.custom_field_group_assignment_id = 54 then d2.number_of_promotion_payments
                  when p.custom_field_group_assignment_id = 1183 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 1184 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 172 then (select id from flow.list_of_value where parent_id = 292
-                                                                                                         and name::integer = d2.product)
+                                                                                                         and name = d2.product)
                  when p.custom_field_group_assignment_id = 1150 then (select id from flow.list_of_value where parent_id = 124
-                                                                                                          and name::integer = d2.hoa_approval_needed)
+                                                                                                          and name = d2.hoa_approval_needed)
                  else null end,
             case when p.custom_field_group_assignment_id = 46 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 48 then d2.interest_rate
@@ -428,7 +451,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 52 then d2.total_cash_down_payment
                  when p.custom_field_group_assignment_id = 53 then d2.total_ancillary_cost_with_fees
                  else null end,
-            case when p.custom_field_group_assignment_id = 1299 then d2.inverter_rating else 1=1 end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -440,15 +462,13 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             5,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
-     where   originator_id = 1 and
+     where   originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
              d.installation_agreement_signed_date is not null and
               (d.site_survey_scheduled_date is null or site_survey_completed_date is null))returning *),
      p as (
@@ -471,18 +491,18 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 16 then (select dce.end_time
                                                                     from blueraven.deal_calendar_event dce
                                                                     where dce.work_type_id = 7 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else 1=1 end,
+                                                                      and dce.deal_id = d2.id) else null end,
             case when p.custom_field_group_assignment_id = 17 then (select up.id
                                                                     from blueraven.deal_calendar_event dce
                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
                                                                     where dce.work_type_id = 7 and dce.primary_flag is true and dce.deleted is false
                                                                       and up.primary_flag is true and up.position_id in (7,16)
                                                                       and dce.deal_id = d2.id and
-                                                                        (d2.site_survey_completed_date >= up.start_date and case when end_date is not null then d2.site_survey_completed_date <= end_date else 1=1 end) limit 1)
+                                                                        (d2.site_survey_completed_date >= up.start_date and case when end_date is not null then d2.site_survey_completed_date <= end_date else null end) limit 1)
                 -- when p.custom_field_group_assignment_id = 19 then (select id from flow.list_of_value where parent_id = 353
                  --                                                                                       and name = d2.site_survey_type)
                  else null end,
-            case when p.custom_field_group_assignment_id = 1252 then ((d2.site_survey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else 1=1 end,
+            case when p.custom_field_group_assignment_id = 1252 then ((d2.site_survey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -526,18 +546,18 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 16 then (select dce.end_time
                                                                     from blueraven.deal_calendar_event dce
                                                                     where dce.work_type_id = 7 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else 1=1 end,
+                                                                      and dce.deal_id = d2.id) else null end,
             case when p.custom_field_group_assignment_id = 17 then (select up.id
                                                                     from blueraven.deal_calendar_event dce
                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
                                                                     where dce.work_type_id = 7 and dce.primary_flag is true and dce.deleted is false
                                                                       and up.primary_flag is true and up.position_id in (7,16)
                                                                       and dce.deal_id = d2.id and
-                                                                        (d2.site_survey_completed_date >= up.start_date and case when end_date is not null then d2.site_survey_completed_date <= end_date else 1=1 end) limit 1)
+                                                                        (d2.site_survey_completed_date >= up.start_date and case when end_date is not null then d2.site_survey_completed_date <= end_date else null end) limit 1)
                 -- when p.custom_field_group_assignment_id = 19 then (select id from flow.list_of_value where parent_id = 353
                 --                                                                                        and name = d2.site_survey_type)
                  else null end,
-            case when p.custom_field_group_assignment_id = 1252 then ((d2.site_survey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else 1=1 end,
+            case when p.custom_field_group_assignment_id = 1252 then ((d2.site_survey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -549,16 +569,14 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             60,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
-     where originator_id = 1 and
+     where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
             d.site_survey_scheduled_date is not null and site_survey_completed_date is not null and site_survey_uploaded_date is null)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -622,22 +640,20 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             7,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
-     where originator_id = 1 and (retrofit IS NULL or retrofit = FALSE) and
+     where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]'))
+       and (retrofit IS NULL or retrofit = FALSE) and
                                    site_survey_completed_date IS NOT NULL AND site_survey_completed_date <= (now() AT TIME ZONE 'US/Mountain') - interval '3 hours' AND
                                    (
                                            (resurvey_required_date IS NULL OR (resurvey_required_date IS NOT NULL AND resurvey_date <= (now() AT TIME ZONE 'US/Mountain'))) AND
                                            (resurvey_b_required_date IS NULL OR (resurvey_b_required_date IS NOT NULL AND resurvey_b_date <= (now() AT TIME ZONE 'US/Mountain'))) AND
                                            (resurvey_c_required_date IS NULL OR (resurvey_c_required_date IS NOT NULL AND resurvey_c_date <= (now() AT TIME ZONE 'US/Mountain')))
-                                       )
-         AND
+                                       ) AND
                                    (site_survey_photos_missing_date IS NULL OR site_survey_uploaded_date IS NOT NULL) AND
                                    (final_design_created_date IS NULL OR
                                     site_survey_verified_date IS NULL OR
@@ -752,15 +768,13 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             61,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
-     where originator_id = 1  and
+     where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
             final_design_created_date is not null AND final_design_qa_date is null) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -844,15 +858,14 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             8,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
-     where originator_id = 1 and  final_design_qa_date is not null and final_design_sent_to_customer_date is null
+     where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]'))
+       and  final_design_qa_date is not null and final_design_sent_to_customer_date is null
          AND redesign_requested_date is null AND
             (regen_requested_date IS NULL OR regen_ready_to_send_date is not null) AND
             (engineering_review_required_date is null OR engineering_review_complete_date is not null))returning *),
@@ -880,10 +893,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 715 then d2.total_promotion_amount
                  when p.custom_field_group_assignment_id = 711 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 713 then d2.total_cash_down_payment
-                 when p.custom_field_group_assignment_id = 978 then null
-                else 1=1 end,
+                 when p.custom_field_group_assignment_id = 978 then total_brs_covered_ancillary_cost::numeric
+                else null end,
             case when p.custom_field_group_assignment_id =700 then d2.inverter_rating
-                 else 1=1 end,
+                 else null end,
             case when p.custom_field_group_assignment_id =706 then (select id from flow.list_of_value where parent_id = 292
                                                                                                         and name = d2.product)
                  when p.custom_field_group_assignment_id =699 then (select id from flow.list_of_value where parent_id = 143
@@ -895,16 +908,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id =703 then panel_watts
                  when p.custom_field_group_assignment_id =702 then panel_quantity
                  when p.custom_field_group_assignment_id =712 then (select id from flow.list_of_value where parent_id = 423
-                                                                                                        and name = d2.loan_term)
+                                                                                                        and name::integer = d2.loan_term)
                  when p.custom_field_group_assignment_id =709 then (select id from flow.list_of_value where parent_id = 81
                                                                                                         and name = d2.credit_check)
                  when p.custom_field_group_assignment_id =701 then (select id from flow.list_of_value where parent_id = 238
                                                                                                         and name = d2.panel_brand)
-                 when p.custom_field_group_assignment_id =1214 then number_of_arrays
-                 when p.custom_field_group_assignment_id =1293 then max_pitch
+                 when p.custom_field_group_assignment_id =1214 then number_of_arrays::integer
+                 when p.custom_field_group_assignment_id =1293 then max_pitch::integer
                  when p.custom_field_group_assignment_id =707 then (select id from flow.list_of_value where parent_id = 720
                                                                                                         and name = d2.financier :: JSON #>> '{0}')
-                 else 1=1 end,
+                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -952,10 +965,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 715 then d2.total_promotion_amount
                  when p.custom_field_group_assignment_id = 711 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 713 then d2.total_cash_down_payment
-                 when p.custom_field_group_assignment_id = 978 then null
-                 else 1=1 end,
+                 when p.custom_field_group_assignment_id = 978 then total_brs_covered_ancillary_cost::numeric
+                 else null end,
             case when p.custom_field_group_assignment_id =700 then d2.inverter_rating
-                 else 1=1 end,
+                 else null end,
             case when p.custom_field_group_assignment_id =706 then (select id from flow.list_of_value where parent_id = 292
                                                                                                         and name = d2.product)
                  when p.custom_field_group_assignment_id =699 then (select id from flow.list_of_value where parent_id = 143
@@ -967,16 +980,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id =703 then panel_watts
                  when p.custom_field_group_assignment_id =702 then panel_quantity
                  when p.custom_field_group_assignment_id =712 then (select id from flow.list_of_value where parent_id = 423
-                                                                                                        and name = d2.loan_term)
+                                                                                                        and name::integer = d2.loan_term)
                  when p.custom_field_group_assignment_id =709 then (select id from flow.list_of_value where parent_id = 81
                                                                                                         and name = d2.credit_check)
                  when p.custom_field_group_assignment_id =701 then (select id from flow.list_of_value where parent_id = 238
                                                                                                         and name = d2.panel_brand)
-                 when p.custom_field_group_assignment_id =1214 then number_of_arrays
-                 when p.custom_field_group_assignment_id =1293 then max_pitch
+                 when p.custom_field_group_assignment_id =1214 then number_of_arrays::integer
+                 when p.custom_field_group_assignment_id =1293 then max_pitch::integer
                  when p.custom_field_group_assignment_id =707 then (select id from flow.list_of_value where parent_id = 720
                                                                                                         and name = d2.financier :: JSON #>> '{0}')
-                 else 1=1 end,
+                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -989,9 +1002,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             9,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -1072,9 +1083,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             62,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -1107,6 +1116,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case
                  when p.custom_field_group_assignment_id = 618 then ((plan_set_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                     when p.custom_field_group_assignment_id = 743 then ((electrical_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                    when  p.custom_field_group_assignment_id = 744 then ((structural_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                 else null end,
             case when p.custom_field_group_assignment_id = 64 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.plan_set_created_by
@@ -1160,6 +1171,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case
                  when p.custom_field_group_assignment_id = 618 then ((plan_set_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                 when p.custom_field_group_assignment_id = 743 then ((electrical_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                 when  p.custom_field_group_assignment_id = 744 then ((structural_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
             case when p.custom_field_group_assignment_id = 64 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.plan_set_created_by
@@ -1185,9 +1198,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             63,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -1468,9 +1479,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             64,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -1553,9 +1562,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             12,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -1634,9 +1641,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
             65,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -1714,9 +1719,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             13,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -1844,14 +1847,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 98 then (select dce.end_time
                                                                     from blueraven.deal_calendar_event dce
                                                                     where dce.work_type_id = 9 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else 1=1 end,
+                                                                      and dce.deal_id = d2.id) else null end,
             case when p.custom_field_group_assignment_id = 99 then (select up.id
                                                                     from blueraven.deal_calendar_event dce
                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
                                                                     where dce.work_type_id = 9 and dce.primary_flag is true and dce.deleted is false
                                                                       and up.primary_flag is true and up.position_id in (7,16)
                                                                       and dce.deal_id = d2.id and
-                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else 1=1 end) limit 1)
+                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1136 then (select id from flow.list_of_value where parent_id = 943
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1906,14 +1909,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 98 then (select dce.end_time
                                                                     from blueraven.deal_calendar_event dce
                                                                     where dce.work_type_id = 16 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else 1=1 end,
+                                                                      and dce.deal_id = d2.id) else null end,
             case when p.custom_field_group_assignment_id = 99 then (select up.id
                                                                     from blueraven.deal_calendar_event dce
                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
                                                                     where dce.work_type_id = 16 and dce.primary_flag is true and dce.deleted is false
                                                                       and up.primary_flag is true and up.position_id in (7,16)
                                                                       and dce.deal_id = d2.id and
-                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else 1=1 end) limit 1)
+                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1136 then (select id from flow.list_of_value where parent_id = 943
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1968,14 +1971,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 98 then (select dce.end_time
                                                                     from blueraven.deal_calendar_event dce
                                                                     where dce.work_type_id = 18 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else 1=1 end,
+                                                                      and dce.deal_id = d2.id) else null end,
             case when p.custom_field_group_assignment_id = 99 then (select up.id
                                                                     from blueraven.deal_calendar_event dce
                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
                                                                     where dce.work_type_id = 18 and dce.primary_flag is true and dce.deleted is false
                                                                       and up.primary_flag is true and up.position_id in (7,16)
                                                                       and dce.deal_id = d2.id and
-                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else 1=1 end) limit 1)
+                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1136 then (select id from flow.list_of_value where parent_id = 943
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -2030,14 +2033,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 98 then (select dce.end_time
                                                                     from blueraven.deal_calendar_event dce
                                                                     where dce.work_type_id = 19 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else 1=1 end,
+                                                                      and dce.deal_id = d2.id) else null end,
             case when p.custom_field_group_assignment_id = 99 then (select up.id
                                                                     from blueraven.deal_calendar_event dce
                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
                                                                     where dce.work_type_id = 19 and dce.primary_flag is true and dce.deleted is false
                                                                       and up.primary_flag is true and up.position_id in (7,16)
                                                                       and dce.deal_id = d2.id and
-                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else 1=1 end) limit 1)
+                                                                        (d2.permit_packet_submitted_date >= up.start_date and case when end_date is not null then d2.permit_packet_submitted_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1136 then (select id from flow.list_of_value where parent_id = 943
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -2058,9 +2061,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             67,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -2278,9 +2279,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             15,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
 (now() + interval '1 day')
@@ -2318,12 +2317,22 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,int_value,
+                                                         date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 106 then ((greatest(permit_approved_date,permit_pack_revision_approved_date,permit_revision_b_approved_date,permit_revision_c_approved_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                   when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date,engineering_due_diligence_c_required_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                   when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                 else null end,
+            case when p.custom_field_group_assignment_id = 1238 then (select array_agg(id)
+                                                                      from flow.list_of_value
+                                                                      where parent_id = 1100 and
+                                                                              name in (
+                                                                              select  * from
+                                                                                  json_array_elements_text((select permit_rejection_reason::json from blueraven.deal
+                                                                                                            where permit_rejection_reason is not null and
+                                                                                                                    id = d2.id))))
+                 else null end,
+            case when p.custom_field_group_assignment_id = 1237 then permit_rejection_details else null end,
             case when p.custom_field_group_assignment_id = 107 then (select id from flow.list_of_value where parent_id = 271
                                                                                                          and name = d2.permit_outcome)
                          else null end,
@@ -2361,12 +2370,22 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,int_value,
+                                                         date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 106 then ((permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date,engineering_due_diligence_c_required_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
          else null end,
+            case when p.custom_field_group_assignment_id = 1238 then (select array_agg(id)
+                                                                      from flow.list_of_value
+                                                                      where parent_id = 1100 and
+                                                                              name in (
+                                                                              select  * from
+                                                                                  json_array_elements_text((select permit_rejection_reason::json from blueraven.deal
+                                                                                                            where permit_rejection_reason is not null and
+                                                                                                                    id = d2.id))))
+                 else null end,
+            case when p.custom_field_group_assignment_id = 1237 then permit_rejection_details else null end,
          case when p.custom_field_group_assignment_id = 107 then (select id from flow.list_of_value where parent_id = 271
          and name = d2.permit_outcome)
          else null end,
@@ -2403,12 +2422,22 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,int_value,
+                                                         date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 106 then ((permit_pack_revision_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date,engineering_due_diligence_c_required_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
          else null end,
+            case when p.custom_field_group_assignment_id = 1238 then (select array_agg(id)
+                                                                      from flow.list_of_value
+                                                                      where parent_id = 1100 and
+                                                                              name in (
+                                                                              select  * from
+                                                                                  json_array_elements_text((select permit_rejection_reason::json from blueraven.deal
+                                                                                                            where permit_rejection_reason is not null and
+                                                                                                                    id = d2.id))))
+                 else null end,
+            case when p.custom_field_group_assignment_id = 1237 then permit_rejection_details else null end,
          case when p.custom_field_group_assignment_id = 107 then (select id from flow.list_of_value where parent_id = 271
          and name = d2.permit_outcome)
          else null end,
@@ -2445,12 +2474,22 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,int_value,
+                                                         date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 106 then ((permit_revision_b_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date,engineering_due_diligence_c_required_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
          else null end,
+            case when p.custom_field_group_assignment_id = 1238 then (select array_agg(id)
+                                                                      from flow.list_of_value
+                                                                      where parent_id = 1100 and
+                                                                              name in (
+                                                                              select  * from
+                                                                                  json_array_elements_text((select permit_rejection_reason::json from blueraven.deal
+                                                                                                            where permit_rejection_reason is not null and
+                                                                                                                    id = d2.id))))
+                 else null end,
+            case when p.custom_field_group_assignment_id = 1237 then permit_rejection_details else null end,
          case when p.custom_field_group_assignment_id = 107 then (select id from flow.list_of_value where parent_id = 271
          and name = d2.permit_outcome)
          else null end,
@@ -2487,12 +2526,22 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,int_value,
+                                                         date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 106 then ((permit_revision_c_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date,engineering_due_diligence_c_required_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+         when  p.custom_field_group_assignment_id = 1231 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
          else null end,
+            case when p.custom_field_group_assignment_id = 1238 then (select array_agg(id)
+                                                                      from flow.list_of_value
+                                                                      where parent_id = 1100 and
+                                                                              name in (
+                                                                              select  * from
+                                                                                  json_array_elements_text((select permit_rejection_reason::json from blueraven.deal
+                                                                                                            where permit_rejection_reason is not null and
+                                                                                                                    id = d2.id))))
+                 else null end,
+            case when p.custom_field_group_assignment_id = 1237 then permit_rejection_details else null end,
          case when p.custom_field_group_assignment_id = 107 then (select id from flow.list_of_value where parent_id = 271
          and name = d2.permit_outcome)
          else null end,
@@ -2507,9 +2556,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             68,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -2598,9 +2645,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             69,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -2733,9 +2778,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             19,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -2828,9 +2871,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             20,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -2905,9 +2946,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             70,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -2980,9 +3019,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             21,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3062,9 +3099,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             22,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3145,9 +3180,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             23,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3218,9 +3251,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             24,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3301,9 +3332,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             25,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3344,7 +3373,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 25 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.in_house_mpu_permit_submittal_verified_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_submittal_verified_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.in_house_mpu_permit_submittal_verified_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_submittal_verified_date <= end_date else null end) limit 1)
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -3400,7 +3429,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 25 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.in_house_mpu_permit_submittal_verified_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_submittal_verified_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.in_house_mpu_permit_submittal_verified_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_submittal_verified_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -3415,9 +3444,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             26,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3493,9 +3520,7 @@ with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             27,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3517,10 +3542,22 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,
+                                                         date_value,int_array_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 125 then ((in_house_mpu_permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 125 then ((in_house_mpu_permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                 when p.custom_field_group_assignment_id = 1239 then ((permit_packet_rejected_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                else null end,
+            case when p.custom_field_group_assignment_id = 1240 then (select array_agg(id)
+                                                                        from flow.list_of_value
+                                                                        where parent_id = 1100 and
+                                                                                name in (
+                                                                                select  * from
+                                                                                    json_array_elements_text((select permit_rejection_reason::json from blueraven.deal
+                                                                                                              where permit_rejection_reason is not null and
+                                                                                                                      id = d2.id))))
+                else null end,
+            case when p.custom_field_group_assignment_id = 1241 then permit_rejection_details else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -3555,10 +3592,22 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,
+                                                         date_value,int_array_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 125 then ((in_house_mpu_permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 125 then ((in_house_mpu_permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                 when p.custom_field_group_assignment_id = 1239 then ((permit_packet_rejected_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                else null end,
+            case when p.custom_field_group_assignment_id = 1240 then (select array_agg(id)
+                                                                      from flow.list_of_value
+                                                                      where parent_id = 1100 and
+                                                                              name in (
+                                                                              select  * from
+                                                                                  json_array_elements_text((select permit_rejection_reason::json from blueraven.deal
+                                                                                                            where permit_rejection_reason is not null and
+                                                                                                                    id = d2.id))))
+                 else null end,
+            case when p.custom_field_group_assignment_id = 1241 then permit_rejection_details else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3569,9 +3618,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             16,
-            (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                     process_step_status_type = 'Active' else
-                                                                                     process_step_status_type = 'Cancelled' end
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3637,7 +3684,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 8 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else 1=1 end) limit 1) else null end,
+                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else null end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3688,7 +3735,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 17 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else 1=1 end) limit 1) else null end,
+                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else null end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3739,7 +3786,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 20 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else 1=1 end) limit 1) else null end,
+                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else null end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3790,7 +3837,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 21 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else 1=1 end) limit 1) else null end,
+                                                                         (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else null end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3803,9 +3850,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             66,
             (SELECT id FROM flow.company_process_step_status_type
-            WHERE case when d.cancelled_date is null then
-                             process_step_status_type = 'Active' else
-                             process_step_status_type = 'Cancelled' end
+            WHERE process_step_status_type = 'Active'
             and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3861,7 +3906,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 30 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.fl_noc_application_signature_date >= up.start_date and case when end_date is not null then d2.fl_noc_application_signature_date <= end_date else 1=1 end) limit 1) else null end,
+                                                                         (d2.fl_noc_application_signature_date >= up.start_date and case when end_date is not null then d2.fl_noc_application_signature_date <= end_date else null end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3874,9 +3919,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             71,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -3951,9 +3994,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             32,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4028,9 +4069,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             33,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4171,9 +4210,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             35,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4254,9 +4291,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             72,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4346,9 +4381,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             37,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4422,9 +4455,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             38,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4552,9 +4583,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             39,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4669,9 +4698,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             73,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4745,9 +4772,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             40,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -4785,9 +4810,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 921 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                         and name = d2.additional_ahj_inspection_required)
+                                                                                                         and name::boolean = d2.additional_ahj_inspection_required)
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4841,9 +4866,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 921 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                         and name = d2.additional_ahj_inspection_required)
+                                                                                                         and name::boolean = d2.additional_ahj_inspection_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4896,9 +4921,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 5 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 921 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                         and name = d2.additional_ahj_inspection_required)
+                                                                                                         and name::boolean = d2.additional_ahj_inspection_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4951,9 +4976,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 23 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 921 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                         and name = d2.additional_ahj_inspection_required)
+                                                                                                         and name::boolean = d2.additional_ahj_inspection_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4967,9 +4992,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             74,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5043,9 +5066,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             46,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5235,9 +5256,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             47,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5319,9 +5338,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             48,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5395,9 +5412,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             50,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5475,9 +5490,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             54,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5513,7 +5526,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 6 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.system_service_date >= up.start_date and case when end_date is not null then d2.system_service_date <= end_date else 1=1 end ) limit 1) else null end,
+                                                                         (d2.system_service_date >= up.start_date and case when end_date is not null then d2.system_service_date <= end_date else null end ) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -5566,7 +5579,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 6 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.system_service_date >= up.start_date and case when end_date is not null then d2.system_service_date <= end_date else 1=1 end ) limit 1) else null end,
+                                                                         (d2.system_service_date >= up.start_date and case when end_date is not null then d2.system_service_date <= end_date else null end ) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -5579,9 +5592,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             55,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5717,9 +5728,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             75,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -5931,9 +5940,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             76,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6143,9 +6150,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             80,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6266,9 +6271,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             79,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6343,9 +6346,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             77,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6424,9 +6425,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             78,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6504,9 +6503,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             81,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6584,9 +6581,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             82,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6669,9 +6664,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             83,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6760,9 +6753,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             17,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -6999,9 +6990,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             28,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7088,7 +7077,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,int_value,
+                                                         date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 1234 then ((in_house_mpu_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
@@ -7115,9 +7104,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             29,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7194,9 +7181,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             30,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7314,9 +7299,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             31,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7336,7 +7319,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,
+                                                         date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 196 then ((d2.non_standard_installation_work_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -7375,7 +7358,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,
+                                                         date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 196 then ((d2.non_standard_installation_work_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -7392,9 +7375,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             84,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7414,7 +7395,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,
+                                                         date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 197 then ((d2.utility_reinspection_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -7454,7 +7435,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,
+                                                         date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 197 then ((d2.utility_reinspection_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -7472,9 +7453,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             44,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7565,9 +7544,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             51,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7647,9 +7624,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             85,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7689,7 +7664,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                       where dce.work_type_id = 12 and dce.primary_flag is true and dce.deleted is false
                                                                         and up.primary_flag is true and up.position_id in (7,16)
                                                                         and dce.deal_id = d2.id and
-                                                                          (d2.energization_visit_date >= up.start_date and case when end_date is not null then d2.energization_visit_date <= end_date else 1=1 end) limit 1) else null end,
+                                                                          (d2.energization_visit_date >= up.start_date and case when end_date is not null then d2.energization_visit_date <= end_date else null end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -7743,7 +7718,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                       where dce.work_type_id = 12 and dce.primary_flag is true and dce.deleted is false
                                                                         and up.primary_flag is true and up.position_id in (7,16)
                                                                         and dce.deal_id = d2.id and
-                                                                          (d2.energization_visit_date >= up.start_date and case when end_date is not null then d2.energization_visit_date <= end_date else 1=1 end) limit 1) else null end,
+                                                                          (d2.energization_visit_date >= up.start_date and case when end_date is not null then d2.energization_visit_date <= end_date else null end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -7756,9 +7731,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             52,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7837,9 +7810,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             53,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7916,9 +7887,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             56,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -7997,9 +7966,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             57,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -8076,9 +8043,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             86,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -8157,9 +8122,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             87,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -8240,9 +8203,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             88,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -8320,9 +8281,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             89,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -8647,9 +8606,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             92,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -8728,9 +8685,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             93,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -8822,9 +8777,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             94,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -9015,9 +8968,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             95,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -9092,9 +9043,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT project.id,
             96,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -9165,9 +9114,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             97,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -9246,9 +9193,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
     (SELECT p.id,
             98,
             (SELECT id FROM flow.company_process_step_status_type
-             WHERE case when d.cancelled_date is null then
-                                process_step_status_type = 'Active' else
-                                process_step_status_type = 'Cancelled' end
+             WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day')
@@ -9292,9 +9237,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 11 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.resurvey_date >= up.start_date and case when end_date is not null then d2.resurvey_date <= end_date else 1=1 end) limit 1)
-                 else null end,
-            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                         (d2.resurvey_date >= up.start_date and case when end_date is not null then d2.resurvey_date <= end_date else null end) limit 1)
+
+             when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
                                                                                                              and name = d2.resurvey_a_reason) else null end,
 
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
@@ -9351,9 +9296,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 11 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.resurvey_date >= up.start_date and case when end_date is not null then d2.resurvey_date <= end_date else 1=1 end) limit 1)
-                 else null end,
-            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                         (d2.resurvey_date >= up.start_date and case when end_date is not null then d2.resurvey_date <= end_date else null end) limit 1)
+                  when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
                                                                                                              and name = d2.resurvey_a_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
                  else null end,
@@ -9409,9 +9353,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 28 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.resurvey_b_date >= up.start_date and case when end_date is not null then d2.resurvey_b_date <= end_date else 1=1 end) limit 1)
-                 else null end,
-            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                         (d2.resurvey_b_date >= up.start_date and case when end_date is not null then d2.resurvey_b_date <= end_date else null end) limit 1)
+                 when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
                                                                                                              and name = d2.resurvey_b_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
                  else null end,
@@ -9466,9 +9409,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 29 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.resurvey_c_date >= up.start_date and case when end_date is not null then d2.resurvey_c_date <= end_date else 1=1 end) limit 1)
-                 else null end,
-            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                         (d2.resurvey_c_date >= up.start_date and case when end_date is not null then d2.resurvey_c_date <= end_date else null end) limit 1)
+                when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
                                                                                                              and name = d2.resurvey_c_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
                  else null end,
@@ -9483,9 +9425,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 175,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -9517,7 +9457,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1251 then ((final_design_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9554,7 +9493,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1251 then ((final_design_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9564,9 +9502,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 91,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -9653,7 +9589,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 434 then (( nem_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9690,7 +9625,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 434 then ((nem_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9700,9 +9634,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 99,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -9726,7 +9658,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1006 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9763,7 +9695,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1006 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9799,7 +9731,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1006 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9835,7 +9767,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1006 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9845,9 +9777,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 101,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -9901,7 +9831,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -9961,7 +9891,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10020,7 +9950,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10079,7 +10009,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10089,9 +10019,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 103,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10118,7 +10046,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10156,7 +10084,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10167,9 +10095,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 104,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10192,7 +10118,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10228,7 +10154,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10238,9 +10164,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 105,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10266,7 +10190,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10307,7 +10231,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10317,9 +10241,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 106,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10345,7 +10267,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10384,96 +10306,90 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
 
-/*Cancel Project  NOT FINISHED*/
-with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
-        (SELECT project.id,
-                107,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
-                                                                        and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
-                2350555 as created_by_id,
-                (now() + interval '1 day')
-         FROM flow.project
-                  INNER JOIN blueraven.deal d
-                             ON project.id = d.id
-         where originator_id = 1 and remote_work_required_date is not null and remote_work_complete_date is null) returning *),
-     p as (
-         select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
-         from flow.custom_field_group_assignment cfga
-                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                  inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                  inner join flow.data_type dt on dt.id = cdt.data_type_id
-         where cfg.process_step_id = 107
-           and cf.archived is false and cfg.archived is false and cfga.archived is false
-     )
-insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
-                                                         date_created, date_modified, created_by_id, modified_by_id)
-    (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 535 then (( work_order_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 536 then (( work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 else null end,
-            now(),now(),2350555,2350555
-     from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
-              inner join active_step p1 on p1.project_id = d2.id
-              cross join p
-    );
-
-
-with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
-        (SELECT project.id,
-                107,
-                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
-                                                                        and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
-                2350555 as created_by_id,
-                now(),
-                remote_work_complete_date
-         FROM flow.project
-                  INNER JOIN blueraven.deal d
-                             ON project.id = d.id
-         where remote_work_complete_date is not null
-           and originator_id = 1)
-        returning *),
-     p as (
-         select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
-         from flow.custom_field_group_assignment cfga
-                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                  inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                  inner join flow.data_type dt on dt.id = cdt.data_type_id
-         where cfg.process_step_id = 107
-           and cf.archived is false and cfg.archived is false and cfga.archived is false
-     )
-insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
-                                                         date_created, date_modified, created_by_id, modified_by_id)
-    (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 535 then (( work_order_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 536 then (( work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 else null end,
-            now(),now(),2350555,2350555
-     from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
-              inner join process_step1 p1 on p1.project_id = d2.id
-              cross join p
-    );
+-- /*Cancel Project  NOT FINISHED*/
+-- with active_step as (
+--     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+--         (SELECT project.id,
+--                 107,
+--                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
+--                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
+--                 2350555 as created_by_id,
+--                 (now() + interval '1 day')
+--          FROM flow.project
+--                   INNER JOIN blueraven.deal d
+--                              ON project.id = d.id
+--          where originator_id = 1 and remote_work_required_date is not null and remote_work_complete_date is null) returning *),
+--      p as (
+--          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
+--          from flow.custom_field_group_assignment cfga
+--                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+--                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+--                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+--                   inner join flow.data_type dt on dt.id = cdt.data_type_id
+--          where cfg.process_step_id = 107
+--            and cf.archived is false and cfg.archived is false and cfga.archived is false
+--      )
+-- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
+--                                                          date_created, date_modified, created_by_id, modified_by_id)
+--     (select p1.id,p.custom_field_group_assignment_id,
+--             case when p.custom_field_group_assignment_id = 1209 then (( cancelled_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+--             now(),now(),2350555,2350555
+--      from blueraven.deal d2
+--
+--               inner join active_step p1 on p1.project_id = d2.id
+--               cross join p
+--     );
+--
+--
+-- with process_step1 as (
+--     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+--         (SELECT project.id,
+--                 107,
+--                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
+--                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
+--                 2350555 as created_by_id,
+--                 now(),
+--                 remote_work_complete_date
+--          FROM flow.project
+--                   INNER JOIN blueraven.deal d
+--                              ON project.id = d.id
+--          where remote_work_complete_date is not null
+--            and originator_id = 1)
+--         returning *),
+--      p as (
+--          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
+--          from flow.custom_field_group_assignment cfga
+--                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+--                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+--                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+--                   inner join flow.data_type dt on dt.id = cdt.data_type_id
+--          where cfg.process_step_id = 107
+--            and cf.archived is false and cfg.archived is false and cfga.archived is false
+--      )
+-- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
+--                                                          date_created, date_modified, created_by_id, modified_by_id)
+--     (select p1.id,p.custom_field_group_assignment_id,
+--             case when p.custom_field_group_assignment_id = 535 then (( work_order_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+--                  when p.custom_field_group_assignment_id = 536 then (( work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+--                  else null end,
+--             now(),now(),2350555,2350555
+--      from blueraven.deal d2
+--
+--               inner join process_step1 p1 on p1.project_id = d2.id
+--               cross join p
+--     );
 
 /*Ready for Retention Call: Post Booking*/
 with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 108,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10498,7 +10414,7 @@ with active_step as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
-                                                         int_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 883 then (( retention_saved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 886 then (( retention_cold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -10519,11 +10435,12 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_1_attempted_by
                                                                                            inner join flow.user_position up on up.user_id = u.id
                                                                      where d.id = d2.id and up.position_id in (217,229,80) and d.retention_1_attempted_by is not null limit 1)
+                 when p.custom_field_group_assignment_id = 1229 then (select id from flow.list_of_value where parent_id = 1111
+                                                                                                          and name = d2.save_reason)
                 else null end,
-            case when p.custom_field_group_assignment_id = 1229 then d.save_reason else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10560,7 +10477,7 @@ with process_step1 as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
-                                                         int_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 883 then (( retention_saved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 886 then (( retention_cold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -10581,11 +10498,12 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_1_attempted_by
                                                                                            inner join flow.user_position up on up.user_id = u.id
                                                                      where d.id = d2.id and up.position_id in (217,229,80) and d.retention_1_attempted_by is not null limit 1)
+                 when p.custom_field_group_assignment_id = 1229 then (select id from flow.list_of_value where parent_id = 1111
+                                                                                                          and name = d2.save_reason)
                  else null end,
-            case when p.custom_field_group_assignment_id = 1229 then d.save_reason else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10595,9 +10513,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 109,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10621,7 +10537,7 @@ with active_step as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
-                                                         int_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 887 then (( retention_attempt_1 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 889 then (( retention_attempt_2 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -10642,11 +10558,12 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_1_attempted_by
                                                                                            inner join flow.user_position up on up.user_id = u.id
                                                                      where d.id = d2.id and up.position_id in (217,229,80) and d.retention_1_attempted_by is not null limit 1)
+                 when p.custom_field_group_assignment_id = 1230 then (select id from flow.list_of_value where parent_id = 1111
+                                                                                                          and name = d2.save_reason)
                  else null end,
-              case when p.custom_field_group_assignment_id = 1230 then d.save_reason else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10682,7 +10599,7 @@ with process_step1 as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
-                                                         int_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 887 then (( retention_attempt_1 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 889 then (( retention_attempt_2 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -10703,11 +10620,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_1_attempted_by
                                                                                            inner join flow.user_position up on up.user_id = u.id
                                                                      where d.id = d2.id and up.position_id in (217,229,80) and d.retention_1_attempted_by is not null limit 1)
+                when p.custom_field_group_assignment_id = 1230 then (select id from flow.list_of_value where parent_id = 1111
+                                                                                                       and name = d2.save_reason)
                  else null end,
-            case when p.custom_field_group_assignment_id = 1230 then d.save_reason else null end,
+
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10716,9 +10635,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 110,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10751,7 +10668,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10795,7 +10712,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10805,9 +10722,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 112,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10826,21 +10741,21 @@ with active_step as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
-                                                         text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 915 then (( on_hold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 916 then (( off_hold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 else null end,
-            case when p.custom_field_group_assignment_id = 1208 then on_hold_reason
                  else null end,
             case when p.custom_field_group_assignment_id = 919 then (select up.id from blueraven.deal d
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_saved_by
                                                                                            inner join flow.user_position up on up.user_id = u.id
                                                                      where d.id = d2.id and up.position_id in (80,229,217) and d.retention_saved_by is not null limit 1)
+                 when p.custom_field_group_assignment_id = 1208 then (select id from flow.list_of_value where parent_id = 1117
+                                                                                                          and name = d2.on_hold_reason)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10851,9 +10766,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 113,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -10892,7 +10805,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10944,7 +10857,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -10995,7 +10908,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11045,7 +10958,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11055,9 +10968,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 114,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -11096,7 +11007,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11139,7 +11050,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11152,7 +11063,7 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                engineering_due_diligence_b_complete_date
+                engineering_due_diligence_b_complete_date::timestamp
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11172,7 +11083,7 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1015 then (( engineering_due_diligence_b_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 1015 then (( engineering_due_diligence_b_complete_date::timestamp AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
             case when p.custom_field_group_assignment_id = 1242 then (select up.id from blueraven.deal d
                                                                                             inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.engineering_due_diligence_by
@@ -11181,7 +11092,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11193,7 +11104,7 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                engineering_due_diligence_c_complete_date
+                engineering_due_diligence_c_complete_date::timestamp
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11213,7 +11124,7 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1015 then (( engineering_due_diligence_c_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 1015 then (( engineering_due_diligence_c_complete_date::timestamp AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
             case when p.custom_field_group_assignment_id = 1242 then (select up.id from blueraven.deal d
                                                                                             inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.engineering_due_diligence_by
@@ -11222,7 +11133,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11233,9 +11144,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 115,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -11267,7 +11176,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11309,7 +11218,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11319,9 +11228,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 116,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -11351,7 +11258,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11394,7 +11301,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11404,9 +11311,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 122,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -11429,7 +11334,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11465,7 +11370,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11476,9 +11381,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 123,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -11508,7 +11411,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11526,7 +11429,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where state_id = 37 and utility_rebate_application_submitted_date is not null
+         where d.state_id = 37 and utility_rebate_application_submitted_date is not null
            and originator_id = 1)
         returning *),
      p as (
@@ -11546,7 +11449,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11556,16 +11459,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 128,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and state_id = 37 and
+         where originator_id = 1 and d.state_id = 37 and
                (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
                utility_rebate_application_approved_date is not null and energized_date is null) returning *),
      p as (
@@ -11583,7 +11484,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11601,7 +11502,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where state_id = 37 and (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
+         where d.state_id = 37 and (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
                utility_rebate_application_approved_date is not null and energized_date is not null
            and originator_id = 1)
         returning *),
@@ -11620,7 +11521,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11630,16 +11531,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 129,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and state_id = 37 and
+         where originator_id = 1 and d.state_id = 37 and
                (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
                utility_rebate_application_approved_date is not null and
                energized_date is not null and eto_inspection_requested_date is null) returning *),
@@ -11660,7 +11559,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11678,7 +11577,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where state_id = 37 and
+         where d.state_id = 37 and
                (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
                utility_rebate_application_approved_date is not null and
                energized_date is not null and eto_inspection_requested_date is not null
@@ -11701,7 +11600,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11711,16 +11610,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 131,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and state_id = 37 and
+         where originator_id = 1 and d.state_id = 37 and
          (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
          utility_rebate_application_approved_date is not null and energized_date is not null and
          eto_inspection_requested_date is not null and utility_rebate_inspection_outcome is null) returning *),
@@ -11747,7 +11644,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11766,12 +11663,12 @@ with process_step1 as (
                 THEN eto_inspection_passed_date
                 WHEN utility_rebate_inspection_outcome = 'Corrections Required'
                 THEN eto_inspection_corrections_required_date
-                ELSE greatest(eto_inspection_passed_date, eto_inspection_corrections_required_date, eto_inpsection_requested_date)
+                ELSE greatest(eto_inspection_passed_date, eto_inspection_corrections_required_date, eto_inspection_requested_date)
                 END
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where state_id = 37 and
+         where d.state_id = 37 and
                (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
                utility_rebate_application_approved_date is not null and
                energized_date is not null and eto_inspection_requested_date is not null
@@ -11801,7 +11698,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11811,16 +11708,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 132,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and state_id = 37 and
+         where originator_id = 1 and d.state_id = 37 and
                (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
                utility_rebate_application_approved_date is not null and
                energized_date is not null and eto_inspection_requested_date is not null and
@@ -11841,7 +11736,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11876,7 +11771,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11886,9 +11781,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 133,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -11925,7 +11818,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11960,7 +11853,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -11970,9 +11863,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 134,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12004,16 +11895,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 509 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 509 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12057,16 +11942,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 509 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 509 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12076,9 +11955,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 135,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12106,7 +11983,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12146,7 +12023,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12155,9 +12032,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 136,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12189,16 +12064,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 514 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.in_house_mpu_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 514 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12242,16 +12111,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 514 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.in_house_mpu_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 514 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12261,9 +12124,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 137,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12291,7 +12152,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12331,7 +12192,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12341,9 +12202,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 138,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12375,16 +12234,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 517 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 517 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12428,16 +12281,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 517 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 517 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12447,9 +12294,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 139,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12477,7 +12322,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12517,7 +12362,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12526,9 +12371,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 140,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12560,16 +12403,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 520 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 520 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12613,16 +12450,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 520 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 520 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12632,9 +12463,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 141,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12662,7 +12491,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12702,7 +12531,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12711,9 +12540,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 142,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12745,16 +12572,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 523 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 523 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12798,16 +12619,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 523 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 523 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12816,9 +12631,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 143,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12846,7 +12659,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12886,7 +12699,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12895,9 +12708,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 144,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -12929,16 +12740,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 526 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 526 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -12982,16 +12787,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 526 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 526 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13000,9 +12799,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 145,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13030,7 +12827,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13070,7 +12867,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13079,9 +12876,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 146,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13113,16 +12908,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 529 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 529 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13166,16 +12955,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 529 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 529 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13184,9 +12967,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 147,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13214,7 +12995,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13254,7 +13035,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13263,9 +13044,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 148,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13297,16 +13076,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 539 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 539 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13350,16 +13123,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
                                                                        and dce.deal_id = d2.id)
                  else null end,
-            case when p.custom_field_group_assignment_id = 539 then (select up.id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                              inner join blueraven.user_position up on up.org_id = dce.org_id
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and up.primary_flag is true and up.position_id in (7,16)
-                                                                       and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1) else null end,
+            case when p.custom_field_group_assignment_id = 539 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13368,9 +13135,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 149,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13398,7 +13163,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13438,7 +13203,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13484,7 +13249,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13494,9 +13259,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 151,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13520,7 +13283,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13556,7 +13319,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13565,9 +13328,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 152,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13590,7 +13351,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13625,7 +13386,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13635,9 +13396,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 153,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13683,13 +13442,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 5 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else null end) limit 1)
                 when p.custom_field_group_assignment_id = 1203 then (select id from flow.list_of_value where parent_id = 977
-                                                                                                         and name = d2.technician_site_required)
+                                                                                                         and name::boolean = d2.technician_site_required)
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13738,13 +13497,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 5 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1203 then (select id from flow.list_of_value where parent_id = 977
-                                                                                                          and name = d2.technician_site_required)
+                                                                                                          and name::boolean = d2.technician_site_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13792,13 +13551,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 23 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.non_standard_installation_work_date >= up.start_date and case when end_date is not null then d2.non_standard_installation_work_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1203 then (select id from flow.list_of_value where parent_id = 977
-                                                                                                          and name = d2.technician_site_required)
+                                                                                                          and name::boolean = d2.technician_site_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13808,16 +13567,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 154,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and greatest(ahj_reinspection_date,ahj_reinspection_b_date,ahj_reinspection_c_date) >= ((now() AT TIME ZONE 'US/Mountain') :: DATE)) returning *),
+         where originator_id = 1 and greatest(ahj_reinspection_date,ahj_reinspection_b_date) >= ((now() AT TIME ZONE 'US/Mountain') :: DATE)) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -13833,7 +13590,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13868,7 +13625,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13901,7 +13658,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13911,9 +13668,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 155,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -13947,7 +13702,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -13991,7 +13746,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14034,7 +13789,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14044,9 +13799,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 156,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14069,7 +13822,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14104,7 +13857,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14113,9 +13866,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 157,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14141,7 +13892,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14179,7 +13930,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14189,9 +13940,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 159,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14216,7 +13965,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14253,7 +14002,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14262,9 +14011,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 160,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14303,7 +14050,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14354,7 +14101,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14404,7 +14151,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14454,7 +14201,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14489,7 +14236,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14499,9 +14246,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 162,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14526,7 +14271,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14563,7 +14308,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14573,9 +14318,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 164,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14607,7 +14350,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14649,7 +14392,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14659,9 +14402,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 165,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14702,13 +14443,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 24 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1201 then (select id from flow.list_of_value where parent_id = 977
-                                                                                                          and name = d2.technician_site_required)
+                                                                                                          and name::boolean = d2.technician_site_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14757,13 +14498,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                       where dce.work_type_id = 24 and dce.primary_flag is true and dce.deleted is false
                                                                         and up.primary_flag is true and up.position_id in (7,16)
                                                                         and dce.deal_id = d2.id and
-                                                                          (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                          (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1201 then (select id from flow.list_of_value where parent_id = 977
-                                                                                                          and name = d2.technician_site_required)
+                                                                                                          and name::boolean = d2.technician_site_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14774,9 +14515,7 @@ with active_step as (
         (SELECT project.id,
                 166,
                 (SELECT id FROM flow.company_process_step_status_type
-                 WHERE case when d.cancelled_date is null then
-                                    process_step_status_type = 'Active' else
-                                    process_step_status_type = 'Cancelled' end
+                 WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14845,9 +14584,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 167,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14875,7 +14612,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14915,7 +14652,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -14925,9 +14662,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 168,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -14966,15 +14701,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                       where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
                                                                         and up.primary_flag is true and up.position_id in (7,16)
                                                                         and dce.deal_id = d2.id and
-                                                                          (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                          (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1199 then (select id from flow.list_of_value where parent_id = 977
-                                                                                                          and name = d2.technician_site_required)
+                                                                                                          and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 922 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                          and name = d2.additional_ahj_inspection_required)
+                                                                                                          and name::boolean = d2.additional_ahj_inspection_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15023,15 +14758,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.ahj_mid_point_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_mid_point_inspection_date <= end_date else null end) limit 1)
                  when p.custom_field_group_assignment_id = 1199 then (select id from flow.list_of_value where parent_id = 977
-                                                                                                          and name = d2.technician_site_required)
+                                                                                                          and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 922 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                         and name = d2.additional_ahj_inspection_required)
+                                                                                                         and name::boolean = d2.additional_ahj_inspection_required)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15042,9 +14777,7 @@ with active_step as (
         (SELECT project.id,
                 169,
                 (SELECT id FROM flow.company_process_step_status_type
-                 WHERE case when d.cancelled_date is null then
-                                    process_step_status_type = 'Active' else
-                                    process_step_status_type = 'Cancelled' end
+                 WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15112,9 +14845,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 170,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15151,11 +14882,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 22 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.additional_ahj_inspection_date >= up.start_date and case when end_date is not null then d2.additional_ahj_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.additional_ahj_inspection_date >= up.start_date and case when end_date is not null then d2.additional_ahj_inspection_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15204,11 +14935,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 22 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.additional_ahj_inspection_date >= up.start_date and case when end_date is not null then d2.additional_ahj_inspection_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.additional_ahj_inspection_date >= up.start_date and case when end_date is not null then d2.additional_ahj_inspection_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15218,9 +14949,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 171,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15249,7 +14978,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15289,7 +15018,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15298,9 +15027,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 172,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15337,11 +15064,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 26 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.in_house_mpu_permit_pickup_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_pickup_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.in_house_mpu_permit_pickup_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_pickup_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15389,11 +15116,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 26 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.in_house_mpu_permit_pickup_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_pickup_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.in_house_mpu_permit_pickup_date >= up.start_date and case when end_date is not null then d2.in_house_mpu_permit_pickup_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15403,9 +15130,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 173,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15432,7 +15157,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15470,7 +15195,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15480,9 +15205,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 174,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15517,7 +15240,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15557,7 +15280,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15596,7 +15319,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15635,57 +15358,55 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
-with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
-        (SELECT project.id,
-                174,
-                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
-                                                                        and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
-                2350555 as created_by_id,
-                now(),
-                ahj_reinspection_c_date
-         FROM flow.project
-                  INNER JOIN blueraven.deal d
-                             ON project.id = d.id
-         where ahj_reinspection_c_outcome = 'Fail' and ahj_reinspection_b_fail_reason is not null
-           and originator_id = 1)returning *),
-     p as (
-         select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
-         from flow.custom_field_group_assignment cfga
-                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                  inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                  inner join flow.data_type dt on dt.id = cdt.data_type_id
-         where cfg.process_step_id = 174
-           and cf.archived is false and cfg.archived is false and cfga.archived is false
-     )
-insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
-    (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1011 then ahj_reinspection_c_fail_feedback
-                 else null end,
-            case when p.custom_field_group_assignment_id = 755 then (select id from flow.list_of_value where parent_id = 9
-                                                                                                         and name = d2.ahj_reinspection_c_fail_reason)
-                 else null end,
-            now(),now(),2350555,2350555
-     from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
-              inner join process_step1 p1 on p1.project_id = d2.id
-              cross join p
-    );
+-- with process_step1 as (
+--     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+--         (SELECT project.id,
+--                 174,
+--                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
+--                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
+--                 2350555 as created_by_id,
+--                 now(),
+--                 ahj_reinspection_c_date
+--          FROM flow.project
+--                   INNER JOIN blueraven.deal d
+--                              ON project.id = d.id
+--          where ahj_reinspection_c_outcome = 'Fail' and ahj_reinspection_b_fail_reason is not null
+--            and originator_id = 1)returning *),
+--      p as (
+--          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
+--          from flow.custom_field_group_assignment cfga
+--                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+--                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+--                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+--                   inner join flow.data_type dt on dt.id = cdt.data_type_id
+--          where cfg.process_step_id = 174
+--            and cf.archived is false and cfg.archived is false and cfga.archived is false
+--      )
+-- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
+--                                                          text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+--     (select p1.id,p.custom_field_group_assignment_id,
+--             case when p.custom_field_group_assignment_id = 1011 then ahj_reinspection_c_fail_feedback
+--                  else null end,
+--             case when p.custom_field_group_assignment_id = 755 then (select id from flow.list_of_value where parent_id = 9
+--                                                                                                          and name = d2.ahj_reinspection_c_fail_reason)
+--                  else null end,
+--             now(),now(),2350555,2350555
+--      from blueraven.deal d2
+--
+--               inner join process_step1 p1 on p1.project_id = d2.id
+--               cross join p
+--     );
 
 /*Permit Submission Hold*/
 with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 176,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15710,7 +15431,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15747,7 +15468,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15757,9 +15478,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 177,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -15794,7 +15513,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15841,7 +15560,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15850,16 +15569,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 179,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and final_design_signed_date is not null and utility_bill_verified_date is not null and state_id = 13 and utility_rebate_application_sent_to_homeowner_date is null) returning *),
+         where originator_id = 1 and final_design_signed_date is not null and utility_bill_verified_date is not null and d.state_id = 13 and utility_rebate_application_sent_to_homeowner_date is null) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -15875,7 +15592,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15910,7 +15627,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15920,16 +15637,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 180,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and state_id = 13 and utility_rebate_application_sent_to_homeowner_date is not null and
+         where originator_id = 1 and d.state_id = 13 and utility_rebate_application_sent_to_homeowner_date is not null and
 utility_rebate_application_signed_date is null) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -15946,7 +15661,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15964,7 +15679,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where state_id = 13 and utility_rebate_application_sent_to_homeowner_date is not null and
+         where d.state_id = 13 and utility_rebate_application_sent_to_homeowner_date is not null and
 utility_rebate_application_signed_date is not null
            and originator_id = 1)returning *),
      p as (
@@ -15982,7 +15697,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -15991,16 +15706,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 181,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and state_id = 13 AND nem_approved_by_utility_date is not null AND utility_rebate_application_signed_date is not null AND utility_rebate_application_submitted_date) returning *),
+         where originator_id = 1 and d.state_id = 13 AND nem_approved_by_utility_date is not null AND utility_rebate_application_signed_date is not null AND utility_rebate_application_submitted_date is null ) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -16016,7 +15729,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16051,7 +15764,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16061,16 +15774,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 182,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and state_id = 13 AND nem_approved_by_utility_date is not null AND utility_rebate_application_submitted_date is not null and (utility_rebate_application_approved_date is null or reserved_utility_rebate_amount is null)) returning *),
+         where originator_id = 1 and d.state_id = 13 AND nem_approved_by_utility_date is not null AND utility_rebate_application_submitted_date is not null and (utility_rebate_application_approved_date is null or reserved_utility_rebate_amount is null)) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -16087,7 +15798,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1182 then d2.utility_rebate_amount_to_brs else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16123,7 +15834,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1182 then d2.utility_rebate_amount_to_brs else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16133,9 +15844,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 183,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16159,7 +15868,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16194,7 +15903,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16203,9 +15912,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 184,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16229,7 +15936,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16264,7 +15971,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16273,9 +15980,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 186,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16298,7 +16003,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16309,9 +16014,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 187,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16337,7 +16040,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                      else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16375,7 +16078,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16385,9 +16088,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 188,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16414,7 +16115,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16452,7 +16153,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16461,9 +16162,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 190,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16489,7 +16188,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16527,7 +16226,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16536,9 +16235,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 191,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16564,7 +16261,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16602,7 +16299,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16612,9 +16309,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 192,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16651,7 +16346,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 14 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.asbuilt_permit_pack_submittal_date >= up.start_date and case when end_date is not null then d2.asbuilt_permit_pack_submittal_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.asbuilt_permit_pack_submittal_date >= up.start_date and case when end_date is not null then d2.asbuilt_permit_pack_submittal_date <= end_date else null end) limit 1)
                  else null end,
             case when p.custom_field_group_assignment_id = 813 then d2.permit_fee_paid::boolean else null end,
             case when p.custom_field_group_assignment_id = 811 then d2.permit_deposit_fee::numeric
@@ -16662,7 +16357,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16693,7 +16388,7 @@ with process_step1 as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,int_value,boolean_value,numeric_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         timestamp_value,int_value,boolean_value,numeric_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 817 then (select dce.start_time
                                                                      from blueraven.deal_calendar_event dce
@@ -16710,7 +16405,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 14 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.asbuilt_permit_pack_submittal_date >= up.start_date and case when end_date is not null then d2.asbuilt_permit_pack_submittal_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.asbuilt_permit_pack_submittal_date >= up.start_date and case when end_date is not null then d2.asbuilt_permit_pack_submittal_date <= end_date else null end) limit 1)
                  else null end,
             case when p.custom_field_group_assignment_id = 813 then d2.permit_fee_paid::boolean else null end,
             case when p.custom_field_group_assignment_id = 811 then d2.permit_deposit_fee::numeric
@@ -16721,7 +16416,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16732,9 +16427,7 @@ with active_step as (
         (SELECT project.id,
                 193,
                 (SELECT id FROM flow.company_process_step_status_type
-                 WHERE case when d.cancelled_date is null then
-                                    process_step_status_type = 'Active' else
-                                    process_step_status_type = 'Cancelled' end
+                 WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16802,9 +16495,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 194,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16832,7 +16523,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16872,7 +16563,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16882,9 +16573,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 195,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -16916,7 +16605,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16960,7 +16649,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -16970,9 +16659,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 196,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17008,11 +16695,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 15 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.as_built_permit_pickup_date >= up.start_date and case when end_date is not null then d2.as_built_permit_pickup_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.as_built_permit_pickup_date >= up.start_date and case when end_date is not null then d2.as_built_permit_pickup_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17060,11 +16747,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 15 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.as_built_permit_pickup_date >= up.start_date and case when end_date is not null then d2.as_built_permit_pickup_date <= end_date else 1=1 end) limit 1)
+                                                                         (d2.as_built_permit_pickup_date >= up.start_date and case when end_date is not null then d2.as_built_permit_pickup_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17074,9 +16761,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 197,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17109,7 +16794,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17150,7 +16835,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17160,9 +16845,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 198,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17189,7 +16872,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17226,7 +16909,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17261,7 +16944,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17270,9 +16953,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 199,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17299,7 +16980,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17336,7 +17017,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17351,7 +17032,7 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                retention_customer_concession_date_sent is not null
+                retention_customer_concession_date_sent
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17374,7 +17055,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17384,9 +17065,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 202,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17415,7 +17094,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17455,7 +17134,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17465,9 +17144,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 204,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17490,7 +17167,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17525,7 +17202,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17535,9 +17212,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 205,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17561,7 +17236,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17596,7 +17271,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17630,7 +17305,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17640,9 +17315,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 206,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17665,7 +17338,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17700,7 +17373,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17710,9 +17383,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 207,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17735,7 +17406,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17770,7 +17441,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17780,9 +17451,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 208,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17806,7 +17475,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17842,7 +17511,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17852,9 +17521,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 209,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17884,7 +17551,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17926,7 +17593,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17936,9 +17603,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 210,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -17962,7 +17627,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -17998,7 +17663,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18007,9 +17672,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 211,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18033,7 +17696,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18069,7 +17732,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18078,9 +17741,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 212,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18104,7 +17765,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18140,7 +17801,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18150,9 +17811,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 213,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18176,7 +17835,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18212,7 +17871,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18221,9 +17880,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 214,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18247,7 +17904,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18283,7 +17940,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18292,9 +17949,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 215,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18317,7 +17972,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18326,9 +17981,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 219,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18351,19 +18004,19 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 1028 then (select dlb.delivery_time
                                                                       from blueraven.deal d1
-                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d.id
+                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d2.id
                                                                       where dlb.delivery_time is not null and
                                                                           d1.id = d2.id  )
                  else null end,
             case when p.custom_field_group_assignment_id = 1032 then (select dlb.note
                                                                       from blueraven.deal d1
-                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d.id
+                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d2.id
                                                                       where dlb.note is not null and
                                                                               d1.id = d2.id  )
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18398,19 +18051,19 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 1028 then (select dlb.delivery_time
                                                                       from blueraven.deal d1
-                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d.id
+                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d2.id
                                                                       where dlb.delivery_time is not null and
-                                                                              d1.id = d2.id  )
+                                                                              d1.id = d2.id limit 1 )
                  else null end,
             case when p.custom_field_group_assignment_id = 1032 then (select dlb.note
                                                                       from blueraven.deal d1
-                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d.id
+                                                                               inner join blueraven.design_log_bom dlb on dlb.deal_id = d2.id
                                                                       where dlb.note is not null and
-                                                                              d1.id = d2.id  )
+                                                                              d1.id = d2.id limit 1 )
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18422,9 +18075,7 @@ with active_step as (
         (SELECT p.id,
                 222,
                 (SELECT id FROM flow.company_process_step_status_type
-                 WHERE case when d.cancelled_date is null then
-                                    process_step_status_type = 'Active' else
-                                    process_step_status_type = 'Cancelled' end
+                 WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18459,9 +18110,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                      where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
                                                                        and up.primary_flag is true and up.position_id in (7,16)
                                                                        and dce.deal_id = d2.id and
-                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else 1=1 end) limit 1)
-                 when p.custom_field_group_assignment_id = 921 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                         and name = d2.additional_ahj_inspection_required)
+                                                                         (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else null end) limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -18514,9 +18163,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                       where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
                                                                         and up.primary_flag is true and up.position_id in (7,16)
                                                                         and dce.deal_id = d2.id and
-                                                                          (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else 1=1 end) limit 1)
-                 when p.custom_field_group_assignment_id = 921 then (select id from flow.list_of_value where parent_id = 804
-                                                                                                         and name = d2.additional_ahj_inspection_required)
+                                                                          (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else null end) limit 1)
+
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -18529,9 +18177,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 224,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18554,7 +18200,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18565,9 +18211,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 225,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18591,7 +18235,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18629,7 +18273,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18639,9 +18283,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 226,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18666,7 +18308,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1138 then ((final_documents_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18702,7 +18344,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1138 then ((final_documents_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18712,9 +18354,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 228,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18737,7 +18377,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18772,7 +18412,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18781,16 +18421,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 231,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and permission_to_operate_date is not null and state_id = 13 and srec_part_2_rebate_application_submitted_date is null) returning *),
+         where originator_id = 1 and permission_to_operate_date is not null and d.state_id = 13 and srec_part_2_rebate_application_submitted_date is null) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -18807,7 +18445,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1262 then ((srec_part_2_rebate_application_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18843,7 +18481,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1262 then ((srec_part_2_rebate_application_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18853,9 +18491,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 232,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18880,7 +18516,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1273 then utility_rebate_amount_to_brs::numeric else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18917,7 +18553,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1273 then utility_rebate_amount_to_brs::numeric else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18927,9 +18563,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 233,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -18955,7 +18589,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -18990,7 +18624,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19024,7 +18658,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19057,7 +18691,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19090,7 +18724,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19100,9 +18734,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 234,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -19125,7 +18757,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19160,7 +18792,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19170,9 +18802,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 235,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -19195,7 +18825,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19230,7 +18860,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19240,9 +18870,7 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 236,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
@@ -19265,7 +18893,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19300,7 +18928,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19310,16 +18938,14 @@ with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
         (SELECT project.id,
                 239,
-                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
-                                                                                         process_step_status_type = 'Active' else
-                                                                                         process_step_status_type = 'Cancelled' end
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and in_house_mpu_date >= (now() AT TIME ZONE 'US/Mountin') :: DATE) returning *),
+         where originator_id = 1 and in_house_mpu_date >= (now() AT TIME ZONE 'US/Mountain') :: DATE) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -19335,7 +18961,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -19353,7 +18979,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where in_house_mpu_date < (now() AT TIME ZONE 'US/Mountin') :: DATE
+         where in_house_mpu_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
            and originator_id = 1)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -19370,7 +18996,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
+
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );

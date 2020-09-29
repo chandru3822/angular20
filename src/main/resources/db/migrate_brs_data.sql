@@ -2285,7 +2285,7 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
-insert into flow.company_user_status(user_id, company_user_status_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
     (select u.id,ust.id,false,now(),now(),2350555,2350555
      from blueraven.user u
               inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
@@ -2467,6 +2467,7 @@ SELECT setval('flow.associated_org_id_seq', COALESCE((SELECT MAX(id) + 1 FROM fl
 
 
 delete from flow.attachment_source where id = 1;
+delete from flow.attachment_source where id = 2;
 
 
 insert into flow.attachment_source(id,attachment_id,source_id)
@@ -8217,9 +8218,10 @@ INSERT INTO flow.project (id,
                 else
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
                      end ,
-            now(),
+            added_on,
             case when current_stage_id in (2,3) then (select id from flow.company_project_status_type where project_status_type = 'Cancelled' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
                  when current_stage_id not in (2,3) and on_hold_date is not null then (select id from flow.company_project_status_type where project_status_type = 'On Hold' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
+                 when financier != '["One Roof Energy"]' then (select id from flow.company_project_status_type where project_status_type = 'Complete' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
                  else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) end
 
      FROM blueraven.deal where deal.customer_id IS NOT NULl
