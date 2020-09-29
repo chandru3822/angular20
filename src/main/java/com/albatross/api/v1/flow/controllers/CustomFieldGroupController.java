@@ -108,18 +108,18 @@ public class CustomFieldGroupController {
   }
 
   @GetMapping(value = "/getContactInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getContactInsertFields () {
-    return customFieldGroupService.getInsertFieldsByType(ObjectType.CONTACT.id);
+  public List<CustomFieldGroup> getContactInsertFields (@RequestParam(required = false) Long companyId) {
+    return customFieldGroupService.getInsertFieldsByType(companyId, ObjectType.CONTACT.id);
   }
 
   @GetMapping(value = "/getUserInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> getUserInsertFields () {
-    return customFieldGroupService.getInsertFieldsByType(ObjectType.USER.id);
+    return customFieldGroupService.getInsertFieldsByType(null, ObjectType.USER.id);
   }
 
   @GetMapping(value = "/getOrgInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> getOrgInsertFields () {
-    return customFieldGroupService.getInsertFieldsByType(ObjectType.ORGANIZATION.id);
+    return customFieldGroupService.getInsertFieldsByType(null, ObjectType.ORGANIZATION.id);
   }
 
   @PutMapping(value = "/updateFieldShowOnInsert", produces = MediaType.APPLICATION_JSON_VALUE)

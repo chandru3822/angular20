@@ -287,10 +287,10 @@ public class CustomFieldGroupService {
     }
   }
 
-  public List<CustomFieldGroup> getInsertFieldsByType(Long objectTypeId) {
+  public List<CustomFieldGroup> getInsertFieldsByType(Long companyId, Long objectTypeId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", null != companyId ? companyId : user.getCompanyId());
     params.put("objectTypeId", objectTypeId);
 
     List<CustomFieldGroup> results = sqlCache.query("customFieldGroup.getInsertFieldsByType", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));

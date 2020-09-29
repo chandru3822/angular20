@@ -188,6 +188,7 @@
   <org.getOrgCalendarsForUser><![CDATA[
       select uoa.id,
              o.org_name,
+             o.id as org_id,
              uoa.user_id,
              uoa.org_id,
              uoa.archived

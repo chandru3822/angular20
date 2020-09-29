@@ -1,225 +1,59 @@
 <template>
-  <div id="portal" v-if="loadComplete">
-    <v-row>
-      <v-col cols="12" class="pt-0">
-        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
-        <!--non-mobile header...is this necessary?-->
-<!--        <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="33">-->
-<!--          <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>-->
-<!--          <v-spacer class="ml-5"></v-spacer>-->
-<!--          <v-toolbar-items>-->
-<!--            <AccountMenu :showImage="true"></AccountMenu>-->
-<!--          </v-toolbar-items>-->
-<!--          <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">-->
-<!--            <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">-->
-<!--              {{tab.label}}-->
-<!--            </v-tab>-->
-<!--          </v-tabs>-->
-<!--        </v-app-bar>-->
-        <v-app-bar dense id="header" :color="headerColor" tabs dark>
-          <v-menu data-app left
-                  offset-y
-                  v-model="menuOpen"
-                  class="account-menu"
-                  :close-on-content-click="false">
-            <template v-slot:activator="{ on }">
-              <v-btn icon v-on="on" :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
-                <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
-                <v-icon v-else>mdi-office-building</v-icon>
-              </v-btn>
-            </template>
-            <v-list v-if="companies.length > 1">
-              <v-list-item v-for="(item, index) in companies" :key="index"
-                           :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
-                           @click="[menuOpen = false, changeContext(item.id)]">
-                <v-list-item-title>{{item.companyName}}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-          <v-tabs :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
-            <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
-              {{tab.label}}
-            </v-tab>
-          </v-tabs>
-          <v-spacer class="ml-5"></v-spacer>
-          <v-toolbar-items v-if="companyTools.length > 0">
-            <CompanyTools :company-tools="companyTools"/>
-          </v-toolbar-items>
-          <v-spacer class="ml-5"></v-spacer>
-          <v-toolbar-items>
-            <AccountMenu :showImage="true"></AccountMenu>
-          </v-toolbar-items>
-        </v-app-bar>
-        <v-content>
-          <v-container class="router-container">
-            <router-view class="router-view" />
-          </v-container>
-        </v-content>
+  <v-container class="home-page">
+    <v-row class="height-one-hunned">
+      <v-col cols="12" class="home-background">
+        <v-card color="white" class="home-card">
+          This is a home page. Content in progress...
+        </v-card>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
-  </div>
+  </v-container>
 </template>
 
 <script>
-import {AppMutations} from '@/stores/AppStore'
-import { UserActions } from '@/stores/UserStore'
-import { getRequest, getSnackbar } from '@/helpers/helpers'
-import Spinner from '@/components/Spinner.vue'
-import AccountMenu from '@/components/AccountMenu.vue'
-import CompanyTools from '@/components/CompanyTools.vue'
-import Snackbar from '@/components/Snackbar.vue'
 
-const { VUE_APP_ENV } = process.env
-//@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
+import {AppMutations} from "@/stores/AppStore";
 
 export default {
   name: 'home',
-  components: {
-    Snackbar,
-    Spinner,
-    AccountMenu,
-    CompanyTools,
-  },
+  components: {},
   data () {
     return {
       snackbar: {},
-      appLoading: this.$store.state.app.loading,
-      loadComplete: false,
-      companyName: this.$store.state.user.details.companyName,
-      selectedCompany: {},
-      menuOpen: false,
-      companies: [],
-      companyTools: [],
-      model: '',
-      headerColor: VUE_APP_ENV === 'local' ? 'pink' :
-                   VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
-                   VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
-      tabs: [ {
-        label: 'Contacts',
-        path: '/contacts',
-          display: this.$store.getters.userHasFeature('CONTACTS')
-      }, {
-        label: 'Projects',
-        path: '/projects',
-        display: this.$store.getters.userHasFeature('PROJECTS')
-      },
-        {
-        label: 'Schedule',
-        path: '/schedule',
-        display: this.$store.getters.userHasFeature('SCHEDULE')
-      },
-        {
-        label: 'Work Queue',
-        path: '/workQueue',
-        display: this.$store.getters.userHasFeature('WORK_QUEUE')
-      }, {
-        label: 'Smartlists',
-        path: '/smartlist',
-        display: this.$store.getters.userHasFeature('SMARTLIST')
-      }]
     }
   },
   created () {
-		this.loadComplete = true
-    this.getCompanies()
-    this.getCompanyTools()
+    //on context switching had to turn of the spinner
+    this.$store.commit(AppMutations.SET_LOADING, false)
 	},
-  computed: {
-    displayedTabs () {
-      return this.tabs.filter(tab => tab.display)
-    },
-  },
+  computed: {},
   methods: {
-    async changeContext (companyId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      const params = {
-        companyId,
-        isAdmin: this.$store.getters.isFullAdmin
-      }
-      await this.$store.dispatch(UserActions.CHANGE_CONTEXT, params )
-    },
-    async getCompanies () {
-      // get the companies that a user has access to
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let url
-        if(this.$store.getters.isFullAdmin) {
-          url = `/companies`
-        } else {
-          url = `/companies/assignedToUser`
-        }
-        const {data} = await getRequest(url)
-        this.companies = data
-        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user.details.companyId)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyTools () {
-          // get the company tools then filter the ones the user has access to
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-              const {data} = await getRequest(`/feature/companyTools`)
-              this.companyTools = data.filter(d => {
-                return this.$store.getters.userHasFeature(d.featureCode)
-              })
-              this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-              console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
-              this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-      },
+
   }
 }
 </script>
 
 <style lang="scss">
-  #portal .v-slide-group__prev {
-    display: none !important;
-  }
 </style>
 
 <style scoped lang="scss">
+.home-page {
+  height: 100%;
+  padding-top: 0;
+}
 
-
-#portal {
-  font-family: 'Lato', sans-serif;
-  letter-spacing: .4px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.home-card {
+  height: 200px;
+  width: 50%;
+  margin: 50px auto;
   text-align: center;
-  background-color: var(--v-secondaryCustom-base);
-  min-height: 100vh;
-  .app-title {
-    font-size: 25px;
-    margin-top: 7px;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#header {
-  /* @randa
-  /* todo: look into this, vuetify 2.0.17 had overhanging tabs without this line*!*/
-  height: unset !important;
-}
-
-.header-logo {
-  max-height: 45px;
-  max-width: 45px;
-}
-
-@media (min-width: 769px) {
-  #portal{
-    .app-title {
-      font-size: 35px;
-    }
-  }
-  #header {
-    padding: 0 10px;
-  }
+.home-background {
+  background-image: url('data:image/png;base64,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');
+  background-repeat: repeat;
 }
 </style>
