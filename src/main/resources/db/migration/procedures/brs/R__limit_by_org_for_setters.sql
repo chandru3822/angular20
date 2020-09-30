@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION brs.limit_by_org_for_setters(p_user_ids integer[], p_
     LANGUAGE plpgsql
 AS $function$
     BEGIN
-        select array(
+        RETURN (select array(
             select up.user_id
             from flow.user_position up
             where up.position_id = 4
@@ -13,6 +13,6 @@ AS $function$
                     p_date_created between up.start_date and up.end_date
                     else p_date_created >= up.start_date
                     end
-        );
+        ));
     END
 $function$
