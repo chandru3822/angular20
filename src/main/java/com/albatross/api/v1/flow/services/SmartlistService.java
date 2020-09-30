@@ -272,6 +272,9 @@ public class SmartlistService {
 
               f.setReferenceTable(uuid);
           }
+      } else if (f.getJoinTable() != null && f.getJoinColumn() != null) {
+        f.setValueReferenceTable(UUID.randomUUID().toString());
+        joinTables.add(f);
       }
 
       String location;
@@ -290,7 +293,7 @@ public class SmartlistService {
         if (smartlist.getObjectTypeId() == 4) {
           location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
         } else {
-          if (f.getCustomFieldGroupAssignmentId() != null || f.getProcessStepId() != null) {
+          if (f.getCustomFieldGroupAssignmentId() != null || f.getProcessStepId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null)) {
             final String table = (f.getJoinTable() != null && f.getJoinColumn() != null) ? f.getValueReferenceTable() : f.getReferenceTable();
             location = String.format("\"%s\".%s", table, f.getReferenceColumn());
           } else {
@@ -364,7 +367,7 @@ public class SmartlistService {
 
       switch (objectTypeId.intValue()) {
         case 1:
-          if (hasListValues || customFieldSqlKey != null) {
+          if ((hasListValues != null && hasListValues) || customFieldSqlKey != null) {
 
             final String pcfvUUID = UUID.randomUUID().toString();
             query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), pcfvUUID, pcfvUUID, pcfvUUID, cfgaId));
@@ -376,11 +379,15 @@ public class SmartlistService {
               query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, pcfvUUID));
             }
           } else {
-            query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+            if (f.getJoinTable() != null && f.getJoinColumn() != null) {
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", f.getReferenceTable(), uuid, uuid, f.getJoinTable(), f.getJoinColumn()));
+            } else {
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+            }
           }
           break;
         case 2:
-          if (hasListValues || customFieldSqlKey != null) {
+          if ((hasListValues != null && hasListValues)  || customFieldSqlKey != null) {
 
             final String ccfvUUID = UUID.randomUUID().toString();
             query.append(String.format("\nleft join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ccfvUUID, ccfvUUID, ccfvUUID, cfgaId));
@@ -391,7 +398,11 @@ public class SmartlistService {
               query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ccfvUUID));
             }
           } else {
-            query.append(String.format("\nleft join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+            if (f.getJoinTable() != null && f.getJoinColumn() != null) {
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", f.getReferenceTable(), uuid, uuid, f.getJoinTable(), f.getJoinColumn()));
+            } else {
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+            }
           }
           break;
         case 4:
@@ -518,8 +529,21 @@ public class SmartlistService {
                     additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , r.getReferenceTable(), referenceUuid, referenceUuid, joinUuid, r.getJoinColumn()));
                     referenceLocation = String.format("\"%s\".id", referenceUuid);
                   } else {
-//                  additionalJoins.append(String.format(" "));
-//                  referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+
+                    // see if table we need is already been joined, if so use it
+                    final String table = joinTables.stream()
+                      .filter(t -> (t.getJoinTable() != null && t.getJoinColumn() != null) && t.getJoinTable().equals(r.getJoinTable()) && t.getJoinColumn().equals(r.getJoinColumn()))
+                      .map(SmartlistFieldAssignment::getValueReferenceTable)
+                      .findFirst()
+                      .orElse(null);
+
+                    if (table != null) {
+                      referenceLocation = "\"" + table + "\".id";
+                    } else {
+                      final String referenceUuid = UUID.randomUUID().toString();
+                      additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", r.getReferenceTable(), referenceUuid, referenceUuid, r.getJoinTable(), r.getJoinColumn()));
+                      referenceLocation = String.format("\"%s\".id", referenceUuid);
+                    }
                   }
                 }
               } else {
