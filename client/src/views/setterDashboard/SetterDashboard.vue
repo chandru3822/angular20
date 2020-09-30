@@ -426,7 +426,7 @@
                 </span>
               </template>
               <template v-if="districtData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllDistricts()">
+                <v-list-item @click="toggleSelectAllDistricts">
                   <v-list-item-action>
                     <v-icon>{{ districtSelectIcon }}</v-icon>
                   </v-list-item-action>
@@ -467,7 +467,7 @@
                 </span>
               </template>
               <template v-if="regionData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllRegions()">
+                <v-list-item @click="toggleSelectAllRegions">
                   <v-list-item-action>
                     <v-icon>{{ regionSelectIcon }}</v-icon>
                   </v-list-item-action>
@@ -508,7 +508,7 @@
                 </span>
               </template>
               <template v-if="officeData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllOffices()">
+                <v-list-item @click="toggleSelectAllOffices">
                   <v-list-item-action>
                     <v-icon>{{ officeSelectIcon }}</v-icon>
                   </v-list-item-action>
@@ -549,7 +549,7 @@
                 </span>
               </template>
               <template v-if="repData.length > 0" v-slot:prepend-item>
-                <v-list-item @click="toggleSelectAllReps()">
+                <v-list-item @click="toggleSelectAllReps">
                   <v-list-item-action>
                     <v-icon>{{ repSelectIcon }}</v-icon>
                   </v-list-item-action>

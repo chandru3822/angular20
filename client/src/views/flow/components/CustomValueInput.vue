@@ -168,7 +168,7 @@ export default {
   },
   data () {
     return {
-      timezone: this.$store.state.user.details.timezone.value
+      timezone: this.$store.state.user.details?.timezone?.value
     }
   }
 }
