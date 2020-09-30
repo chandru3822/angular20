@@ -12,63 +12,6 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-toolbar color="white" class="elevation-1 mt-3">
-          <v-text-field
-              class="mt-5"
-              prepend-inner-icon="search"
-              text
-              label="Search orgs..."
-              v-model="search"
-              @input="debounceGetOrgs"
-          ></v-text-field>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-<!--            <v-btn text v-if="totalOrgs <= 100000" @click="exportOrgs">Export</v-btn>-->
-<!--            <v-dialog-->
-<!--                v-model="dialog"-->
-<!--                width="500"-->
-<!--                v-else-->
-<!--            >-->
-<!--              <template v-slot:activator="{ on }">-->
-<!--                <v-btn text v-on="on">-->
-<!--                  Export-->
-<!--                </v-btn>-->
-<!--              </template>-->
-
-<!--              <v-card>-->
-<!--                <v-card-title>-->
-<!--                  Export-->
-<!--                </v-card-title>-->
-
-<!--                <v-card-text>-->
-<!--                  You are attempting to export {{totalOrgs | currency('', 0)}} results.-->
-<!--                  This can take 1-2 minutes.-->
-<!--                  We recommend that you cancel and filter the result set before exporting.-->
-<!--                </v-card-text>-->
-
-<!--                <v-divider></v-divider>-->
-
-<!--                <v-card-actions>-->
-<!--                  <div class="flex-grow-1"></div>-->
-<!--                  <v-btn-->
-<!--                      color="grey"-->
-<!--                      text-->
-<!--                      @click="dialog = false"-->
-<!--                  >-->
-<!--                    Cancel-->
-<!--                  </v-btn>-->
-<!--                  <v-btn-->
-<!--                      color="primary"-->
-<!--                      text-->
-<!--                      @click="exportOrgs"-->
-<!--                  >-->
-<!--                    Continue Anyway-->
-<!--                  </v-btn>-->
-<!--                </v-card-actions>-->
-<!--              </v-card>-->
-<!--            </v-dialog>-->
-          </v-toolbar-items>
-        </v-toolbar>
         <v-data-table
             :headers="headers"
             :items="orgs"
@@ -78,7 +21,6 @@
             :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
-            :server-items-length="totalOrgs"
             class="elevation-1 fix-column-width-bug org-table"
         >
           <template #no-data>
@@ -87,6 +29,30 @@
 
           <template #no-results>
             No available organizations
+          </template>
+
+          <template v-slot:body.prepend>
+            <tr>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.org"
+                              placeholder="Organization"></v-text-field>
+              </td>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.type"
+                              placeholder="Type"></v-text-field>
+              </td>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.parent"
+                              placeholder="Parent"></v-text-field>
+              </td>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.active" placeholder="Active"></v-text-field>
+              </td>
+            </tr>
           </template>
 
           <template #item="{ item, index }">
@@ -109,8 +75,6 @@
   import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Snackbar from '@/components/Snackbar.vue'
-  import debounce from 'lodash.debounce'
-  import { saveAs } from 'file-saver'
 
   export default {
     name: 'Orgs',
@@ -126,10 +90,40 @@
         orgs: [],
         orgFilter: this.$route.params.orgFilter ? this.$route.params.orgFilter : '',
         headers: [
-          { text: 'Organization', value: 'orgName', show: true },
-          { text: 'Type', value: 'orgType', show: true },
-          { text: 'Parent', value: 'parentOrgName', show: true },
-          { text: 'Active', value: 'activeFlag', show: true}
+          { text: 'Organization', value: 'orgName', show: true,
+            filter: value => {
+              if (!this.search.org) {
+                return true
+              } else {
+                return value.toLowerCase().includes(this.search.org.toLowerCase())
+              }
+            }
+          },
+          { text: 'Type', value: 'orgType', show: true,
+            filter: value => {
+              if (!this.search.type) {
+                return true
+              } else {
+                return value.toLowerCase().includes(this.search.type.toLowerCase())
+              }
+            }},
+          { text: 'Parent', value: 'parentOrgName', show: true,
+            filter: value => {
+              if (!this.search.parent) {
+                return true
+              } else {
+                return value && value.toLowerCase().includes(this.search.parent.toLowerCase())
+              }
+            }},
+          { text: 'Active', value: 'activeFlag', show: true,
+            filter: value => {
+              if (!this.search.active) {
+                return true
+              } else {
+                let stringValue = value ? 'Yes' : 'No'
+                return stringValue.toLowerCase().includes(this.search.active.toLowerCase())
+              }
+            }}
         ],
         descending: true,
         footerProps: {
@@ -141,7 +135,12 @@
         },
         totalOrgs: 0,
         dataLoading: true,
-        search: ''
+        search: {
+          org: '',
+          type: '',
+          parent: '',
+          active: ''
+        }
       }
     },
     computed: {},
@@ -157,21 +156,17 @@
       clickRow(id){
         this.$router.push({name: 'org', params: {id}})
       },
-      debounceGetOrgs: debounce( function () {
-        this.dataLoading = true
-        this.getOrgs()
-      }, 500),
+      filterResults(value, search, item) {
+        console.log('we got here', value)
+        console.log('we got here', search)
+        console.log('we got here', item)
+      },
       async getOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequestWithParams(`/org/search`, { params: {
-              query: this.search,
-              page: page - 1,
-              size: itemsPerPage
-            }})
-          this.orgs = data.content
-          this.totalOrgs = data.totalElements
+          const {data} = await getRequestWithParams(`/org`)
+          this.orgs = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -179,25 +174,7 @@
           this.snackbar = getSnackbar('ERROR', 'Error Loading Organizations')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      // async exportOrgs () {
-      //   this.dialog = false
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     const {data} = await getRequestWithParams(`/org/exportOrgs`, { params: {
-      //         query: this.search
-      //       }})
-      //     let blob = new Blob([data], {
-      //       type: 'text/csv;charset=utf-8'
-      //     });
-      //     saveAs(blob, "organizations.csv");
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Exporting Organizations')
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // }
+      }
     },
     async created () {
       if (this.orgFilter) {

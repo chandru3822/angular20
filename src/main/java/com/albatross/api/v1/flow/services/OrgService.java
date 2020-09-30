@@ -11,10 +11,6 @@ import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -71,21 +67,6 @@ public class OrgService {
     params.put("typeId", typeId);
     List<Org> results = sqlCache.query("org.getOrgsByType", params, Org.class);
     return results;
-  }
-
-  public Page<Org> searchOrgs(String query, Pageable pageable) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("query", query);
-    params.put("limit", pageable.getPageSize());
-    params.put("offset", pageable.getOffset());
-
-    List<Org> results = sqlCache.query("org.searchOrgs", params, Org.class);
-    Integer count = sqlCache.queryForObject("org.searchOrgCount", params, Integer.class);
-
-    Page<Org> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
   }
 
   public ResponseEntity exportOrgs(String query) {

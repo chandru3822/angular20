@@ -36,7 +36,7 @@
               and case when :unassigned is true then pps.user_position_id is null
                        when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
               and cpsst.process_step_status_type_id in (1)
-              and array [p.company_project_status_type_id] <@ s.company_project_status_type_ids
+              and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
            ) as work_queue_count
     from flow.work_queue_type wqt
              inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
@@ -120,7 +120,7 @@
                 else ps.company_id = :companyId end
 
         and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
-        and array [p.company_project_status_type_id] <@ s.company_project_status_type_ids
+        and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
       limit :limit
       offset :offset
   ]]></workQueue.getProcessStepsByTypeId>
@@ -162,7 +162,7 @@
           else ps.company_id = :companyId end
 
     and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
-    and array [p.company_project_status_type_id] <@ s.company_project_status_type_ids
+    and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
   ]]></workQueue.getProcessStepsByTypeIdCount>
 
   <workQueue.getWorkQueueOwners><![CDATA[

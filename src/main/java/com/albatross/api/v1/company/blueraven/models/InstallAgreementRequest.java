@@ -7,10 +7,10 @@ import java.util.HashMap;
 
 @Data
 public class InstallAgreementRequest {
-  private Long project_id;
-  private String customer_name;
+  private Long projectId;
+  private String customerName;
   private String owner_name;
-  private Long proposal_nbr;
+  private Long proposalNbr;
   private Long proposal_nbr_id;
   private String product;
   private String financier;
@@ -20,17 +20,17 @@ public class InstallAgreementRequest {
   private Long created_by_user_id;
   private String project_props_owner;
   private Long statusId;
-  private Boolean send_installation_agreement;
-  private Boolean send_loanpal_docs;
+  private Boolean sendInstallationAgreement;
+  private Boolean sendLoanpalDocs;
   private Boolean isSpanish;
   private Boolean request_successful;
 
   public HashMap<String, Object> toHashMap() {
     HashMap<String, Object> data = new HashMap<>();
-    data.put("project_id", project_id);
-    data.put("customer_name", customer_name);
+    data.put("projectId", projectId);
+    data.put("customer_name", customerName);
     data.put("owner_name", owner_name);
-    data.put("proposal_nbr", proposal_nbr);
+    data.put("proposalNbr", proposalNbr);
     data.put("proposal_nbr_id", proposal_nbr_id);
     data.put("product", product);
     data.put("financier", financier);
@@ -46,10 +46,10 @@ public class InstallAgreementRequest {
   }
 
   public void validateNewRequest() throws Exception {
-    if (project_id == null) {
+    if (projectId == null) {
       throw new Exception("invalid Project ID");
     }
-    if (proposal_nbr == null || proposal_nbr < 1) {
+    if (proposalNbr == null || proposalNbr < 1) {
       throw new Exception("invalid proposal number");
     }
   }

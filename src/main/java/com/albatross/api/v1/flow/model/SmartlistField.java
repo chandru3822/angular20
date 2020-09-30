@@ -13,7 +13,7 @@ public class SmartlistField {
   private Long id, companyObjectTypeId, dataTypeId, createdById, modifiedById;
 
   @JsonIgnore
-  private String referenceTable, referenceColumn;
+  private String referenceTable, referenceColumn, joinTable, joinColumn;
 
   private String name, objectType;
 

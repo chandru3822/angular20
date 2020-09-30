@@ -86,7 +86,7 @@
                 <td class="text-right">
                   <div class="item-icons">
                     <v-btn class="clickable" small text
-                           @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
+                           @click="[expanded.includes(item) ? expanded = [] : expanded = [item], item.newFieldName = item.fieldName, selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
                       <v-icon v-if="expanded.includes(item)">remove</v-icon>
                       <v-icon v-else-if="item.custom">add</v-icon>
                       <v-icon v-else>edit</v-icon>
@@ -144,7 +144,7 @@
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         tabindex=1
-                        v-model="item.fieldName"
+                        v-model="item.newFieldName"
                     ></v-text-field>
                     <div class="text-left read-only-label">
                       <label>Read-only:</label>
@@ -494,6 +494,7 @@
             })
           }
 
+          object.fieldName = object.newFieldName ?? object.fieldName
           const {data} = await postRequest(`/customField`, object)
           data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
           this.$set(object, 'listOfValues', data.listOfValues)

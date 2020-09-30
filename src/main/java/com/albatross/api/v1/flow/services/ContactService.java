@@ -103,7 +103,7 @@ public class ContactService {
     params.put("phone", contact.getPhone());
     params.put("email", contact.getEmail());
     params.put("mobile", contact.getMobile());
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", null != contact.getCompanyId() ? contact.getCompanyId() : currentUser.getCompanyId());
 
     Long id;
 

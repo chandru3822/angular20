@@ -1,10 +1,10 @@
-import {postRequest} from "@/helpers/helpers";
+import {postRequest} from "@/helpers/helpers"
 
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
   CHANGE_CONTEXT: 'changeContext',
   LOGOUT: 'logout',
-  CHANGE_TIMEZONE: 'changeTimezone'
+  CHANGE_TIMEZONE: 'changeTimezone',
 }
 
 export const UserMutations = {
@@ -14,6 +14,7 @@ export const UserMutations = {
   INIT: 'storeInt',
   SET_DETAILS: 'setDetails',
   SET_USER_IMAGE: 'setUserImage',
+  SET_COMPANIES: 'setCompanies'
 }
 
 export const UserStore = {
@@ -29,6 +30,7 @@ export const UserStore = {
     [UserMutations.LOGIN_ERROR]: (state, err) => (state.loginError = err),
     [UserMutations.SET_DETAILS]: (state, details) => (state.details = details),
     [UserMutations.SET_USER_IMAGE]: (state, image) => (state.userImage = image),
+    [UserMutations.SET_COMPANIES]: (state, companies) => (state.companies = companies),
   },
   actions: {
     [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {
@@ -50,15 +52,15 @@ export const UserStore = {
         )
       }
     },
-    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, params) => {
+    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters, state }, params) => {
       //change context
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
       //update vuex store - user details
       commit(UserMutations.SET_DETAILS, data)
 
-      //refresh entire app
-      window.location.reload()
+      //refresh entire app and go to home screen
+      window.location.href = '/'
     },
     [UserActions.LOGOUT]: () => {
       localStorage.removeItem('store')
@@ -80,6 +82,7 @@ export const UserStore = {
       return state.details.highestCompanyId === 1
     },
     isParent: state => parentId => {
+      // is albatross or parentId is null
       return parentId === 1 || parentId == null
     },
     isCompanyRoot: state => companyId => {

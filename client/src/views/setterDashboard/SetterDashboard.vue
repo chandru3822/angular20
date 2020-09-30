@@ -419,22 +419,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="regionLoad(false)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllDistricts(true)">
+                      @input="regionLoad(false)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ districtModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="districtData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllDistricts">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ districtSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllDistricts(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -449,9 +446,6 @@
                     {{ data.item.org_name }}
                   </v-list-item-title>
                 </v-list-item-content>
-              </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ districtModel.length }} Checked</span>
               </template>
             </v-select>
 
@@ -466,22 +460,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="officeLoad(false)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllRegions(true)">
+                      @input="officeLoad(false)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ regionModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="regionData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllRegions">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ regionSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllRegions(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -496,9 +487,6 @@
                     {{ data.item.org_name }}
                   </v-list-item-title>
                 </v-list-item-content>
-              </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ regionModel.length }} Checked</span>
               </template>
             </v-select>
 
@@ -513,22 +501,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="repLoad(false)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllOffices(true)">
+                      @input="repLoad(false)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ officeModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="officeData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllOffices">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ officeSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllOffices(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -544,9 +529,6 @@
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ officeModel.length }} Checked</span>
-              </template>
             </v-select>
 
             <v-select class="pipeline-dropdown"
@@ -560,22 +542,19 @@
                       multiple
                       dense
                       return-object
-                      @blur="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2)">
-              <template v-slot:prepend-item>
-                <v-list-item @click="toggleAllReps(true)">
+                      @input="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2)">
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">
+                  {{ repModel.length }} Checked
+                </span>
+              </template>
+              <template v-if="repData.length > 0" v-slot:prepend-item>
+                <v-list-item @click="toggleSelectAllReps">
                   <v-list-item-action>
-                    <v-icon>check</v-icon>
+                    <v-icon>{{ repSelectIcon }}</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Check All</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="toggleAllReps(false)">
-                  <v-list-item-action>
-                    <v-icon>clear</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-title>Uncheck All</v-list-item-title>
+                    <v-list-item-title>Select All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
@@ -590,9 +569,6 @@
                     {{ data.item.name }}
                   </v-list-item-title>
                 </v-list-item-content>
-              </template>
-              <template v-slot:selection="{ item, index }">
-                <span v-if="index === 0" class="grey--text caption">{{ repModel.length }} Checked</span>
               </template>
             </v-select>
 
@@ -676,8 +652,8 @@
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
 
             <!-- TODAY COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, 'today', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'today', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.countTodayState}"
                      :title="line.todayHover">
@@ -689,13 +665,17 @@
                   {{line.percentToday}}
                 </div>
 
-                <div :class="line.percentTodayState + '_arrow'" class="funnel-arrow"></div>
+                <v-icon v-show="line.percentToday !== '0%'" :color="line.percentTodayState"
+                        :style="{'transform': line.percentTodayState === 'green' ? 'none' : 'rotateX(180deg)'}"
+                        class="funnel-arrow">
+                  mdi-triangle
+                </v-icon>
               </div>
             </td>
 
             <!-- LAST 7 DAYS COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, '7days', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, '7days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count7state}"
                      :title="line.sevenDayHover">
@@ -707,13 +687,17 @@
                   {{line.percent7}}
                 </div>
 
-                <div :class="line.percent7state + '_arrow'" class="funnel-arrow"></div>
+                <v-icon v-show="line.percent7 !== '0%'" :color="line.percent7state"
+                        :style="{'transform': line.percent7state === 'green' ? 'none' : 'rotateX(180deg)'}"
+                        class="funnel-arrow">
+                  mdi-triangle
+                </v-icon>
               </div>
             </td>
 
             <!-- LAST 30 DAYS COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, '30days', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, '30days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.thirtyDayHover">
@@ -725,39 +709,20 @@
                   {{line.percent30}}
                 </div>
 
-                <div :class="line.percent30state + '_arrow'" class="funnel-arrow"></div>
+                <v-icon v-show="line.percent30 !== '0%'" :color="line.percent30state"
+                        :style="{'transform': line.percent30state === 'green' ? 'none' : 'rotateX(180deg)'}"
+                        class="funnel-arrow">
+                  mdi-triangle
+                </v-icon>
               </div>
             </td>
 
             <!-- CUSTOM DATE RANGE COUNT -->
-            <td v-show="!showCustomPercentage"
-                class="funnel-td"
-                :style="{color: line.customCountState}"
-                style="width:15%; cursor: pointer"
+            <td class="funnel-td"
+                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
                 :title="line.customDayHover"
-                @click="funnelDrilldown(line.id, 'custom', line.name)">
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
               {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
-            </td>
-
-            <td v-show="showCustomPercentage"
-                class="funnel-td"
-                :style="{color: line.customCountState}"
-                style="width: 15%; cursor: pointer"
-                @click="funnelDrilldown(line.id, 'custom', line.name)">
-              <div>
-                <div class="funnel-count" :style="{color: line.count30state}"
-                     :title="line.customDayHover">
-                  {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
-                </div>
-
-                <div class="funnel-percentage" :style="{color: line.percentCustomState}"
-                     :title="line.percentCustomHover">
-                  {{line.percentCustom}}
-                </div>
-
-                <div :class="line.percentCustomState + '_arrow'" class="funnel-arrow"
-                     :title="line.percentCustomHover"></div>
-              </div>
             </td>
           </tr>
         </table>
@@ -801,12 +766,15 @@
             multi-sort
             :sort-by="[]"
             :sort-desc="[]"
-            hide-default-footer
-            disable-pagination
+            :loading="funnelDrilldownLoading"
+            :items-per-page="500"
+            :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td style="text-align: center">{{ index + 1 }}</td>
+                <td style="text-align: center">
+                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
+                </td>
                 <td>{{ item.setter_name ? item.setter_name : '' }}</td>
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
@@ -927,16 +895,12 @@
       numOffices: 0,
       districtModel: [],
       districtData: [],
-      checkAllDistricts: false,
       regionModel: [],
       regionData: [],
-      checkAllRegions: false,
       officeModel: [],
       officeData: [],
-      checkAllOffices: false,
       repModel: [],
       repData: [],
-      checkAllReps: false,
       pipelineDateRanges: [
         {
           label: 'Yesterday',
@@ -988,7 +952,6 @@
       pipeline_dt2: moment().format('YYYY-MM-DD'),
       pipeline_dt2_formatted: moment().format('M/D/YY'),
       pipeline_menu2: false,
-      showCustomPercentage: false,
       expectedInstalls: 1,
       expectationTimeout: 0,
       funnelStats: [],
@@ -1008,9 +971,17 @@
         { text: 'Office', value: 'office', show: true, width: 90 }
       ],
       funnelDrilldownData: [],
+      funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
-      funnelDrilldownRowCount: 0
+      funnelDrilldownRowCount: 0,
+      footerProps: {
+        showFirstLastPage: !constants.IS_MOBILE,
+        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+        'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
+      }
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -1020,16 +991,65 @@
       milestoneDrilldownTitle () {
         return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Pitches - Q' + this.selectedQuarter
       },
-      allDistrictsSelected () {
+      selectAllDistricts () {
         return this.districtModel.length === this.districtData.length
       },
-      someDistrictsSelected () {
-        return this.districtModel.length > 0 && !this.allDistrictsSelected
+      selectSomeDistricts () {
+        return this.districtModel.length > 0 && !this.selectAllDistricts
       },
-      icon () {
-        if (this.allDistrictsSelected) return 'mdi-close-box'
-        if (this.someDistrictsSelected) return 'mdi-minus-box'
-        return 'mdi-checkbox-blank-outline'
+      districtSelectIcon () {
+        if (this.districtModel.length === this.districtData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeDistricts) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllRegions () {
+        return this.regionModel.length === this.regionData.length
+      },
+      selectSomeRegions () {
+        return this.regionModel.length > 0 && !this.selectAllRegions
+      },
+      regionSelectIcon () {
+        if (this.regionModel.length === this.regionData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeRegions) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllOffices () {
+        return this.officeModel.length === this.officeData.length
+      },
+      selectSomeOffices () {
+        return this.officeModel.length > 0 && !this.selectAllOffices
+      },
+      officeSelectIcon () {
+        if (this.officeModel.length === this.officeData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeOffices) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      selectAllReps () {
+        return this.repModel.length === this.repData.length
+      },
+      selectSomeReps () {
+        return this.repModel.length > 0 && !this.selectAllReps
+      },
+      repSelectIcon () {
+        if (this.repModel.length === this.repData.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeReps) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
       },
       visibleFunnelDrilldownHeaders () {
         return this.funnelDrilldownHeaders.filter(header => header.show === true)
@@ -1618,7 +1638,19 @@
           }
         })
 
-        if (districts?.length === 0) return
+        if (!this.selectAllDistricts) {
+          this.regionModel = []
+          this.regionData = []
+          this.officeModel = []
+          this.officeData = []
+          this.repModel = []
+          this.repData = []
+          this.funnelStats = []
+
+          if (districts?.length === 0) return
+        }
+
+        this.repModel = [] // in case the user previously clicked the 'All Reps' button
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterRegions(this.currentUserId, JSON.stringify(districts)).then(res => {
@@ -1646,7 +1678,15 @@
           }
         })
 
-        if (regions?.length === 0) return
+        if (!this.selectAllRegions) {
+          this.officeModel = []
+          this.officeData = []
+          this.repModel = []
+          this.repData = []
+          this.funnelStats = []
+
+          if (regions?.length === 0) return
+        }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterOffices(this.currentUserId, JSON.stringify(regions)).then(res => {
@@ -1682,7 +1722,13 @@
           }
         })
 
-        if (offices?.length === 0) return
+        if (!this.selectAllOffices) {
+          this.repModel = []
+          this.repData = []
+          this.funnelStats = []
+
+          if (offices?.length === 0) return
+        }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
@@ -1718,6 +1764,10 @@
         return b.diff(a, 'days')
       },
 
+      getCountHover (count, expectation) {
+        return count < expectation ? 'Worse than expectation' : 'Better than expectation'
+      },
+
       getPercentColor (percent) {
         if (percent < 0) return 'red'
         return 'green'
@@ -1725,23 +1775,27 @@
 
       getPercentHover (percent, dayNum) {
         let state = ''
-        if (percent < 0) state = 'worse'
-        else if (percent > 0) state = 'better'
-        else return ''
+        if (percent < 0) {
+          state = 'worse'
+        } else if (percent > 0) {
+          state = 'better'
+        } else {
+          return ''
+        }
+
         let previousTime = 'last ' + dayNum + ' days'
         if (dayNum === 1) {
           previousTime = 'yesterday'
         }
+
         return '% ' + state + ' than ' + previousTime
       },
 
-      getCountHover (count, expectation) {
-        return count < expectation
-          ? 'Worse than Expectation'
-          : 'Better than Expectation'
-      },
-
       funnelAllReps () {
+        this.districtModel = []
+        this.regionModel = []
+        this.officeModel = []
+
         this.repModel = [
           {user_id: -1, name: 'All Reps', active: true}
         ]
@@ -1777,30 +1831,36 @@
 
         try {
           await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
-            for (let i = 0; i < data.length; ++i) {
-              data[i]['countTodayState'] = data[i]['today_day_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['todayHover'] = this.getCountHover(data[i]['today_day_count'], data[i]['expectation'])
-              data[i]['percentToday'] = data[i]['today_percent'] ? data[i]['today_percent'] + '%' : '0%'
-              data[i]['percentTodayState'] = this.getPercentColor(data[i]['today_percent'])
-              data[i]['percent7'] = data[i]['seven_percent'] ? data[i]['seven_percent'] + '%' : '0%'
-              data[i]['percent7state'] = this.getPercentColor(data[i]['seven_percent'])
-              data[i]['count7state'] = data[i]['seven_day_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['sevenDayHover'] = this.getCountHover(data[i]['seven_day_count'], data[i]['expectation'])
-              data[i]['percent30'] = data[i]['thirty_day_percent'] ? data[i]['thirty_day_percent'] + '%' : '0%'
-              data[i]['percent30state'] = this.getPercentColor(data[i]['thirty_day_percent'])
-              data[i]['count30state'] = data[i]['thirty_day_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['thirtyDayHover'] = this.getCountHover(data[i]['thirty_day_count'], data[i]['expectation'])
-              data[i]['customCountState'] = data[i]['custom_date_range_count'] < data[i]['expectation'] ? 'red' : 'green'
-              data[i]['customDayHover'] = this.getCountHover(data[i]['custom_date_range_count'], data[i]['expectation'])
-              data[i]['percent7hover'] = this.getPercentHover(data[i]['seven_percent'], 7)
-              data[i]['percent30hover'] = this.getPercentHover(data[i]['thirty_day_percent'], 30)
-              data[i]['percentTodayHover'] = this.getPercentHover(data[i]['today_percent'], 1)
-              data[i]['expectation'] = this.roundTenth(data[i]['expectation'])
-              data[i]['percentCustomState'] = this.getPercentColor(data[i]['custom_date_range_percent'])
-              data[i]['percentCustomHover'] = this.getPercentHover(data[i]['custom_date_range_percent'], this.daysBetween(start, end))
-              data[i]['percentCustom'] = data[i]['custom_date_range_percent'] ? data[i]['custom_date_range_percent'] + '%' : '0%'
-              data[i]['custom_date_range_count'] = Math.round(data[i]['custom_date_range_count'])
-            }
+            data.forEach(row => {
+              // EXPECTATION column
+              row.expectation = this.roundTenth(row.expectation)
+
+              // TODAY column
+              row.countTodayState = row.today_day_count < row.expectation ? 'red' : 'green'
+              row.todayHover = this.getCountHover(row.today_day_count, row.expectation)
+              row.percentToday = row.today_percent ? row.today_percent + '%' : '0%'
+              row.percentTodayState = this.getPercentColor(row.today_percent)
+              row.percentTodayHover = this.getPercentHover(row.today_percent, 1)
+
+              // LAST 7 DAYS column
+              row.count7state = row.seven_day_count < row.expectation ? 'red' : 'green'
+              row.sevenDayHover = this.getCountHover(row.seven_day_count, row.expectation)
+              row.percent7 = row.seven_percent ? row.seven_percent + '%' : '0%'
+              row.percent7state = this.getPercentColor(row.seven_percent)
+              row.percent7hover = this.getPercentHover(row.seven_percent, 7)
+
+              // LAST 30 DAYS column
+              row.count30state = row.thirty_day_count < row.expectation ? 'red' : 'green'
+              row.thirtyDayHover = this.getCountHover(row.thirty_day_count, row.expectation)
+              row.percent30 = row.thirty_day_percent ? row.thirty_day_percent + '%' : '0%'
+              row.percent30state = this.getPercentColor(row.thirty_day_percent)
+              row.percent30hover = this.getPercentHover(row.thirty_day_percent, 30)
+
+              // CUSTOM DATE RANGE column
+              row.custom_date_range_count = Math.round(row.custom_date_range_count)
+              row.customCountState = row.custom_date_range_count < row.expectation ? 'red' : 'green'
+              row.customDayHover = this.getCountHover(row.custom_date_range_count, row.expectation)
+            })
 
             this.funnelStats = data
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1868,8 +1928,7 @@
         this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
       },
 
-      updatePipelineCalendar (showCustom) {
-        this.showCustomPercentage = showCustom
+      updatePipelineCalendar () {
         this.pipeline_menu1 = false
         this.pipeline_menu2 = false
         this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
@@ -1976,7 +2035,7 @@
       },
 
       loadFunnel () {
-        if(!this.showDashboard && this.funnelStats?.length === 0) {
+        if (!this.showDashboard && this.funnelStats?.length === 0) {
           if (this.isSetter) {
             this.districtLoad(true)
           } else {
@@ -1985,54 +2044,68 @@
         }
       },
 
-      toggleAllDistricts (checkAll) {
-        if (checkAll) {
-          this.districtModel = cloneDeep(this.districtData)
-          this.regionLoad(false)
-        } else {
-          this.districtModel = []
-          this.regionData = []
-          this.regionModel = []
-          this.officeData = []
-          this.officeModel = []
-          this.repData = []
-          this.repModel = []
-        }
+      toggleSelectAllDistricts () {
+        this.$nextTick(() => {
+          if (this.selectAllDistricts) {
+            this.districtModel = []
+            this.regionData = []
+            this.regionModel = []
+            this.officeData = []
+            this.officeModel = []
+            this.repData = []
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.districtModel = cloneDeep(this.districtData)
+            this.repModel = [] // in case the user previously clicked the 'All Reps' button
+            this.regionLoad(false)
+          }
+        })
       },
 
-      toggleAllRegions (checkAll) {
-        if (checkAll) {
-          this.regionModel = cloneDeep(this.regionData)
-          this.officeLoad(false)
-        } else {
-          this.regionModel = []
-          this.officeData = []
-          this.officeModel = []
-          this.repData = []
-          this.repModel = []
-        }
+      toggleSelectAllRegions () {
+        this.$nextTick(() => {
+          if (this.selectAllRegions) {
+            this.regionModel = []
+            this.officeData = []
+            this.officeModel = []
+            this.repData = []
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.regionModel = cloneDeep(this.regionData)
+            this.officeLoad(false)
+          }
+        })
       },
 
-      toggleAllOffices (checkAll) {
-        if (checkAll) {
-          this.officeModel = cloneDeep(this.officeData)
-          this.repLoad(false)
-        } else {
-          this.officeModel = []
-          this.repData = []
-          this.repModel = []
-        }
+      toggleSelectAllOffices () {
+        this.$nextTick(() => {
+          if (this.selectAllOffices) {
+            this.officeModel = []
+            this.repData = []
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.officeModel = cloneDeep(this.officeData)
+            this.repLoad(false)
+          }
+        })
       },
 
-      toggleAllReps (checkAll) {
-        if (checkAll) {
-          this.repModel = cloneDeep(this.repData)
-        } else {
-          this.repModel = []
-        }
+      toggleSelectAllReps () {
+        this.$nextTick(() => {
+          if (this.selectAllReps) {
+            this.repModel = []
+            this.funnelStats = []
+          } else {
+            this.repModel = cloneDeep(this.repData)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+          }
+        })
       },
 
-        async funnelDrilldown (funnelId, dateRange, funnelName) {
+      async funnelDrilldown (funnelId, dateRange, funnelName) {
         let reps = []
         let orgs = []
         let start, end
@@ -2082,6 +2155,10 @@
             this.funnelDrilldownData = data?.length > 0 ? data : []
 
             if (this.funnelDrilldownData?.length > 0) {
+              for (let i = 0; i < this.funnelDrilldownData.length; i++) {
+                this.funnelDrilldownData[i].rowNum = i + 1
+              }
+
               this.markMissingDrilldownData()
               this.reformatFunnelDrilldownDates()
             }
@@ -2976,6 +3053,7 @@
         }
 
         .funnel-expectation {
+          text-align: center;
           width: 75px;
         }
 
@@ -2983,6 +3061,7 @@
           cursor: default !important;
           position: relative;
           z-index: 7;
+          text-align: center;
           height: 38px;
         }
 
@@ -3013,6 +3092,7 @@
 
         .funnel-td {
           font-size: 7px;
+          text-align: center;
 
           div {
             display: flex;
@@ -3022,6 +3102,10 @@
           .funnel-count,
           .funnel-percentage {
             margin: 3px;
+          }
+
+          .funnel-arrow {
+            font-size: 6px;
           }
         }
       }
@@ -3584,6 +3668,10 @@
             .funnel-percentage {
               margin: 5px;
             }
+
+            .funnel-arrow {
+              font-size: 10px;
+            }
           }
         }
       }
@@ -3931,6 +4019,10 @@
             .funnel-count,
             .funnel-percentage {
               margin: 10px;
+            }
+
+            .funnel-arrow {
+              font-size: 12px;
             }
           }
         }
