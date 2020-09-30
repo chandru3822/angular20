@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
+import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.Source;
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
@@ -46,6 +47,16 @@ public class CloserDashboardController {
     return closerDashboardService.getSelfGenSources();
   }
 
+  @PostMapping(value = "/funnel/apptsCreatedPipeline")
+  public String apptsCreatedPipeline(@RequestBody FunnelRequest funnelRequest) {
+    return closerDashboardService.apptsCreatedPipeline(funnelRequest);
+  }
+
+    @PostMapping(value = "/funnelDrilldown/apptsCreatedPipeline")
+  public String apptsCreatedPipelineDrilldown(@RequestBody FunnelRequest funnelRequest) {
+    return closerDashboardService.apptsCreatedPipelineDrilldown(funnelRequest);
+  }
+
   @GetMapping(value = "/getDistricts")
   public String getDistricts(@RequestParam int userId,
                              @RequestParam Boolean setterOverride) {
@@ -69,5 +80,25 @@ public class CloserDashboardController {
   @PostMapping(value = "/getReps")
   public String getReps(@RequestBody DashboardUserRequest request) {
     return closerDashboardService.getReps(request);
+  }
+
+  @PostMapping(value = "/funnel/standard")
+  public String funnelStandard(@RequestBody FunnelRequest funnelRequest) {
+    return closerDashboardService.funnelStandard(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnelDrilldown/standard")
+  public String funnelDrilldownStandard(@RequestBody FunnelRequest funnelRequest) {
+    return closerDashboardService.funnelDrilldownStandard(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnel/apptDateCohort")
+  public String funnelApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
+    return closerDashboardService.funnelApptDateCohort(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnelDrilldown/apptDateCohort")
+  public String funnelDrilldownApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
+    return closerDashboardService.funnelDrilldownApptDateCohort(funnelRequest);
   }
 }

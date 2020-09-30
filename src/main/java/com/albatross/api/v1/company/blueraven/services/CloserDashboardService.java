@@ -1,9 +1,6 @@
 package com.albatross.api.v1.company.blueraven.services;
 
-import com.albatross.api.v1.company.blueraven.models.CloserTableScores;
-import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
-import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
-import com.albatross.api.v1.company.blueraven.models.Source;
+import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.security.SecurityService;
 
@@ -140,6 +137,30 @@ public class CloserDashboardService {
     return sqlCache.query("closerDashboard.getSelfGenSources", null, Source.class);
   }
 
+  public String apptsCreatedPipeline(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_closer_funnel_appts_created_pipeline(:startDate::date, :endDate::date, array[ :brsProvidedSourceIds ]::integer[], array[ :selfGenSourceIds ]::integer[])";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("startDate", funnelRequest.getStart());
+    parameters.addValue("endDate", funnelRequest.getEnd());
+    parameters.addValue("brsProvidedSourceIds", funnelRequest.getBrsProvidedSources());
+    parameters.addValue("selfGenSourceIds", funnelRequest.getSelfGenSources());
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String apptsCreatedPipelineDrilldown(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_closer_funnel_appts_created_pipeline_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :sourceIds ]::integer[])";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("startDate", funnelRequest.getStart());
+    parameters.addValue("endDate", funnelRequest.getEnd());
+    parameters.addValue("funnelId", funnelRequest.getFunnelId());
+    parameters.addValue("sourceIds", funnelRequest.getSources());
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
   public String getDistricts(int userId, Boolean setterOverride) {
     String sqlQuery = "SELECT * FROM brs.util_closer_district_selection(:userId, :setterOverride::BOOLEAN)";
 
@@ -183,6 +204,52 @@ public class CloserDashboardService {
     parameters.addValue("userId", req.getUserId());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("offices", req.getOffices());
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String funnelStandard(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_closer_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+
+    return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getUsers(), funnelRequest.getOrgs());
+  }
+
+  public String funnelApptDateCohort(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_closer_funnel_appt_date_cohort(:startDate::date, :endDate::date, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+
+    return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getUsers(), funnelRequest.getOrgs());
+  }
+
+  private String runFunnelQuery(String sqlQuery, String start, String end, List<Long> userIds, List<Long> orgIds) {
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("startDate", start);
+    parameters.addValue("endDate", end);
+    parameters.addValue("userIds", userIds);
+    parameters.addValue("orgIds", orgIds);
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_closer_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
+
+    return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs(), funnelRequest.getIsCheckedInColumn());
+  }
+
+  public String funnelDrilldownApptDateCohort(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_closer_funnel_appt_date_cohort_drilldown(:startDate::date, :endDate::date, :funnelId::integer, array[ :userIds ]::integer[], array[ :orgIds ]::integer[], :isCheckedInColumn::boolean)";
+
+    return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs(), funnelRequest.getIsCheckedInColumn());
+  }
+
+  private String runFunnelDrilldownQuery(String sqlQuery, String start, String end, int funnelId, List<Long> userIds, List<Long> orgIds, Boolean isCheckedInColumn) {
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("startDate", start);
+    parameters.addValue("endDate", end);
+    parameters.addValue("funnelId", funnelId);
+    parameters.addValue("userIds", userIds);
+    parameters.addValue("orgIds", orgIds);
+    parameters.addValue("isCheckedInColumn", isCheckedInColumn);
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
