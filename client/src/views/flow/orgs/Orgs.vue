@@ -12,16 +12,6 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-toolbar color="white" class="elevation-1 mt-3">
-          <v-text-field
-              class="mt-5"
-              prepend-inner-icon="search"
-              text
-              label="Search orgs..."
-              v-model="search"
-              @input="debounceGetOrgs"
-          ></v-text-field>
-        </v-toolbar>
         <v-data-table
             :headers="headers"
             :items="orgs"
@@ -31,7 +21,6 @@
             :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
-            :server-items-length="totalOrgs"
             class="elevation-1 fix-column-width-bug org-table"
         >
           <template #no-data>
@@ -40,6 +29,30 @@
 
           <template #no-results>
             No available organizations
+          </template>
+
+          <template v-slot:body.prepend>
+            <tr>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.org"
+                              placeholder="Organization"></v-text-field>
+              </td>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.type"
+                              placeholder="Type"></v-text-field>
+              </td>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.parent"
+                              placeholder="Parent"></v-text-field>
+              </td>
+              <td>
+                <v-text-field dense outlined hide-details
+                              v-model="search.active" placeholder="Active"></v-text-field>
+              </td>
+            </tr>
           </template>
 
           <template #item="{ item, index }">
@@ -62,8 +75,6 @@
   import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Snackbar from '@/components/Snackbar.vue'
-  import debounce from 'lodash.debounce'
-  import { saveAs } from 'file-saver'
 
   export default {
     name: 'Orgs',
@@ -79,10 +90,40 @@
         orgs: [],
         orgFilter: this.$route.params.orgFilter ? this.$route.params.orgFilter : '',
         headers: [
-          { text: 'Organization', value: 'orgName', show: true },
-          { text: 'Type', value: 'orgType', show: true },
-          { text: 'Parent', value: 'parentOrgName', show: true },
-          { text: 'Active', value: 'activeFlag', show: true}
+          { text: 'Organization', value: 'orgName', show: true,
+            filter: value => {
+              if (!this.search.org) {
+                return true
+              } else {
+                return value.toLowerCase().includes(this.search.org.toLowerCase())
+              }
+            }
+          },
+          { text: 'Type', value: 'orgType', show: true,
+            filter: value => {
+              if (!this.search.type) {
+                return true
+              } else {
+                return value.toLowerCase().includes(this.search.type.toLowerCase())
+              }
+            }},
+          { text: 'Parent', value: 'parentOrgName', show: true,
+            filter: value => {
+              if (!this.search.parent) {
+                return true
+              } else {
+                return value && value.toLowerCase().includes(this.search.parent.toLowerCase())
+              }
+            }},
+          { text: 'Active', value: 'activeFlag', show: true,
+            filter: value => {
+              if (!this.search.active) {
+                return true
+              } else {
+                let stringValue = value ? 'Yes' : 'No'
+                return stringValue.toLowerCase().includes(this.search.active.toLowerCase())
+              }
+            }}
         ],
         descending: true,
         footerProps: {
@@ -94,7 +135,12 @@
         },
         totalOrgs: 0,
         dataLoading: true,
-        search: ''
+        search: {
+          org: '',
+          type: '',
+          parent: '',
+          active: ''
+        }
       }
     },
     computed: {},
@@ -110,21 +156,17 @@
       clickRow(id){
         this.$router.push({name: 'org', params: {id}})
       },
-      debounceGetOrgs: debounce( function () {
-        this.dataLoading = true
-        this.getOrgs()
-      }, 500),
+      filterResults(value, search, item) {
+        console.log('we got here', value)
+        console.log('we got here', search)
+        console.log('we got here', item)
+      },
       async getOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequestWithParams(`/org/search`, { params: {
-              query: this.search,
-              page: page - 1,
-              size: itemsPerPage
-            }})
-          this.orgs = data.content
-          this.totalOrgs = data.totalElements
+          const {data} = await getRequestWithParams(`/org`)
+          this.orgs = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

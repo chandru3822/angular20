@@ -7,9 +7,6 @@ import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.services.OrgService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,11 +45,6 @@ public class OrgController {
   @GetMapping(value = "/getOrgsByType/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Org> getOrgsByType(@PathVariable Long typeId) {
     return orgService.getOrgsByType(typeId);
-  }
-
-  @GetMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Page<Org>> searchOrgs(@RequestParam String query, Pageable pageable) {
-    return new ResponseEntity<>(orgService.searchOrgs(query, pageable), HttpStatus.OK);
   }
 
   @GetMapping(value = "/exportOrgs", produces = "text/csv")
