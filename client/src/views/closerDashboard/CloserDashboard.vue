@@ -828,21 +828,21 @@
                 <div v-if="[18,19,20,22,24,23,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, 'standard', true)">
                   {{line.id === 21 ? '' : line.checked_in_today_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, 'standard', true)">
                   {{line.checked_in_today_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+                <div @click="funnelDrilldown(line.id, 'today', line.name, 'standard', false)">
                   {{line.today_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'standard', false)">
                 {{line.today_count}}
               </div>
             </td>
@@ -855,21 +855,21 @@
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', true)">
                   {{line.id === 21 ? '' : line.checked_in_week_to_date_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', true)">
                   {{line.checked_in_week_to_date_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
+                <div @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', false)">
                   {{line.week_to_date_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', false)">
                 {{line.week_to_date_count}}
               </div>
             </td>
@@ -883,21 +883,21 @@
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', true)">
                   {{line.id === 21 ? '' : line.checked_in_custom_date_range_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', true)">
                   {{line.checked_in_custom_date_range_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
+                <div @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', false)">
                   {{line.custom_date_range_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', false)">
                 {{line.custom_date_range_count}}
               </div>
             </td>
@@ -950,7 +950,9 @@
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
                   :style="{'text-decoration': item.cancelled_date_formatted ? 'line-through' : ''}">
-                <td style="text-align: center">{{ index + 1 }}</td>
+                <td style="text-align: center">
+                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
+                </td>
                 <td>{{ item.owner_name ? item.owner_name : '' }}</td>
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td>{{ item.state ? item.state : '' }}</td>
@@ -1136,12 +1138,7 @@
       userRow: [],
       userRowIndex: -1,
       numOffices: 0,
-      // TODO: Remove test data below
-      apptsCreatedPipelineData: [
-        // {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-        // {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-        // {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
-      ],
+      apptsCreatedPipelineData: [],
       // TODO: Remove test data below
       apptsToFdcPipelineData: [
         // {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
@@ -2096,8 +2093,8 @@
 
       async apptsCreatedPipelineLoad (start, end) {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
-        let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.id)
+        let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
+        let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
 
         if (brsProvidedSources.length === 0 && selfGenSources.length === 0) {
           this.apptsCreatedPipelineData = [
@@ -2204,10 +2201,9 @@
             this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
             this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
-            // TODO: Re-enable this later
-            // if (this.apptsCreatedPipelineData.length > 0) {
+            if (this.apptsCreatedPipelineData.length > 0) {
               this.$store.commit(AppMutations.SET_LOADING, false)
-            // }
+            }
           })
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -2437,16 +2433,16 @@
 
       async funnelDrilldown (funnelId, dateRange, funnelName, pipelineName, isCheckedInColumn) {
         let sourceIds = []
-        let reps = []
-        let orgs = []
+        let userIds = []
+        let orgIds = []
         let start, end
         let datesMatch = false
 
         if (pipelineName === 'apptsCreatedPipeline') {
           if (funnelId === 12) { // BRS-provided sources
-            sourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
+            sourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
           } else { // Self-gen sources
-            sourceIds = this.selfGenSourceModel.map(selfGenSource => selfGenSource.id)
+            sourceIds = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
           }
 
           switch (dateRange) {
@@ -2464,8 +2460,8 @@
               break
           }
         } else {
-          reps = this.repModel.map(rep => rep.id)
-          orgs = this.officeModel.map(org => org.id)
+          userIds = this.repModel.map(rep => rep.id)
+          orgIds = this.officeModel.map(org => org.id)
 
           switch (dateRange) {
             case 'today':
@@ -2578,9 +2574,43 @@
             break
         }
 
-        this.markMissingDrilldownData()
-        this.reformatFunnelDrilldownDates()
-        this.funnelDrilldownDialog = true
+        const requestBody = {
+          start: start,
+          end: end,
+          funnelId: funnelId
+        }
+
+        if (pipelineName === 'apptsCreatedPipeline') {
+          requestBody.sources = sourceIds
+        } else {
+          requestBody.users = userIds
+          requestBody.orgs = orgIds
+          requestBody.isCheckedInColumn = isCheckedInColumn
+        }
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven').then(({data}) => {
+            this.funnelDrilldownData = data?.length > 0 ? data : []
+
+            if (this.funnelDrilldownData?.length > 0) {
+              for (let i = 0; i < this.funnelDrilldownData.length; i++) {
+                this.funnelDrilldownData[i].rowNum = i + 1
+              }
+
+              this.markMissingDrilldownData()
+              this.reformatFunnelDrilldownDates()
+            }
+
+            this.funnelDrilldownDialog = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          })
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
 
       markMissingDrilldownData() {
