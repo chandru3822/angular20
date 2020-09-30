@@ -66,16 +66,16 @@ public class InstallAgreementRepository {
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
-    Long projectId = request.getProject_id();
-    Boolean sendLoanpalDocs = request.getSend_loanpal_docs();
+    Long projectId = request.getProjectId();
+    Boolean sendLoanpalDocs = request.getSendLoanpalDocs();
     request.validateNewRequest();
     String resultMsg = "";
-    String financier = getFinancierFromProposalLog(projectId, request.getProposal_nbr());
+    String financier = getFinancierFromProposalLog(projectId, request.getProposalNbr());
 
     sqlCache.update("installAgreement.setAgreementSent", request.toHashMap());
 
     if (sendLoanpalDocs && financier != null && financier.equals("LoanPal")) {
-      JSONObject loanApplication = loanPalService.getApplicationByProjectId(request.getProject_id());
+      JSONObject loanApplication = loanPalService.getApplicationByProjectId(request.getProjectId());
       if (loanApplication != null) {
         try {
           JSONObject outcome = loanApplication.getJSONObject("outcome");
@@ -87,8 +87,8 @@ public class InstallAgreementRepository {
 
           //need to send totalSystemCost to loanpal before sending the loanpal docs
           HashMap<String, Object> params = new HashMap<>();
-          params.put("projectId", request.getProject_id());
-          params.put("proposalNbr", request.getProposal_nbr());
+          params.put("projectId", request.getProjectId());
+          params.put("proposalNbr", request.getProposalNbr());
           Optional<PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getLoanAmountFromLog", params, PropLogDetail.class);
           if (propLogDetail.isPresent() && null != selectedLoanOption) {
             loanPalService.saveLoanFields(loanPalId, propLogDetail.get().getLoanAmount(), selectedLoanOption);
@@ -113,8 +113,8 @@ public class InstallAgreementRepository {
         }
 
         log.info("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
-        if (createPandaDoc && (request.getSend_installation_agreement() || request.getIsSpanish())) {
-            pandaDocService.createDocument(projectId, request.getProposal_nbr(), request.getIsSpanish());
+        if (createPandaDoc && (request.getSendInstallationAgreement() || request.getIsSpanish())) {
+            pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
         }
     } catch (Exception e) {
         resultMsg = e.getMessage();
@@ -179,11 +179,11 @@ public class InstallAgreementRepository {
   }
 
   public void setRequestStatus(InstallAgreementRequest request, Long userId) {
-    Long projectId = request.getProject_id();
-    Long proposalNbr = request.getProposal_nbr();
+    Long projectId = request.getProjectId();
+    Long proposalNbr = request.getProposalNbr();
     HashMap<String, Object> params = request.toHashMap();
-    params.put("user_id", userId);
-    params.put("sendInstallationAgreement", request.getSend_installation_agreement());
+    params.put("userId", userId);
+    params.put("sendInstallationAgreement", request.getSendInstallationAgreement());
     params.put("isSpanish", request.getIsSpanish() != null ? request.getIsSpanish() : false);
     params.put("success", request.getRequest_successful() != null ? request.getRequest_successful() : false);
 

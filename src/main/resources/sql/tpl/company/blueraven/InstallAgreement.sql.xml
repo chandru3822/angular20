@@ -42,7 +42,7 @@
             UPDATE flow.project_process_step_custom_field_value
                 SET timestamp_value = now()
             WHERE project_process_step_id = (select id from flow.project_process_step where
-                project_id = :project_id and process_step_id = 4 and custom_field_group_assignment_id = 482)
+                project_id = :projectId and process_step_id = 4 and custom_field_group_assignment_id = 482)
         ]]>
     </installAgreement.setAgreementSent>
 
@@ -57,12 +57,12 @@
                 user_id,
                 created_date
             ) values (
-                :project_id,
-                :proposal_nbr,
+                :projectId,
+                :proposalNbr,
                 :sendInstallationAgreement,
                 :isSpanish,
                 :success,
-                :user_id,
+                :userId,
                 NOW())
         ]]>
     </installAgreement.setRequestStatus>
