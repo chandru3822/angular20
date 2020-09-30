@@ -824,7 +824,7 @@ export default {
       if(this.positions?.length === 0) {
         try {
           this.positionsLoading = true
-          const {data} = await getRequest(`/position`)
+          const {data} = await getRequest(`/position/withParent`)
           this.positions = data
           this.positionsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
