@@ -44,7 +44,7 @@ BEGIN
                  from brs.project_details pd
                           inner join flow.project p on p.id = pd.project_id
                           inner join flow.project_status_type pst on pst.id = p.company_project_status_type_id
-                          inner join flow.user_position up on up.id = pd.closer_user_id
+                          inner join flow.user_position up on up.id = pd.closer_user_id and up.primary_flag is true and up.position_id in (1,2,3)
                           inner join round_robin_users rru on rru.user_id = up.user_id
                  where closer_appointment_start >= now() - interval '21 days'
                    and pd.source not in (7, 8, 484)
@@ -72,7 +72,7 @@ BEGIN
                  select rru.user_id, count(1) as lead_gen_den
                  from brs.project_details pd
                           inner join flow.project p on p.id = pd.project_id
-                          inner join flow.user_position up on up.id = pd.closer_user_id
+                          inner join flow.user_position up on up.id = pd.closer_user_id and up.primary_flag is true and up.position_id in (1,2,3)
                           inner join round_robin_users rru on rru.user_id = up.user_id
                  where closer_appointment_start >= now() - interval '21 days'
                    and pd.source not in (7, 8, 484)
@@ -82,7 +82,7 @@ BEGIN
                  from brs.project_details pd
                           inner join flow.project p on p.id = pd.project_id
                           inner join flow.project_status_type pst on pst.id = p.company_project_status_type_id
-                          inner join flow.user_position up on up.id = pd.closer_user_id
+                          inner join flow.user_position up on up.id = pd.closer_user_id and up.primary_flag is true and up.position_id in (1,2,3)
                           inner join round_robin_users rru on rru.user_id = up.user_id
                  where greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
                                 utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >=
