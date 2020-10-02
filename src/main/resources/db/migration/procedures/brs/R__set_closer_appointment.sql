@@ -30,8 +30,8 @@ BEGIN
         into v_user_id;
     else
 
-        select p_users[1]
-        into v_user_id;
+     --   select p_users[1]
+     --   into v_user_id;
         with round_robin_users as (
             select pczu.user_id, pcz.distribution_time_frame_days
             from flow.project p
@@ -105,14 +105,14 @@ BEGIN
              appointment_count as (
                  select rru.user_id, count(1) as appointment_count
                  from brs.project_details pd2
-                          inner join flow.user_position up on up.id = pd2.closer_user_id
+                          inner join flow.user_position up on up.id = pd2.closer_user_id and up.primary_flag is true and up.position_id in (1,2,3)
                           inner join round_robin_users rru on rru.user_id = up.user_id
-                 where closer_appointment_start between now() - interval '21 days' and now()
-                 group by rru.user_id),--TODO add appointments in the future 100 days
+                 where closer_appointment_start between now() - interval '21 days' and now() + interval '100 days'
+                 group by rru.user_id),
              appointment_count_with_interval as (
                  select rru.user_id, count(1) as appointment_count_with_interval
                  from brs.project_details pd2
-                          inner join flow.user_position up on up.id = pd2.closer_user_id
+                          inner join flow.user_position up on up.id = pd2.closer_user_id and up.primary_flag is true and up.position_id in (1,2,3)
                           inner join round_robin_users rru on rru.user_id = up.user_id
                  where closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now()
                  group by rru.user_id),
@@ -182,7 +182,8 @@ BEGIN
         into v_user_position_id
         from flow.user_position up
         where up.user_id = v_user_id
-          and up.primary_flag is true;
+          and up.primary_flag is true
+          and up.position_id in (1,2,3);
 
         select count(1)
         into v_user_already_assigned
@@ -279,17 +280,18 @@ BEGIN
                                 v_user_email;
         elsif v_user_already_assigned > 1 and array_length(p_users, 1) > 1 then
             p_users = array_remove(p_users, v_user_id);
+            raise notice 'i am here';
             return query select *
                          from flow.set_closer_appointment(p_project_id,
                                                           p_project_process_step_id,
                                                           p_appointment_start_time,
                                                           p_users);
         else
-            return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text;
+            return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text;
         end if;
 
     else
-        return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text;
+        return query select false::boolean, null::integer, null::timestamp, null::timestamp, null::text, null::text;
     end if;
 
 
