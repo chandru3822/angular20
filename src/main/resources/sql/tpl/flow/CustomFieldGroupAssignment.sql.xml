@@ -195,6 +195,7 @@
 
   <customFieldGroupAssignment.getCustomField><![CDATA[
     SELECT cfga.id,
+           cfga.id as custom_field_group_assignment_id,
            cfga.custom_field_group_id as "customFieldGroupId",
            cfga.custom_field_id as "customFieldId",
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
@@ -208,6 +209,7 @@
     WHERE cfga.id = :id
     union all
     SELECT cfga.id,
+           cfga.id as custom_field_group_assignment_id,
            cfga.custom_field_group_id as "customFieldGroupId",
            cfga.custom_field_id as "customFieldId",
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
