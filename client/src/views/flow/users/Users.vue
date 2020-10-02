@@ -222,7 +222,11 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr
+              class="clickable"
+              :class="{'shaded-row': index % 2}"
+              @click="clickRow(item.id)"
+            >
               <td><v-checkbox v-model="item.selected"></v-checkbox></td>
               <td class="text-left user-column">{{item.firstName}}</td>
               <td class="text-left user-column">{{item.lastName}}</td>
