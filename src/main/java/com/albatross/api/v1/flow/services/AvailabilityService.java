@@ -286,7 +286,8 @@ public class AvailabilityService {
               String timeZoneAbbreviation = "";
               String startTime = "";
 
-              if(project.isPresent()) {
+              // until we do time zones off of postal codes we have to ensure that the project had a state and a timezone assigned to the state
+              if(project.isPresent() && !project.get().getTimeZoneAbbreviation().isEmpty()) {
                 // todo: time zones.... this is not 100% accurate. there are states that have multiple time zones that we dont account for
                 projectAddress = project.get().getStreet1() + ", " + project.get().getCity() + ", " + project.get().getState() + " " + project.get().getPostalCode();
                 timeZoneAbbreviation = project.get().getTimeZoneAbbreviation();

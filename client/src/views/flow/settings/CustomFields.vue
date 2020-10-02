@@ -545,8 +545,7 @@
             invalidCustomSql = true
           }
         }
-
-        return !item.fieldName || !item.companyDataType || invalidOptions || invalidCustomSql
+        return (!item.fieldName && !item.newFieldName) || !item.companyDataType || invalidOptions || invalidCustomSql
 
       },
       filterCustomFields () {
