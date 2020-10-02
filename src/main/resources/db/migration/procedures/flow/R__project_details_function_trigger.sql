@@ -79,7 +79,7 @@ BEGIN
 
         v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
-        --raise notice 'in if %',v_sql;
+       -- raise notice 'id =  %',new.id;
         execute v_sql;
 
         if new.custom_field_group_assignment_id = 7 then

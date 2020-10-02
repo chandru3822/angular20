@@ -13,10 +13,33 @@
               item-value="id"
               class="smartlist-selector pt-3"
             />
-            <v-btn text to="/newContact" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD')">
+            <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
+                   to="/newContact" color="primary">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Contact</span>
             </v-btn>
+            <v-menu data-app left
+                    v-else-if="canAdd && companies && companies.length > 1"
+                    offset-y
+                    v-model="menuOpen"
+                    max-height="350"
+                    class="account-menu"
+                    :close-on-content-click="false">
+              <template v-slot:activator="{ on }">
+                <v-btn text v-on="on">
+                  <v-icon>add</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Add Contact</span>
+                </v-btn>
+              </template>
+              <v-list dense class="pa-3">
+                <v-list-item  @click="menuOpen = false" :to="`/newContact?cid=${c.id}`"
+                              v-for="(c, idx) in companies" :key="idx">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ c.companyName }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-toolbar-items>
         </v-toolbar>
         <v-toolbar
@@ -33,52 +56,6 @@
               @input="debounceGetContacts"
           ></v-text-field>
           <v-spacer></v-spacer>
-<!--          <v-toolbar-items>-->
-<!--            <v-btn text v-if="totalContacts <= 100000" @click="exportContacts">Export</v-btn>-->
-<!--            <v-dialog-->
-<!--                v-model="dialog"-->
-<!--                width="500"-->
-<!--                v-else-->
-<!--            >-->
-<!--              <template v-slot:activator="{ on }">-->
-<!--                <v-btn text v-on="on">-->
-<!--                  Export-->
-<!--                </v-btn>-->
-<!--              </template>-->
-
-<!--              <v-card>-->
-<!--                <v-card-title>-->
-<!--                  Export-->
-<!--                </v-card-title>-->
-
-<!--                <v-card-text>-->
-<!--                  You are attempting to export {{totalContacts | currency('', 0)}} results.-->
-<!--                  This can take 1-2 minutes.-->
-<!--                  We recommend that you cancel and filter the result set before exporting.-->
-<!--                </v-card-text>-->
-
-<!--                <v-divider></v-divider>-->
-
-<!--                <v-card-actions>-->
-<!--                  <div class="flex-grow-1"></div>-->
-<!--                  <v-btn-->
-<!--                      color="grey"-->
-<!--                      text-->
-<!--                      @click="dialog = false"-->
-<!--                  >-->
-<!--                    Cancel-->
-<!--                  </v-btn>-->
-<!--                  <v-btn-->
-<!--                      color="primary"-->
-<!--                      text-->
-<!--                      @click="exportContacts"-->
-<!--                  >-->
-<!--                    Continue Anyway-->
-<!--                  </v-btn>-->
-<!--                </v-card-actions>-->
-<!--              </v-card>-->
-<!--            </v-dialog>-->
-<!--          </v-toolbar-items>-->
         </v-toolbar>
         <v-data-table
             v-if="selectedSmartlistId === 0"
@@ -150,9 +127,13 @@ export default {
     return {
       delay: 500,
       constants,
+      menuOpen: false,
+      companies: this.$store.state.user.companies,
+      canAdd: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD'),
       dialog: false,
       snackbar: {},
       contacts: [],
+      parentId: this.$store.state.user.details.parentCompanyId,
       descending: true,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 1000],

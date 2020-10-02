@@ -48,6 +48,10 @@
                       item-value="id"
             ></v-select>
             <div class="mb-3">
+              <label>Active:</label>
+              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.activeFlag">
+            </div>
+            <div class="mb-3">
               <label>Show in Scheduling Tool:</label>
               <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.schedulable">
             </div>
@@ -134,10 +138,12 @@
           const {data} = await postRequest(`/customFieldValues/org/${this.orgId}`, this.dirtyCfvs)
           this.dirtyCfvs = []
           this.customFieldGroups = data
+          this.snackbar = getSnackbar('SUCCESS', 'Organization Saved')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Organization')
+          let msg = this.org.id ? 'Error Saving Organization' : 'Error Adding Organization'
+          this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

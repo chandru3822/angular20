@@ -103,7 +103,7 @@
                   :style="{width: header.width ? header.width : 'auto',
                           'padding-bottom': !header.orgFilter && !header.statusFilter ? '13px !important' : ''}">
                 {{ header.text }}
-                <v-select v-model="filters.orgs[header.level]"
+                <v-autocomplete v-model="filters.orgs[header.level]"
                           :items="header.orgs"
                           v-if="header.orgFilter"
                           item-text="orgName"
@@ -141,8 +141,8 @@
                     <div v-if="header.showType">{{item.orgName}} ({{item.orgType}})</div>
                     <div v-else>{{item.orgName}}</div>
                   </template>
-                </v-select>
-                <v-select v-model="filters.statuses"
+                </v-autocomplete>
+                <v-autocomplete v-model="filters.statuses"
                           :items="statuses"
                           v-else-if="header.statusFilter"
                           multiple
@@ -180,8 +180,8 @@
                         class="primary--text caption"
                     >{{ filters.statuses.length }} selected</span>
                   </template>
-                </v-select>
-                <v-select v-model="filters.positions"
+                </v-autocomplete>
+                <v-autocomplete v-model="filters.positions"
                           :items="positions"
                           v-else-if="header.positionFilter"
                           item-text="position"
@@ -205,7 +205,7 @@
                         class="primary--text caption"
                     >{{ filters.positions.length }} selected</span>
                   </template>
-                </v-select>
+                </v-autocomplete>
                 <v-text-field outlined
                               v-else
                               hide-details

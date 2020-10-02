@@ -139,6 +139,7 @@
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
+  text-align: center;
 }
 .card-accent {
   height: 100%;

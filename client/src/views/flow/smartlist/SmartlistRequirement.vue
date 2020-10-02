@@ -451,7 +451,12 @@ export default {
       }
     },
     addNewRequirement () {
-      this.$emit('input', this.newRequirement)
+      // Add the processStepId because system process step fields don't have a processStepId
+      this.$emit('input', {
+        ...this.newRequirement,
+        ...this.newRequirement.selectedField,
+        'processStepId': this.newRequirement.processStepId
+      })
     },
     updateRequirement (requirement) {
       this.$emit('update', requirement)

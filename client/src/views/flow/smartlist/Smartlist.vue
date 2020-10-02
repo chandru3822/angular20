@@ -442,7 +442,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
           ...requirement,
-          ...requirement.selectedField,
           smartlistId: this.smartlist.id,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
           displayOrder: maxNumber + 1
