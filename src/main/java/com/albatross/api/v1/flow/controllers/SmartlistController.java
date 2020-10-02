@@ -99,8 +99,7 @@ public class SmartlistController {
 
   @GetMapping(value = "/{smartlistId}/csv", produces = "text/csv")
   public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId) {
-    String report = smartlistService.getCsv(smartlistId);
-    return new ResponseEntity<>(report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
+    return new ResponseEntity<>(smartlistService.getCsv(smartlistId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{smartlistId}/data", produces = MediaType.APPLICATION_JSON_VALUE)
