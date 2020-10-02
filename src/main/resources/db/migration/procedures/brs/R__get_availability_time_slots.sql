@@ -15,14 +15,15 @@ BEGIN
 
     create temp table excluded_appointments as (
         with user_ids as (
-            select pczu.user_id
+            select pczu.user_id,up.id
             from flow.project p
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
+                     inner join flow.user_position up on up.user_id = pczu.user_id and position_id in (1,2,3) and primary_flag is true
             where p.id = p_project_id
         )
-        select ui.user_id, ppscfv.timestamp_value as start_time, ppscfv2.timestamp_value as end_time
+        select ui.user_id,ui.id, ppscfv.timestamp_value as start_time, ppscfv2.timestamp_value as end_time
         from flow.project p
                  inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
                  inner join flow.project_process_step_custom_field_value ppscfv
@@ -31,11 +32,11 @@ BEGIN
                             on ppscfv2.project_process_step_id = pps.id and ppscfv2.custom_field_group_assignment_id = 6
                  inner join flow.project_process_step_custom_field_value ppscfv1
                             on ppscfv1.project_process_step_id = pps.id and ppscfv1.custom_field_group_assignment_id = 7
-                 inner join user_ids ui on ui.user_id = ppscfv1.int_value
-        where ppscfv.timestamp_value::date >= p_start_time
+                 inner join user_ids ui on ui.id = ppscfv1.int_value
+        where ppscfv.timestamp_value >= p_start_time
           and ppscfv2.timestamp_value <= p_end_time
         union all
-        select ra.user_id, ra.start_time as start_time, ra.end_time as end_time
+        select ra.user_id,null as id, ra.start_time as start_time, ra.end_time as end_time
         from flow.resource_appointment ra
                  inner join flow.postal_code_zone_user pczu on pczu.user_id = ra.user_id
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
@@ -87,7 +88,7 @@ BEGIN
                                             inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
                                    where p.id = p_project_id
                                      and p_available_date::date between rs.start_date and rs.end_date) as foo) as foo1
-                 where foo1.scheduled_start_time::time <= foo1.scheduled_end_time::time) as foo2
+                 where foo1.scheduled_start_time::time <= foo1.scheduled_end_time::time and foo1.scheduled_start_time > now()) as foo2
         where foo2.available is true
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;
