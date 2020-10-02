@@ -131,8 +131,10 @@ BEGIN
                                  round(acutal_lead_allocation, 2)     as acutal_lead_allocation
                           from (
                                    select foo.user_id,
+                                          case when lead_gen_den is null then 0
+                                          else
                                           lead_gen_num / lead_gen_den::numeric * 1000 + self_gen +
-                                          ((appointment_count + avail) / 3)                         as score,
+                                          ((appointment_count + avail) / 3)  end                       as score,
                                           case
                                               when sum(appointment_count_with_interval) over () = 0 then
                                                   0
