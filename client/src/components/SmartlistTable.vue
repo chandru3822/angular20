@@ -30,12 +30,14 @@
         </template>
 
         <template #item="{item: row}">
-            <tr class="clickable">
+            <tr
+              class="clickable"
+              @click="selectRow(row)"
+            >
                 <td
                     v-for="field in headers"
                     :key="field.id"
                     class="text-left"
-                    @click="$router.push({name: 'projectDetails', params: {projectId: field.id}})"
                 >
                     {{row[field.text]}}
                 </td>
@@ -105,6 +107,9 @@ export default {
         },
         generateReport () {
             saveAs(new Blob([jsonToCsv(this.reportData)], {type: constants.CSV_BLOB_TYPE}), 'export.csv')
+        },
+        selectRow (row) {
+          this.$emit('row-selected', row)
         }
     }
 }
