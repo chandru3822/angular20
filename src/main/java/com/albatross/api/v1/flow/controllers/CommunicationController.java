@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.SendEmailsRequest;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CommunicationService;
@@ -26,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Future;
 
 @Slf4j
 @RestController
@@ -62,7 +62,7 @@ public class CommunicationController {
     public HashMap<String, Object> sendTexts(@RequestBody SendTextsRequest sendTexts) {
         String groupId = UUID.randomUUID().toString();
 
-        for (Long userID : sendTexts.getUserIDs()) {
+         for (Long userID : sendTexts.getUserIDs()) {
             Optional<User> user = userService.getUser(userID);
             communicationService.queueTextMessages(groupId, user, sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs());
         }
@@ -73,26 +73,34 @@ public class CommunicationController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/sendEmails",
-                    consumes = {"multipart/form-data"})
+    @PostMapping(value = "/sendEmails")
     public void sendEmails(
-            @RequestPart(name = "data") SendEmailsRequest body,
-            @RequestPart(name = "attachments", required = false) List<MultipartFile> attachments,
-            HttpServletRequest request) throws Exception {
+        @RequestParam String from,
+        @RequestParam String subject,
+        @RequestParam String template,
+        @RequestParam List<Long> userIds,
+        @RequestParam(required = false) List<MultipartFile> attachments,
+        HttpServletRequest request) throws Exception {
 
         Map<String, File> temporaryFiles = new HashMap<>();
         try {
-            for (MultipartFile attachment : attachments) {
+            for (MultipartFile attachment: attachments) {
                 File tempFile = File.createTempFile(attachment.getName(), Long.toString(System.nanoTime()));
                 try (InputStream fileInput = attachment.getInputStream(); FileOutputStream fileOutput = new FileOutputStream(tempFile)) {
                     IOUtils.copy(fileInput, fileOutput);
                 }
                 temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
             }
-            communicationService.sendEmails(body.getSubject(), body.getUserIds(), body.getTemplate(),
+            Future<Void> future = communicationService.sendEmails(subject, userIds, template,
                     Maps.transformValues(temporaryFiles, FileDataSource::new),
                     getUnsubscribeURLForEmails(request),
-                    body.getFrom());
+                    from);
+
+            try {
+                future.get();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
         } finally {
             // delete temp files
             for (File tempFile : temporaryFiles.values()) {
