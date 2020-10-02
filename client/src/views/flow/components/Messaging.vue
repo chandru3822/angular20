@@ -41,7 +41,6 @@
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
-import $ from "jquery";
 
 export default {
   name: 'Messaging',
