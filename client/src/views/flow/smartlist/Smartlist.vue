@@ -551,6 +551,7 @@ export default {
         });
         saveAs(blob, "smartlist.csv");
       } catch (e) {
+        this.snackbar = getSnackbar('ERROR', e.message)
         logError(e)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
