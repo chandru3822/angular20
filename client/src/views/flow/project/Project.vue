@@ -41,7 +41,7 @@
                             item-value="id"
                   ></v-select>
                 </div>
-                <v-btn x-small text v-if="userCanEdit" @click="[editAddress = !editAddress, getStatesAndCountries()]">
+                <v-btn x-small text v-if="userCanEdit" @click="[editAddress = !editAddress, project.reloadCoordinates = true, getStatesAndCountries()]">
                   <span v-if="editAddress">Cancel</span>
                   <v-icon v-else>edit</v-icon>
                 </v-btn>

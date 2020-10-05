@@ -15,4 +15,7 @@ public class Project {
   private LocalDate dateCreated;
 
   private Contact contact;
+
+  //tells server to update geolocation
+  private Boolean reloadCoordinates = false;
 }
