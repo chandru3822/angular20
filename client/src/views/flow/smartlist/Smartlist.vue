@@ -158,10 +158,10 @@
             <v-list-item-content>
               <v-row>
                 <!--                  @TODO: put inline styles in class -->
-                <v-col cols="1" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Order</v-col>
-                <v-col cols="3" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Field Name</v-col>
-                <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Object Type</v-col>
-                <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Process Step Name</v-col>
+                <v-col cols="1" class="text-left smartlist-field">Order</v-col>
+                <v-col cols="3" class="text-left smartlist-field">Field Name</v-col>
+                <v-col cols="4" class="text-left smartlist-field">Object Type</v-col>
+                <v-col cols="4" class="text-left smartlist-field">Process Step Name</v-col>
               </v-row>
             </v-list-item-content>
 
@@ -185,7 +185,7 @@
                 <v-row>
                   <v-col cols="1" class="text-left">{{field.displayOrder}}</v-col>
                   <v-col cols="3" class="text-left">{{field.name}}</v-col>
-                  <v-col cols="4" class="text-left">{{(field.smartlistFieldId) ? field.objectType : 'Custom'}}</v-col>
+                  <v-col cols="4" class="text-left">{{field.objectType}}</v-col>
                   <v-col cols="4" class="text-left">{{field.processStepName}}</v-col>
                 </v-row>
               </v-list-item-content>
@@ -593,6 +593,12 @@ export default {
 <style scoped lang="scss">
 
 @import "@/styles/main.scss";
+
+.smartlist-field {
+  font-size: 12px;
+  color: rgba(0,0,0,0.6);
+  font-weight: 700; line-height: 18px;
+}
 
 ::v-deep {
   .btn-back {
