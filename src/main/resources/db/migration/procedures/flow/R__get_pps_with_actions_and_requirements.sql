@@ -220,6 +220,7 @@ FROM (
                          inner join flow.action_type at on at.id = psa.action_type_id
                 where psa.process_step_id = ps.id and
                     psa.archived is not true
+                 order by psa.display_order
             ) a), '[]') as "actions"
          from reqs, flow.project_process_step pps
                         inner join flow.process_step ps on ps.id = pps.process_step_id
