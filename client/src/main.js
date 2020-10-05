@@ -103,7 +103,7 @@ axios.interceptors.response.use((response) => {
       router.push({path: `/serverError?code=${response.status}`})
     } else if (![200, 201, 204].includes(status)) {
       //dont take this out, it makes axios await errors work correctly
-      throw response
+      throw response?.data
     }
   }
 })

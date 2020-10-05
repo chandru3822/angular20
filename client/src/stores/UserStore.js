@@ -56,8 +56,9 @@ export const UserStore = {
       //change context
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
+      // dont do this. the vuex store gets refreshed anyway on the href = '/'
       //update vuex store - user details
-      commit(UserMutations.SET_DETAILS, data)
+      // await commit(UserMutations.SET_DETAILS, data)
 
       //refresh entire app and go to home screen
       window.location.href = '/'

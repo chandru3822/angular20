@@ -2208,8 +2208,8 @@
       this.currentUserId = this.$store.state.user.details.id
       let userPositions = this.$store.state.user.details.userPositions
 
-      if (userPositions.length > 0) {
-        this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate && ([4,5,6].indexOf(position.positionId) !== -1))[0].orgId
+      if (userPositions?.length > 0) {
+        this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
         this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
         this.isSetter = userPositions.filter(position => (position.positionId === 4) && position.primaryFlag && !position.endDate).length > 0
         this.isSetterMgr = userPositions.filter(position => position.primaryFlag && !position.endDate && ([5,6].indexOf(position.positionId) !== -1)).length > 0
