@@ -459,4 +459,10 @@
            longitude = :longitude
     where id = :id
   ]]></project.updateGeoLocation>
+
+  <project.updateTimeZone><![CDATA[
+    update flow.project set
+           time_zone = :timeZone
+    where id = :id
+  ]]></project.updateTimeZone>
 </sql>

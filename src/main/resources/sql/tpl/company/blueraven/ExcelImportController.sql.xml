@@ -11,7 +11,7 @@
     <excel.import.validateProjectId>
         select p.project_name as customer_name,
         concat_ws(' ', c.street1, c.street2) street,
-        c.city, c.state, c.postal_code,
+        c.city, s.state, c.postal_code,
         c.phone, c.email,
         (select lov.name
         from flow.list_of_value lov
@@ -27,6 +27,7 @@
         ) as deal_owner_id
         from flow.project p
         inner join flow.contact c on c.id = p.contact_id
+            left join flow.state s on s.id = c.state_id
         left join flow.user users on users.id = p.created_by_id
         where p.id = :projectId
     </excel.import.validateProjectId>
