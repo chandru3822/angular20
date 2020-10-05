@@ -14,10 +14,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -204,9 +206,14 @@ public class SmartlistService {
   }
 
   public String getCsv(Long smartlistId) {
+      final List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+
+      if (fields.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
+      }
+
       final String query = buildSql(smartlistId);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
-      final List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
       ArrayList<String> dateFields = new ArrayList<>();
 
       for(SmartlistFieldAssignment field : fields) {

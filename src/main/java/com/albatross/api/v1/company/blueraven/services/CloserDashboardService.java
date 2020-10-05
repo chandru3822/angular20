@@ -24,8 +24,7 @@ import java.util.Map;
  */
 @Service
 public class CloserDashboardService {
-//  @Value("${aws.blueraven.storageBucket}") // TODO: Replace this after user photos have been migrated to new AWS s3 storage
-  @Value("blueraven-photos")
+  @Value("${aws.storageBucket}")
   private String bucket;
 
   @Autowired
