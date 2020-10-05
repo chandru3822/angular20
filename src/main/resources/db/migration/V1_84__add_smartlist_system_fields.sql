@@ -1,5 +1,5 @@
-alter table if exists flow.smartlist_field add join_table varchar;
-alter table if exists flow.smartlist_field add join_column varchar;
+alter table if exists flow.smartlist_field add if not exists join_table varchar;
+alter table if exists flow.smartlist_field add if not exists join_column varchar;
 
 insert into flow.smartlist_field (company_object_type_id, name, reference_table, reference_column, join_table, join_column, created_by_id, company_data_type_id)
 values
