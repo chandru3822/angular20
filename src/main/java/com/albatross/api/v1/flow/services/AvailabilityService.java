@@ -287,10 +287,10 @@ public class AvailabilityService {
               String startTime = "";
 
               // until we do time zones off of postal codes we have to ensure that the project had a state and a timezone assigned to the state
-              if(project.isPresent() && !project.get().getTimeZoneAbbreviation().isEmpty()) {
+              if(project.isPresent() && null != project.get().getLatitude() && null != project.get().getLongitude()) {
                 // todo: time zones.... this is not 100% accurate. there are states that have multiple time zones that we dont account for
                 projectAddress = project.get().getStreet1() + ", " + project.get().getCity() + ", " + project.get().getState() + " " + project.get().getPostalCode();
-                timeZoneAbbreviation = project.get().getTimeZoneAbbreviation();
+                timeZoneAbbreviation = "randa_come_back_to_this";
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy h:mm a");
                 TimeZone tz = TimeZone.getTimeZone(timeZoneAbbreviation);

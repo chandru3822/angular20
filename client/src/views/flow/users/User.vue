@@ -19,12 +19,12 @@
                           color="grey lighten-4"
                           class="account-img mr-3"
                 >
-                  <v-img name="userImg" alt="user-image" v-if="loadComplete && userImage && userImage.url && !imageFailed" v-on:error="onImgError()" :src="userImage.url"></v-img>
+                  <v-img name="userImg" alt="user-image" v-if="loadComplete && userImage && userImage.presignedUrl && !imageFailed" v-on:error="onImgError()" :src="userImage.presignedUrl"></v-img>
                   <img name="userImg" v-else src="@/assets/user_img_placeholder.png">
                 </v-avatar>
               </template>
               <v-card class="user-image-hover-container">
-                <v-img name="userImg" v-if="loadComplete && userImage && userImage.url" :src="userImage.url"></v-img>
+                <v-img name="userImg" v-if="loadComplete && userImage && userImage.presignedUrl" :src="userImage.presignedUrl"></v-img>
                 <img name="userImg" v-else src="@/assets/user_img_placeholder.png">
               </v-card>
             </v-tooltip>

@@ -281,7 +281,6 @@
         p.city,
         p.state_id,
         s.state,
-        s.time_zone_abbreviation,
         p.postal_code,
         p.country_id,
         c.country,
@@ -453,4 +452,11 @@
     set company_project_status_type_id = :companyProjectStatusTypeId
     where id = :projectId
 ]]></project.updateStatus>
+
+  <project.updateGeoLocation><![CDATA[
+    update flow.project set
+           latitude = :latitude,
+           longitude = :longitude
+    where id = :id
+  ]]></project.updateGeoLocation>
 </sql>

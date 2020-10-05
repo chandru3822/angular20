@@ -17,7 +17,6 @@ public class Contact {
       street1, street2, city, state, postalCode, country,
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
       phone, mobile, contactType;
-  private Double latitude, longitude;
   private Date dateCreated;
 
   private Owner owner;
