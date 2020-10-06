@@ -4,26 +4,30 @@
 select
   s.*,
   ot.object_type,
-  cot.object_type_id
+  cot.object_type_id,
+  ot1.object_type as view_object_type
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
+inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
 ]]></smartlist.get>
 
 <smartlist.getById><![CDATA[
 select
   s.*,
   ot.object_type,
-  cot.object_type_id
+  cot.object_type_id,
+  ot1.object_type as view_object_type
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
+inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
 where s.id = :smartlistId;
 ]]></smartlist.getById>
 
 <smartlist.add><![CDATA[
-insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id)
-values (:name, :companyObjectTypeId, false, :ownerId, :createdById)
+insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps)
+values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps)
 returning id;
 ]]></smartlist.add>
 
@@ -33,6 +37,8 @@ set
   name = :name,
   company_object_type_id = :companyObjectTypeId,
   shared = :shared,
+  view_object_type_id = :viewObjectTypeId,
+  main_process_steps = :mainProcessSteps,
   modified_by_id = :userId,
   date_modified = now()
 where
