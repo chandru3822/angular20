@@ -14,10 +14,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -204,16 +206,21 @@ public class SmartlistService {
   }
 
   public String getCsv(Long smartlistId) {
+      final List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+
+      if (fields.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
+      }
+
       final String query = buildSql(smartlistId);
-      List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
-      List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+      final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
       ArrayList<String> dateFields = new ArrayList<>();
 
       for(SmartlistFieldAssignment field : fields) {
          if (field.getDataTypeId() == 1) {
              dateFields.add(field.getName());
          }
-  }
+      }
 
       return writeCsv(results, fields, dateFields);
   }
@@ -350,95 +357,65 @@ public class SmartlistService {
     }
 
     for (SmartlistFieldAssignment f : joinTables) {
+      final String joinAlias = (f.getSystemListTypeId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null)) ? f.getValueReferenceTable() : f.getReferenceTable();
 
-      final Long objectTypeId = f.getObjectTypeId();
-      final Boolean hasListValues = f.getHasListValues();
-      final String customFieldSqlKey = f.getCustomFieldSqlKey();
-      final Boolean allowMultiple = f.getAllowMultiple();
-      final Long processStepId = f.getProcessStepId();
-      final Long cfgaId = f.getCustomFieldGroupAssignmentId();
-      String uuid;
+      if (f.getObjectTypeId() == 1 || f.getObjectTypeId() == 2) {
 
-      if (f.getSystemListTypeId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null)) {
-        uuid = f.getValueReferenceTable();
-      } else {
-        uuid = f.getReferenceTable();
-      }
+        final String joinField = (f.getObjectTypeId() == 1) ? "project_id" : "contact_id";
+        final String joinedField = (f.getObjectTypeId() == 1) ? "id" : "contact_id";
 
-      switch (objectTypeId.intValue()) {
-        case 1:
-          if ((hasListValues != null && hasListValues) || customFieldSqlKey != null) {
+        if ((f.getHasListValues() != null && f.getHasListValues()) || f.getCustomFieldSqlKey() != null) {
 
-            final String pcfvUUID = UUID.randomUUID().toString();
-            query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), pcfvUUID, pcfvUUID, pcfvUUID, cfgaId));
+          final String pcfvUUID = UUID.randomUUID().toString();
+          query.append(String.format("\nleft join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), pcfvUUID, pcfvUUID, joinField, joinedField, pcfvUUID, f.getCustomFieldGroupAssignmentId()));
 
-            if (customFieldSqlKey != null) {
-              //custom value sql
-              query.append(String.format("\nleft join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", customFieldSqlKey, uuid, uuid, pcfvUUID));
+          if (f.getCustomFieldSqlKey() != null) {
+            //custom value sql
+            query.append(String.format("\nleft join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, pcfvUUID));
+          } else {
+            query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, pcfvUUID));
+          }
+        } else {
+          if (f.getJoinTable() != null && f.getJoinColumn() != null) {
+            query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", f.getReferenceTable(), joinAlias, joinAlias, f.getJoinTable(), f.getJoinColumn()));
+          } else {
+            query.append(String.format("\nleft join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), joinAlias, joinAlias, joinField, joinedField, joinAlias, f.getCustomFieldGroupAssignmentId()));
+          }
+        }
+      } else if (f.getObjectTypeId() == 4) {
+
+        // If this is a system field
+        if (f.getCustomFieldGroupAssignmentId() == null && f.getProcessStepId() != null) {
+          if (f.getJoinTable() != null && f.getJoinColumn() != null) {
+            final String joinUuid = UUID.randomUUID().toString();
+            query.append(String.format("\nleft join %s \"%s\" on \"%s\".process_step_id = %s and \"%s\".project_id = flow.project.id ", f.getJoinTable(), joinUuid, joinUuid, f.getProcessStepId(), joinUuid));
+            query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), joinAlias, joinAlias, joinUuid, f.getJoinColumn()));
+          } else {
+            query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinAlias, joinAlias, joinAlias, f.getProcessStepId()));
+          }
+        } else {
+          final String ppsUUID = UUID.randomUUID().toString();
+
+          query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, f.getProcessStepId()));
+
+          if (f.getHasListValues() != null && f.getHasListValues()) {
+            if (f.getAllowMultiple()) {
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), joinAlias, joinAlias, ppsUUID, joinAlias, f.getCustomFieldGroupAssignmentId()));
             } else {
-              query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, pcfvUUID));
+              final String ppscfvUUID = UUID.randomUUID().toString();
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, f.getCustomFieldGroupAssignmentId()));
+              query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, ppscfvUUID));
             }
           } else {
-            if (f.getJoinTable() != null && f.getJoinColumn() != null) {
-              query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", f.getReferenceTable(), uuid, uuid, f.getJoinTable(), f.getJoinColumn()));
+            if (f.getCustomFieldSqlKey() != null) {
+              final String ppscfvUUID = UUID.randomUUID().toString();
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, f.getCustomFieldGroupAssignmentId()));
+              query.append(String.format("\nleft join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, ppscfvUUID));
             } else {
-              query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+              query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), joinAlias, joinAlias, ppsUUID, joinAlias, f.getCustomFieldGroupAssignmentId()));
             }
           }
-          break;
-        case 2:
-          if ((hasListValues != null && hasListValues)  || customFieldSqlKey != null) {
-
-            final String ccfvUUID = UUID.randomUUID().toString();
-            query.append(String.format("\nleft join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ccfvUUID, ccfvUUID, ccfvUUID, cfgaId));
-
-            if (customFieldSqlKey != null) {
-              query.append(String.format("\nleft join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", customFieldSqlKey, uuid, uuid, ccfvUUID));
-            } else {
-              query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ccfvUUID));
-            }
-          } else {
-            if (f.getJoinTable() != null && f.getJoinColumn() != null) {
-              query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", f.getReferenceTable(), uuid, uuid, f.getJoinTable(), f.getJoinColumn()));
-            } else {
-              query.append(String.format("\nleft join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
-            }
-          }
-          break;
-        case 4:
-          // If this is a system field
-          if (cfgaId == null && processStepId != null) {
-            if (f.getJoinTable() != null && f.getJoinColumn() != null) {
-              final String joinUuid = UUID.randomUUID().toString();
-              query.append(String.format("\nleft join %s \"%s\" on \"%s\".process_step_id = %s and \"%s\".project_id = flow.project.id ", f.getJoinTable(), joinUuid, joinUuid, f.getProcessStepId(), joinUuid));
-              query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), uuid, uuid, joinUuid, f.getJoinColumn()));
-            } else {
-              query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", uuid, uuid, uuid, processStepId));
-            }
-          } else {
-            final String ppsUUID = UUID.randomUUID().toString();
-
-            query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
-
-            if (hasListValues != null && hasListValues) {
-              if (allowMultiple) {
-                query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
-              } else {
-                final String ppscfvUUID = UUID.randomUUID().toString();
-                query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
-                query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ppscfvUUID));
-              }
-            } else {
-              if (customFieldSqlKey != null) {
-                final String ppscfvUUID = UUID.randomUUID().toString();
-                query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
-                query.append(String.format("\nleft join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", customFieldSqlKey, uuid, uuid, ppscfvUUID));
-              } else {
-                query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
-              }
-            }
-            break;
-          }
+        }
       }
     }
 

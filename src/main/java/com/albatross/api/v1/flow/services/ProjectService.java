@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
@@ -16,6 +17,8 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableMap;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.Point;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -35,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.ObjLongConsumer;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -42,6 +46,8 @@ import java.util.*;
 public class ProjectService {
 
   private final SqlCache sqlCache;
+
+  private final LocationUtils locationUtils;
 
   private final SecurityService securityService;
 
@@ -105,6 +111,11 @@ public class ProjectService {
     params.put("modifiedById", currentUser.getId());
 
     sqlCache.update("project.update", params);
+
+    //load coordinates when new project added
+    if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
+      getProjectCoordinates(project, project.getId());
+    }
   }
 
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
@@ -127,8 +138,25 @@ public class ProjectService {
     params.put("companyProjectStatusTypeId", companyStatusTypeId );
 
     Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
+    Optional<Project> project = getProject(id);
+    //load coordinates when new project added
+    project.ifPresent(value -> getProjectCoordinates(value, id));
+    return project;
+  }
 
-    return getProject(id);
+  public void getProjectCoordinates(Project project, Long id) {
+    //when the contact is new or the address changes, need to reload/save their lat/long from mapbox
+    String projectAddress = getProjectAddress(project);
+    locationUtils.getGeocode(projectAddress, id, new CustomGeoFunction());
+  }
+
+  public String getProjectAddress(Project project) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(project.getStreet1());
+    sj.add(project.getCity());
+    sj.add(project.getState() + ( null == project.getPostalCode() ? "" : " " + project.getPostalCode() ));
+
+    return sj.toString();
   }
 
   public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
@@ -259,6 +287,56 @@ public class ProjectService {
     protected void initBeanWrapper(BeanWrapper bw) {
         TypeReference<Contact> contactRef = new TypeReference<>() {};
         bw.registerCustomEditor(Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
+    }
+  }
+
+  private class CustomGeoFunction implements ObjLongConsumer {
+
+    @Override
+    public void accept(Object geoResult, long id) {
+      // note: the coordinates in the returned object are reversed: Long, Lat
+
+      //get the lat and long from point
+      Point point = (Point)geoResult;
+      Double latitude, longitude;
+      List<Double> coordinates = point.coordinates();
+      latitude = coordinates.get(1);
+      longitude = coordinates.get(0);
+
+      if(null != latitude && null != longitude) {
+        //if lat and long then update contact's location
+        // todo: need to save the contact's timezone here.  not seeing a way to use mapbox and i don't want to import the entire google maps suite
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("latitude", latitude);
+        params.put("longitude", longitude);
+        params.put("id", id);
+
+        sqlCache.update("project.updateGeoLocation", params);
+        locationUtils.getTimezoneByLatLong(id, longitude, latitude, new CustomTimeZoneFunction());
+
+      }
+    }
+  }
+
+  private class CustomTimeZoneFunction implements ObjLongConsumer {
+
+    @Override
+    public void accept(Object tileQueryFeature, long id) {
+      // note: the coordinates in the returned object are reversed: Long, Lat
+
+      //get the lat and long from point
+      Feature feature = (Feature)tileQueryFeature;
+
+
+      if(null != feature && null != feature.getProperty("TZID")) {
+        //if there is a timezone save it to the project also
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("timeZone", feature.getProperty("TZID").getAsString());
+        params.put("id", id);
+
+        sqlCache.update("project.updateTimeZone", params);
+      }
+
     }
   }
 }

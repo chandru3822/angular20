@@ -79,6 +79,7 @@
                 class="mt-3"
                 v-else
                 :smartlistId="selectedSmartlistId"
+                @row-selected="goToSelectedProject"
             />
         </v-col>
     </v-row>
@@ -90,24 +91,27 @@
         @confirm="[showConfirmDialog = false, generateReport()]"
     />
 
+    <Snackbar :snackbar="snackbar" />
 </v-container>
 </template>
 
 <script>
 
-import {logError, getRequestWithParams} from '@/helpers/helpers'
+import {logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import saveAs from 'file-saver'
 import SmartlistTable from '@/components/SmartlistTable'
 import ExportDialog from '@/components/ExportDialog'
+import Snackbar from '@/components/Snackbar'
 
 export default {
     name: 'Projects',
     components: {
         SmartlistTable,
-        ExportDialog
+        ExportDialog,
+        Snackbar
     },
     data() {
         return {
@@ -131,7 +135,8 @@ export default {
             isProjectsLoading: false,
             showConfirmDialog: false,
             selectedSmartlistId: 0,
-            smartlists: [{id: 0, name: 'Default View'}]
+            smartlists: [{id: 0, name: 'Default View'}],
+            snackbar: {}
         }
     },
     watch: {
@@ -186,7 +191,23 @@ export default {
             } finally {
                 this.$store.commit(AppMutations.SET_LOADING, false)
             }
+        },
+      goToSelectedProject (selectedRow) {
+        let projectId = null
+
+        for (const [key, val] of Object.entries(selectedRow)) {
+          if (key === 'Project ID') {
+            projectId = val
+            break
+          }
         }
+
+        if (projectId === null) {
+          this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Project ID" column')
+        } else {
+          this.$router.push({name: 'projectDetails', params: {projectId: projectId}})
+        }
+      }
     }
 }
 </script>

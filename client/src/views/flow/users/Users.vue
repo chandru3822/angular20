@@ -23,6 +23,10 @@
           ></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn :disabled="!this.usersSelected" text @click="msgDialog = true">
+              <v-icon v-if="constants.IS_MOBILE">email</v-icon>
+              <span v-else>Send Email/Text</span>
+            </v-btn>
             <v-btn text @click="handleOrgFilterChange(true)">
               <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
               <span v-else>Reset Filters</span>
@@ -206,6 +210,7 @@
                     >{{ filters.positions.length }} selected</span>
                   </template>
                 </v-autocomplete>
+                <v-checkbox v-else-if="header.selectFilter" v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
                 <v-text-field outlined
                               v-else
                               hide-details
@@ -217,9 +222,12 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
-              <td class="text-left user-column">{{item.firstName}}</td>
-              <td class="text-left user-column">{{item.lastName}}</td>
+            <tr
+              :class="{'shaded-row': index % 2}"
+            >
+              <td><v-checkbox v-model="item.selected"></v-checkbox></td>
+              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.firstName}}</td>
+              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.lastName}}</td>
               <td class="text-left user-column">{{item.email}}</td>
               <td class="text-left user-column">{{item.phoneNumber}}</td>
               <td class="text-left user-column">{{item.userStatusType}}</td>
@@ -232,20 +240,123 @@
         </v-data-table>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="msgDialog" max-width="800px">
+      <v-card>
+        <v-card-title class="headline" primary-title>
+            Send Bulk Emails/Texts
+        </v-card-title>
+          <v-toolbar-items>
+        <v-tabs color="secondaryCustom" background-color="primaryCustom" slot="extension" dark slider-color="secondaryCustom">
+            <v-tab @click="messageTab = 1">
+              Emails
+            </v-tab>
+            <v-tab @click="messageTab = 2">
+              Texts
+            </v-tab>
+        </v-tabs>
+          </v-toolbar-items>
+        <v-divider></v-divider>
+        <div v-if="messageTab == 1"  class="pa-5">
+            <v-select label="From"
+                      v-model="fromEmail"
+                      :items="fromEmails"
+                      item-text="email"
+                      item-value="email"
+            ></v-select>
+
+            <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
+            <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
+            <quill-editor
+                class="py-3"
+                v-model="emailMessage"
+                @change="onEmailMessageChange($event)"
+            />
+
+            <v-file-input
+                dense
+                outlined
+                multiple
+                v-model="emailFile"
+                label="Upload attachment(s)"
+                @change="uploadEmailAttachment"
+                style="width: 255px"
+            />
+
+            <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
+            <v-card-actions class="flex-display justify-end px-4 pt-0">
+              <v-btn
+                @click="msgDialog = false">
+                Close
+              </v-btn>
+              <v-btn
+                color="primary" class="white--text mr-2 "
+                :disabled="this.disableSendEmail"
+                @click="sendMessage(true, false)">
+                Send Emails Only
+              </v-btn>
+              <v-btn
+                color="primary" class="white--text"
+                :disabled="this.disableSendEmail || this.disableSendText"
+                @click="sendMessage(true, true)">
+                Send Both
+              </v-btn>
+            </v-card-actions>
+        </div>
+        <div v-else-if="messageTab == 2" style="height:700px;" class="pa-5">
+            <span class="count-span">Characters: {{this.textCharacterCount}} (153 Character limit)</span>
+
+            <v-textarea solo v-model="textMessage"
+                        auto-grow
+                        rows="7"
+                        placeholder="Enter your message..." class="py-3"></v-textarea>
+
+            <v-file-input
+                dense
+                outlined
+                label="Upload image"
+                v-model="textFile"
+                @change="uploadTextAttachment"
+                style="width: 245px"
+            />
+
+            <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
+            <v-card-actions class="flex-display justify-end px-4 pt-0">
+              <v-btn
+                @click="msgDialog = false">
+                Close
+              </v-btn>
+              <v-btn
+                color="primary" class="white--text mr-2"
+                :disabled="this.disableSendText"
+                @click="sendMessage(false, true)">
+                Send Text Only
+              </v-btn>
+              <v-btn
+                color="primary" class="white--text"
+                :disabled="this.disableSendEmail || this.disableSendText"
+                @click="sendMessage(true, true)">
+                Send Both
+              </v-btn>
+            </v-card-actions>
+        </div>
+      </v-card>
+    </v-dialog>
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
+  import { Actions } from '@/store'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import {getOrgFilters} from '@/services/orgService'
   import max from 'lodash.max'
-  import { saveAs } from 'file-saver'
+  import 'quill/dist/quill.snow.css'
 
   export default {
     name: 'Users',
@@ -275,6 +386,7 @@
         totalUsers: 0,
         dataLoading: true,
         headers: [
+          { text: '', value: 'selectBox', selectFilter:true, show: true, width: '50px' },
           { text: 'First Name', value: 'firstName', show: true, width: '125px' },
           { text: 'Last Name', value: 'lastName', show: true, width: '125px' },
           { text: 'Email', value: 'email', show: true, width: '275px' },
@@ -292,7 +404,22 @@
           orgs: {},
           statuses: [],
           positions: []
-        }
+        },
+        selectAllUsers: false,
+        msgDialog: false,
+        messageTab: 1,
+        fromEmail: '',
+        fromEmails: [],
+        emailSubject: '',
+        emailMessage: '${user.firstName},\n',
+        textMessage: '',
+        emailCharacterCount: 0,
+        emailWordCount: 0,
+        textCharacterCount: 0,
+        emailAttachments: [],
+        textMediaUrls: [],
+        emailFile: null,
+        textFile: null
       }
     },
     computed: {
@@ -310,6 +437,18 @@
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
+      },
+      usersSelected () {
+          return this.users.filter(u => u.selected === true).length;
+      },
+      disableSendEmail() {
+          return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0)
+      },
+      disableSendText() {
+          return !(this.textMessage.trim().length > 0)
+      },
+      textCharCount() {
+          return this.textMessage.trim().length
       }
     },
     watch: {
@@ -325,6 +464,7 @@
       this.getStatuses()
       this.getPositions()
       this.getOrgFilters(true)
+      this.getEmailSenders()
     },
     methods: {
       clickRow(id){
@@ -491,6 +631,11 @@
           }
         })
       },
+      toggleSelectAllUsers () {
+        this.users.forEach(u => {
+          u.selected = this.selectAllUsers
+        })
+      },
       getOrgNameForFilter(hierarchy, filterOrgLevelId) {
         const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
         return result?.orgName ?? 'N/A'
@@ -514,7 +659,7 @@
         if(reset) {
           this.filters.orgs = {}
           this.orgFilters = cloneDeep(this.masterOrgFilterList)
-        }else {
+        } else {
           Object.keys(this.filters.orgs).forEach(k => {
             if(k > this.selectedLevel) {
               delete this.filters.orgs[k]
@@ -524,15 +669,90 @@
           this.getOrgFilters()
         }
 
+        this.selectAllUsers = false
         //reload the users
         this.getUsers()
       },
       itemChecked(level, item) {
-        if(this.filters.orgs[level] && this.filters.orgs[level].length > 0){
+        if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
           let match = this.filters.orgs[level].find(of => of.id === item.id)
           return match != null
-        }else {
+        } else {
           return false;
+        }
+      },
+      async sendMessage(sendEmail, sendText) {
+          try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
+              let userIds = this.users.filter(u => u.selected === true).map(u => u.id);
+              let params;
+
+              if (sendEmail) {
+                  let formData = new FormData()
+                  formData.append('subject', this.emailSubject);
+                  formData.append('from', this.fromEmail);
+                  formData.append('userIds', userIds);
+                  formData.append('template', this.emailMessage);
+
+                  this.emailAttachments.forEach(e => {
+                      formData.append('attachments', e);
+                  });
+
+                  await postRequest(`/communication/sendEmails`, formData)
+              }
+
+              if (sendText) {
+                  params = {
+                      userIDs: userIds,
+                      message: this.textMessage,
+                      mediaURLs: this.textMediaUrls
+                  }
+                  await postRequest(`/communication/sendTexts`, params)
+              }
+              this.snackbar = getSnackbar('SUCCESS', 'Message sent')
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          }  catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error sending message')
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+          return;
+      },
+      onEmailMessageChange({ quill, html, text }) {
+          this.emailCharacterCount = text.trim().length;
+          this.emailWordCount = text.trim().split(' ').filter(function (x) {
+              return x
+          }).length;
+      },
+      uploadEmailAttachment: function (files) {
+        this.emailAttachments = files
+      },
+      uploadTextAttachment: async function (file) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+          await this.$store.dispatch(Actions.FILE_UPLOAD, {
+            file,
+            attachmentTypeId: 3,
+            sourceId: 1,
+            callback: async (newAttachment) => {
+              this.$store.commit(AppMutations.SET_LOADING, false)
+              this.textMediaUrls = [...this.textMediaUrls, newAttachment.url]
+            }
+          })
+        } catch(e) {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        }
+      },
+      async getEmailSenders() {
+        try {
+          const {data} = await getRequest(`/emailSender`, 'blueraven')
+          this.fromEmails = data.map(e => e.emailAddress)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
         }
       }
     }
@@ -562,6 +782,9 @@
   .user-filter-select .v-input__append-inner {
     margin-top: 5px !important;
   }
+  .ql-editor{
+    min-height:200px;
+  }
 </style>
 
 <style lang="scss" scoped>
@@ -577,7 +800,10 @@
   .user-column {
     overflow: hidden;
   }
-
+  .count-span {
+    font-size: 0.85em;
+    color: grey;
+  }
 
 </style>
 

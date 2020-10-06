@@ -218,7 +218,7 @@
                                        :disabled="!userCanEdit" v-model="cf.customFieldGroupAssignmentReadOnly">
                                 Read Only
                               </div>
-                              <v-select
+                              <v-autocomplete
                                 v-if="cf.customFieldGroupAssignmentReadOnly"
                                 v-model="cf.whiteListedPositions"
                                 :items="positions"
@@ -260,7 +260,7 @@
                                     class="primary--text caption"
                                   >{{ cf.whiteListedPositions.length }} selected</span>
                                 </template>
-                              </v-select>
+                              </v-autocomplete>
                               <v-btn color="primaryCustom" dark class="mt-2 white--text"
                                      v-if="userCanEdit"
                                      @click="saveReadOnlyAndWhiteList(cf)">

@@ -93,6 +93,7 @@
           class="mt-3"
           v-else
           :smartlistId="selectedSmartlistId"
+          @row-selected="goToContact"
         />
       </v-col>
     </v-row>
@@ -216,6 +217,22 @@ export default {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Exporting Contacts')
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    goToContact (selectedRow) {
+      let id = null
+
+      for (const [key, val] of Object.entries(selectedRow)) {
+        if (key === 'Contact ID') {
+          id = val
+          break
+        }
+      }
+
+      if (id === null) {
+        this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Contact ID" column')
+      } else {
+        this.$router.push({name: 'contact', params: {id}})
       }
     }
   }

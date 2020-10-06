@@ -115,7 +115,6 @@
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            hi:
             <v-switch
                 v-if="newRequirement.operatorTypeId"
                 v-model="newRequirement.customValue"

@@ -12,7 +12,7 @@
            a.name
     from brs.ahj_utility a
     where archived is not true
-    order by a.name;
+    order by a.name
   ]]></customFieldSql.brs.utilityCompanyList>
 
   <customFieldSql.brs.proposalLogNumbers><![CDATA[

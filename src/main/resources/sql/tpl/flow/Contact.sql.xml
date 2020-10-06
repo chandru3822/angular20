@@ -184,10 +184,4 @@
     where id = :contactId
   ]]></contact.convertToContact>
 
-  <contact.updateGeoLocation><![CDATA[
-    update flow.contact set
-           latitude = :latitude,
-           longitude = :longitude
-    where id = :id
-  ]]></contact.updateGeoLocation>
 </sql>

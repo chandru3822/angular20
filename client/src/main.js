@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuetify from './plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
+import VueQuillEditor from 'vue-quill-editor'
 import Vue2Filters from 'vue2-filters'
 import App from './App.vue'
 import router from './router'
@@ -102,7 +103,7 @@ axios.interceptors.response.use((response) => {
       router.push({path: `/serverError?code=${response.status}`})
     } else if (![200, 201, 204].includes(status)) {
       //dont take this out, it makes axios await errors work correctly
-      throw response
+      throw response?.data
     }
   }
 })
@@ -117,3 +118,4 @@ new Vue({
 }).$mount('#app')
 
 Vue.use(Chat)
+Vue.use(VueQuillEditor)

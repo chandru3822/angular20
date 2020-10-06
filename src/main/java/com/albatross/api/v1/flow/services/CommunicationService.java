@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import javax.mail.internet.InternetAddress;
@@ -18,6 +19,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Service
@@ -30,7 +32,7 @@ public class CommunicationService {
   private final SMSService smsService;
 
   @Async
-  public void sendEmails(String subject, List<Long> userIDs, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail) {
+  public Future<Void> sendEmails(String subject, List<Long> userIDs, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail) {
     for (Long userID : userIDs) {
       Optional<User> user = userService.getUser(userID);
       //do not send email if they do not have access to the system
@@ -38,6 +40,7 @@ public class CommunicationService {
         sendEmail(subject, user.get().getEmail(), user.get(), templateContent, attachments, emailUnsubscribeURL, sentByEmail);
       }
     }
+    return new AsyncResult<>(null);
   }
 
   @Async

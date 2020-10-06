@@ -16,7 +16,7 @@
                   color="grey lighten-4"
                   class="account-img"
         >
-          <v-img name="accountImg" v-if="loadComplete && userImage && userImage.url" :src="userImage.url"></v-img>
+          <v-img name="accountImg" v-if="loadComplete && userImage && userImage.presignedUrl" :src="userImage.presignedUrl"></v-img>
           <img name="accountImg" v-else src="../assets/user_img_placeholder.png">
         </v-avatar>
       </v-btn>

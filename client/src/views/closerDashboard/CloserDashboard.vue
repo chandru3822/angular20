@@ -2059,11 +2059,11 @@
         this.officeModel = []
 
         this.repModel = [
-          {id: -1, label: 'All Reps'}
+          {user_id: -1, name: 'All Reps', active: true}
         ]
 
         this.repData = [
-          {id: -1, label: 'All Reps'}
+          {user_id: -1, name: 'All Reps', active: true}
         ]
 
         this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
@@ -2460,8 +2460,8 @@
               break
           }
         } else {
-          userIds = this.repModel.map(rep => rep.id)
-          orgIds = this.officeModel.map(org => org.id)
+          userIds = this.repModel.map(rep => rep.user_id)
+          orgIds = this.officeModel.map(org => org.org_id)
 
           switch (dateRange) {
             case 'today':

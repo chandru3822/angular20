@@ -9,7 +9,6 @@ import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mapbox.geojson.Point;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -21,8 +20,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.function.ObjLongConsumer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -123,27 +123,7 @@ public class ContactService {
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
     }
 
-    if(null == contact.getId() || (null != contact.getReloadCoordinates() && contact.getReloadCoordinates())) {
-      // if new contact or address changed, reload the coordinates
-      getContactCoordinates(contact, id);
-    }
-
     return getContact(id);
-  }
-
-  public void getContactCoordinates(Contact contact, Long id) {
-    //when the contact is new or the address changes, need to reload/save their lat/long from mapbox
-    String contactAddress = getContactAddress(contact);
-    locationUtils.getGeocode(contactAddress, id, new CustomGeoFunction());
-  }
-
-  public String getContactAddress(Contact contact) {
-    StringJoiner sj = new StringJoiner(", ");
-    sj.add(contact.getStreet1());
-    sj.add(contact.getCity());
-    sj.add(contact.getState() + ( null == contact.getPostalCode() ? "" : " " + contact.getPostalCode() ));
-
-    return sj.toString();
   }
 
   public void updateOwner(Long id, Owner owner) {
@@ -232,33 +212,6 @@ public class ContactService {
       TypeReference<List<Project>> projectsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "projects",
           new JsonCollectionDeserializer(projectsRef, objectMapper));
-    }
-  }
-
-  private class CustomGeoFunction implements ObjLongConsumer {
-
-    @Override
-    public void accept(Object geoResult, long id) {
-      // note: the coordinates in the returned object are reversed: Long, Lat
-
-      //get the lat and long from point
-      Point point = (Point)geoResult;
-      Double latitude, longitude;
-      List<Double> coordinates = point.coordinates();
-      latitude = coordinates.get(1);
-      longitude = coordinates.get(0);
-
-      if(null != latitude && null != longitude) {
-        //if lat and long then update contact's location
-        // todo: need to save the contact's timezone here.  not seeing a way to use mapbox and i don't want to import the entire google maps suite
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("latitude", latitude);
-        params.put("longitude", longitude);
-        params.put("id", id);
-
-        sqlCache.update("contact.updateGeoLocation", params);
-      }
-
     }
   }
 }
