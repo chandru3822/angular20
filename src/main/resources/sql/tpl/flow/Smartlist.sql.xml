@@ -25,6 +25,28 @@ inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
 where s.id = :smartlistId;
 ]]></smartlist.getById>
 
+<smartlist.getSharedByObjectType><![CDATA[
+  select
+      s.id,
+      s.name,
+      s.company_object_type_id,
+      cot.object_type_id,
+      s.shared,
+      s.owner_id,
+      s.date_created,
+      s.date_modified,
+      s.created_by_id,
+      s.modified_by_id,
+      s.archived
+  from flow.smartlist s
+  inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+  where
+      (s.shared is true or s.owner_id = :userId) and
+      s.view_object_type_id = :objectTypeId and
+      cot.company_id = :companyId
+  order by s.name
+]]></smartlist.getSharedByObjectType>
+
 <smartlist.add><![CDATA[
 insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps)
 values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps)
