@@ -81,7 +81,7 @@
                 <v-col cols="6" md="3">
                   <v-checkbox
                     v-model="smartlist.mainProcessSteps"
-                    label="Main Process Steps Only"
+                    label="Primary Process Steps Only"
                   />
                 </v-col>
 
