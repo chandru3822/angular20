@@ -12,7 +12,7 @@ with objectType as (
   inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 )
 update flow.smartlist
-set view_object_type_id = objectType.object_type_id
+set view_object_type_id = case when objectType.object_type_id = 2 then 2 else 1 end
 from objectType
 where id = objectType.smartlist_id;
 alter table if exists flow.smartlist alter column view_object_type_id set not null;
