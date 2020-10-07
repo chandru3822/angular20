@@ -95,7 +95,15 @@ public class ProjectService {
   }
 
   public Optional<Project> getProject(Long projectId) {
-    return sqlCache.get("project.get", ImmutableMap.of("projectId", projectId), new ProjectMapper<>(Project.class, om));
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    return sqlCache.get("project.get",
+      ImmutableMap.of("projectId", projectId,
+                      "companyId", user.getCompanyId(),
+                      "isParent", isParent,
+                      "parentCompanyId", user.getHighestParentCompanyId()),
+      new ProjectMapper<>(Project.class, om));
   }
 
   public void updateProject(Project project) {
@@ -211,11 +219,6 @@ public class ProjectService {
     return attachmentService.findById(storageBucket, attachmentId);
   }
 
-  public List<Project> getProjectsForContact(Long contactId) {
-    User user = securityService.getCurrentUser();
-    return sqlCache.query("project.getAllForContact", ImmutableMap.of("companyId", user.getCompanyId(), "contactId", contactId), Project.class);
-  }
-
   public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
       sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
   }
@@ -225,7 +228,14 @@ public class ProjectService {
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
-    return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    return sqlCache.query("project.getProcessStepsByProjectId",
+      ImmutableMap.of("projectId", projectId,
+        "companyId", user.getCompanyId(),
+        "isParent", isParent,
+        "parentCompanyId", user.getHighestParentCompanyId()),
+      new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
   public List<Owner> getOwners() {

@@ -277,6 +277,9 @@
       left join flow.country c on c.id = p.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.id = :projectId
+        and case when :isParent
+            then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else cp.company_id = :companyId end
     ]]>
   </project.get>
 
@@ -298,22 +301,6 @@
       values (:contactId, :processId, :projectName, :createdById, :companyProjectStatusTypeId, :street1, :city, :stateId, :countryId, :postalCode)
     ]]>
   </project.insert>
-
-  <project.getAllForContact>
-    <![CDATA[
-      select p.id,
-         cp.company_id,
-         cp.process_id,
-         p.contact_id,
-         p.project_name,
-         p.company_project_status_type_id,
-         cpst.project_status_type
-      from flow.company_process cp
-          inner join flow.project p on cp.id = p.company_process_id and p.id = :projectId
-          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-      where p.contact_id = :contactId;
-    ]]>
-  </project.getAllForContact>
 
   <project.getProcessStepsByProjectId><![CDATA[
     select
@@ -350,7 +337,10 @@
     left join flow.user u on u.id = up.user_id
     where
       p.id = :projectId and
-      pps.archived is not true
+        case when :isParent
+            then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else ps.company_id = :companyId end
+      and pps.archived is not true
     order by ps.process_step_name;
   ]]></project.getProcessStepsByProjectId>
 
