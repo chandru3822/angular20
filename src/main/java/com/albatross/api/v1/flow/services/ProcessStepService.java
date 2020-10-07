@@ -9,10 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -49,21 +45,6 @@ public class ProcessStepService {
     params.put("companyId", user.getCompanyId());
     List<ProcessStep> results = sqlCache.query("processStep.getAllForCompany", params, new ProcessStepMapper<>(ProcessStep.class, om));
     return results;
-  }
-
-  public Page<ProcessStep> searchProcessStepsForCompany(String query, Pageable pageable) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("query", null != query ? query : "");
-    params.put("limit", pageable.getPageSize());
-    params.put("offset", pageable.getOffset());
-    List<ProcessStep> results = sqlCache.query("processStep.searchForCompany", params, new ProcessStepMapper<>(ProcessStep.class, om));
-
-    Integer count = sqlCache.queryForObject("processStep.searchForCompanyCount", params, Integer.class);
-
-    Page<ProcessStep> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
-    return page;
   }
 
   public ProcessStep getProcessStep(Long id) {
