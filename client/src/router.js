@@ -153,7 +153,7 @@ export default new Router({
       meta: { title: 'Albatross - Closer Dashboard'},
       component: () => {
         if(store.getters.userHasFeature('CLOSER_DASHBOARD')) {
-          return import (/* webpackChunkName: "closerDashboard" */ './views/closerDashboard/CloserDashboard.vue')
+          return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserDashboard.vue')
         } else {
           return accessDenied()
         }
@@ -164,7 +164,7 @@ export default new Router({
       meta: { title: 'Albatross - Setter Dashboard'},
       component: () => {
         if(store.getters.userHasFeature('SETTER_DASHBOARD')) {
-          return import (/* webpackChunkName: "setterDashboard" */ './views/setterDashboard/SetterDashboard.vue')
+          return import (/* webpackChunkName: "setterDashboard" */ './views/blueraven/setterDashboard/SetterDashboard.vue')
         } else {
           return accessDenied()
         }
@@ -175,7 +175,7 @@ export default new Router({
       meta: { title: 'Albatross - AHJ'},
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
+          return import (/* webpackChunkName: "ahj" */ './views/blueraven/ahj/Ahj.vue')
         } else  {
           return accessDenied()
         }
@@ -187,7 +187,7 @@ export default new Router({
       props: true,
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue')
+          return import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjDetails.vue')
         } else  {
           return accessDenied()
         }
@@ -196,17 +196,17 @@ export default new Router({
         {
           path: 'permit',
           meta: { title: 'Albatross - AHJ'},
-          component: () => import (/* webpackChunkName: "permit" */ './views/ahj/AhjPermit.vue')
+          component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/ahj/AhjPermit.vue')
         },
         {
           path: 'inspection',
           meta: { title: 'Albatross - AHJ'},
-          component: () => import (/* webpackChunkName: "inspection" */ './views/ahj/AhjInspection.vue')
+          component: () => import (/* webpackChunkName: "inspection" */ './views/blueraven/ahj/AhjInspection.vue')
         },
         {
           path: 'design',
           meta: { title: 'Albatross - AHJ'},
-          component: () => import (/* webpackChunkName: "design" */ './views/ahj/AhjDesign.vue')
+          component: () => import (/* webpackChunkName: "design" */ './views/blueraven/ahj/AhjDesign.vue')
         }
       ]
     }, {
@@ -215,7 +215,7 @@ export default new Router({
       meta: { title: 'Albatross - AHJ'},
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahj" */ './views/ahj/utility/AhjUtility.vue')
+          return import (/* webpackChunkName: "ahj" */ './views/blueraven/ahj/utility/AhjUtility.vue')
         } else  {
           return accessDenied()
         }
@@ -227,7 +227,7 @@ export default new Router({
       props: true,
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
+          return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/blueraven/ahj/utility/AhjUtilityDetails.vue')
         } else  {
           return accessDenied()
         }
@@ -736,7 +736,7 @@ export default new Router({
       meta: { title: 'Albatross - Commissions'},
       component: () => {
         if(store.getters.userHasFeature('COMMISSIONS')) {
-          return import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/CommissionManagement.vue')
+          return import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/CommissionManagement.vue')
         } else  {
           return accessDenied()
         }
@@ -745,116 +745,116 @@ export default new Router({
         {
           path: 'closers',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Closers.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Closers.vue'),
         }, {
           path: 'closers/:id',
           meta: { title: 'Albatross - Commissions'},
           name: 'closer',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Closer.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Closer.vue'),
         }, {
           path: 'commissions',
           name: 'commissions',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commissions.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Commissions.vue'),
         }, {
           path: 'commission/:id?',
           name: 'commission',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commission.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Commission.vue'),
         }, {
           path: 'overrides',
           name: 'overrides',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Overrides.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Overrides.vue'),
         }, {
           path: 'override/:id?',
           name: 'override',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Override.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Override.vue'),
         }, {
           path: 'accounting',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Accounting.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Accounting.vue'),
           children: [
             {
               path: 'current',
               meta: { title: 'Albatross - Commissions'},
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/CurrentPayroll.vue'),
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/CurrentPayroll.vue'),
             }, {
               path: 'summary',
               meta: { title: 'Albatross - Commissions'},
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Summary.vue'),
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Summary.vue'),
             }
           ]
         }, {
           path: 'payroll',
           meta: { title: 'Albatross - Commissions'},
           name: 'payrolls',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payrolls.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Payrolls.vue'),
         }, {
           path: 'payroll/:id',
           name: 'payroll',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payroll.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Payroll.vue'),
           children: [
             {
               path: 'review',
               meta: { title: 'Albatross - Commissions'},
               name: 'payrollReview',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollReview.vue'),
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/PayrollReview.vue'),
             }, {
               path: 'summary',
               name: 'payrollSummary',
               meta: { title: 'Albatross - Commissions'},
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollSummary.vue'),
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/PayrollSummary.vue'),
             }
           ]
         },  {
           path: 'residualPlans',
           name: 'residualPlans',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlans.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/ResidualPlans.vue'),
         }, {
           path: 'residualPlan/:id?',
           name: 'residualPlan',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlan.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/ResidualPlan.vue'),
         }, {
           path: 'residuals',
           meta: { title: 'Albatross - Commissions'},
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Residuals.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Residuals.vue'),
         },
       ]
     }, {
       path: '/finances',
       name: 'finances',
       meta: { title: 'Albatross - Finances'},
-      component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/Rebate.vue'),
+      component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Rebate.vue'),
       children: [
         {
           path: 'rebate/batches',
           meta: { title: 'Albatross - Finances'},
-          component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/Batches.vue')
+          component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Batches.vue')
         },{
           path: 'rebate/viewPayments',
           meta: { title: 'Albatross - Finances'},
-          component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/ViewPayments.vue'),
+          component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/ViewPayments.vue'),
         },{
           path: 'rebate/batches/:id',
           name: 'rebateDetails',
           meta: { title: 'Albatross - Finances'},
-          component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/RebateDetails.vue'),
+          component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/RebateDetails.vue'),
         }
       ]
     }, {
       path: '/installation-agreements',
       name: 'installation-agreements',
       meta: { title: 'Albatross - Installation Agreements'},
-      component: () => import (/* webpackChunkName: "finances" */ './views/installationAgreements/InstallationAgreements.vue'),
+      component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/installationAgreements/InstallationAgreements.vue'),
       children: [
         {
           path: 'request',
-          component: () => import (/* webpackChunkName: "request" */ './views/installationAgreements/Request.vue')
+          component: () => import (/* webpackChunkName: "request" */ './views/blueraven/installationAgreements/Request.vue')
         }
       ]
     }, {
