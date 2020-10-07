@@ -1267,31 +1267,31 @@
       appts_to_fdc_pipeline_menu2: false,
       funnelDrilldownTitle: '',
       funnelDrilldownHeaders: [
-        { text: '', value: '', show: true, sortable: false, width: 25 },
-        { text: 'Owner', value: 'owner_name', show: true, width: 90 },
-        { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
-        { text: 'State', value: 'state', show: true, width: 75 },
-        { text: 'Name', value: 'customer_name', show: true, width: 90 },
-        { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
-        { text: 'Source', value: 'source_name', show: true, width: 85 },
-        { text: 'System Size', value: 'system_size', show: true, width: 110 },
-        { text: 'Financier', value: 'financier', show: true, width: 95 },
-        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
-        { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
-        { text: 'Added On', value: 'added_on', show: false, width: 100 },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
-        { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
-        { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
-        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
-        { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
-        { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
-        { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
-        { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
-        { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
-        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
-        { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
-        { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
-        { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
+        { text: '', value: '', show: true, sortable: false, width: 25, optional: false },
+        { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false },
+        { text: 'Employee ID', value: 'employee_id', show: true, width: 115, optional: false },
+        { text: 'State', value: 'state', show: true, width: 75, optional: false },
+        { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false },
+        { text: 'Deal ID', value: 'deal_id', show: true, width: 85, optional: false },
+        { text: 'Source', value: 'source_name', show: true, width: 85, optional: false },
+        { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false },
+        { text: 'Financier', value: 'financier', show: true, width: 95, optional: false },
+        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145, optional: false },
+        { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130, optional: false },
+        { text: 'Added On', value: 'added_on', show: false, width: 100, optional: true },
+        { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true },
+        { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160, optional: true },
+        { text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true },
+        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215, optional: true },
+        { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 160, optional: true },
+        { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155, optional: true },
+        { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165, optional: true },
+        { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 165, optional: true },
+        { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200, optional: true },
+        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175, optional: true },
+        { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195, optional: true },
+        { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160, optional: true },
+        { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175, optional: true }
       ],
       funnelDrilldownData: [],
       funnelDrilldownSearch: '',
@@ -1432,8 +1432,15 @@
       appts_to_fdc_pipeline_dt2 () {
         this.appts_to_fdc_pipeline_dt2_formatted = this.formatFunnelDate(this.appts_to_fdc_pipeline_dt2)
       },
-      funnelDrilldownDialog () {
-        this.funnelDrilldownSearch = ''
+      funnelDrilldownDialog (val) {
+        if (!val) {
+          this.funnelDrilldownSearch = ''
+
+          // resets the visibility of the optional headers
+          this.funnelDrilldownHeaders.forEach(header => {
+            if (header.optional) header.show = false
+          })
+        }
       },
       filteredFunnelDrilldownData () {
         this.calcTotalSystemSize()
