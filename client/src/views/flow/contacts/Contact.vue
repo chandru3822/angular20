@@ -290,7 +290,6 @@ export default {
       }
     },
     async getContact () {
-      console.log('randaLogger', this.contactId)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/contact/${this.contactId}`)
