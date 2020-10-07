@@ -239,7 +239,7 @@ export default {
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
-      timezone: this.$store.state.user.details.timezone.value,
+      timezone: this.$store.state.user.details.timezone?.value,
       changeOwner: false,
       selectedProcess: null,
       availableProcesses: []
@@ -290,6 +290,7 @@ export default {
       }
     },
     async getContact () {
+      console.log('randaLogger', this.contactId)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/contact/${this.contactId}`)
