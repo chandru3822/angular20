@@ -52,14 +52,11 @@
              left join flow.state s on s.id = c.state_id
              left join flow.country ctr on ctr.id = c.country_id
     where c.id = :contactId
+      and case when :isParent
+            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else c.company_id = :companyId end
 
   ]]></contact.getById>
-
-  <contact.getContactCompanyId><![CDATA[
-      select company_id
-      from flow.contact
-      where id = :primaryId
-  ]]></contact.getContactCompanyId>
 
   <contact.getByProjectId><![CDATA[
     select
@@ -84,6 +81,9 @@
       left join flow.state s on s.id = c.state_id
       inner join flow.country ct on ct.id = c.country_id
     where p.id = :projectId
+       and case when :isParent
+            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else c.company_id = :companyId end
   ]]></contact.getByProjectId>
 
   <contact.getContactByPhone><![CDATA[
@@ -109,6 +109,9 @@
       left join flow.state s on s.id = c.state_id
       inner join flow.country ct on ct.id = c.country_id
     where c.phone = :phone
+     and case when :isParent
+            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else c.company_id = :companyId end
   ]]></contact.getContactByPhone>
 
   <contact.updateContact><![CDATA[

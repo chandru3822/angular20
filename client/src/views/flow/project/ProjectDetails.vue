@@ -1,5 +1,5 @@
 <template>
-<v-row id="project-details-container">
+<v-row id="project-details-container" v-if="project && project.id">
   <v-col cols="12" lg="6" class="pt-0">
 
     <v-col v-if="isFieldsLoading">
@@ -174,7 +174,7 @@ export default {
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
-      project: {},
+      project: {}
     }
   },
   created () {

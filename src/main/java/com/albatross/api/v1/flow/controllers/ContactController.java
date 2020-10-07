@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -36,8 +37,14 @@ public class ContactController {
     }
 
     @GetMapping(value = "/{contactId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Contact getContact(@PathVariable Long contactId) {
-        return contactService.getContact(contactId);
+    public ResponseEntity<Contact> getContact(@PathVariable Long contactId) {
+      Contact newContact = contactService.getContact(contactId);
+      if (newContact != null) {
+        return new ResponseEntity<>(newContact, HttpStatus.OK);
+      }
+      else {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact Not Found", new Exception());
+      }
     }
 
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
