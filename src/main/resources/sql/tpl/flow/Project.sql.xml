@@ -353,10 +353,12 @@
       a.filename,
       a.attachment_type_id,
       a.content_type,
-      a.s3_key
+      a.s3_key,
+      a.archived
     from flow.project_attachment pa
            inner join flow.attachment a on a.id = pa.attachment_id
-    where pa.project_id = :projectId;
+    where pa.project_id = :projectId
+      and a.archived is not true
   ]]></project.getAttachments>
 
   <project.addAttachment><![CDATA[
