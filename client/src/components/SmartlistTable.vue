@@ -7,7 +7,8 @@
             :disabled="isLoading"
             @click="showConfirmDialog = true"
         >
-            Export
+          <v-icon>mdi-cloud-download</v-icon>
+          <span>Export</span>
         </v-btn>
     </v-toolbar>
 

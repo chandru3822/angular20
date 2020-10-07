@@ -20,10 +20,12 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       a.filename,
       a.attachment_type_id,
       a.content_type,
-      a.s3_key
+      a.s3_key,
+      a.archived
     from flow.project_process_step_attachment ppsa
            inner join flow.attachment a on a.id = ppsa.attachment_id
     where ppsa.project_process_step_id = :projectProcessStepId
+      and a.archived is not true
   ]]></projectProcessStep.getProjectProcessStepAttachments>
 
   <projectProcessStep.addAttachment><![CDATA[

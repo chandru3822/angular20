@@ -9,11 +9,11 @@ import java.sql.Timestamp;
 @Setter
 public class Smartlist {
 
-  private Long id, companyObjectTypeId, ownerId, createdById, modifiedById, objectTypeId;
+  private Long id, companyObjectTypeId, ownerId, createdById, modifiedById, objectTypeId, viewObjectTypeId;
 
-  private String name, objectType;
+  private String name, objectType, viewObjectType;
 
-  private boolean shared, archived;
+  private boolean shared, archived, mainProcessSteps;
 
   private Timestamp dateCreated, dateModified;
 }

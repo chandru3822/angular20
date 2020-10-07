@@ -762,7 +762,7 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../helpers/helpers";
+  import {getRequestWithParams} from "../../../helpers/helpers";
   import orderBy from "lodash.orderby";
 
   export default {

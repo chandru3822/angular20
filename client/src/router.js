@@ -70,6 +70,7 @@ export default new Router({
     }, {
       path: '/schedule',
       name: 'schedule',
+      meta: { title: 'Albatross - Schedule'},
       props: true,
       component: () => {
         if(store.getters.userHasFeature('SCHEDULE')) {
@@ -81,6 +82,7 @@ export default new Router({
     }, {
       path: '/errorLog',
       name: 'errorLog',
+      meta: { title: 'Albatross - Errors'},
       component: () => {
         if(store.getters.userHasFeature('ERROR_LOG')) {
           return import(/* webpackChunkName: "errors" */ './views/flow/ErrorLog.vue')
@@ -91,6 +93,7 @@ export default new Router({
     }, {
       path: '/users',
       name: 'users',
+      meta: { title: 'Albatross - Users'},
       component: () => {
         if(store.getters.userHasFeature('USERS')) {
           return import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')
@@ -101,6 +104,7 @@ export default new Router({
     }, {
       path: '/user/:id',
       name: 'user',
+      meta: { title: 'Albatross - User'},
       props: true,
       component: () => {
         if(store.getters.userHasFeature('USERS')) {
@@ -113,12 +117,15 @@ export default new Router({
         {
           path: 'details',
           name: 'userDetails',
+          meta: { title: 'Albatross - User'},
           component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserDetails.vue'),
         }, {
           path: 'positions',
+          meta: { title: 'Albatross - User'},
           component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserPositions.vue'),
         }, {
           path: 'access',
+          meta: { title: 'Albatross - User'},
           component: () => {
             if(store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'VIEW')) {
               return import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserAccess.vue')
@@ -131,6 +138,7 @@ export default new Router({
     }, {
       path: '/newUser',
       name: 'newUser',
+      meta: { title: 'Albatross - New User'},
       component: () => {
         if(store.getters.userHasFeatureAccessLevel('USERS', 'ADD')) {
           return import (/*webpackChunkName: "newUser" */ './views/flow/users/NewUser.vue')
@@ -142,9 +150,10 @@ export default new Router({
     }, {
       path: '/closerDashboard',
       name: 'closerDashboard',
+      meta: { title: 'Albatross - Closer Dashboard'},
       component: () => {
         if(store.getters.userHasFeature('CLOSER_DASHBOARD')) {
-          return import (/* webpackChunkName: "closerDashboard" */ './views/closerDashboard/CloserDashboard.vue')
+          return import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserDashboard.vue')
         } else {
           return accessDenied()
         }
@@ -152,9 +161,10 @@ export default new Router({
     }, {
       path: '/setterDashboard',
       name: 'setterDashboard',
+      meta: { title: 'Albatross - Setter Dashboard'},
       component: () => {
         if(store.getters.userHasFeature('SETTER_DASHBOARD')) {
-          return import (/* webpackChunkName: "setterDashboard" */ './views/setterDashboard/SetterDashboard.vue')
+          return import (/* webpackChunkName: "setterDashboard" */ './views/blueraven/setterDashboard/SetterDashboard.vue')
         } else {
           return accessDenied()
         }
@@ -162,9 +172,10 @@ export default new Router({
     }, {
       path: '/ahj',
       name: 'ahj',
+      meta: { title: 'Albatross - AHJ'},
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
+          return import (/* webpackChunkName: "ahj" */ './views/blueraven/ahj/Ahj.vue')
         } else  {
           return accessDenied()
         }
@@ -172,10 +183,11 @@ export default new Router({
     }, {
       path: '/ahj/:ahjId',
       name: 'ahjDetails',
+      meta: { title: 'Albatross - AHJ'},
       props: true,
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue')
+          return import (/* webpackChunkName: "ahjDetails" */ './views/blueraven/ahj/AhjDetails.vue')
         } else  {
           return accessDenied()
         }
@@ -183,23 +195,27 @@ export default new Router({
       children: [
         {
           path: 'permit',
-          component: () => import (/* webpackChunkName: "permit" */ './views/ahj/AhjPermit.vue')
+          meta: { title: 'Albatross - AHJ'},
+          component: () => import (/* webpackChunkName: "permit" */ './views/blueraven/ahj/AhjPermit.vue')
         },
         {
           path: 'inspection',
-          component: () => import (/* webpackChunkName: "inspection" */ './views/ahj/AhjInspection.vue')
+          meta: { title: 'Albatross - AHJ'},
+          component: () => import (/* webpackChunkName: "inspection" */ './views/blueraven/ahj/AhjInspection.vue')
         },
         {
           path: 'design',
-          component: () => import (/* webpackChunkName: "design" */ './views/ahj/AhjDesign.vue')
+          meta: { title: 'Albatross - AHJ'},
+          component: () => import (/* webpackChunkName: "design" */ './views/blueraven/ahj/AhjDesign.vue')
         }
       ]
     }, {
       path: '/ahjUtility',
       name: 'ahjUtilities',
+      meta: { title: 'Albatross - AHJ'},
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahj" */ './views/ahj/utility/AhjUtility.vue')
+          return import (/* webpackChunkName: "ahj" */ './views/blueraven/ahj/utility/AhjUtility.vue')
         } else  {
           return accessDenied()
         }
@@ -207,10 +223,11 @@ export default new Router({
     }, {
       path: '/ahjUtility/:ahjUtilityId/details',
       name: 'ahjUtilityDetails',
+      meta: { title: 'Albatross - AHJ'},
       props: true,
       component: () => {
         if(store.getters.userHasFeature('AHJ_DATABASE')) {
-          return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
+          return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/blueraven/ahj/utility/AhjUtilityDetails.vue')
         } else  {
           return accessDenied()
         }
@@ -218,13 +235,16 @@ export default new Router({
     }, {
       path: '/settings',
       name: 'settings',
+      meta: { title: 'Albatross - Settings'},
       component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
       children: [
         {
           path: 'userProfile',
+          meta: { title: 'Albatross - Settings'},
           component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
         }, {
           path: 'company',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "company" */ './views/flow/settings/Company.vue')
@@ -234,6 +254,7 @@ export default new Router({
           },
         }, {
           path: 'postalCodes',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCodes.vue')
@@ -243,6 +264,7 @@ export default new Router({
           },
         }, {
           path: 'postalCode/:id',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCode.vue')
@@ -252,6 +274,7 @@ export default new Router({
           },
         },{
           path: 'orgTypes',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue')
@@ -261,6 +284,7 @@ export default new Router({
           },
         }, {
           path: 'eventTypes',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "eventTypes" */ './views/flow/settings/EventTypes.vue')
@@ -270,6 +294,7 @@ export default new Router({
           },
         }, {
           path: 'workQueue',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "workQueueAdmin" */ './views/flow/settings/WorkQueue.vue')
@@ -280,6 +305,7 @@ export default new Router({
           children: [
             {
               path: 'types',
+              meta: { title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
             }, {
               path: 'categories',
@@ -288,6 +314,7 @@ export default new Router({
           ]
         }, {
           path: 'customFields',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue')
@@ -297,6 +324,7 @@ export default new Router({
           },
         }, {
           path: 'customFieldGroup/:id',
+          meta: { title: 'Albatross - Settings'},
           props: true,
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
@@ -307,6 +335,7 @@ export default new Router({
           },
         }, {
           path: 'attachments',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "attachments" */ './views/flow/settings/Attachments.vue')
@@ -316,6 +345,7 @@ export default new Router({
           },
         }, {
           path: 'links',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "links" */ './views/flow/settings/Links.vue')
@@ -325,6 +355,7 @@ export default new Router({
           },
         }, {
           path: 'processes',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "processes" */ './views/flow/settings/Processes.vue')
@@ -334,6 +365,7 @@ export default new Router({
           },
         }, {
           path: 'processes/:id?',
+          meta: { title: 'Albatross - Settings'},
           name: 'process',
           props: true,
           component: () => {
@@ -345,6 +377,7 @@ export default new Router({
           },
         }, {
           path: 'processSteps',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "processSteps" */ './views/flow/settings/ProcessSteps.vue')
@@ -355,6 +388,7 @@ export default new Router({
         }, {
           path: 'processStep/:id',
           name: 'processStep',
+          meta: { title: 'Albatross - Settings'},
           props: true,
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
@@ -366,17 +400,21 @@ export default new Router({
           children: [
             {
               path: 'components',
+              meta: { title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepComponents.vue'),
             }, {
               path: 'customFieldGroups',
+              meta: { title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepCFG.vue'),
             }, {
               path: 'actions',
+              meta: { title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "processStepActions" */ './views/flow/settings/processStep/ProcessStepActions.vue'),
             }
           ]
         }, {
           path: 'statuses',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')
@@ -386,6 +424,7 @@ export default new Router({
           },
         }, {
           path: 'functions',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "functions" */ './views/flow/settings/Functions.vue')
@@ -395,6 +434,7 @@ export default new Router({
           },
         }, {
           path: 'function/:id',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
@@ -405,6 +445,7 @@ export default new Router({
         }, {
           path: 'availability',
           name: 'availability',
+          meta: { title: 'Albatross - Settings'},
           redirect: "availability/schedule",
           props: true,
           component: () => {
@@ -417,16 +458,19 @@ export default new Router({
           children: [
             {
               path: 'schedule',
+              meta: { title: 'Albatross - Settings'},
               props: true,
               component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Schedule.vue')
             }, {
               path: 'appointments',
               props: true,
+              meta: { title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Appointments.vue')
             }
           ]
         }, {
           path: 'positions',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "positions" */ './views/flow/settings/Positions.vue')
@@ -436,6 +480,7 @@ export default new Router({
           },
         },  {
           path: 'position/:id?',
+          meta: { title: 'Albatross - Settings'},
           name: 'position',
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
@@ -446,6 +491,7 @@ export default new Router({
           },
         },  {
           path: 'roles',
+          meta: { title: 'Albatross - Settings'},
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
               return import (/* webpackChunkName: "roles" */ './views/flow/settings/Roles.vue')
@@ -455,6 +501,7 @@ export default new Router({
           },
         },  {
           path: 'role/:id?',
+          meta: { title: 'Albatross - Settings'},
           name: 'role',
           component: () => {
             if(store.getters.userHasFeature('SETTINGS')) {
@@ -468,6 +515,7 @@ export default new Router({
     }, {
       path: '/workQueue',
       name: 'workQueue',
+      meta: { title: 'Albatross - Work Queue'},
       component: () => {
         if(store.getters.userHasFeature('WORK_QUEUE')) {
           return import (/*webpackChunkName: "workQueue" */ './views/flow/workQueue/WorkQueue.vue')
@@ -478,6 +526,7 @@ export default new Router({
     }, {
       path: '/workQueue/:id',
       name: 'workQueueDrilldown',
+      meta: { title: 'Albatross - Work Queue'},
       component: () => {
         if(store.getters.userHasFeature('WORK_QUEUE')) {
           return import (/*webpackChunkName: "workQueueDrilldown" */ './views/flow/workQueue/WorkQueueDrilldown.vue')
@@ -488,6 +537,7 @@ export default new Router({
     }, {
       path: '/projects',
       name: 'projects',
+      meta: { title: 'Albatross - Projects'},
       component: () => {
         if (store.getters.userHasFeature('PROJECTS')) {
           return import (/*webpackChunkName: "projects" */ './views/flow/project/Projects.vue')
@@ -498,6 +548,7 @@ export default new Router({
     }, {
       name: 'projectAdmin',
       path: '/projectAdmin/:projectId',
+      meta: { title: 'Albatross - Projects'},
       component: () => {
         if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
           return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
@@ -518,6 +569,7 @@ export default new Router({
     }, {
       path: '/project/:projectId',
       name: 'project',
+      meta: { title: 'Albatross - Project'},
       component: () => {
         if(store.getters.userHasFeature('PROJECTS')) {
           return import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue')
@@ -528,16 +580,19 @@ export default new Router({
       children: [{
         path: 'details',
         name: 'projectDetails',
+        meta: { title: 'Albatross - Project Details'},
         component: () => import (/*webpackChunkName: "projectDetails" */ './views/flow/project/ProjectDetails.vue')
       }, {
         path: 'notes',
         name: 'projectNotes',
+        meta: { title: 'Albatross - Project Notes'},
         component: () => import (/*webpackChunkName: "projectNotes" */ './views/flow/project/ProjectNotes.vue')
       }
       ]
     }, {
       path: '/contacts',
       name: 'contacts',
+      meta: { title: 'Albatross - Contacts'},
       component: () => {
         if(store.getters.userHasFeature('CONTACTS')) {
           return import (/*webpackChunkName: "contacts" */ './views/flow/contacts/Contacts.vue')
@@ -549,6 +604,7 @@ export default new Router({
     }, {
       path: '/contact/:id',
       name: 'contact',
+      meta: { title: 'Albatross - Contact'},
       props: true,
       component: () => {
         if(store.getters.userHasFeature('CONTACTS')) {
@@ -573,6 +629,7 @@ export default new Router({
     }, {
       path: '/orgs/:orgFilter?',
       name: 'orgs',
+      meta: { title: 'Albatross - Orgs'},
       component: () => {
         if(store.getters.userHasFeature('ORGS')) {
           return import (/*webpackChunkName: "orgs" */ './views/flow/orgs/Orgs.vue')
@@ -585,6 +642,7 @@ export default new Router({
       path: '/org/:id',
       name: 'org',
       props: true,
+      meta: { title: 'Albatross - Org'},
       component: () => {
         if(store.getters.userHasFeature('ORGS')) {
           return import (/*webpackChunkName: "org" */ './views/flow/orgs/Org.vue')
@@ -596,6 +654,7 @@ export default new Router({
     }, {
       path: '/newOrg',
       name: 'newOrg',
+      meta: { title: 'Albatross - New Org'},
       component: () => {
         if(store.getters.userHasFeature('ORGS')) {
           return import (/*webpackChunkName: "newOrg" */ './views/flow/orgs/NewOrg.vue')
@@ -674,9 +733,10 @@ export default new Router({
     }, {
       path: '/commissionManagement',
       name: 'commissionManagement',
+      meta: { title: 'Albatross - Commissions'},
       component: () => {
         if(store.getters.userHasFeature('COMMISSIONS')) {
-          return import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/CommissionManagement.vue')
+          return import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/CommissionManagement.vue')
         } else  {
           return accessDenied()
         }
@@ -684,100 +744,122 @@ export default new Router({
       children: [
         {
           path: 'closers',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Closers.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Closers.vue'),
         }, {
           path: 'closers/:id',
+          meta: { title: 'Albatross - Commissions'},
           name: 'closer',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Closer.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Closer.vue'),
         }, {
           path: 'commissions',
           name: 'commissions',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commissions.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Commissions.vue'),
         }, {
           path: 'commission/:id?',
           name: 'commission',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commission.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Commission.vue'),
         }, {
           path: 'overrides',
           name: 'overrides',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Overrides.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Overrides.vue'),
         }, {
           path: 'override/:id?',
           name: 'override',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Override.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Override.vue'),
         }, {
           path: 'accounting',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Accounting.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Accounting.vue'),
           children: [
             {
               path: 'current',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/CurrentPayroll.vue'),
+              meta: { title: 'Albatross - Commissions'},
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/CurrentPayroll.vue'),
             }, {
               path: 'summary',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Summary.vue'),
+              meta: { title: 'Albatross - Commissions'},
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Summary.vue'),
             }
           ]
         }, {
           path: 'payroll',
+          meta: { title: 'Albatross - Commissions'},
           name: 'payrolls',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payrolls.vue'),
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Payrolls.vue'),
         }, {
           path: 'payroll/:id',
           name: 'payroll',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payroll.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Payroll.vue'),
           children: [
             {
               path: 'review',
+              meta: { title: 'Albatross - Commissions'},
               name: 'payrollReview',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollReview.vue'),
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/PayrollReview.vue'),
             }, {
               path: 'summary',
               name: 'payrollSummary',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollSummary.vue'),
+              meta: { title: 'Albatross - Commissions'},
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/PayrollSummary.vue'),
             }
           ]
         },  {
           path: 'residualPlans',
           name: 'residualPlans',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlans.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/ResidualPlans.vue'),
         }, {
           path: 'residualPlan/:id?',
           name: 'residualPlan',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlan.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/ResidualPlan.vue'),
         }, {
           path: 'residuals',
-          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Residuals.vue'),
+          meta: { title: 'Albatross - Commissions'},
+          component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Residuals.vue'),
         },
       ]
     }, {
       path: '/finances',
       name: 'finances',
-      component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/Rebate.vue'),
+      meta: { title: 'Albatross - Finances'},
+      component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Rebate.vue'),
       children: [
         {
           path: 'rebate/batches',
-          component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/Batches.vue')
+          meta: { title: 'Albatross - Finances'},
+          component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Batches.vue')
         },{
           path: 'rebate/viewPayments',
-          component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/ViewPayments.vue'),
+          meta: { title: 'Albatross - Finances'},
+          component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/ViewPayments.vue'),
         },{
           path: 'rebate/batches/:id',
           name: 'rebateDetails',
-          component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/RebateDetails.vue'),
+          meta: { title: 'Albatross - Finances'},
+          component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/RebateDetails.vue'),
         }
       ]
     }, {
       path: '/installation-agreements',
       name: 'installation-agreements',
-      component: () => import (/* webpackChunkName: "finances" */ './views/installationAgreements/InstallationAgreements.vue'),
+      meta: { title: 'Albatross - Installation Agreements'},
+      component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/installationAgreements/InstallationAgreements.vue'),
       children: [
         {
           path: 'request',
-          component: () => import (/* webpackChunkName: "request" */ './views/installationAgreements/Request.vue')
+          component: () => import (/* webpackChunkName: "request" */ './views/blueraven/installationAgreements/Request.vue')
         }
       ]
     }, {
       path: '/smartlist',
+      meta: { title: 'Albatross - Smartlists'},
       component: () => {
         if(store.getters.userHasFeature('SMARTLIST')) {
           return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/SmartlistHome.vue')
@@ -787,6 +869,7 @@ export default new Router({
       },
       children: [{
         path: '',
+        meta: { title: 'Albatross - Smartlists'},
         name: 'smartlist',
         component: () => {
           if(store.getters.userHasFeature('SMARTLIST')) {
@@ -797,6 +880,7 @@ export default new Router({
         }
       }, {
         path: ':smartlistId',
+        meta: { title: 'Albatross - Smartlists'},
         name: 'smartlistEditor',
         component: () => {
           if(store.getters.userHasFeature('SMARTLIST')) {
@@ -810,6 +894,7 @@ export default new Router({
     },{
       path: '/proposal',
       name: 'proposal',
+      meta: { title: 'Albatross - Proposals'},
       component: () => {
         if(store.getters.userHasFeature('PROPOSALS')) {
           return import (/* webpackChunkName: "admin" */ './views/flow/proposal/Menu.vue')
@@ -821,6 +906,7 @@ export default new Router({
         {
           path: 'create',
           name: 'create',
+          meta: { title: 'Albatross - Proposals'},
           component: () => {
             if(store.getters.userHasFeatureAccessLevel('PROPOSALS', 'CREATE')) {
               return import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue')
@@ -832,18 +918,22 @@ export default new Router({
         {
           path: 'search',
           name: 'search',
+          meta: { title: 'Albatross - Proposals'},
           component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
         }, {
           path: 'export',
           name: 'export',
+          meta: { title: 'Albatross - Proposals'},
           component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Export.vue'),
         }, {
           path: 'recreate',
           name: 'recreate',
+          meta: { title: 'Albatross - Proposals'},
           component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
         }, {
           path: ':proposalId',
           name: 'modify',
+          meta: { title: 'Albatross - Proposals'},
           component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
         }
       ]

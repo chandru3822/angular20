@@ -53,14 +53,17 @@ public class SmartlistService {
 
   public Smartlist addSmartlist(Smartlist smartlist) {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId(), "ownerId", user.getId(), "createdById", user.getId());
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("ownerId", user.getId());
+    params.put("createdById", user.getId());
     Long smartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
     return getSmartlist(smartlistId);
   }
 
   public void updateSmartlist(Smartlist smartlist) {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("id", smartlist.getId(), "name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId(), "shared", smartlist.isShared(), "userId", user.getId());
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("userId", user.getId());
     sqlCache.update("smartlist.update", params);
   }
 
@@ -194,7 +197,7 @@ public class SmartlistService {
 
   public List<Smartlist> getSharedByType(Long objectTypeId) {
       User user = securityService.getCurrentUser();
-      return sqlCache.query("project.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), Smartlist.class);
+      return sqlCache.query("smartlist.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), Smartlist.class);
   }
 
   public SmartlistResult getSmartlistResults(Long smartlistId) {

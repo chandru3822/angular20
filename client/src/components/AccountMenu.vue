@@ -143,7 +143,7 @@
         ]
       }
     },
-    created () {
+    updated () {
       this.getUserImage()
       if(this.$store.state.user.details.timezone === null) {
         this.timezone = {

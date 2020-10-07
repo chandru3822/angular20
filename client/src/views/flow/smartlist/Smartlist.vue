@@ -1,89 +1,106 @@
 <template>
 <v-container id="smartlist-container">
   <v-row>
-
-    <v-col cols="12" class="text-left">
-      <v-btn
-        text
-        class="btn-back"
-        :ripple="false"
-        @click="$router.go(-1)"
-      >
-        Back
-      </v-btn>
-    </v-col>
-
-    <v-col cols="12">
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-
-<!--          @TODO: Remove once smartlists are "done" -->
-          <v-btn
-            id="runReport"
-            text
-            @click="runReport">
-            <v-icon>warning</v-icon>
-            <span>Run (for testing only)</span>
-          </v-btn>
-
-          <v-btn
-            text
-            color="primary"
-            :disabled="showNewFieldForm"
-            @click="smartlist.id ? updateSmartlist() : addSmartlist()"
-          >
-            <v-icon>save</v-icon>
-            <span v-if="!constants.IS_MOBILE">Save</span>
-          </v-btn>
-<!--          <v-btn text to="/smartlist/null" color="primary">-->
-<!--            <v-icon>cancel</v-icon>-->
-<!--            <span v-if="!constants.IS_MOBILE">Cancel</span>-->
-<!--          </v-btn>-->
-        </v-toolbar-items>
-      </v-toolbar>
-    </v-col>
-
     <v-col cols="12">
       <v-card>
-        <v-card-text>
-          <v-row>
-            <v-col cols="6">
-              <v-text-field
+        <v-form ref="smartlistForm" class="one-hunned">
+          <v-col cols="12">
+            <v-toolbar flat class="app-toolbar">
+              <v-btn
                 text
-                label="Smartlist Name"
-                v-model="smartlist.name"
-              />
-            </v-col>
+                small
+                class="mr-3"
+                color="primaryCustom"
+                @click="$router.go(-1)"
+              >
+                <v-icon>mdi-arrow-left</v-icon>
+              </v-btn>
+              <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn
+                  text
+                  @click="runReport"
+                >
+                  <v-icon>mdi-cloud-download</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Export</span>
+                </v-btn>
 
-            <v-col cols="6">
-              <v-select
-                v-model="smartlist.companyObjectTypeId"
-                :items="companyObjectTypes"
-                item-text="objectType"
-                item-value="companyObjectTypeId"
-                label="Object Type"
-                placeholder="Select one..."
-              />
-            </v-col>
-          </v-row>
+                <v-btn
+                  text
+                  color="primary"
+                  @click="validateForm"
+                >
+                  <v-icon>save</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Save</span>
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+          </v-col>
 
-          <v-row>
-            <v-col cols="12">
-              <v-checkbox
-                v-model="smartlist.shared"
-                label="Public"
-              />
-            </v-col>
-          </v-row>
-        </v-card-text>
+          <v-col cols="12">
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    text
+                    label="Smartlist Name"
+                    v-model="smartlist.name"
+                    :rules="requiredRules"
+                  />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="smartlist.viewObjectTypeId"
+                    :items="viewObjectTypes"
+                    item-text="objectType"
+                    item-value="objectTypeId"
+                    label="Table View Display"
+                    placeholder="Select one..."
+                    :rules="requiredRules"
+                  />
+                </v-col>
+
+
+              </v-row>
+
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="smartlist.companyObjectTypeId"
+                    :items="companyObjectTypes"
+                    item-text="objectType"
+                    item-value="companyObjectTypeId"
+                    label="Rows"
+                    placeholder="Select one..."
+                    :rules="requiredRules"
+                  />
+                </v-col>
+
+                <v-col cols="6" md="3">
+                  <v-checkbox
+                    v-model="smartlist.mainProcessSteps"
+                    label="Primary Process Steps Only"
+                  />
+                </v-col>
+
+                <v-col cols="6" md="3">
+                  <v-checkbox
+                    v-model="smartlist.shared"
+                    label="Public"
+                  />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-col>
+        </v-form>
       </v-card>
     </v-col>
 
     <v-col cols="12">
       <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>Fields</v-toolbar-title>
+        <v-toolbar-title>Columns</v-toolbar-title>
         <v-spacer />
         <v-toolbar-items>
           <v-btn
@@ -202,6 +219,7 @@
       :requirements="requirements"
       :company-object-types="companyObjectTypes"
       :reset-form="resetRequirementForm"
+      :disabled="!smartlist.id"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -313,7 +331,12 @@ export default {
       fetchedLogic: [],
       logic: [],
       logicUpdated: false,
-      resetRequirementForm: false
+      resetRequirementForm: false,
+      viewObjectTypes: [
+        {objectTypeId: 1, objectType: 'Project'},
+        {objectTypeId: 2, objectType: 'Contact'}
+      ],
+      requiredRules: constants.BASIC_REQUIRED_RULE
     }
   },
   created () {
@@ -411,11 +434,15 @@ export default {
     },
     async addSmartlist () {
       try {
-        await postRequest(`/smartlist`, this.smartlist)
-        this.$router.back()
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/smartlist`, this.smartlist)
+        this.smartlist = data
+        this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async addNewField () {
@@ -457,11 +484,13 @@ export default {
     },
     async updateSmartlist () {
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
-        this.$router.back()
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateLogic () {
@@ -556,6 +585,11 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    validateForm () {
+      if (this.$refs.smartlistForm.validate()) {
+        this.smartlist.id ? this.updateSmartlist() : this.addSmartlist()
+      }
     }
     // **************************** smartlist logic on hold until smartlist v2 ***************************
     // clearLogic () {
@@ -598,36 +632,6 @@ export default {
   font-size: 12px;
   color: rgba(0,0,0,0.6);
   font-weight: 700; line-height: 18px;
-}
-
-::v-deep {
-  .btn-back {
-
-    text-transform: capitalize;
-    text-decoration: underline;
-
-    &:not(.v-btn--round) {
-      padding: 0;
-    }
-
-    &:hover:before {
-      opacity: 0 !important;
-    }
-
-    .v-btn__content {
-      justify-content: start;
-    }
-  }
-
-  #runReport {
-    .v-btn__content {
-      color: red;
-    }
-
-    .v-icon {
-      color: red !important;
-    }
-  }
 }
 
 .v-list {

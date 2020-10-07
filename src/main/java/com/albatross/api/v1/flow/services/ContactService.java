@@ -69,22 +69,38 @@ public class ContactService {
   }
 
   public Contact getContact(Long contactId) {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
     HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
     params.put("contactId", contactId);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
     Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
   public Contact getContactByProjectId(Long projectId) {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+    params.put("companyId", user.getCompanyId());
     Optional<Contact> result = sqlCache.get("contact.getByProjectId", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
   public Contact getContactByPhone(String phoneNumber) {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("phone", phoneNumber);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+    params.put("companyId", user.getCompanyId());
     Optional<Contact> result = sqlCache.get("contact.getContactByPhone", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }

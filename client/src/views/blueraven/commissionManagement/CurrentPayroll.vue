@@ -270,7 +270,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import cloneDeep from 'lodash.clonedeep'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../helpers/helpers";
+  import {getRequestWithParams} from "../../../helpers/helpers";
   import Vue2Filters from "vue2-filters";
 
   export default {

@@ -223,13 +223,11 @@
 
           <template #item="{ item, index }">
             <tr
-              class="clickable"
               :class="{'shaded-row': index % 2}"
-              @click="clickRow(item.id)"
             >
               <td><v-checkbox v-model="item.selected"></v-checkbox></td>
-              <td class="text-left user-column">{{item.firstName}}</td>
-              <td class="text-left user-column">{{item.lastName}}</td>
+              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.firstName}}</td>
+              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.lastName}}</td>
               <td class="text-left user-column">{{item.email}}</td>
               <td class="text-left user-column">{{item.phoneNumber}}</td>
               <td class="text-left user-column">{{item.userStatusType}}</td>
