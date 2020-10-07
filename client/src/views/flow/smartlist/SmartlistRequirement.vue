@@ -6,6 +6,7 @@
     <v-toolbar-items>
       <v-btn
         v-if="!showNewRequirementForm"
+        :disabled="disabled"
         @click="showNewRequirementForm = true"
         text
       >
@@ -337,6 +338,10 @@ export default {
       default: () => []
     },
     resetForm: {
+      type: Boolean,
+      default: false
+    },
+    disabled: {
       type: Boolean,
       default: false
     }
