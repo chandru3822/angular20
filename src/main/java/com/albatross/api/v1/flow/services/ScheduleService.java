@@ -44,7 +44,9 @@ public class ScheduleService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     List<Long> combined = esp.getUserPositionIds();
-    combined.addAll(esp.getOrgIds());
+    if(null != esp.getOrgIds()) {
+      combined.addAll(esp.getOrgIds());
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());

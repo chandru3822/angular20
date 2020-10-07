@@ -3,24 +3,23 @@
     <div class="mb-2">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
-        <v-col class="py-0" cols="12" md="4">
           <v-select v-model="selectedStates"
                     :items="states"
                     label="States"
                     multiple
+                    class="mr-2"
                     hide-details
                     return-object
                     item-text="state"
                     item-value="id"
-                    @blur="filterOrgsAndUsers"
           >
             <template
               slot="selection"
               slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedStates.length < 3">
-                <v-chip small close @click:close="selectedStates.splice(idx, 1)"
-                        v-for="(ss, idx) in selectedStates">
+                <v-chip small close @click:close="selectedStates.splice(index, 1)"
+                        v-for="ss in selectedStates">
                   <span>{{ ss.state }}</span>
                 </v-chip>
               </div>
@@ -43,41 +42,39 @@
               class="mt-2"
             ></v-divider>
           </v-select>
-        </v-col>
-        <v-col class="py-0" cols="12" md="4">
-          <v-autocomplete v-model="selectedOrgTypes"
-                    :items="orgTypes"
-                    label="Organization Resource Types"
+
+          <v-autocomplete v-model="selectedPostalCodeZones"
+                    :items="postalCodeZones"
+                    label="Round Robin"
                     multiple
-                    :loading="orgTypesLoading"
+                    class="mr-2"
+                    :loading="postalCodeZonesLoading"
                     hide-details
                     return-object
-                    item-text="orgType"
+                    item-text="zoneName"
                     item-value="id"
-                    @input="orgTypeValuesChanged = true"
-                    @blur="filterOrgsAndUsers"
           >
             <template
                 slot="selection"
                 slot-scope="{ item, index }"
             >
-              <div v-if="index === 0 && selectedOrgTypes.length < 3">
-                <v-chip small close @click:close="selectedOrgTypes.splice(idx, 1)"
-                        v-for="(sr, idx) in selectedOrgTypes">
-                  <span>{{ sr.orgType }}</span>
+              <div v-if="index === 0 && selectedPostalCodeZones.length < 3">
+                <v-chip small close @click:close="selectedPostalCodeZones.splice(index, 1)"
+                        v-for="sr in selectedPostalCodeZones">
+                  <span>{{ sr.zoneName }}</span>
                 </v-chip>
               </div>
               <span
-                  v-if="index === 1 && selectedOrgTypes.length >= 3"
+                  v-if="index === 1 && selectedPostalCodeZones.length >= 3"
                   class="primary--text caption"
-              >{{ selectedOrgTypes.length }} selected</span>
+              >{{ selectedPostalCodeZones.length }} selected</span>
             </template>
             <v-list-item
                 slot="prepend-item"
                 ripple
-                @click="toggleSelectAllOrgTypes()">
+                @click="toggleSelectAllPostalCodeZones()">
               <v-list-item-action>
-                <v-icon>{{ iconOrgTypes }}</v-icon>
+                <v-icon>{{ iconPostalCodeZones }}</v-icon>
               </v-list-item-action>
               <v-list-item-title>Select All</v-list-item-title>
             </v-list-item>
@@ -86,108 +83,49 @@
                 class="mt-2"
             ></v-divider>
           </v-autocomplete>
-        </v-col>
-        <v-col class="py-0" cols="12" md="4">
 
-          <v-autocomplete v-model="selectedPositions"
-                    :items="positions"
-                    label="Position Resource Types"
-                    multiple
-                    hide-details
-                    :loading="positionsLoading"
-                    return-object
-                    item-text="position"
-                    item-value="id"
-                    @input="poitionValuesChanged = true"
-                    @blur="filterOrgsAndUsers"
+        <v-autocomplete v-model="selectedPostalCodeZoneUsers"
+                        :items="postalCodeZoneUsers"
+                        label="Closers"
+                        multiple
+                        class="mr-3"
+                        :loading="postalCodeZoneUsersLoading"
+                        hide-details
+                        return-object
+                        @input="postalCodeZoneUserValuesChanged = true"
+                        item-text="fullName"
+                        item-value="id"
+                        @blur="getEvents(false)"
+        >
+          <template
+            slot="selection"
+            slot-scope="{ item, index }"
           >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
-              <div v-if="index === 0 && selectedPositions.length < 3">
-                <v-chip small close @click:close="selectedPositions.splice(idx, 1)"
-                        v-for="(sr, idx) in selectedPositions">
-                  <span>{{ sr.position }}</span>
-                </v-chip>
-              </div>
-              <span
-                  v-if="index === 1 && selectedPositions.length >= 3"
-                  class="primary--text caption"
-              >{{ selectedPositions.length }} selected</span>
-            </template>
-            <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllPositions()">
-              <v-list-item-action>
-                <v-icon>{{ iconPositions }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-                slot="prepend-item"
-                class="mt-2"
-            ></v-divider>
-          </v-autocomplete>
-        </v-col>
-      </v-row>
-      <v-row class="py-0">
-        <v-col class="py-0" cols="12" md="4">
-        </v-col>
-        <v-col class="py-0" cols="12" md="4">
-          <v-autocomplete v-model="selectedOrgs"
-                    :items="orgs"
-                    label="Organization Resources"
-                    multiple
-                    clearable
-                    :loading="orgsLoading"
-                    :hide-details="countSelected < maxSelectionAllowed"
-                    :error="countSelected >= maxSelectionAllowed"
-                    :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
-                    return-object
-                    item-text="orgName"
-                    item-value="id"
-                    @input="[orgValuesChanged = true, limiter()]"
-                    @blur="getEvents(true)"
-          >
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
-              <span v-if="index === 0" class="primary--text caption">
-                {{ selectedOrgs.length }} selected
-              </span>
-            </template>
-          </v-autocomplete>
-        </v-col>
-        <v-col class="py-0" cols="12" md="4">
-
-          <v-autocomplete v-model="selectedUsers"
-                          :items="users"
-                          label="User Resources"
-                          multiple
-                          clearable
-                          :hide-details="countSelected < maxSelectionAllowed"
-                          :error="countSelected >= maxSelectionAllowed"
-                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
-                          :loading="usersLoading"
-                          return-object
-                          item-text="fullName"
-                          item-value="id"
-                          @input="[userValuesChanged = true, limiter()]"
-                          @blur="getEvents(false)"
-          >
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
-              <span v-if="index === 0" class="primary--text caption">
-                {{ selectedUsers.length }} selected
-              </span>
-            </template>
-          </v-autocomplete>
-        </v-col>
+            <div v-if="index === 0 && selectedPostalCodeZoneUsers.length < 3">
+              <v-chip small close @click:close="selectedPostalCodeZoneUsers.splice(idx, 1)"
+                      v-for="(sr, idx) in selectedPostalCodeZoneUsers">
+                <span>{{ sr.fullName }}</span>
+              </v-chip>
+            </div>
+            <span
+              v-if="index === 1 && selectedPostalCodeZoneUsers.length >= 3"
+              class="primary--text caption"
+            >{{ selectedPostalCodeZoneUsers.length }} selected</span>
+          </template>
+          <v-list-item
+            slot="prepend-item"
+            ripple
+            @click="toggleSelectAllPostalCodeZoneUsers()">
+            <v-list-item-action>
+              <v-icon>{{ iconPostalCodeZoneUsers }}</v-icon>
+            </v-list-item-action>
+            <v-list-item-title>Select All</v-list-item-title>
+          </v-list-item>
+          <v-divider
+            slot="prepend-item"
+            class="mt-2"
+          ></v-divider>
+        </v-autocomplete>
       </v-row>
     </div>
     <div class="calendar-resize-container">
@@ -201,7 +139,7 @@
       <FullCalendar ref="eventCalendar"
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
-                    :resources="resources"
+                    :resources="selectedPostalCodeZoneUsers"
                     theme-system="standard"
                     :resources-initially-expanded="true"
                     :time-zone="calendar.options.timezone"
@@ -271,34 +209,34 @@
         }
         return 'check_box_outline_blank'
       },
-      //org Types
-      selectAllOrgTypes () {
-        return this.orgTypes.length === this.selectedOrgTypes.length
+      //postal code zones
+      selectAllPostalCodeZones () {
+        return this.postalCodeZones.length === this.selectedPostalCodeZones.length
       },
-      selectSomeOrgTypes () {
-        return this.selectedOrgTypes.length > 0 && !this.selectAllOrgTypes
+      selectSomePostalCodeZones () {
+        return this.selectedPostalCodeZones.length > 0 && !this.selectAllPostalCodeZones
       },
-      iconOrgTypes () {
-        if (this.orgTypes.length === this.selectedOrgTypes.length) {
+      iconPostalCodeZones () {
+        if (this.postalCodeZones.length === this.selectedPostalCodeZones.length) {
           return 'check_box'
         }
-        if (this.selectSomeOrgTypes) {
+        if (this.selectSomePostalCodeZones) {
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
       },
-      //positions
-      selectAllPositions () {
-        return this.positions.length === this.selectedPositions.length
+      //postal code zone users
+      selectAllPostalCodeZoneUsers () {
+        return this.postalCodeZoneUsers.length === this.selectedPostalCodeZoneUsers.length
       },
-      selectSomePositions () {
-        return this.selectedPositions.length > 0 && !this.selectAllPositions
+      selectSomePostalCodeZoneUsers () {
+        return this.selectedPostalCodeZones.length > 0 && !this.selectAllPostalCodeZoneUsers
       },
-      iconPositions () {
-        if (this.positions.length === this.selectedPositions.length) {
+      iconPostalCodeZoneUsers () {
+        if (this.postalCodeZoneUsers.length === this.selectedPostalCodeZoneUsers.length) {
           return 'check_box'
         }
-        if (this.selectSomePositions) {
+        if (this.selectSomePostalCodeZoneUsers) {
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
@@ -315,26 +253,17 @@
     watch: {
       '$store.state.user.details.timezone.value': function () {
         this.calendar.options.timezone = this.$store.state.user.details.timezone.value
-
       },
-      // whenever selectedUsers or selectedOrgs changes, concat them both into resources
-      'selectedUsers': function () {
-        this.resources = this.selectedOrgs.concat(this.selectedUsers)
-        this.handleResourceColors()
-      },
-      'selectedOrgs': function () {
-        this.resources = this.selectedOrgs.concat(this.selectedUsers)
+      'selectedPostalCodeZoneUsers': function () {
+        //clear out selected map resources so we don't orphan map pins when the uncheck a closer
+        this.clearSelectedMapResourceEvents()
+        this.callback(this.mapResourceEvents)
         this.handleResourceColors()
       },
     },
     created() {
-      this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
-      this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
-      this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
-      this.getSchedulingOrgs()
-      this.getSchedulingUsers()
-      this.getSchedulingOrgTypes()
-      this.getPositions()
+      this.getPostalCodeZones()
+      this.getPostalCodeZoneUsers()
     },
     data() {
       return {
@@ -353,31 +282,15 @@
             events: [] }
         ],
         events: [],
-        countSelected: 0,
-        maxSelectionAllowed: 10,
-        countErrorMessage: 'Maximum Selection Reached',
         selectedStates: [],
-        previousStateCount: 0,
-        masterOrgs: [],
-        orgValuesChanged: false,
-        orgs: [],
-        selectedOrgs: [],
-        orgsLoading: true,
-        usersLoading: true,
-        userValuesChanged: false,
-        masterUsers: [],
-        users: [],
-        selectedUsers: [],
-        orgTypes: [],
-        orgTypeValuesChanged: false,
-        selectedOrgTypes: [],
-        previousTypeCount: 0,
-        orgTypesLoading: true,
-        positions: [],
-        positionValuesChanged: false,
-        selectedPositions: [],
-        previousPositionCount: 0,
-        positionsLoading: true,
+        postalCodeZones: [],
+        postalCodeZoneValuesChanged: false,
+        selectedPostalCodeZones: [],
+        postalCodeZonesLoading: true,
+        postalCodeZoneUsers: [],
+        postalCodeZoneUserValuesChanged: false,
+        selectedPostalCodeZoneUsers: [],
+        postalCodeZoneUsersLoading: true,
         resources: [],
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
@@ -408,6 +321,8 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.gotoDate(new Date)
                   // this.setCalendarStartAndEndTimes()
+                  this.mapResourceEvents = []
+                  this.callback(this.mapResourceEvents)
                   this.getEvents(false, true)
                 }
               },
@@ -418,6 +333,8 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.prev()
                   // this.setCalendarStartAndEndTimes()
+                  this.mapResourceEvents = []
+                  this.callback(this.mapResourceEvents)
                   this.getEvents(false, true)
                 }
               },
@@ -428,6 +345,8 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.next()
                   // this.setCalendarStartAndEndTimes()
+                  this.mapResourceEvents = []
+                  this.callback(this.mapResourceEvents)
                   this.getEvents(false, true)
                 }
               },
@@ -441,6 +360,8 @@
                   this.calendar.options.slotLabelInterval = '01:00:00'
                   this.calendar.options.slotWidth = 45
                   calendarApi.changeView('resourceTimelineDay')
+                  this.mapResourceEvents = []
+                  this.callback(this.mapResourceEvents)
                   this.getEvents(false, true)
                 }
               },
@@ -455,6 +376,8 @@
 
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.changeView('resourceTimelineWeek')
+                  this.mapResourceEvents = []
+                  this.callback(this.mapResourceEvents)
                   this.getEvents(false, true)
                 }
               },
@@ -465,7 +388,7 @@
     },
     methods: {
       handleResourceColors() {
-        this.resources.forEach((r, index) => {
+        this.selectedPostalCodeZoneUsers.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
           r.eventBorderColor = '#919191'
 
@@ -492,116 +415,61 @@
           }
         })
       },
-      toggleSelectAllOrgTypes () {
+      toggleSelectAllPostalCodeZones () {
         this.$nextTick(() => {
-          if (this.selectAllOrgTypes) {
-            this.selectedOrgTypes = []
+          if (this.selectAllPostalCodeZones) {
+            this.selectedPostalCodeZones = []
           } else {
-            this.selectedOrgTypes = cloneDeep(this.orgTypes)
+            this.selectedPostalCodeZones = cloneDeep(this.postalCodeZones)
           }
         })
       },
-      toggleSelectAllPositions () {
+      toggleSelectAllPostalCodeZoneUsers () {
         this.$nextTick(() => {
-          if (this.selectAllPositions) {
-            this.selectedPositions = []
+          if (this.selectAllPostalCodeZoneUsers) {
+            this.selectedPostalCodeZoneUsers = []
           } else {
-            this.selectedPositions = cloneDeep(this.positions)
+            this.selectedPostalCodeZoneUsers = cloneDeep(this.postalCodeZoneUsers)
           }
         })
       },
-      async getSchedulingOrgs() {
+      async getPostalCodeZones () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
-            params: {
-              stateId: this.state?.id ?? null,
-              isSchedulingTool: true
-            }
-          })
-          //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
-          data.forEach(d => {
-            d.masterId = d.id
-            d.id = `${1}${d.id}`
-          })
-          this.orgs = data
-          this.masterOrgs = cloneDeep(this.orgs)
-          this.orgsLoading = false
-          this.selectedOrgs = this.selectedOrgs.filter(so => {
-            return this.orgs.some(o => o.id === so.id)
-          })
+          const {data} = await getRequest(`/postalCode/zones`)
+          this.postalCodeZones = data
+          this.postalCodeZonesLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Round Robins')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getSchedulingOrgTypes () {
+      async getPostalCodeZoneUsers () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getSchedulingOrgTypes()
-          this.orgTypes = data
-          this.orgTypesLoading = false
+          const {data} = await getRequest(`/postalCode/zone/users`)
+          this.postalCodeZoneUsers = data
+          this.postalCodeZoneUsersLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getPositions() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/position/scheduling`)
-          this.positions = data
-          this.positionsLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getSchedulingUsers() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, {
-            params: {
-              stateId: this.state?.id ?? null,
-              isSchedulingTool: true
-            }
-          })
-          //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
-          data.forEach(d => {
-            d.masterId = d.id
-            d.id = `${2}${d.id}`
-          })
-          this.users = data
-          this.masterUsers = cloneDeep(this.users)
-          this.usersLoading = false
-          this.selectedUsers = this.selectedUsers.filter(su => {
-            return this.users.some(u => u.id === su.id)
-          })
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Closers')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getAvailability() {
         try {
           let params = {
-            orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+            userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.id) : [],
             startTime: this.calendarStartTime,
             endTime: this.calendarEndTime
           }
           const {data} = await postRequest(`/schedule/availability`, params)
           data.forEach(d => {
-            d.groupId = `${d.systemListTypeId}${d.resourceId}`
-            d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+            d.groupId = `${d.resourceId}`
+            d.resourceId = `${d.resourceId}`
             d.color = 'gray'
           })
           this.eventSources[1].events = cloneDeep(data)
@@ -611,24 +479,21 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      limiter(e) {
-        this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
-        console.log('count', this.countSelected)
-        this.orgs.forEach(o => {
-          let match = this.selectedOrgs.find(so => so.id === o.id)
-          o.disabled = !match && this.countSelected >= this.maxSelectionAllowed
+      getUserPositionIds () {
+        let userPositionIds = []
+        this.selectedPostalCodeZoneUsers?.forEach(su => {
+          su.userPositions?.forEach(up => {
+            //up.id = userPositionId
+            userPositionIds.push(up.id)
+          })
         })
-        this.users.forEach(u => {
-          let match = this.selectedUsers.find(su => su.id === u.id)
-          u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
-        })
+        return userPositionIds
       },
-      async getEvents(isOrgs, reload) {
-        localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
-        localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
+      async getEvents(reload) {
+        localStorage.setItem('caUsers', JSON.stringify(this.selectedPostalCodeZoneUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
-        if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
+        if(reload || (this.selectedPostalCodeZoneUsers?.length > 0 && (this.postalCodeZoneUserValuesChanged || this.calendarInitialRender))) {
           if (!this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
           }
@@ -640,14 +505,13 @@
             { name: 'Appt Events',
               events: [] }
           ]
-          if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
+          if (this.selectedPostalCodeZoneUsers.length > 0) {
             //i do this here instead of on its own because all of the code above here has to happen for get availability as well
             this.calendarLoading = true
             await this.getAvailability()
 
             try {
               let params = {
-                orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
                 userPositionIds: this.getUserPositionIds(),
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
@@ -656,9 +520,9 @@
               data.forEach(d => {
                 // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
                 // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
-                d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+                d.resourceId = d.userId
                 d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.groupName}`
-                let matchingResource = this.resources.find(r => r.id === d.resourceId)
+                let matchingResource = this.selectedPostalCodeZoneUsers.find(r => r.id === d.resourceId)
                 d.colorForBorder = matchingResource?.color
               })
               this.eventSources[0].events = cloneDeep(data)
@@ -674,16 +538,6 @@
             }
           }
         }
-      },
-      getUserPositionIds () {
-        let userPositionIds = []
-        this.selectedUsers?.forEach(su => {
-          su.userPositions.forEach(up => {
-            //up.id = userPositionId
-            userPositionIds.push(up.id)
-          })
-        })
-        return userPositionIds
       },
       setCalendarStartAndEndTimes () {
         this.calendarStart = this.calendarApi.getDate()
@@ -726,10 +580,12 @@
         checkbox.setAttribute('class', 'mr-2')
 
         checkbox.onchange = (event) => {
+          console.log('it happened', event)
           if(event.target.checked) {
             let resource = renderInfo.resource
+            let self = this
             let resourceEvents = this.eventSources[0].events.filter(e => {
-              return e.resourceId === resource.id
+              return e.resourceId === resource.id || e.resourceId?.toString() === resource.id
             })
             resourceEvents.forEach(re => {
               let eventObj = {
@@ -753,44 +609,13 @@
           .prepend(checkbox)
 
       },
-      filterOrgsAndUsers() {
-        //only filter if something is selected
-        let stateFilterRequired = this.selectedStates?.length > 0
-        let orgTypeFilterRequired = this.selectedOrgTypes?.length > 0
-        let positionFilterRequired = this.selectedPositions?.length > 0
-        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired) {
-          this.orgs = this.masterOrgs.filter(mo => {
-            let stateMatch = true
-            let orgTypeMatch = true
-            if(stateFilterRequired) {
-              let match = this.selectedStates.find(ss => ss.id === mo.stateId)
-              stateMatch = match !== null && match !== undefined
-            }
-            if(orgTypeFilterRequired) {
-              let match = this.selectedOrgTypes.find(sot => sot.id === mo.orgTypeId)
-              orgTypeMatch = match !== null && match !== undefined
-            }
-            return stateMatch && orgTypeMatch
-          })
-          let selectedPositionIds = this.selectedPositions.map(p => p.id)
-          let selectedStateIds = this.selectedStates.map(s => s.id)
-          this.users = this.masterUsers.filter(mo => {
-            let stateMatch = true
-            let positionMatch = true
-            if(stateFilterRequired) {
-              stateMatch = mo.userPositions.some(up => {
-                return selectedStateIds.includes(up.stateId)
-              })
-            }
-            if(positionFilterRequired) {
-              positionMatch = mo?.userPositions.some(up => {
-                return selectedPositionIds.includes(up.positionId)
-              })
-            }
-            return stateMatch && positionMatch
-          })
-        }
-      }
+      clearSelectedMapResourceEvents () {
+        let selectedResourceIds = this.selectedPostalCodeZoneUsers.map(u => u.id)
+        this.mapResourceEvents = this.mapResourceEvents.filter(r => {
+          return selectedResourceIds.includes(r.id)
+        })
+        console.log('randaLogger', this.mapResourceEvents)
+      },
 
     }
   }

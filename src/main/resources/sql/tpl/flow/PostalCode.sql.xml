@@ -141,6 +141,51 @@
       order by full_name
   ]]></postalCode.getZoneUsers>
 
+  <postalCode.getAllZoneUsers><![CDATA[
+    with t1 as (
+        select distinct upv.user_id                                as id,
+                        upv.user_id,
+                        upv.first_name,
+                        upv.last_name,
+                        concat(upv.first_name, ' ', upv.last_name) AS full_name,
+                        concat(upv.first_name, ' ', upv.last_name) AS title
+        from flow.postal_code_zone_user pczu
+                 inner join flow.user_positions_vw upv on upv.user_id = pczu.user_id
+                 inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
+        where pczu.archived is not true
+          and pcz.company_id = :companyId
+    )
+    select *,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(positions)))
+                        FROM (
+                                 SELECT up.id,
+                                        up.user_id as "userId",
+                                        p.position,
+                                        up.position_id as "positionId",
+                                        up.org_id as "orgId",
+                                        o.state_id as "stateId",
+                                        up.start_date as "startDate",
+                                        up.end_date as "endDate",
+                                        up.primary_flag as "primaryFlag",
+                                        up.archived,
+                                        (select json_agg(json_build_object(
+                                                                 'orgId', h.org_id,
+                                                                 'orgName', h.org_name,
+                                                                 'positionLevel', h.position_level,
+                                                                 'orgLevelId', h.org_level_id
+                                                             ) order by h.org_level_id)::jsonb
+                                         from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
+                                 FROM flow.user_position up
+                                          inner join flow.position p on p.id = up.position_id
+                                          inner join flow.org o on o.id = up.org_id
+                                 WHERE up.user_id = t1.user_id
+                                   and up.archived is not true
+                                   and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
+    from t1
+    order by full_name
+  ]]></postalCode.getAllZoneUsers>
+
   <postalCode.checkForExisting><![CDATA[
     select pc.id,
        pc.postal_code_zone_id,
