@@ -828,21 +828,21 @@
                 <div v-if="[18,19,20,22,24,23,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'today', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
                   {{line.id === 21 ? '' : line.checked_in_today_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'today', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
                   {{line.checked_in_today_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'today', line.name, 'standard', false)">
+                <div @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
                   {{line.today_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'standard', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
                 {{line.today_count}}
               </div>
             </td>
@@ -855,21 +855,21 @@
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
                   {{line.id === 21 ? '' : line.checked_in_week_to_date_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
                   {{line.checked_in_week_to_date_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', false)">
+                <div @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
                   {{line.week_to_date_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
                 {{line.week_to_date_count}}
               </div>
             </td>
@@ -883,21 +883,21 @@
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
                   {{line.id === 21 ? '' : line.checked_in_custom_date_range_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
                   {{line.checked_in_custom_date_range_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', false)">
+                <div @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
                   {{line.custom_date_range_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
                 {{line.custom_date_range_count}}
               </div>
             </td>

@@ -1,31 +1,26 @@
 <template>
 <v-container id="smartlist-container">
   <v-row>
-
-    <v-col cols="12" class="text-left">
-      <v-btn
-        text
-        class="btn-back"
-        :ripple="false"
-        @click="$router.go(-1)"
-      >
-        Back
-      </v-btn>
-    </v-col>
-
     <v-col cols="12">
-      <v-toolbar color="white" class="elevation-1">
+      <v-toolbar flat class="app-toolbar">
+        <v-btn
+          text
+          small
+          class="mr-3"
+          color="primaryCustom"
+          @click="$router.go(-1)"
+        >
+          <v-icon>mdi-arrow-left</v-icon>
+        </v-btn>
         <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-
-<!--          @TODO: Remove once smartlists are "done" -->
           <v-btn
-            id="runReport"
             text
-            @click="runReport">
-            <v-icon>warning</v-icon>
-            <span>Run (for testing only)</span>
+            @click="runReport"
+          >
+            <v-icon>mdi-cloud-download</v-icon>
+            <span v-if="!constants.IS_MOBILE">Export</span>
           </v-btn>
 
           <v-btn
@@ -37,10 +32,6 @@
             <v-icon>save</v-icon>
             <span v-if="!constants.IS_MOBILE">Save</span>
           </v-btn>
-<!--          <v-btn text to="/smartlist/null" color="primary">-->
-<!--            <v-icon>cancel</v-icon>-->
-<!--            <span v-if="!constants.IS_MOBILE">Cancel</span>-->
-<!--          </v-btn>-->
         </v-toolbar-items>
       </v-toolbar>
     </v-col>
@@ -49,7 +40,7 @@
       <v-card>
         <v-card-text>
           <v-row>
-            <v-col cols="6">
+            <v-col cols="12" md="6">
               <v-text-field
                 text
                 label="Smartlist Name"
@@ -57,20 +48,40 @@
               />
             </v-col>
 
-            <v-col cols="6">
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="smartlist.viewObjectTypeId"
+                :items="viewObjectTypes"
+                item-text="objectType"
+                item-value="objectTypeId"
+                label="Table View Display"
+                placeholder="Select one..."
+              />
+            </v-col>
+
+
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" md="6">
               <v-select
                 v-model="smartlist.companyObjectTypeId"
                 :items="companyObjectTypes"
                 item-text="objectType"
                 item-value="companyObjectTypeId"
-                label="Object Type"
+                label="Rows"
                 placeholder="Select one..."
               />
             </v-col>
-          </v-row>
 
-          <v-row>
-            <v-col cols="12">
+            <v-col cols="6" md="3">
+              <v-checkbox
+                v-model="smartlist.mainProcessSteps"
+                label="Main Process Steps Only"
+              />
+            </v-col>
+
+            <v-col cols="6" md="3">
               <v-checkbox
                 v-model="smartlist.shared"
                 label="Public"
@@ -83,7 +94,7 @@
 
     <v-col cols="12">
       <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>Fields</v-toolbar-title>
+        <v-toolbar-title>Columns</v-toolbar-title>
         <v-spacer />
         <v-toolbar-items>
           <v-btn
@@ -313,7 +324,11 @@ export default {
       fetchedLogic: [],
       logic: [],
       logicUpdated: false,
-      resetRequirementForm: false
+      resetRequirementForm: false,
+      viewObjectTypes: [
+        {objectTypeId: 1, objectType: 'Project'},
+        {objectTypeId: 2, objectType: 'Contact'}
+      ]
     }
   },
   created () {
@@ -598,36 +613,6 @@ export default {
   font-size: 12px;
   color: rgba(0,0,0,0.6);
   font-weight: 700; line-height: 18px;
-}
-
-::v-deep {
-  .btn-back {
-
-    text-transform: capitalize;
-    text-decoration: underline;
-
-    &:not(.v-btn--round) {
-      padding: 0;
-    }
-
-    &:hover:before {
-      opacity: 0 !important;
-    }
-
-    .v-btn__content {
-      justify-content: start;
-    }
-  }
-
-  #runReport {
-    .v-btn__content {
-      color: red;
-    }
-
-    .v-icon {
-      color: red !important;
-    }
-  }
 }
 
 .v-list {
