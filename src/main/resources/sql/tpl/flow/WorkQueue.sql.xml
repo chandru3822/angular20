@@ -32,6 +32,8 @@
                      left join flow.user u on u.id = up.user_id
                      inner join statuses s on s.id = pswqt.work_queue_type_id and s.company_id_test = cp.company_id
             where wqt.id = pswqt.work_queue_type_id
+              and pswqt.archived is not true
+              and pps.archived is not true
               and case when :isParent then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))) else ps.company_id = :companyId end
               and case when :unassigned is true then pps.user_position_id is null
                        when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
@@ -114,6 +116,8 @@
                left join flow.user u on u.id = up.user_id
                inner join statuses s on s.id = pswqt.work_queue_type_id and s.company_id_test = cp.company_id
       where pswqt.work_queue_type_id = :workQueueTypeId
+        and pswqt.archived is not true
+        and pps.archived is not true
         and case
                 when :isParent then array [ps.company_id] <@ (select array(select id
                                                                            from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -156,6 +160,8 @@
          left join flow.user u on u.id = up.user_id
          inner join statuses s on s.id = pswqt.work_queue_type_id and s.company_id_test = cp.company_id
     where pswqt.work_queue_type_id = :workQueueTypeId
+      and pswqt.archived is not true
+        and pps.archived is not true
     and case
           when :isParent then array [ps.company_id] <@ (select array(select id
                                                                      from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
