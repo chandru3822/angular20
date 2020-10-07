@@ -213,6 +213,7 @@
       :requirements="requirements"
       :company-object-types="companyObjectTypes"
       :reset-form="resetRequirementForm"
+      :disabled="!smartlist.id"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -426,11 +427,15 @@ export default {
     },
     async addSmartlist () {
       try {
-        await postRequest(`/smartlist`, this.smartlist)
-        this.$router.back()
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/smartlist`, this.smartlist)
+        this.smartlist = data
+        this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async addNewField () {
@@ -472,11 +477,13 @@ export default {
     },
     async updateSmartlist () {
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
-        this.$router.back()
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateLogic () {
