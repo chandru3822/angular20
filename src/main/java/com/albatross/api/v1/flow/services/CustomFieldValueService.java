@@ -72,7 +72,7 @@ public class CustomFieldValueService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("dateValue", cfv.getDateValue());
       params.put("timestampValue", cfv.getTimestampValue());
-      params.put("booleanValue", null != cfv.getBooleanValue() ? cfv.getBooleanValue() : false);
+      params.put("booleanValue", cfv.getBooleanValue());
       params.put("textValue", cfv.getTextValue());
       params.put("numericValue", cfv.getNumericValue());
       params.put("intValue", cfv.getIntValue());
