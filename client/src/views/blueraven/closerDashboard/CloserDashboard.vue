@@ -419,7 +419,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
-                                  readonly outlined dense v-on="on"></v-text-field>
+                                  readonly outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_created_pipeline_dt1" :max="appts_created_pipeline_dt2"
                                  @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
@@ -429,7 +429,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
-                                  readonly outlined dense v-on="on"></v-text-field>
+                                  readonly outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_created_pipeline_dt2" :min="appts_created_pipeline_dt1"
                                  @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
@@ -780,7 +780,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
+                                  outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_to_fdc_pipeline_dt1" :max="appts_to_fdc_pipeline_dt2"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
@@ -790,7 +790,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
+                                  outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_to_fdc_pipeline_dt2" :min="appts_to_fdc_pipeline_dt1"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
@@ -3369,23 +3369,27 @@
     }
 
     .appts-created-pipeline-dropdown {
-      font-size: 10px;
       transform: scale(0.875);
       margin: 0 auto 12px auto;
-      width: 80px;
-      height: 25px;
+      width: 110px;
 
-      ::v-deep label {
-        color: #888 !important;
-      }
+      ::v-deep {
+        .v-input__control {
+          height: 25px;
+        }
 
-      ::v-deep i {
-        color: #888 !important;
-        font-size: 16px;
-      }
+        label {
+          color: #888 !important;
+        }
 
-      ::v-deep .v-text-field__details {
-        display: none;
+        i {
+          color: #888 !important;
+          font-size: 16px;
+        }
+
+        .v-select__selections span {
+          font-size: 10px !important;
+        }
       }
     }
 
@@ -3420,24 +3424,22 @@
             max-width: 40px;
             height: 12px;
 
-            ::v-deep .v-input__control {
-              max-width: 40px;
-              height: 14px;
-            }
+            ::v-deep {
+              .v-input__control {
+                max-width: 40px;
+                height: 14px;
+              }
 
-            ::v-deep .v-input__slot {
-              padding: 0;
-              width: 40px;
-              height: 12px;
-              min-height: 12px;
-            }
+              .v-input__slot {
+                padding: 0;
+                width: 40px;
+                height: 12px;
+                min-height: 12px;
+              }
 
-            ::v-deep .v-text-field__slot input {
-              text-align: center;
-            }
-
-            ::v-deep .v-text-field__details {
-              display: none;
+              .v-text-field__slot input {
+                text-align: center;
+              }
             }
           }
 
@@ -3555,6 +3557,10 @@
               color: #888 !important;
               font-size: 16px;
             }
+
+            .v-select__selections span {
+              font-size: 10px !important;
+            }
           }
         }
 
@@ -3623,24 +3629,22 @@
             max-width: 40px;
             height: 12px;
 
-            ::v-deep .v-input__control {
-              max-width: 40px;
-              height: 14px;
-            }
+            ::v-deep {
+              .v-input__control {
+                max-width: 40px;
+                height: 14px;
+              }
 
-            ::v-deep .v-input__slot {
-              padding: 0;
-              width: 40px;
-              height: 12px;
-              min-height: 12px;
-            }
+              .v-input__slot {
+                padding: 0;
+                width: 40px;
+                height: 12px;
+                min-height: 12px;
+              }
 
-            ::v-deep .v-text-field__slot input {
-              text-align: center;
-            }
-
-            ::v-deep .v-text-field__details {
-              display: none;
+              .v-text-field__slot input {
+                text-align: center;
+              }
             }
           }
 
@@ -3787,28 +3791,32 @@
       justify-content: space-between;
       align-items: center;
 
-      ::v-deep .v-input {
-        max-width: 70%;
-      }
+      ::v-deep {
+        .v-input {
+          max-width: 70%;
+        }
 
-      ::v-deep input,
-      #funnel-drilldown-row-count {
-        font-size: 11px;
+        input,
+        #funnel-drilldown-row-count {
+          font-size: 11px;
+        }
       }
     }
 
     #funnel-drilldown-table {
-      ::v-deep th, ::v-deep td {
-        font-size: 10px;
-        padding: 5px;
-      }
+      ::v-deep {
+        th, td {
+          font-size: 10px;
+          padding: 5px;
+        }
 
-      ::v-deep th {
-        line-height: 14px;
+        th {
+          line-height: 14px;
 
-        .v-data-table-header__icon {
-          font-size: 12px !important;
-          padding-bottom: 2px;
+          .v-data-table-header__icon {
+            font-size: 12px !important;
+            padding-bottom: 2px;
+          }
         }
       }
 
@@ -4212,8 +4220,12 @@
         font-size: 12px;
         transform: none;
         margin-bottom: 0;
-        width: 100px;
+        width: 125px;
         height: 40px;
+
+        ::v-deep .v-select__selections span {
+          font-size: 12px !important;
+        }
       }
 
       .funnel-container {
@@ -4233,15 +4245,17 @@
               max-width: 50px;
               height: 15px;
 
-              ::v-deep .v-input__control {
-                max-width: 50px;
-                height: 15px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 50px;
+                  height: 15px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 50px;
-                height: 15px;
-                min-height: 15px;
+                .v-input__slot {
+                  width: 50px;
+                  height: 15px;
+                  min-height: 15px;
+                }
               }
             }
 
@@ -4362,6 +4376,7 @@
           .appts-to-fdc-pipeline-dropdown {
             transform: none;
             margin: 0 10px 10px 0;
+            max-width: 145px;
 
             ::v-deep {
               label {
@@ -4370,6 +4385,10 @@
 
               i {
                 font-size: 20px;
+              }
+
+              .v-select__selections span {
+                font-size: 12px !important;
               }
             }
           }
@@ -4412,15 +4431,17 @@
               max-width: 50px;
               height: 15px;
 
-              ::v-deep .v-input__control {
-                max-width: 50px;
-                height: 15px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 50px;
+                  height: 15px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 50px;
-                height: 15px;
-                min-height: 15px;
+                .v-input__slot {
+                  width: 50px;
+                  height: 15px;
+                  min-height: 15px;
+                }
               }
             }
 
@@ -4506,13 +4527,15 @@
       }
 
       #funnel-drilldown-search {
-        ::v-deep input,
-        #funnel-drilldown-row-count {
-          font-size: 12px;
-        }
+        ::v-deep {
+          input,
+          #funnel-drilldown-row-count {
+            font-size: 12px;
+          }
 
-        ::v-deep .v-input {
-          width: 80%;
+          .v-input {
+            width: 80%;
+          }
         }
 
         #funnel-drilldown-row-count {
@@ -4522,16 +4545,18 @@
       }
 
       #funnel-drilldown-table {
-        ::v-deep th, ::v-deep td {
-          font-size: 11px;
-        }
+        ::v-deep {
+          th, td {
+            font-size: 11px;
+          }
 
-        ::v-deep th {
-          line-height: 16px;
+          th {
+            line-height: 16px;
 
-          .v-data-table-header__icon {
-            font-size: 14px !important;
-            padding-bottom: 3px;
+            .v-data-table-header__icon {
+              font-size: 14px !important;
+              padding-bottom: 3px;
+            }
           }
         }
       }
@@ -4988,15 +5013,17 @@
               max-width: 60px;
               height: 20px;
 
-              ::v-deep .v-input__control {
-                max-width: 60px;
-                height: 20px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 60px;
+                  height: 20px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 60px;
-                height: 20px;
-                min-height: 20px;
+                .v-input__slot {
+                  width: 60px;
+                  height: 20px;
+                  min-height: 20px;
+                }
               }
             }
 
@@ -5106,15 +5133,17 @@
               max-width: 60px;
               height: 20px;
 
-              ::v-deep .v-input__control {
-                max-width: 60px;
-                height: 20px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 60px;
+                  height: 20px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 60px;
-                height: 20px;
-                min-height: 20px;
+                .v-input__slot {
+                  width: 60px;
+                  height: 20px;
+                  min-height: 20px;
+                }
               }
             }
 
@@ -5168,15 +5197,17 @@
       }
 
       #funnel-drilldown-table {
-        ::v-deep th, ::v-deep td {
-          font-size: 12px;
-        }
+        ::v-deep {
+          th, td {
+            font-size: 12px;
+          }
 
-        ::v-deep th {
-          line-height: 18px;
+          th {
+            line-height: 18px;
 
-          .v-data-table-header__icon {
-            font-size: 16px !important;
+            .v-data-table-header__icon {
+              font-size: 16px !important;
+            }
           }
         }
       }
