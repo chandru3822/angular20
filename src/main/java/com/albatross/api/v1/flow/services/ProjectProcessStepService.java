@@ -363,6 +363,7 @@ public class ProjectProcessStepService {
 
     ExpressionParser parser = new SpelExpressionParser();
     if (logicString.length() > 0) {
+      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), logicString.toString()));
       return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
     } else {
       return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
