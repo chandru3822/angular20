@@ -902,47 +902,17 @@
       repModel: [],
       repData: [],
       pipelineDateRanges: [
-        {
-          label: 'Yesterday',
-          value: 'yesterday'
-        },
-        {
-          label: 'Last Week',
-          value: 'lastWeek'
-        },
-        {
-          label: 'Last Month',
-          value: 'lastMonth'
-        },
-        {
-          label: 'Last 90 days',
-          value: 90
-        },
-        {
-          label: 'Week to Date',
-          value: 'WTD'
-        },
-        {
-          label: 'Month to Date',
-          value: 'MTD'
-        },
-        {
-          label: 'Quarter to Date',
-          value: 'QTD'
-        },
-        {
-          label: 'Year to Date',
-          value: 'YTD'
-        },
-        {
-          label: 'Custom',
-          value: 'Custom'
-        }
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'Last Week', value: 'lastWeek' },
+        { label: 'Last Month', value: 'lastMonth' },
+        { label: 'Last 90 days', value: 90 },
+        { label: 'Week to Date', value: 'WTD' },
+        { label: 'Month to Date', value: 'MTD' },
+        { label: 'Quarter to Date', value: 'QTD' },
+        { label: 'Year to Date', value: 'YTD' },
+        { label: 'Custom', value: 'Custom' }
       ],
-      pipelineDateRange: {
-        label: 'Week to Date',
-        value: 'WTD'
-      },
+      pipelineDateRange: { label: 'Week to Date', value: 'WTD' },
       showPipelineCustomDates: false,
       customDateSelectorIsOpen: false,
       viewSelect: 'standard',

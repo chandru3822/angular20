@@ -1139,29 +1139,7 @@
       userRowIndex: -1,
       numOffices: 0,
       apptsCreatedPipelineData: [],
-      // TODO: Remove test data below
-      apptsToFdcPipelineData: [
-        // {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
-        // {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
-        // {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
-        // {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
-        // {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
-        // {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
-        // {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
-        // {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
-        // {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
-        // {id: 24, name: 'Non-dispositioned appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
-        // {id: 23, name: 'Yet to occur', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
-        // {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
-        // {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
-        // {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
-        // {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
-        // {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
-        // {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
-        // {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
-        // {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 22},
-        // {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 23}
-      ],
+      apptsToFdcPipelineData: [],
       apptsCreatedPipelineCustomSelectorIsOpen: false,
       apptsToFdcPipelineCustomSelectorIsOpen: false,
       todayUpperPercentage: 99,
@@ -1183,74 +1161,26 @@
       repModel: [],
       repData: [],
       apptsCreatedPipelineDateRanges: [
-        {
-          label: 'Yesterday',
-          value: 'yesterday'
-        },
-        {
-          label: 'Last Week',
-          value: 'lastWeek'
-        },
-        {
-          label: 'Month to Date',
-          value: 'MTD'
-        },
-        {
-          label: 'Last 60 days',
-          value: 60
-        },
-        {
-          label: 'Last 90 days',
-          value: 90
-        },
-        {
-          label: 'Year to Date',
-          value: 'YTD'
-        },
-        {
-          label: 'Custom',
-          value: 'Custom'
-        }
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'Last Week', value: 'lastWeek' },
+        { label: 'Month to Date', value: 'MTD' },
+        { label: 'Last 60 days', value: 60 },
+        { label: 'Last 90 days', value: 90 },
+        { label: 'Year to Date', value: 'YTD' },
+        { label: 'Custom', value: 'Custom' }
       ],
-      apptsCreatedPipelineDateRange: {
-        label: 'Month to Date',
-        value: 'MTD'
-      },
+      apptsCreatedPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
       showApptsCreatedPipelineCustomDates: false,
       apptsToFdcPipelineDateRanges: [
-        {
-          label: 'Yesterday',
-          value: 'yesterday'
-        },
-        {
-          label: 'Last Week',
-          value: 'lastWeek'
-        },
-        {
-          label: 'Month to Date',
-          value: 'MTD'
-        },
-        {
-          label: 'Last 60 days',
-          value: 60
-        },
-        {
-          label: 'Last 90 days',
-          value: 90
-        },
-        {
-          label: 'Year to Date',
-          value: 'YTD'
-        },
-        {
-          label: 'Custom',
-          value: 'Custom'
-        }
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'Last Week', value: 'lastWeek' },
+        { label: 'Month to Date', value: 'MTD' },
+        { label: 'Last 60 days', value: 60 },
+        { label: 'Last 90 days', value: 90 },
+        { label: 'Year to Date', value: 'YTD' },
+        { label: 'Custom', value: 'Custom' }
       ],
-      apptsToFdcPipelineDateRange: {
-        label: 'Month to Date',
-        value: 'MTD'
-      },
+      apptsToFdcPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
       showApptsToFdcPipelineCustomDates: false,
       viewSelect: 'standard',
       appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
