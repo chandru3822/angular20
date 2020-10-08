@@ -761,7 +761,7 @@
             :items="funnelDrilldownData"
             @current-items="filteredFunnelDrilldownItems"
             :search="funnelDrilldownSearch"
-            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 355px)') : '105px'"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 365px)') : '105px'"
             dense
             multi-sort
             :sort-by="[]"

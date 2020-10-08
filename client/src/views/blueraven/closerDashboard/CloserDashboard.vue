@@ -939,13 +939,14 @@
             :items="funnelDrilldownData"
             @current-items="filteredFunnelDrilldownItems"
             :search="funnelDrilldownSearch"
-            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 355px)') : '105px'"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 395px)') : '105px'"
             dense
             multi-sort
             :sort-by="[]"
             :sort-desc="[]"
-            hide-default-footer
-            disable-pagination
+            :loading="funnelDrilldownLoading"
+            :items-per-page="500"
+            :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
@@ -1224,10 +1225,18 @@
         { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175, optional: true }
       ],
       funnelDrilldownData: [],
+      funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
       funnelDrilldownRowCount: 0,
-      totalSystemSize: 0
+      totalSystemSize: 0,
+      footerProps: {
+        showFirstLastPage: !constants.IS_MOBILE,
+        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+        'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
+      }
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
