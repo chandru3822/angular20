@@ -570,7 +570,7 @@ public class ProjectProcessStepService {
         break;
       case 3:
         // @TODO: Duped from the button logic, potentially combine
-        Boolean booleanFunctionResult = Boolean.valueOf(functionResult.toString());
+        Boolean booleanFunctionResult = (functionResult == null) ? null : Boolean.valueOf(functionResult.toString());
         switch (r.getDataTypeRequirementId().intValue()) {
           case 14:
             switch (r.getOperatorTypeId().intValue()) {
