@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Panel</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newPanel = {panelStates: [] }]" color="primary">
+            <v-btn text @click="[addNew = !addNew, newPanel = {panelStates: [] }]" color="primaryCustom">
               <v-icon v-if="!addNew">add</v-icon>
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
@@ -126,7 +126,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="[us.archived = true, us.deleteConfirm = false]">
                           Yes
@@ -190,7 +190,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deletePanel(item.id)]">
                           Yes

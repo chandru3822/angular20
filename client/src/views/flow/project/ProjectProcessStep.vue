@@ -165,7 +165,7 @@
               :format="'MMMM DD, YYYY, h:mm A'"
               label="End Time"
             />
-            <v-text-field color="primary"
+            <v-text-field color="primaryCustom"
                           v-model="closerAppointmentDetails.userFullName"
                           readonly
                           label="Resource"></v-text-field>

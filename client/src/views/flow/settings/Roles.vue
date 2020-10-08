@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Roles</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/settings/role" color="primary">
+            <v-btn text to="/settings/role" color="primaryCustom">
               <v-icon>add</v-icon>
               Add Role
             </v-btn>
@@ -67,7 +67,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="[item.archived = true, deleteRole(item.id)]">
                         Yes

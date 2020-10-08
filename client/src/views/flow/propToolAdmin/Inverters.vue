@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Inverter</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newInverter = { inverterStates: [] }" color="primary">
+            <v-btn text @click="addNew = !addNew; newInverter = { inverterStates: [] }" color="primaryCustom">
               <v-icon v-if="!addNew">add</v-icon>
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
@@ -137,7 +137,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="[us.archived = true, us.deleteConfirm = false]">
                           Yes
@@ -200,7 +200,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deleteInverter(item.id)]">
                           Yes

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Zip Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newZipCode = {}]" color="primary">
+            <v-btn text @click="[addNew = !addNew, newZipCode = {}]" color="primaryCustom">
               <v-icon>add</v-icon>
               Add New
             </v-btn>
@@ -96,7 +96,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deleteZipCode(item.id)]">
                           Yes

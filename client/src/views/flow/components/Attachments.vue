@@ -68,7 +68,7 @@
                       No
                     </v-btn>
                     <v-btn
-                      color="primary"
+                      color="primaryCustom"
                       text
                       @click="[a.archived = true, deleteAttachment(a.id)]">
                       Yes

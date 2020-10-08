@@ -60,7 +60,7 @@
                       No
                     </v-btn>
                     <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="[p.archived = true, deleteProcess(p.id)]">
                       Yes

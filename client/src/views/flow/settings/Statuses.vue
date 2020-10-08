@@ -60,7 +60,7 @@
 <!--                      No-->
 <!--                    </v-btn>-->
 <!--                    <v-btn-->
-<!--                        color="primary"-->
+<!--                        color="primaryCustom"-->
 <!--                        text-->
 <!--                        @click="s.archived = true; deleteType(s.id)">-->
 <!--                      Yes-->

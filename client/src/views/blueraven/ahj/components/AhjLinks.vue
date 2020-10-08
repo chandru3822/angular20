@@ -236,7 +236,7 @@
     font-size: 0.95em !important;
   }
   .v-list {
-    border-bottom: 1px solid var(--v-primary-base) !important;
+    border-bottom: 1px solid var(--v-primaryCustom-base) !important;
     border-radius: 0;
   }
   .v-list__item__title {
@@ -246,7 +246,7 @@
     margin: 0 10px 0 0 !important;
     max-width: 30px;
     height: 30px;
-    border: 1px solid var(--v-primary-base) !important;
+    border: 1px solid var(--v-primaryCustom-base) !important;
     border-radius: 3px;
     display: flex;
     justify-content: center;

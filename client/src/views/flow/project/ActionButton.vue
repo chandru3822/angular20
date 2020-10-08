@@ -2,7 +2,7 @@
 <v-btn
   :disabled="!proceed"
   :loading="isResultLoading"
-  color="primary"
+  color="primaryCustom"
   class="action-button"
   @click="completeAction"
 >{{ label }}</v-btn>

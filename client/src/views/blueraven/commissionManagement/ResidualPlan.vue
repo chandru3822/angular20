@@ -47,7 +47,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primary"
+                  color="primaryCustom"
                   text
                   @click="[deleteConfirm = true, deletePlan()]">
                   Yes
@@ -111,7 +111,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primary"
+                  color="primaryCustom"
                   text
                   @click="[inactivateConfirm = true, inactivatePlan()]">
                   Yes
@@ -390,7 +390,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteLevel(item.id)">
                         Yes
@@ -596,7 +596,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteUserFromPlan(item)">
                         Yes
