@@ -198,16 +198,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Homeowner no show (checked in)
+        --Homeowner no show (checked-in)
         when p_funnel_id = 18 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -231,10 +224,10 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                        pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -270,16 +263,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Closer missed appointment (checked in)
+        --Closer missed appointment (checked-in)
         when p_funnel_id = 19 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -303,10 +289,10 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 3 --Missed
+                        pd.closer_appointment_outcome = 3 and --Missed
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -342,16 +328,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Turned away at the door (checked in)
+        --Turned away at the door (checked-in)
         when p_funnel_id = 20 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -375,10 +354,10 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                        pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -414,16 +393,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --No utility bill (checked in)
+        --No utility bill (checked-in)
         when p_funnel_id = 22 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -447,10 +419,10 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                        pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -486,16 +458,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Non-dispositioned appointments (checked in)
+        --Non-dispositioned appointments (checked-in)
         when p_funnel_id = 24 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -519,10 +484,10 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                        (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                        (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -558,16 +523,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Yet to occur (checked in)
+        --Yet to occur (checked-in)
         when p_funnel_id = 23 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -591,10 +549,10 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                        (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                        (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -630,16 +588,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Pitched (checked in)
+        --Pitched (checked-in)
         when p_funnel_id = 11 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -663,10 +614,10 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 2 --Pitched
+                        pd.closer_appointment_outcome = 2 and --Pitched
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -702,16 +653,9 @@ BEGIN
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
-        --Credits run (checked in)
+        --Credits run (checked-in)
         when p_funnel_id = 9 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -736,9 +680,9 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
-                        pd.credit_decision_date is not null
+                        pd.credit_decision_date is not null and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
@@ -777,16 +721,9 @@ BEGIN
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
-        --Credits passed (checked in)
+        --Credits passed (checked-in)
         when p_funnel_id = 3 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -813,10 +750,10 @@ BEGIN
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                         left outer join flow.list_of_value lov4 on lov4.id = pd.credit_check
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
-                        pd.credit_check = 82 --Pass
+                        pd.credit_check = 82 and --Pass
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
@@ -851,16 +788,9 @@ BEGIN
                     order by owner_name, pd.installation_agreement_signed_date
                 ) as funnel_rows;
 
-        --Bookings Complete (checked in)
+        --Bookings Complete (checked-in)
         when p_funnel_id = 4 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -884,9 +814,9 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
-                        pd.installation_agreement_signed_date is not null
+                        pd.installation_agreement_signed_date is not null and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.installation_agreement_signed_date
                 ) as funnel_rows;
 
@@ -920,16 +850,9 @@ BEGIN
                     order by owner_name, pd.site_survey_verified_date :: DATE
                 ) as funnel_rows;
 
-        --Site Surveys Verified (checked in)
+        --Site Surveys Verified (checked-in)
         when p_funnel_id = 5 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -952,9 +875,9 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
-                        pd.site_survey_verified_date is not null
+                        pd.site_survey_verified_date is not null and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.site_survey_verified_date :: DATE
                 ) as funnel_rows;
 
@@ -989,16 +912,9 @@ BEGIN
                     order by owner_name, pd.final_design_sent_to_homeowner_date
                 ) as funnel_rows;
 
-        --Final Designs sent to Homeowner (checked in)
+        --Final Designs sent to Homeowner (checked-in)
         when p_funnel_id = 6 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1022,9 +938,9 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
-                        pd.final_design_sent_to_homeowner_date is not null
+                        pd.final_design_sent_to_homeowner_date is not null and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_sent_to_homeowner_date
                 ) as funnel_rows;
 
@@ -1062,16 +978,9 @@ BEGIN
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
-        --Final Designs Approved (checked in)
+        --Final Designs Approved (checked-in)
         when p_funnel_id = 7 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1098,9 +1007,9 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
-                        pd.final_design_signed_date is not null
+                        pd.final_design_signed_date is not null and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
@@ -1147,16 +1056,9 @@ BEGIN
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
-        --Final Designs Completed (checked in)
+        --Final Designs Completed (checked-in)
         when p_funnel_id = 21 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1183,18 +1085,18 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where pd.final_design_signed_date is not null and
-                          pd.financial_agreement_signed_date is not null and
-                          ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                            pd.proof_of_homeowners_insurance_obtained_date is not null)
-                              or
-                           (pd.proof_of_homeowners_insurance_required is null or
-                            pd.proof_of_homeowners_insurance_required = 306)) and --No
-                          pd.utility_bill_verified_date is not null and
-                          (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
-                          case when pd.primary_financier = 721 --Cash
-                              then pd.first_cash_payment_paid_date is not null else 1=1 end
+                        pd.financial_agreement_signed_date is not null and
+                        ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
+                          pd.proof_of_homeowners_insurance_obtained_date is not null)
+                            or
+                         (pd.proof_of_homeowners_insurance_required is null or
+                          pd.proof_of_homeowners_insurance_required = 306)) and --No
+                        pd.utility_bill_verified_date is not null and
+                        (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
+                        case when pd.primary_financier = 721 --Cash
+                            then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
@@ -1434,16 +1336,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Homeowner no show (checked in)
+        --Homeowner no show (checked-in)
         when p_funnel_id = 18 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1467,12 +1362,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                        pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1510,16 +1405,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Closer missed appointment (checked in)
+        --Closer missed appointment (checked-in)
         when p_funnel_id = 19 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1543,12 +1431,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 3 --Missed
+                        pd.closer_appointment_outcome = 3 and --Missed
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1586,16 +1474,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Turned away at the door (checked in)
+        --Turned away at the door (checked-in)
         when p_funnel_id = 20 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1619,12 +1500,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                        pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1662,16 +1543,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --No utility bill (checked in)
+        --No utility bill (checked-in)
         when p_funnel_id = 22 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1695,12 +1569,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                        pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1738,16 +1612,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Non-dispositioned appointments (checked in)
+        --Non-dispositioned appointments (checked-in)
         when p_funnel_id = 24 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1771,12 +1638,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                        (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                        (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1814,16 +1681,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Yet to occur (checked in)
+        --Yet to occur (checked-in)
         when p_funnel_id = 23 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1847,12 +1707,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                        (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                        (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1890,16 +1750,9 @@ BEGIN
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
-        --Pitched (checked in)
+        --Pitched (checked-in)
         when p_funnel_id = 11 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -1923,12 +1776,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome = 2 --Pitched
+                        pd.closer_appointment_outcome = 2 and --Pitched
+                        pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1967,16 +1820,9 @@ BEGIN
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
-        --Credits run (checked in)
+        --Credits run (checked-in)
         when p_funnel_id = 9 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -2001,12 +1847,12 @@ BEGIN
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
@@ -2048,16 +1894,9 @@ BEGIN
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
-        --Credits passed (checked in)
+        --Credits passed (checked-in)
         when p_funnel_id = 3 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
 
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
@@ -2085,13 +1924,13 @@ BEGIN
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                         left outer join flow.list_of_value lov4 on lov4.id = pd.credit_check
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
                         pd.credit_check = 82 and --Pass
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
@@ -2129,16 +1968,9 @@ BEGIN
                     order by owner_name, pd.installation_agreement_signed_date
                 ) as funnel_rows;
 
-        --Bookings Complete (checked in)
+        --Bookings Complete (checked-in)
         when p_funnel_id = 4 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -2162,12 +1994,12 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.installation_agreement_signed_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.installation_agreement_signed_date
                 ) as funnel_rows;
 
@@ -2204,16 +2036,9 @@ BEGIN
                     order by owner_name, pd.site_survey_verified_date :: DATE
                 ) as funnel_rows;
 
-        --Site Surveys Verified (checked in)
+        --Site Surveys Verified (checked-in)
         when p_funnel_id = 5 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
 
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
@@ -2237,12 +2062,12 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.site_survey_verified_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.site_survey_verified_date :: DATE
                 ) as funnel_rows;
 
@@ -2280,16 +2105,9 @@ BEGIN
                     order by owner_name, pd.final_design_sent_to_homeowner_date
                 ) as funnel_rows;
 
-        --Final Designs sent to Homeowner (checked in)
+        --Final Designs sent to Homeowner (checked-in)
         when p_funnel_id = 6 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -2313,12 +2131,12 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_sent_to_homeowner_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_sent_to_homeowner_date
                 ) as funnel_rows;
 
@@ -2359,16 +2177,9 @@ BEGIN
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
-        --Final Designs Approved (checked in)
+        --Final Designs Approved (checked-in)
         when p_funnel_id = 7 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -2395,12 +2206,12 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_signed_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
@@ -2450,16 +2261,9 @@ BEGIN
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
-        --Final Designs Completed (checked in)
+        --Final Designs Completed (checked-in)
         when p_funnel_id = 21 and p_is_checked_in_column is true then
             RETURN QUERY
---                with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                     select concat(u.first_name, ' ', u.last_name) owner_name,
@@ -2486,7 +2290,6 @@ BEGIN
                         left outer join flow.state s on s.id = p.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
---                         inner join appointment_check_ins aci on aci.project_id = pd.project_id
                     where Array[pd.closer_user_id] <@ p_user_ids and
                         pd.closer_user_id is not null and
                         pd.final_design_signed_date is not null and
@@ -2500,7 +2303,8 @@ BEGIN
                         Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         case when pd.primary_financier = 721 --Cash
-                            then pd.first_cash_payment_paid_date is not null else 1=1 end
+                            then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                        pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 

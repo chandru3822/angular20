@@ -10,13 +10,6 @@ BEGIN
 	if v_whole_company then
 		RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
 		    from (
---                 with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select id, name, display_order, checked_in_today_count, today_count, checked_in_week_to_date_count, week_to_date_count, checked_in_custom_date_range_count, custom_date_range_count
                 from (
                     select id, name, display_order,
@@ -205,10 +198,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -220,11 +213,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -237,10 +230,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -261,10 +254,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 3 --Missed
+                                pd.closer_appointment_outcome = 3 and --Missed
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -276,11 +269,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 3 --Missed
+                                pd.closer_appointment_outcome = 3 and --Missed
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -293,10 +286,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 3 --Missed
+                                pd.closer_appointment_outcome = 3 and --Missed
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -317,10 +310,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -332,11 +325,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -349,10 +342,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -373,10 +366,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -388,11 +381,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -405,10 +398,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -429,10 +422,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -444,11 +437,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -461,10 +454,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -485,10 +478,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -501,11 +494,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -518,10 +511,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -542,10 +535,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 2 --Pitched
+                                pd.closer_appointment_outcome = 2 and --Pitched
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -557,11 +550,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 2 --Pitched
+                                pd.closer_appointment_outcome = 2 and --Pitched
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -574,10 +567,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 2 --Pitched
+                                pd.closer_appointment_outcome = 2 and --Pitched
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -598,9 +591,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
-                                pd.credit_decision_date is not null
+                                pd.credit_decision_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -611,10 +604,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
-                                pd.credit_decision_date is not null
+                                pd.credit_decision_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -626,9 +619,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
-                                pd.credit_decision_date is not null
+                                pd.credit_decision_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -648,10 +641,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                pd.credit_check = 82 --Pass
+                                pd.credit_check = 82 and --Pass
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -663,11 +656,11 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                pd.credit_check = 82 --Pass
+                                pd.credit_check = 82 and --Pass
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -680,10 +673,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.credit_decision_date is not null and
-                                pd.credit_check = 82 --Pass
+                                pd.credit_check = 82 and --Pass
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -704,9 +697,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
-                                pd.installation_agreement_signed_date is not null
+                                pd.installation_agreement_signed_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -717,10 +710,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
-                                pd.installation_agreement_signed_date is not null
+                                pd.installation_agreement_signed_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -732,9 +725,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
-                                pd.installation_agreement_signed_date is not null
+                                pd.installation_agreement_signed_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -754,9 +747,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
-                                pd.site_survey_verified_date is not null
+                                pd.site_survey_verified_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -767,10 +760,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
-                                pd.site_survey_verified_date is not null
+                                pd.site_survey_verified_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -782,9 +775,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
-                                pd.site_survey_verified_date is not null
+                                pd.site_survey_verified_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -804,9 +797,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
-                                pd.final_design_sent_to_homeowner_date is not null
+                                pd.final_design_sent_to_homeowner_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -817,10 +810,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
-                                pd.final_design_sent_to_homeowner_date is not null
+                                pd.final_design_sent_to_homeowner_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -832,9 +825,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
-                                pd.final_design_sent_to_homeowner_date is not null
+                                pd.final_design_sent_to_homeowner_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -854,9 +847,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
-                                pd.final_design_signed_date is not null
+                                pd.final_design_signed_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -867,10 +860,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
-                                pd.final_design_signed_date is not null
+                                pd.final_design_signed_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -882,9 +875,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
-                                pd.final_design_signed_date is not null
+                                pd.final_design_signed_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -904,7 +897,6 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
                                 ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
@@ -915,7 +907,8 @@ BEGIN
                                 pd.utility_bill_verified_date is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 case when pd.primary_financier = 721 --Cash
-                                    then pd.first_cash_payment_paid_date is not null else 1=1 end
+                                    then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -935,7 +928,6 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
                                 ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
@@ -947,7 +939,8 @@ BEGIN
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 case when pd.primary_financier = 721 --Cash
-                                    then pd.first_cash_payment_paid_date is not null else 1=1 end
+                                    then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -968,7 +961,6 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
                                 ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
@@ -979,7 +971,8 @@ BEGIN
                                 pd.utility_bill_verified_date is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 case when pd.primary_financier = 721 --Cash
-                                    then pd.first_cash_payment_paid_date is not null else 1=1 end
+                                    then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1008,9 +1001,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
-                                pd.substantial_completion_date is not null
+                                pd.substantial_completion_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1021,10 +1014,10 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
-                                pd.substantial_completion_date is not null
+                                pd.substantial_completion_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1036,9 +1029,9 @@ BEGIN
 
                            (select count(1)
                             from brs.project_details pd
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
-                                pd.substantial_completion_date is not null
+                                pd.substantial_completion_date is not null and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1056,13 +1049,6 @@ BEGIN
     else
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
---                 with appointment_check_ins as (
---                     select pd.project_id
---                     from brs.project_details pd
---                         inner join brs.appointment_check_in aci on aci.project_id = pd.project_id
---                     where pd.closer_appointment_start is not null
---                     group by pd.project_id
---                 )
                 select id, name, display_order, checked_in_today_count, today_count, checked_in_week_to_date_count, week_to_date_count, checked_in_custom_date_range_count, custom_date_range_count
                 from (
                     select id, name, display_order,
@@ -1312,13 +1298,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1335,14 +1321,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1360,13 +1346,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1392,13 +1378,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 3 --Missed
+                                pd.closer_appointment_outcome = 3 and --Missed
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1415,14 +1401,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 3 --Missed
+                                pd.closer_appointment_outcome = 3 and --Missed
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1440,13 +1426,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 3 --Missed
+                                pd.closer_appointment_outcome = 3 and --Missed
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1472,13 +1458,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1495,14 +1481,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1520,13 +1506,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                pd.closer_appointment_outcome = 58 and --Not Pitched: Other
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1552,13 +1538,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1575,14 +1561,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1600,13 +1586,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1632,13 +1618,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1655,14 +1641,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1680,13 +1666,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
-                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1712,13 +1698,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1736,14 +1722,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1761,13 +1747,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
-                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
+                                (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1793,13 +1779,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 2 --Pitched
+                                pd.closer_appointment_outcome = 2 and --Pitched
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1816,14 +1802,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 2 --Pitched
+                                pd.closer_appointment_outcome = 2 and --Pitched
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1841,13 +1827,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome = 2 --Pitched
+                                pd.closer_appointment_outcome = 2 and --Pitched
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1873,12 +1859,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1894,13 +1880,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1917,12 +1903,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -1947,13 +1933,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -1970,14 +1956,14 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -1995,13 +1981,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -2027,12 +2013,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -2048,13 +2034,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -2071,12 +2057,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -2101,12 +2087,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -2122,13 +2108,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -2145,12 +2131,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -2175,12 +2161,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -2196,13 +2182,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -2219,12 +2205,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -2249,12 +2235,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -2270,13 +2256,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -2293,12 +2279,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -2323,7 +2309,6 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
@@ -2337,7 +2322,8 @@ BEGIN
                                 pd.utility_bill_verified_date is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 case when pd.primary_financier = 721 --Cash
-                                    then pd.first_cash_payment_paid_date is not null else 1=1 end
+                                    then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -2362,7 +2348,6 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
@@ -2377,7 +2362,8 @@ BEGIN
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 case when pd.primary_financier = 721 --Cash
-                                    then pd.first_cash_payment_paid_date is not null else 1=1 end
+                                    then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -2403,7 +2389,6 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
                                 pd.closer_user_id is not null and
@@ -2417,7 +2402,8 @@ BEGIN
                                 pd.utility_bill_verified_date is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 case when pd.primary_financier = 721 --Cash
-                                    then pd.first_cash_payment_paid_date is not null else 1=1 end
+                                    then pd.first_cash_payment_paid_date is not null else 1=1 end and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
@@ -2451,12 +2437,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
@@ -2472,13 +2458,13 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
@@ -2495,12 +2481,12 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
---                                 inner join appointment_check_ins aci on aci.project_id = pd.project_id
                             where Array[pd.closer_user_id] <@ p_user_ids and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
