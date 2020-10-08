@@ -32,8 +32,8 @@
     <v-row v-if="showDashboard" class="mb-6" justify="center" no-gutters>
       <v-col cols="12" id="ironman-container">
         <v-card id="ironman-component" class="mb-4 pb-4">
-          <img id="ironman-banner-mobile" src="src/assets/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
-          <img id="ironman-banner" src="src/assets/ironman_banner.png" alt="Desktop version of Ironman competition banner">
+          <img id="ironman-banner-mobile" src="../../../assets/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
+          <img id="ironman-banner" src="../../../assets/ironman_banner.png" alt="Desktop version of Ironman competition banner">
           <div id="milestones-container">
             <div id="swim-phase" class="milestone" :class="{'active-milestone': is_q1}"
                  @click="milestoneDrilldown(1)">
@@ -48,7 +48,7 @@
                     {{ q1_points === 1 ? q1_points + ' Point' : q1_points + ' Points' }}
                   </span>
                 </div>
-                <img src="src/assets/ironman_swim_icon.png" alt="A person swimming">
+                <img src="../../../assets/ironman_swim_icon.png" alt="A person swimming">
               </div>
               <span v-if="is_q1" class="milestone-bottom-label">{{ q1_lower_label }}</span>
             </div>
@@ -66,7 +66,7 @@
                     {{ q2_points === 1 ? q2_points + ' Point' : q2_points + ' Points' }}
                   </span>
                 </div>
-                <img src="src/assets/ironman_bike_icon.png" alt="A person riding a bike">
+                <img src="../../../assets/ironman_bike_icon.png" alt="A person riding a bike">
               </div>
               <span v-if="is_q2" class="milestone-bottom-label">{{ q2_lower_label }}</span>
             </div>
@@ -84,7 +84,7 @@
                     {{ q3_points === 1 ? q3_points + ' Point' : q3_points + ' Points' }}
                   </span>
                 </div>
-                <img src="src/assets/ironman_run_icon.png" alt="A person running">
+                <img src="../../../assets/ironman_run_icon.png" alt="A person running">
               </div>
               <span v-if="is_q3" class="milestone-bottom-label">{{ q3_lower_label }}</span>
             </div>
@@ -102,7 +102,7 @@
                     {{ q4_points === 1 ? q4_points + ' Point' : q4_points + ' Points' }}
                   </span>
                 </div>
-                <img src="src/assets/ironman_finish_icon.png" alt="A person crossing a finish line">
+                <img src="../../../assets/ironman_finish_icon.png" alt="A person crossing a finish line">
               </div>
               <span v-if="is_q4" class="milestone-bottom-label">{{ q4_lower_label }}</span>
             </div>
@@ -119,9 +119,9 @@
               <div id="sixth-segment" class="progress-bar-segment"></div>
               <div id="seventh-segment" class="progress-bar-segment"></div>
               <div id="eighth-segment" class="progress-bar-segment">
-                <img v-if="!progressBarIsFull" src="src/assets/progress_bar_icon_blue.png"
+                <img v-if="!progressBarIsFull" src="../../../assets/progress_bar_icon_blue.png"
                      alt="Blue Raven Solar logo in blue">
-                <img v-if="progressBarIsFull" src="src/assets/progress_bar_icon_white.png"
+                <img v-if="progressBarIsFull" src="../../../assets/progress_bar_icon_white.png"
                      alt="Blue Raven Solar logo in white">
               </div>
               <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '5px' : '5px 0 0 5px'}"></div>
@@ -230,7 +230,7 @@
               <img v-if="row.userImageUrl" class="ranking-table-img default-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
               <img v-else class="ranking-table-img default-img"
-                   src="src/assets/user_img_placeholder.png" :alt="row.userImageAltText">
+                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
@@ -269,7 +269,7 @@
               <img v-if="row.userImageUrl" class="ranking-table-img default-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
               <img v-else class="ranking-table-img default-img"
-                   src="src/assets/user_img_placeholder.png" :alt="row.userImageAltText">
+                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
@@ -360,7 +360,7 @@
               <img v-if="row.userImageUrl" class="ranking-table-img default-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
               <img v-else class="ranking-table-img default-img"
-                   src="src/assets/user_img_placeholder.png" :alt="row.userImageAltText">
+                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="left-text">{{ row.officeName }}</td>
@@ -376,7 +376,7 @@
               <img v-if="userRow.userImageUrl" class="ranking-table-img default-img"
                    :src="userRow.userImageUrl" :alt="userRow.userImageAltText">
               <img v-else class="ranking-table-img default-img"
-                   src="src/assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
+                   src="../../../assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
             </td>
             <td class="left-text">{{ userRow.name }}</td>
             <td class="left-text">{{ userRow.officeName }}</td>
@@ -939,13 +939,14 @@
             :items="funnelDrilldownData"
             @current-items="filteredFunnelDrilldownItems"
             :search="funnelDrilldownSearch"
-            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 355px)') : '105px'"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 395px)') : '105px'"
             dense
             multi-sort
             :sort-by="[]"
             :sort-desc="[]"
-            hide-default-footer
-            disable-pagination
+            :loading="funnelDrilldownLoading"
+            :items-per-page="500"
+            :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
@@ -1139,29 +1140,7 @@
       userRowIndex: -1,
       numOffices: 0,
       apptsCreatedPipelineData: [],
-      // TODO: Remove test data below
-      apptsToFdcPipelineData: [
-        // {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
-        // {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
-        // {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
-        // {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
-        // {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
-        // {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
-        // {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
-        // {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
-        // {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
-        // {id: 24, name: 'Non-dispositioned appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
-        // {id: 23, name: 'Yet to occur', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
-        // {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
-        // {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
-        // {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
-        // {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
-        // {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
-        // {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
-        // {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
-        // {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 22},
-        // {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 23}
-      ],
+      apptsToFdcPipelineData: [],
       apptsCreatedPipelineCustomSelectorIsOpen: false,
       apptsToFdcPipelineCustomSelectorIsOpen: false,
       todayUpperPercentage: 99,
@@ -1183,74 +1162,26 @@
       repModel: [],
       repData: [],
       apptsCreatedPipelineDateRanges: [
-        {
-          label: 'Yesterday',
-          value: 'yesterday'
-        },
-        {
-          label: 'Last Week',
-          value: 'lastWeek'
-        },
-        {
-          label: 'Month to Date',
-          value: 'MTD'
-        },
-        {
-          label: 'Last 60 days',
-          value: 60
-        },
-        {
-          label: 'Last 90 days',
-          value: 90
-        },
-        {
-          label: 'Year to Date',
-          value: 'YTD'
-        },
-        {
-          label: 'Custom',
-          value: 'Custom'
-        }
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'Last Week', value: 'lastWeek' },
+        { label: 'Month to Date', value: 'MTD' },
+        { label: 'Last 60 days', value: 60 },
+        { label: 'Last 90 days', value: 90 },
+        { label: 'Year to Date', value: 'YTD' },
+        { label: 'Custom', value: 'Custom' }
       ],
-      apptsCreatedPipelineDateRange: {
-        label: 'Month to Date',
-        value: 'MTD'
-      },
+      apptsCreatedPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
       showApptsCreatedPipelineCustomDates: false,
       apptsToFdcPipelineDateRanges: [
-        {
-          label: 'Yesterday',
-          value: 'yesterday'
-        },
-        {
-          label: 'Last Week',
-          value: 'lastWeek'
-        },
-        {
-          label: 'Month to Date',
-          value: 'MTD'
-        },
-        {
-          label: 'Last 60 days',
-          value: 60
-        },
-        {
-          label: 'Last 90 days',
-          value: 90
-        },
-        {
-          label: 'Year to Date',
-          value: 'YTD'
-        },
-        {
-          label: 'Custom',
-          value: 'Custom'
-        }
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'Last Week', value: 'lastWeek' },
+        { label: 'Month to Date', value: 'MTD' },
+        { label: 'Last 60 days', value: 60 },
+        { label: 'Last 90 days', value: 90 },
+        { label: 'Year to Date', value: 'YTD' },
+        { label: 'Custom', value: 'Custom' }
       ],
-      apptsToFdcPipelineDateRange: {
-        label: 'Month to Date',
-        value: 'MTD'
-      },
+      apptsToFdcPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
       showApptsToFdcPipelineCustomDates: false,
       viewSelect: 'standard',
       appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
@@ -1294,10 +1225,18 @@
         { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175, optional: true }
       ],
       funnelDrilldownData: [],
+      funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
       funnelDrilldownRowCount: 0,
-      totalSystemSize: 0
+      totalSystemSize: 0,
+      footerProps: {
+        showFirstLastPage: !constants.IS_MOBILE,
+        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+        'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
+      }
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
