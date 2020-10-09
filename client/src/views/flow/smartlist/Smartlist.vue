@@ -28,7 +28,7 @@
 
                 <v-btn
                   text
-                  color="primary"
+                  color="primaryCustom"
                   @click="validateForm"
                 >
                   <v-icon>save</v-icon>
@@ -155,7 +155,7 @@
 
           <v-btn
             text
-            color="primary"
+            color="primaryCustom"
             class="text-left"
             :disabled="isNewFieldButtonDisabled"
             @click="addNewField"

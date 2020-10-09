@@ -160,7 +160,7 @@
         switch(this.payroll.status) {
           case 'PENDING':
             this.payrollStatus.message = 'This payroll is pending.'
-            this.payrollStatus.color = 'primary'
+            this.payrollStatus.color = 'primaryCustom'
             this.payrollStatus.textColor = 'white'
             break
           case 'APPROVED':

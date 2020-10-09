@@ -3,7 +3,7 @@
   <v-col cols="12" lg="6" class="pt-0">
 
     <v-col v-if="isFieldsLoading">
-      <SpinnerInline :size="20" color="primary"/>
+      <SpinnerInline :size="20" color="primaryCustom"/>
     </v-col>
 
     <v-col
@@ -69,7 +69,7 @@
         </v-toolbar>
 
         <v-col cols="12" v-if="isProcessStepsLoading">
-          <SpinnerInline :size="20" color="primary"/>
+          <SpinnerInline :size="20" color="primaryCustom"/>
         </v-col>
 
         <v-col cols="12" v-else class="pt-0">
@@ -115,7 +115,7 @@
           </v-col>
 
           <v-col cols="12" v-if="isProcessStepsLoading">
-            <SpinnerInline :size="20" color="primary"/>
+            <SpinnerInline :size="20" color="primaryCustom"/>
           </v-col>
 
           <v-col cols="12" v-else>

@@ -93,18 +93,17 @@ BEGIN
                           field_to_update = 'closer_user_id'
                       else 1 = 1 end;
 
-            case when new.int_value is null then select 'null' into v_value1; else select new.int_value into v_value1; end case;
-            v_value = v_value || '::integer';
 
             select user_id
             into v_user_id
             from flow.user_position
-            where id = v_value1;
-
-            v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_user_id || $$
-                    where project_id = $$ || v_project_id;
-            --raise notice 'in if %',v_sql;
-            execute v_sql;
+            where id = new.int_value;
+            if v_user_id is not null then
+                v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_user_id || $$
+                        where project_id = $$ || v_project_id;
+                --raise notice 'in if %',v_sql;
+                execute v_sql;
+            end if;
         end if;
 
     end if;

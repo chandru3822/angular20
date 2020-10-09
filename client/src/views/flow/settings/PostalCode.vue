@@ -112,7 +112,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteUserFromZone(item)">
                         Yes
@@ -200,7 +200,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteCodeFromZone(item)">
                         Yes

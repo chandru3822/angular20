@@ -82,7 +82,7 @@
             </div>
           </div>
           <v-btn
-              color="primary"
+              color="primaryCustom"
               class="white--text mr-2"
               :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
               @click="saveFieldGroup()">
@@ -177,7 +177,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="deleteWithChecks(item, item.id, null)">
                             Yes
@@ -379,7 +379,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                    color="primary"
+                                    color="primaryCustom"
                                     text
                                     @click="deleteWithChecks(cf, null, cf.id)">
                                   Yes

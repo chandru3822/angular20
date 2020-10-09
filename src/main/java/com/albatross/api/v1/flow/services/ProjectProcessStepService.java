@@ -363,6 +363,7 @@ public class ProjectProcessStepService {
 
     ExpressionParser parser = new SpelExpressionParser();
     if (logicString.length() > 0) {
+      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), logicString.toString()));
       return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
     } else {
       return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
@@ -570,7 +571,7 @@ public class ProjectProcessStepService {
         break;
       case 3:
         // @TODO: Duped from the button logic, potentially combine
-        Boolean booleanFunctionResult = Boolean.valueOf(functionResult.toString());
+        Boolean booleanFunctionResult = (functionResult == null) ? null : Boolean.valueOf(functionResult.toString());
         switch (r.getDataTypeRequirementId().intValue()) {
           case 14:
             switch (r.getOperatorTypeId().intValue()) {

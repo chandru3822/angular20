@@ -39,14 +39,18 @@ BEGIN
     delete from brs.project_override where project_id = p_project_id;
     delete from brs.project_residual where project_id = p_project_id;
 
-    insert into brs.project_commission( project_id, commission_plan_id)
-    values (p_project_id,v_commission_plan_id);
+    if v_user_id is not null and v_commission_plan_id is not null  then
 
-    insert into brs.project_override( project_id, override_plan_id)
-    values (p_project_id,v_override_plan_id);
+        insert into brs.project_commission( project_id, commission_plan_id)
+        values (p_project_id,v_commission_plan_id);
+    end if;
+    if v_user_id is not null and v_override_plan_id is not null  then
+        insert into brs.project_override( project_id, override_plan_id)
+        values (p_project_id,v_override_plan_id);
 
-    insert into brs.project_residual( project_id, residual_plan_id)
-    values (p_project_id,v_residual_plan_id);
+--         insert into brs.project_residual( project_id, residual_plan_id)
+--         values (p_project_id,v_residual_plan_id);
+    end if;
 
 END;
 $function$

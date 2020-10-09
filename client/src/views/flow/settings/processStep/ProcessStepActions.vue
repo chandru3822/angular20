@@ -414,7 +414,7 @@
                               No
                             </v-btn>
                             <v-btn
-                                color="primary"
+                                color="primaryCustom"
                                 text
                                 @click="deleteRequirement(item)">
                               Yes
@@ -599,7 +599,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                    color="primary"
+                                    color="primaryCustom"
                                     text
                                     @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
                                   Yes
@@ -688,7 +688,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                  color="primary"
+                                  color="primaryCustom"
                                   text
                                   @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
                                   Yes
@@ -852,7 +852,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                  color="primary"
+                                  color="primaryCustom"
                                   text
                                   @click="[cp.archived = true, deleteChildFunctionFromAction(item.id, cp.id)]">
                                   Yes
@@ -969,7 +969,7 @@
                               No
                             </v-btn>
                             <v-btn
-                                color="primary"
+                                color="primaryCustom"
                                 text
                                 @click="[item.archived = true, deleteAction(item)]">
                               Yes

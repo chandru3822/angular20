@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Organizations</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newOrg" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
+            <v-btn text to="/newOrg" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Organization</span>
             </v-btn>
