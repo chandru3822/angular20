@@ -395,11 +395,17 @@ public class SmartlistService {
             query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), joinAlias, joinAlias, joinUuid, f.getJoinColumn()));
           } else {
             query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinAlias, joinAlias, joinAlias, f.getProcessStepId()));
+            if (smartlist.isMainProcessSteps()) {
+              query.append(String.format("and \"%s\".main is true ", joinAlias));
+            }
           }
         } else {
           final String ppsUUID = UUID.randomUUID().toString();
 
           query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, f.getProcessStepId()));
+          if (smartlist.isMainProcessSteps()) {
+            query.append(String.format("and \"%s\".main is true ", ppsUUID));
+          }
 
           if (f.getHasListValues() != null && f.getHasListValues()) {
             if (f.getAllowMultiple()) {
@@ -436,7 +442,7 @@ public class SmartlistService {
 
               // see if table we need is already been joined, if so use it
               final String referenceTable = joinTables.stream()
-                  .filter(t -> t.getCustomFieldGroupAssignmentId().equals(r.getCustomFieldGroupAssignmentId()))
+                  .filter(t -> t.getCustomFieldGroupAssignmentId()!= null && t.getCustomFieldGroupAssignmentId().equals(r.getCustomFieldGroupAssignmentId()))
                   .map(t -> {
                       if (t.getValueReferenceTable() != null) {
                           return t.getValueReferenceTable();
@@ -457,6 +463,10 @@ public class SmartlistService {
                       final String ppscfvUUID = UUID.randomUUID().toString();
 
                       additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, r.getProcessStepId()));
+                      if (smartlist.isMainProcessSteps()) {
+                        query.append(String.format("and \"%s\".main is true ", ppsUUID));
+                      }
+
                       if (r.getCustomFieldSqlKey() != null) {
                           final String  customSqlUuid = UUID.randomUUID().toString();
 
@@ -551,6 +561,10 @@ public class SmartlistService {
           } else {
               whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
           }
+      }
+
+      if (smartlist.isMainProcessSteps() && smartlist.getObjectTypeId() == 4) {
+        whereClause.append("\nflow.project_process_step.main is true and ");
       }
 
     if (withClause.length() > 0) {
