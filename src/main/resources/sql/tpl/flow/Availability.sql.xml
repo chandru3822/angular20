@@ -132,13 +132,16 @@
         modified_by_id = :modifiedById,
         date_modified = now(),
         all_day = :allDay,
-        description = :description
+        description = :description,
+        recurrence = :recurrence,
+        recurring_start_time = :recurringStartTime,
+        recurring_end_time = :recurringEndTime
     where id = :id
   ]]></availability.updateAppointment>
 
   <availability.insertAppointment><![CDATA[
-    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description)
-    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description)
+    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, recurrence, recurring_start_time, recurring_end_time)
+    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :recurrence, now(), :recurringEndTime)
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
@@ -150,7 +153,11 @@
         ra.company_id,
         ra.archived,
         ra.description,
-        ra.all_day
+        ra.all_day,
+        ra.recurrence,
+        case when ra.recurrence is not null then true else false end as repeat,
+        ra.recurring_start_time as "recurringStartTime",
+        ra.recurring_end_time as "recurringEndTime"
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
              LEFT JOIN flow.user u ON u.id = ra.org_id
@@ -162,11 +169,15 @@
         ra.id,
         ra.org_id,
         ra.start_time,
+       case when ra.recurrence is not null then true else false end as repeat,
         ra.end_time,
         ra.archived,
         ra.description,
         ra.company_id,
-        ra.all_day
+        ra.all_day,
+        ra.recurrence,
+        ra.recurring_start_time as "recurringStartTime",
+        ra.recurring_end_time as "recurringEndTime"
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
              LEFT JOIN flow.user u ON u.id = ra.org_id

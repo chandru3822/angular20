@@ -34,6 +34,7 @@
     "moment": "^2.27.0",
     "moment-timezone": "^0.5.31",
     "register-service-worker": "^1.7.1",
+    "rrule": "^2.6.6",
     "sass": "^1.26.10",
     "sortablejs": "^1.10.2",
     "uuid": "^8.3.0",
