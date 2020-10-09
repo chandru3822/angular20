@@ -1025,7 +1025,7 @@
                 <td style="width: 115px"></td>
                 <td style="width: 75px"></td>
                 <td style="width: 90px"></td>
-                <td style="width: 40px"></td>
+                <td style="width: 85px"></td>
                 <td id="total-system-size-label">Total Size:</td>
                 <td style="width: 110px">{{ totalSystemSize ? totalSystemSize : 0 }}</td>
               </tr>
@@ -3827,7 +3827,7 @@
       #total-system-size-label {
         font-weight: bold;
         text-align: right;
-        min-width: 130px;
+        min-width: 85px;
       }
 
       .customer-name {
