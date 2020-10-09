@@ -108,6 +108,9 @@ public class WorkQueueService {
       bw.registerCustomEditor(List.class, "activeProcessSteps",
         new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
 
+      TypeReference<List<Note>> notesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "notes",
+        new JsonCollectionDeserializer(notesRef, objectMapper));
     }
   }
 }

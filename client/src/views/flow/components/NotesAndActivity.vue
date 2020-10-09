@@ -269,6 +269,8 @@ export default {
     showNotes: Boolean,
     showActivity: Boolean,
     primaryId: Number,
+    secondaryId: Number,
+    isWqtNote: Boolean,
     notes: Array,
     type: String
   },
@@ -311,11 +313,15 @@ export default {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         console.log('NOTE_HERE', n)
-        const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
+        let url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
+        const {data} = await postRequest(url, {
           primaryId: this.primaryId,
           id: n.reply ? null : n.id,
           note: n.reply ? n.reply : n.note,
-          parentId: n.reply ? n.id : null
+          parentId: n.reply ? n.id : null,
+          //these 2 fields are for pps pswqt notes which require 2 keys to save/get
+          projectProcessStepId: this.primaryId,
+          processStepWorkQueueTypeId: this.secondaryId,
         })
         // this.notes.unshift(data)
         if(n.reply) {

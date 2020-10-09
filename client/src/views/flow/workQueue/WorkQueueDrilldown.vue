@@ -43,6 +43,43 @@
                   {{ aps.processStepName }}
                 </div>
               </td>
+              <td class="text-left">
+                <span v-if="item.notes && item.notes.length > 0">
+                  {{item.notes[0].note}}
+                </span>
+                <v-btn small fab text @click="item.showNotesModal = true">
+                  <v-icon>mdi-comment-text-multiple</v-icon>
+                </v-btn>
+                <v-dialog
+                  v-model="item.showNotesModal"
+                >
+                  <v-card class="wqt-notes-container">
+                    <v-card-text class="py-3">
+                      <NotesAndActivity
+                        :showNotes="true"
+                        :showActivity="false"
+                        :notes="item.notes"
+                        :is-wqt-note="true"
+                        :primary-id="item.projectProcessStepId"
+                        :secondary-id="item.processStepWorkQueueTypeId"
+                        type="ProjectProcessStep"
+                      />
+                    </v-card-text>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+
+                      <v-btn
+                        color="primaryCustom"
+                        class="white--text mr-2 mb-3"
+                        @click="item.showNotesModal = false"
+                      >
+                        Close
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -57,17 +94,21 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
+  import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
   import constants from '@/helpers/constants'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueueDrilldown',
     components: {
-      Snackbar
+      Snackbar,
+      NotesAndActivity
     },
     data() {
       return {
         snackbar: {},
+        showNotesModal: false,
+        selectedPps: {},
         constants,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
@@ -88,6 +129,7 @@
           { text: 'Process Step', value: 'processStepName', show: true },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
+          { text: 'Notes', value: 'notes', show: true },
         ],
       }
     },
@@ -164,7 +206,6 @@
 </style>
 
 <style scoped lang="scss">
-
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
@@ -189,5 +230,9 @@
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.wqt-notes-container {
+  min-height: 400px;
 }
 </style>
