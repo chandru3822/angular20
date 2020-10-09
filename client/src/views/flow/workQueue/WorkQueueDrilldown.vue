@@ -43,13 +43,15 @@
                   {{ aps.processStepName }}
                 </div>
               </td>
-              <td class="text-left">
-                <span v-if="item.notes && item.notes.length > 0">
-                  {{item.notes[0].note}}
-                </span>
-                <v-btn small fab text @click="item.showNotesModal = true">
-                  <v-icon>mdi-comment-text-multiple</v-icon>
-                </v-btn>
+              <td class="notes-column">
+                <div class="flex-display align-center" >
+                  <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
+                    {{item.notes[0].note}}
+                  </pre>
+                  <v-btn small fab text @click="item.showNotesModal = true">
+                    <v-icon>mdi-comment-text-multiple</v-icon>
+                  </v-btn>
+                </div>
                 <v-dialog
                   v-model="item.showNotesModal"
                 >
@@ -223,6 +225,10 @@
   bottom: 0;
   right: 0;
   left: 0;
+}
+
+.notes-column {
+  max-width: 300px;
 }
 
 #work-queue-drilldown-container {
