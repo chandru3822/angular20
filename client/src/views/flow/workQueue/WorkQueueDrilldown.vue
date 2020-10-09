@@ -56,6 +56,7 @@
                   v-model="item.showNotesModal"
                 >
                   <v-card class="wqt-notes-container">
+                    <v-card-title class="primary-custom-bg white--text">{{ item.projectName }} - {{item.processStepName}}</v-card-title>
                     <v-card-text class="py-3">
                       <NotesAndActivity
                         :showNotes="true"
