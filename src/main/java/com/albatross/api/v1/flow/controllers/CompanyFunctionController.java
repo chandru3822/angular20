@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.FunctionType;
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
@@ -28,6 +29,16 @@ public class CompanyFunctionController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyFunction> getCompanyFunctions () {
     return companyFunctionService.getCompanyFunctions();
+  }
+
+  @GetMapping(value = "/action", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFunction> getActionCompanyFunctions () {
+    return companyFunctionService.getCompanyFunctionsByType(FunctionType.ACTION.id);
+  }
+
+  @GetMapping(value = "/requirement", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFunction> getRequirementCompanyFunctions () {
+    return companyFunctionService.getCompanyFunctionsByType(FunctionType.REQUIREMENT.id);
   }
 
   @DeleteMapping(value = "{id}", produces = MediaType.APPLICATION_JSON_VALUE)

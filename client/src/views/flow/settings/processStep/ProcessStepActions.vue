@@ -1161,7 +1161,7 @@
             //get contact custom fields
             this.loadCustomFieldsByObjectType(2)
           } else {
-            const {data} = await getRequest(`/function`)
+            const {data} = await getRequest(`/function/requirement`)
             this.availableFunctions = data
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1174,7 +1174,7 @@
       async loadChildFunctions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/function`)
+          const {data} = await getRequest(`/function/action`)
           this.childFunctions = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
