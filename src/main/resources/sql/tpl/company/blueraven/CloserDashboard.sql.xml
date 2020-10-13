@@ -24,9 +24,8 @@
                   then 2
                 else 1
                 end as q1points
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
@@ -43,9 +42,8 @@
               group by pd.first_cash_payment_paid_date, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.source) t
              ) as "q1",
              (select count(1)
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
@@ -61,9 +59,8 @@
                 and u.id = :currentUserId
              ) as "q2",
              (select count(1)
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
@@ -84,9 +81,8 @@
                 and u.id = :currentUserId
              ) as "q3",
              (select count(1)
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
@@ -203,9 +199,8 @@
                then 1
                end
              ) as totalFdc
-      FROM flow.project p
-        INNER JOIN flow.contact c ON c.id = p.contact_id
-        INNER JOIN brs.project_details pd ON pd.project_id = p.id
+      FROM brs.project_details pd
+        INNER JOIN flow.project p ON p.id = pd.project_id
         INNER JOIN flow.user u ON u.id = pd.closer_user_id
         INNER JOIN flow.user_position up ON up.user_id = u.id
         INNER JOIN flow.company_user_status cus on cus.user_id = u.id
