@@ -438,7 +438,14 @@ public class SmartlistService {
 
           if (r.getCustomFieldGroupAssignmentId() != null) {
 
-              String referenceColumn = ((r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) || r.getCustomFieldSqlKey() != null) ? "id" : getReferenceColumn(r.getDataTypeId());
+            String referenceColumn;
+            if (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) {
+              referenceColumn = "int_value";
+            } else if (r.getCustomFieldSqlKey() != null) {
+              referenceColumn = "id";
+            } else {
+              referenceColumn = getReferenceColumn(r.getDataTypeId());
+            }
 
               // see if table we need is already been joined, if so use it
               final String referenceTable = joinTables.stream()
