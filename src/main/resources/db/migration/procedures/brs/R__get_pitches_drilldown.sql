@@ -28,21 +28,18 @@ BEGIN
             select row_number() over (order by (concat(c.first_name, ' ', c.last_name))::bytea),
                    concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
-                   pd.source,
-                   concat(upv.first_name,' ',upv.last_name) as owner_name,
-                   employee_id.employee_id,
-                   pd.closer_appointment_start,
-                   lov.name as closer_appointment_outcome
+                   pd.source as source_name,
+                   pd.closer_appointment_start as appointment_date,
+                   lov.name as appointment_outcome
             from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                 inner join flow.user u on u.id = upv.user_id
-                left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 left join flow.list_of_value lov on lov.id = pd.closer_appointment_outcome
             where pd.closer_appointment_start between v_start_date and v_end_date
-                and pd.source in (6,493) -- (Setter Gen, Retargeted)
-                and pd.closer_appointment_outcome in (2,3) -- (Pitched, Missed)
+                and pd.source in (6,493) --(Setter Gen, Retargeted)
+                and pd.closer_appointment_outcome in (2,3) --(Pitched, Missed)
                 and upv.primary_flag is true
                 and case when p_is_setter_mgr is true then upv.org_id = p_setter_mgr_office_id
                     else u.id = p_user_id

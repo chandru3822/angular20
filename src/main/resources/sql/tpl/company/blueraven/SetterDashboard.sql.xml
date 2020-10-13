@@ -18,8 +18,8 @@
                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                 inner join flow.user u on u.id = upv.user_id
               where pd.closer_appointment_start between (select q1_start from quarters) and (select q1_end from quarters)
-                and pd.source in (6,493) -- (Setter Gen, Retargeted)
-                and pd.closer_appointment_outcome in (2,3) -- (Pitched, Missed)
+                and pd.source in (6,493) --(Setter Gen, Retargeted)
+                and pd.closer_appointment_outcome in (2,3) --(Pitched, Missed)
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
@@ -32,8 +32,8 @@
                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                 inner join flow.user u on u.id = upv.user_id
               where pd.closer_appointment_start between (select q2_start from quarters) and (select q2_end from quarters)
-                and pd.source in (6,493) -- (Setter Gen, Retargeted)
-                and pd.closer_appointment_outcome in (2,3) -- (Pitched, Missed)
+                and pd.source in (6,493) --(Setter Gen, Retargeted)
+                and pd.closer_appointment_outcome in (2,3) --(Pitched, Missed)
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
@@ -46,8 +46,8 @@
                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                 inner join flow.user u on u.id = upv.user_id
               where pd.closer_appointment_start between (select q3_start from quarters) and (select q3_end from quarters)
-                and pd.source in (6,493) -- (Setter Gen, Retargeted)
-                and pd.closer_appointment_outcome in (2,3) -- (Pitched, Missed)
+                and pd.source in (6,493) --(Setter Gen, Retargeted)
+                and pd.closer_appointment_outcome in (2,3) --(Pitched, Missed)
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
@@ -60,8 +60,8 @@
                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                 inner join flow.user u on u.id = upv.user_id
               where pd.closer_appointment_start between (select q4_start from quarters) and (select q4_end from quarters)
-                and pd.source in (6,493) -- (Setter Gen, Retargeted)
-                and pd.closer_appointment_outcome in (2,3) -- (Pitched, Missed)
+                and pd.source in (6,493) --(Setter Gen, Retargeted)
+                and pd.closer_appointment_outcome in (2,3) --(Pitched, Missed)
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
