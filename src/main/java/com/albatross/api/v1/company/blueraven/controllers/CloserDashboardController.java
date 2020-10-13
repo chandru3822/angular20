@@ -1,11 +1,9 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
-import com.albatross.api.v1.company.blueraven.models.Source;
-import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
-import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
+import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.CloserDashboardService;
 
+import com.albatross.api.v1.flow.model.PostalCodeZone;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +28,17 @@ public class CloserDashboardController {
   @GetMapping(value = "/finalDesignsCompletedDrilldown")
   public String finalDesignsCompletedDrilldown(@RequestParam Integer quarter) {
     return closerDashboardService.finalDesignsCompletedDrilldown(quarter);
+  }
+
+  @GetMapping(value = "/getRoundRobins")
+  public List<PostalCodeZone> getRoundRobins() {
+    return closerDashboardService.getRoundRobins();
+  }
+
+  @GetMapping(value = "/getOfficeLeadAllocationRank")
+  public List<OfficeLeadAllocationScores> getOfficeLeadAllocationRank(@RequestParam Integer postalCodeZoneId,
+                                                             @RequestParam Integer timeInterval) {
+    return closerDashboardService.getOfficeLeadAllocationRank(postalCodeZoneId, timeInterval);
   }
 
   @GetMapping(value = "/getCloserTableScores")

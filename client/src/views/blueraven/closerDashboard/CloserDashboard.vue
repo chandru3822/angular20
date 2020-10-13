@@ -4,10 +4,10 @@
       <v-col cols="12" id="closer-dash-toolbar">
         <v-app-bar class="elevation-1" fixed style="top: 48px">
           <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-            <v-btn text @click="loadRankingTables('MTD')">MTD</v-btn>
-            <v-btn text @click="loadRankingTables('60 days')" class="text-lowercase">60 days</v-btn>
-            <v-btn text @click="loadRankingTables('90 days')" class="text-lowercase">90 days</v-btn>
-            <v-btn text @click="loadRankingTables('YTD')">YTD</v-btn>
+            <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
+            <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
+            <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
+            <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
           </v-btn-toggle>
         </v-app-bar>
       </v-col>
@@ -196,20 +196,34 @@
     <!-- IRONMAN END -->
 
     <!-- RANKING TABLES FIRST HEADER START -->
-    <div v-if="showDashboard && leadAllocationRankingData.length > 0 && officeFdcRankingData.length > 0"
+    <div v-if="showDashboard"
          class="ranking-tables-section-header">
       Your Office Ranking
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
 
     <!-- RANKING TABLES TOP ROW START -->
-    <div v-if="showDashboard && leadAllocationRankingData.length > 0 && officeFdcRankingData.length > 0"
+    <div v-if="showDashboard"
          class="ranking-tables-section">
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
-        <div class="ranking-table-header">
-          <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
-          <span>Office Lead Allocation Rank</span>
+        <div class="ranking-table-header" id="lead-allocation-table-header">
+          <div class="lead-allocation-table-header-left-side">
+            <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
+            <span>Office Lead Allocation Rank</span>
+          </div>
+          <v-select class="round-robin-dropdown"
+                    label="Round Robin"
+                    v-model="selectedRoundRobin"
+                    :items="roundRobins"
+                    item-text="zoneName"
+                    item-value="id"
+                    no-data-text="No Round Robins available"
+                    outlined
+                    dense
+                    hide-details
+                    @input="loadRankingTables"
+          ></v-select>
         </div>
 
         <table v-if="leadAllocationRankingData.length > 0">
@@ -227,16 +241,16 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
+              <img v-else class="placeholder-img"
                    src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
-            <td class="left-text">{{ row.name }}</td>
-            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
-            <td class="center-text">{{ row.selfGenFdc }}</td>
-            <td class="center-text">{{ row.avgAvailability }}</td>
-            <td class="center-text">{{ row.leadAllocationPercentage }}%</td>
+            <td class="left-text">{{ row.closerName }}</td>
+            <td class="center-text">{{ row.leadGenFdc }}%</td>
+            <td class="center-text">{{ row.selfGen }}</td>
+            <td class="center-text">{{ row.averageAvailability }}</td>
+            <td class="center-text">{{ row.score }}%</td>
           </tr>
         </table>
         <div v-else class="ranking-tables-no-data left-text">
@@ -266,9 +280,9 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
+              <img v-else class="placeholder-img"
                    src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
@@ -357,9 +371,9 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
+              <img v-else class="placeholder-img"
                    src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
@@ -373,9 +387,9 @@
               class="highlight-user-row">
             <td class="center-text">{{ userRow.rank }}</td>
             <td class="user-img-col">
-              <img v-if="userRow.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="userRow.userImageUrl" class="ranking-table-img"
                    :src="userRow.userImageUrl" :alt="userRow.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
+              <img v-else class="placeholder-img"
                    src="../../../assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
             </td>
             <td class="left-text">{{ userRow.name }}</td>
@@ -1131,6 +1145,8 @@
       progressBarIsFull: false,
       rankingData: [],
       searchText: '',
+      roundRobins: [],
+      selectedRoundRobin: null,
       leadAllocationRankingData: [],
       officeFdcRankingData: [],
       officeRankingData: [],
@@ -1213,7 +1229,7 @@
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true },
         { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160, optional: true },
         { text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true },
-        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215, optional: true },
+        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 235, optional: true },
         { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 160, optional: true },
         { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155, optional: true },
         { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165, optional: true },
@@ -1353,12 +1369,6 @@
       }
     },
     watch: {
-      // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
-      '$store.state.app.loading': function () {
-        if (!this.ironmanLoaded || !this.rankingTablesLoaded) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-        }
-      },
       appts_created_pipeline_dt1 () {
         this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
       },
@@ -1403,7 +1413,7 @@
             this.showFunnel = false
             if (!this.dashboardWasLoaded) {
               await this.loadIronman()
-              await this.loadRankingTables('MTD') // MTD is the default
+              await this.loadRoundRobins()
               this.dashboardWasLoaded = true
             }
         }
@@ -1435,9 +1445,9 @@
 
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         this.ironmanLoaded = false
 
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           getRequest('/closerDashboard/getIronmanFdcCounts', 'blueraven').then(res => {
             this.fdcCounts = res.data
@@ -1595,7 +1605,6 @@
 
       async milestoneDrilldown (quarter) {
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           const {data} = await getRequestWithParams('/closerDashboard/finalDesignsCompletedDrilldown', {params: {quarter}}, 'blueraven')
           this.drilldownData = cloneDeep(data)
@@ -1643,14 +1652,30 @@
       /* IRONMAN-RELATED CODE END */
 
       /* RANKING TABLES-RELATED CODE START */
-      async loadRankingTables (timeIntervalString) {
+      async loadRoundRobins () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        this.rankingTablesLoaded = false
-        this.timeIntervalString = timeIntervalString
-        this.rankingData = []
-        this.searchText = ''
+        try {
+          const {data} = await getRequest('/closerDashboard/getRoundRobins', 'blueraven')
+          this.roundRobins = data
 
-        switch (timeIntervalString) {
+          // if there's only one Round Robin for the current user, this auto-selects it
+          if (this.roundRobins?.length === 1) {
+            this.selectedRoundRobin = this.roundRobins[0]?.id
+            await this.loadRankingTables()
+          }
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving list of round robins')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+
+      setTimeInterval (timeIntervalString) {
+        this.timeIntervalString = timeIntervalString
+
+        switch (this.timeIntervalString) {
           case 'MTD':
             this.timeInterval = +moment().format('DD') // MTD
             break
@@ -1665,16 +1690,28 @@
             break
         }
 
+        if (this.selectedRoundRobin) {
+          this.loadRankingTables()
+        }
+      },
+
+      async loadRankingTables () {
+        this.rankingTablesLoaded = false
+        this.rankingData = []
+        this.searchText = ''
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {timeInterval: this.timeInterval}
-          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
+          const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
+          await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
+
+          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params: {timeInterval: this.timeInterval}}, 'blueraven')
 
           if (data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
             this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
           }
 
-          this.processRankingData(cloneDeep(data.officeRankingValues), 'Office Lead Allocation Rank')
-          this.processRankingData(cloneDeep(data.officeRankingValues), 'Office FDC Rank')
+          this.processRankingData(cloneDeep(data.officeFdcRankValues), 'Office FDC Rank')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Top Reps')
 
@@ -1690,61 +1727,7 @@
 
       processRankingData (rankingData, currentTable) {
         if (currentTable === 'Office Lead Allocation Rank') {
-          let leadAllocationScoreSum = 0
-          // let startDate = moment().subtract(3, 'weeks').format('YYYY-MM-DD')
-          // let endDate = moment().format('YYYY-MM-DD')
-          let userIds = []
-          // let closerAvgAvailMap = {}
-
-          rankingData.forEach(row => {
-            if (row.userId !== null && row.userId !== undefined) {
-              userIds.push(row.userId)
-            }
-          })
-
-          // TODO: Get closer availability stuff working
-          // calculate average availability values for each closer
-          if (userIds.length > 0) {
-          //   CloserAvailabilityService.getCsvCalendarData(startDate, endDate, userIds).then(resp => {
-          //     resp.forEach(closer => {
-          //       let avgAvail = 0
-          //       if (closer.appointments.length > 0) {
-          //         closer.appointments.forEach(appointment => {
-          //           // customer appointment
-          //           if (!appointment.personal) {
-          //             avgAvail++
-          //           }
-          //         })
-          //       }
-          //       avgAvail += closer.availabilities.length
-          //       closerAvgAvailMap[closer.name] = Math.round(avgAvail / 3)
-          //     })
-          //
-              // populate avgAvailability and calculate leadAllocationScore values
-              rankingData.forEach(closer => {
-          //       if (closer.name in closerAvgAvailMap) {
-          //         closer.avgAvailability = closerAvgAvailMap[closer.name]
-          //       } else {
-                  closer.avgAvailability = 0
-          //       }
-
-                let leadAllocationScore = (closer.leadGenFdcPercentage / 100 * 1000) + (closer.selfGenFdc * 2) + closer.avgAvailability
-                leadAllocationScoreSum += leadAllocationScore
-                closer.leadAllocationScore = leadAllocationScore
-              })
-
-              // calculate leadAllocationPercentage
-              rankingData.forEach(closer => {
-                if (leadAllocationScoreSum !== 0) {
-                  closer.leadAllocationPercentage = Math.round((closer.leadAllocationScore / leadAllocationScoreSum) * 100)
-                } else {
-                  closer.leadAllocationPercentage = 0
-                }
-              })
-
-              this.leadAllocationRankingData = this.assignCloserRanks(rankingData, 'leadAllocationPercentage')
-            // })
-          }
+          this.leadAllocationRankingData = this.assignCloserRanks(rankingData, 'score')
         } else {
           switch (currentTable) {
             case 'Office FDC Rank':
@@ -2017,7 +2000,6 @@
 
       loadSources () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           getRequest('/closerDashboard/getBrsProvidedSources', 'blueraven').then(res => {
             this.brsProvidedSourceData = res.data
@@ -2038,7 +2020,6 @@
       },
 
       async apptsCreatedPipelineLoad (start, end) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
         let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
 
@@ -2048,8 +2029,6 @@
             {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
             {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
           ]
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
           return
         }
 
@@ -2060,6 +2039,7 @@
           end: moment(end).format('YYYY-MM-DD')
         }
 
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven').then(res => {
             this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
@@ -2099,7 +2079,6 @@
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           await postRequest('/closerDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(res => {
             this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
@@ -2535,7 +2514,6 @@
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven').then(({data}) => {
             this.funnelDrilldownData = data?.length > 0 ? data : []
@@ -2752,7 +2730,6 @@
     },
     created () {
       this.currentUserId = this.$store.state.user.details.id
-
       if (this.$store.state.user.details.userPositions?.length > 0) {
         this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
           return (position.position === 'Closer' && !position.endDate && !position.archived && position.primaryFlag)
@@ -3189,6 +3166,40 @@
     padding: 10px 5px 5px 10px;
   }
 
+  #lead-allocation-table-header {
+    justify-content: space-between;
+
+    .round-robin-dropdown {
+      transform: scale(0.875);
+      transform-origin: left;
+      margin: 0 0 5px 5px;
+      max-width: 120px;
+
+      ::v-deep {
+        .v-input__control {
+          height: 25px;
+        }
+
+        label {
+          color: #888 !important;
+          font-size: 12px;
+          font-weight: normal;
+        }
+
+        i {
+          color: #888 !important;
+          font-size: 20px;
+        }
+
+        .v-select__selections .v-select__selection {
+          color: #888 !important;
+          font-size: 12px;
+          font-weight: normal;
+        }
+      }
+    }
+  }
+
   #top-reps-table-header {
     flex-wrap: wrap;
     justify-content: space-between;
@@ -3257,15 +3268,16 @@
     color: #fff;
   }
 
-  .ranking-table-img {
+  .ranking-table-img,
+  .placeholder-img {
+    border-radius: 50%;
+    padding: 1px;
     width: 28px;
     height: 28px;
   }
 
-  .default-img {
+  .placeholder-img {
     background-color: #e9e9e9;
-    padding : 1px;
-    border-radius: 50%;
   }
 
   #appts-created-pipeline-funnel-background,
@@ -4145,8 +4157,26 @@
     }
 
     .ranking-table-header {
-      font-size: 24px;
+      font-size: 22px;
       padding: 20px 15px 15px 15px;
+    }
+
+    #lead-allocation-table-header {
+      .round-robin-dropdown {
+        transform: none;
+        margin: 0 0 10px 10px;
+        max-width: 200px;
+
+        ::v-deep {
+          label {
+            font-size: 14px;
+          }
+
+          .v-select__selections .v-select__selection {
+            font-size: 14px;
+          }
+        }
+      }
     }
 
     .ranking-table-icon {
@@ -4167,7 +4197,8 @@
       padding: 0 5px;
     }
 
-    .ranking-table-img {
+    .ranking-table-img,
+    .placeholder-img {
       width: 40px;
       height: 40px;
     }
@@ -4669,6 +4700,16 @@
       max-width: calc((100% / 2) - 10px);
     }
 
+    .ranking-table-header {
+      font-size: 19px;
+    }
+
+    #lead-allocation-table-header {
+      .round-robin-dropdown {
+        max-width: 135px;
+      }
+    }
+
     .ranking-table-icon {
       font-size: 35px;
     }
@@ -4991,6 +5032,10 @@
     .ranking-tables-section {
       max-width: 1130px;
       margin: 0 auto;
+    }
+
+    .ranking-table-header {
+      font-size: 24px;
     }
 
     #appts-created-pipeline-funnel-background {
