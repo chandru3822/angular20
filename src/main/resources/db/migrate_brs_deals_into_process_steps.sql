@@ -67,7 +67,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 5 then coalesce(ad.start_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                  when p.custom_field_group_assignment_id = 6 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')) else null end,
              --    when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id,d2.added_on::date) else null end,
+            case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id::integer,d2.added_on::date) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
@@ -107,7 +107,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 5 then coalesce(ad.start_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                  when p.custom_field_group_assignment_id = 6 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')) else null end,
              --   when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id,d2.added_on::date) else null end,
+            case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id::integer,d2.added_on::date) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
           left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
@@ -1721,13 +1721,13 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
              (fl_noc_application_signature_verified_date IS NOT NULL OR d.permit_application_signature_required_date is null) AND
              ((engineering_stamp_required is null or engineering_stamp_required = 'No') OR engineering_stamp_received_date is not null) AND
              (engineering_restamp_required_date is null  OR engineering_restamp_received_date is not null) and
-             ((redesign_requested_date is null OR redesign_signed_date is not null) or originator_id = 1) AND
+             ((redesign_requested_date is null OR redesign_signed_date is not null)) AND
               permit_packet_submitted_date IS not NULL and
              (engineering_restamp_required_date is null or engineering_restamp_received_date is not null) and
              ((hoa_approval_required_for_permit IS NULL OR hoa_approval_required_for_permit IS FALSE OR hoa_approval_needed = 'No') OR
-              (hoa_approval_received_date IS NOT NULL OR originator_id = 1)) and
+              (hoa_approval_received_date IS NOT NULL)) and
              ((interconnection_approval_required_for_permit_submission IS NULL OR
-               interconnection_approval_required_for_permit_submission IS FALSE OR originator_id = 1) OR
+               interconnection_approval_required_for_permit_submission IS FALSE) OR
               (nem_approved_by_utility_date IS NOT NULL)) AND
              as_built_permit_required_date IS NULL AND
              ((permit_pack_revision_complete_date IS NOT NULL
@@ -1750,7 +1750,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               final_design_signed_date is not null and
               ((engineering_stamp_required is null or engineering_stamp_required = 'No') OR engineering_stamp_received_date is not null) AND
               (engineering_restamp_required_date is null  OR engineering_restamp_received_date is not null) and
-              ((redesign_requested_date is null OR redesign_signed_date is not null) or originator_id = 1) and
+              ((redesign_requested_date is null OR redesign_signed_date is not null)) and
               permit_pack_complete::date is not null and permit_packet_submitted_date is null and
               (permit_pack_revision_requested_date::date is null or permit_pack_revision_complete_date::date is not null) and
               (permit_revision_b_requested_date::date is null or permit_revision_b_complete_date::date is not null) and
@@ -3428,8 +3428,8 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
             (final_design_signed_date IS NOT NULL OR redesign_signed_date IS NOT NULL) AND
             ((redesign_requested_date is null OR redesign_signed_date is not null)) AND
             in_house_mpu_permit_submittal_date is not null and
-            in_house_mpu_permit_submittal_date <= (now() AT TIME ZONE 'US/Mountain')::dateAND
-            in_house_mpu_permit_submittal_verified_date is null))returning *),
+            in_house_mpu_permit_submittal_date <= (now() AT TIME ZONE 'US/Mountain')::date AND
+            in_house_mpu_permit_submittal_verified_date is null)) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -3905,7 +3905,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
             fl_noc_application_signature_date IS NOT NULL AND
-            fl_noc_application_signature_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE AND
+            fl_noc_application_signature_date :: DATE < (now() at time zone 'US/Mountain') :: DATE AND
             fl_noc_application_signature_verified_date IS NULL))returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -6587,34 +6587,29 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
          -- Ready for permit delivery verification
-            ((permit_pick_up_date is not null and permit_pick_up_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE + 1) AND
+            ((permit_pick_up_date is not null and permit_pick_up_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE ) AND
               ((d.permit_location IS NOT NULL AND d.permit_location != 'Unknown' AND
                 d.permit_location != 'Plans Not Required On Site' AND
                 d.permit_location != 'On Site (attached to the fence/MPU)') OR
                (d.permit_location IS NULL) OR permit_pickup_verified_date IS NULL)) OR
-             (permit_pack_revision_pickup_date is not null and permit_pack_revision_pickup_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE + 1) AND
+             (permit_pack_revision_pickup_date is not null and permit_pack_revision_pickup_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE ) AND
               ((d.permit_pack_revision_location IS NOT NULL AND
                 d.permit_pack_revision_location != 'Unknown' AND
                 d.permit_pack_revision_location != 'Plans Not Required On Site' AND
                 d.permit_pack_revision_location != 'On Site (attached to the fence/MPU)') OR
                (d.permit_pack_revision_location IS NULL) OR permit_revision_pickup_verified_date IS NULL)) OR
-             (permit_revision_b_pickup_date is not null and permit_revision_b_pickup_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE + 1) AND
+             (permit_revision_b_pickup_date is not null and permit_revision_b_pickup_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE ) AND
               ((d.permit_revision_b_location IS NOT NULL AND
                 d.permit_revision_b_location != 'Unknown' AND
                 d.permit_revision_b_location != 'Plans Not Required On Site' AND
                 d.permit_revision_b_location != 'On Site (attached to the fence/MPU)') OR
                (d.permit_revision_b_location IS NULL) OR permit_revision_b_pickup_verified_date IS NULL)) OR
-             (permit_revision_c_pickup_date is not null and permit_revision_c_pickup_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE + 1) AND
+             (permit_revision_c_pickup_date is not null and permit_revision_c_pickup_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE ) AND
               ((d.permit_revision_c_location IS NOT NULL AND
                 d.permit_revision_c_location != 'Unknown' AND
                 d.permit_revision_c_location != 'Plans Not Required On Site' AND
                 d.permit_revision_c_location != 'On Site (attached to the fence/MPU)') OR
-               (d.permit_revision_c_location IS NULL) OR permit_revision_c_pickup_verified_date IS NULL)) OR
-             (as_built_permit_pickup_date is not null and as_built_permit_pickup_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE + 1) AND
-              ((d.as_built_permit_location IS NOT NULL AND d.as_built_permit_location != 'Unknown' AND
-                d.as_built_permit_location != 'Plans Not Required On Site' AND
-                d.as_built_permit_location != 'On Site (attached to the fence/MPU)') OR
-               (d.as_built_permit_location IS NULL) OR as_built_permit_pickup_verified_date IS NULL)))))returning *),
+               (d.permit_revision_c_location IS NULL) OR permit_revision_c_pickup_verified_date IS NULL)))))returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -6928,7 +6923,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and current_stage_id NOT IN(2,3) and (
             in_house_mpu_date is not null and
-            in_house_mpu_date <= (now() AT TIME ZONE 'US/Mountain')::dateAND
+            in_house_mpu_date <= (now() AT TIME ZONE 'US/Mountain')::date AND
             in_house_mpu_verified_date is null))returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -8458,7 +8453,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
               inner join blueraven.stage sd on sd.id = d.current_stage_id
-     where (((d.pre_design_status = 'Submitted' or d.pre_design_status = 'Awaiting Info' or d.pre_design_status = 'In Progress') and
+     where originator_id = 1 and (((d.pre_design_status = 'Submitted' or d.pre_design_status = 'Awaiting Info' or d.pre_design_status = 'In Progress') and
              d.appointment_date is not null) or (d.pre_design_status = 'Complete' and d.pre_design_complete_date is null)) AND
             (d.appointment_outcome is null or (d.appointment_outcome != 'Cancelled' and d.appointment_outcome != 'No Go' and d.appointment_outcome != 'Low TSRF')))returning *),
      p as (
@@ -18052,7 +18047,8 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and fl_noc_application_signature_date IS NOT NULL AND fl_noc_application_signature_date :: DATE > (now() at time zone 'US/Mountain') :: DATE) returning *),
+         where originator_id = 1 and fl_noc_application_signature_date IS NOT NULL AND
+               fl_noc_application_signature_date :: DATE >= (now() at time zone 'US/Mountain') :: DATE) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -18086,7 +18082,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where fl_noc_application_signature_date IS NOT NULL AND fl_noc_application_signature_date :: DATE > (now() at time zone 'US/Mountain') :: DATE
+         where fl_noc_application_signature_date IS NOT NULL AND fl_noc_application_signature_date :: DATE < (now() at time zone 'US/Mountain') :: DATE
            and originator_id = 1)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -18462,11 +18458,11 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                as_built_permit_pickup_date
+                in_house_mpu_permit_pickup_date
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where as_built_permit_pickup_date::date < (now() at time zone 'US/Mountain')::date
+         where in_house_mpu_permit_pickup_date::date < (now() at time zone 'US/Mountain')::date
            and originator_id = 1)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id

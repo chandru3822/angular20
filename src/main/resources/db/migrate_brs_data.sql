@@ -2468,6 +2468,7 @@ SELECT setval('flow.associated_org_id_seq', COALESCE((SELECT MAX(id) + 1 FROM fl
 
 delete from flow.attachment_source where id = 1;
 delete from flow.attachment_source where id = 2;
+delete from flow.attachment_source where id = 3;
 
 
 insert into flow.attachment_source(id,attachment_id,source_id)
@@ -2477,6 +2478,8 @@ from blueraven.attachment_source;
 SELECT setval('flow.attachment_source_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.attachment_source), 1), false);
 
 INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 75503, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 75504, 3);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 13315, 2350555);
 
 insert into brs.ahj(id, name, archived, date_created, created_by_id, date_modified, modified_by_id)
     (select id, name, archived, created, created_by_id, updated, updated_by_id
@@ -5771,7 +5774,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Training Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             enter_in_solved_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -5826,7 +5829,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Kronos/Payroll Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             trumpia_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -6709,7 +6712,7 @@ inner join flow.org o on o.id = up.org_id and company_id = 3
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Training Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             enter_in_solved_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -6764,7 +6767,7 @@ inner join flow.org o on o.id = up.org_id and company_id = 3
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Kronos/Payroll Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             trumpia_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -7060,6 +7063,56 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Blue Raven Solar')
       from blueraven.customer c
      where  c.id in (select customer_id from blueraven.deal d  where (d.originator_id =1 or d.originator_id is null)));
+
+INSERT INTO flow.contact (city,
+                          country_id,
+                          email,
+                          first_name,
+                          id,
+                          last_name,
+                          location_unavailable,
+                          mailing_city,
+                          mailing_postal_code,
+                          mailing_state,
+                          mailing_street1,
+                          mailing_street2,
+                          mobile,
+                          phone,
+                          postal_code,
+                          prospect_status,
+                          state,
+                          street1,
+                          street2,
+                          contact_type_id,
+                          created_by_id,
+                          date_created,
+                          company_id)
+    (SELECT city,
+            1,
+            email,
+            first_name,
+            c.id,
+            last_name,
+            location_unavailable,
+            mailing_city,
+            mailing_postal_code,
+            mailing_state,
+            mailing_street1,
+            mailing_street2,
+            mobile,
+            phone,
+            postal_code,
+            prospect_status,
+            state,
+            street1,
+            street2,
+            (select id from flow.contact_type where contact_type='Customer'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Blue Raven Solar')
+     from blueraven.customer c
+
+     where  c.id = 238126);
 
 with contacts_no_deals as (
     select c2.id as customer_id
@@ -8546,51 +8599,51 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
      WHERE homeowner_review_score is not null
        and  originator_id = 1);
 
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT d.id,
             1226 as custom_field_id,
-            d.ancillary_expense_actual_price_1::integer ,
+            d.ancillary_expense_actual_price_1 ,
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE ancillary_expense_actual_price_1 is not null
        and  originator_id = 1);
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT d.id,
             1227 as custom_field_id,
-            d.ancillary_expense_actual_price_2::integer ,
+            d.ancillary_expense_actual_price_2 ,
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE ancillary_expense_actual_price_2 is not null
        and  originator_id = 1);
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT d.id,
             1228 as custom_field_id,
-            d.ancillary_expense_actual_price_3::integer ,
+            d.ancillary_expense_actual_price_3 ,
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE ancillary_expense_actual_price_3 is not null
        and  originator_id = 1);
 
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT d.id,
             1223 as custom_field_id,
-            d.ancillary_expense_estimated_price_1::integer ,
+            d.ancillary_expense_estimated_price_1 ,
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE ancillary_expense_estimated_price_1 is not null
        and  originator_id = 1);
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT d.id,
             1224 as custom_field_id,
-            d.ancillary_expense_estimated_price_2::integer ,
+            d.ancillary_expense_estimated_price_2 ,
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE ancillary_expense_estimated_price_2 is not null
        and  originator_id = 1);
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT d.id,
             1225 as custom_field_id,
-            d.ancillary_expense_estimated_price_3::integer ,
+            d.ancillary_expense_estimated_price_3 ,
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE ancillary_expense_estimated_price_3 is not null
@@ -8686,7 +8739,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
     (SELECT d.id,
             1425 as custom_field_id,
             (select id from flow.list_of_value where parent_id = 1121
-                                                 and name::integer = installation_partner) ,
+                                                 and name = installation_partner) ,
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE installation_partner is not null
@@ -9013,6 +9066,9 @@ from blueraven.payroll p
  select id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current, null
  from blueraven.payroll where id = 0);
 
+insert into brs.payroll(id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current)
+(select id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current
+    from blueraven.payroll where selected_deal_ids = '{}' and id != 0);
 
 insert into brs.payroll_adjustment_type
     (select * from blueraven.payroll_adjustment_type);
