@@ -464,7 +464,7 @@ public class SmartlistService {
 
                       additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, r.getProcessStepId()));
                       if (smartlist.isMainProcessSteps()) {
-                        query.append(String.format("and \"%s\".main is true ", ppsUUID));
+                        additionalJoins.append(String.format("and \"%s\".main is true ", ppsUUID));
                       }
 
                       if (r.getCustomFieldSqlKey() != null) {
@@ -502,11 +502,16 @@ public class SmartlistService {
               if (r.getJoinTable() != null && r.getJoinColumn() != null) {
 
                 // see if table we need is already been joined, if so use it
-                final String referenceTable = joinTables.stream()
-                  .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
-                  .map(SmartlistFieldAssignment::getValueReferenceTable)
-                  .findFirst()
-                  .orElse(null);
+                String referenceTable;
+                try {
+                  referenceTable = joinTables.stream()
+                    .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
+                    .map(SmartlistFieldAssignment::getValueReferenceTable)
+                    .findFirst()
+                    .orElse(null);
+                } catch (NullPointerException e) {
+                  referenceTable = null;
+                }
 
                 if (referenceTable != null) {
                   referenceLocation = "\"" + referenceTable + "\".id";
@@ -551,7 +556,9 @@ public class SmartlistService {
 
           // date, timestamp, and text (text only when it's a custom value) data types need single quotes around them
           if ((List.of(1L, 2L).contains(r.getDataTypeId())) || r.getDataTypeId() == 5 && r.getIsCustomValue()) {
-              requirementValue = String.format("'%s'", requirementValue);
+              if (!Objects.equals(requirementValue, "null")) {
+                requirementValue = String.format("'%s'", requirementValue);
+              }
           } else if (r.getDataTypeId() == 9) {
               requirementValue = r.getListOfValueId();
           }
