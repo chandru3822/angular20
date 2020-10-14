@@ -159,7 +159,7 @@ export default {
     },
     getTypeCount: function(typeId) {
       try {
-        return this.attachments.filter(a => a.attachmentTypeId === typeId).length
+        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived).length
       } catch {
         return 0
       }
