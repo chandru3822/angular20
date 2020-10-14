@@ -1,4 +1,5 @@
 import {postRequest} from "@/helpers/helpers"
+import moment from "moment-timezone";
 
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
@@ -36,11 +37,17 @@ export const UserStore = {
     [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {
       state.details.timezone = timezone
       //todo: date/time inputs don't update when the zone is changed. should we refresh?
-
       commit(UserMutations.SET_DETAILS, state.details)
     },
     [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
       commit(UserMutations.LOGIN_ERROR, '')
+      //pls fix the undefined timezone issue!
+      if(!details.timezone) {
+        details.timezone = {
+          friendlyValue: moment.tz.guess(),
+          value: moment.tz.guess()
+        }
+      }
       commit(UserMutations.SET_DETAILS, details)
 
       if (getters.userHasAnyFeature) {
