@@ -5,40 +5,40 @@ BEGIN
         insert into flow.project_custom_field_value_audit(project_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(new.id,null,case when new.date_value is not null then new.date_value::text
                                 when new.timestamp_value is not null then new.timestamp_value::text
-                                when new.boolean_value is not null then new.boolean_value::text
                                 when new.text_value is not null then new.text_value
                                 when new.numeric_value is not null then new.numeric_value::text
                                 when new.int_value is not null then new.int_value::text
-                                when new.int_array_value is not null then new.int_array_value::text end,
+                                when new.int_array_value is not null then new.int_array_value::text
+                                when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
         insert into flow.project_custom_field_value_audit(project_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                case when new.date_value is not null then new.date_value::text
                     when new.timestamp_value is not null then new.timestamp_value::text
-                    when new.boolean_value is not null then new.boolean_value::text
                     when new.text_value is not null then new.text_value
                     when new.numeric_value is not null then new.numeric_value::text
                     when new.int_value is not null then new.int_value::text
-                    when new.int_array_value is not null then new.int_array_value::text end,
+                    when new.int_array_value is not null then new.int_array_value::text
+                    when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
         insert into flow.project_custom_field_value_audit(project_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                null,
                now(),
                new.modified_by_id);
@@ -63,40 +63,40 @@ BEGIN
         insert into flow.user_custom_field_value_audit(user_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(new.id,null,case when new.date_value is not null then new.date_value::text
                                 when new.timestamp_value is not null then new.timestamp_value::text
-                                when new.boolean_value is not null then new.boolean_value::text
                                 when new.text_value is not null then new.text_value
                                 when new.numeric_value is not null then new.numeric_value::text
                                 when new.int_value is not null then new.int_value::text
-                                when new.int_array_value is not null then new.int_array_value::text end,
+                                when new.int_array_value is not null then new.int_array_value::text
+                                when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
         insert into flow.user_custom_field_value_audit(user_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                case when new.date_value is not null then new.date_value::text
                     when new.timestamp_value is not null then new.timestamp_value::text
-                    when new.boolean_value is not null then new.boolean_value::text
                     when new.text_value is not null then new.text_value
                     when new.numeric_value is not null then new.numeric_value::text
                     when new.int_value is not null then new.int_value::text
-                    when new.int_array_value is not null then new.int_array_value::text end,
+                    when new.int_array_value is not null then new.int_array_value::text
+                    when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
         insert into flow.user_custom_field_value_audit(user_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                null,
                now(),
                new.modified_by_id);
@@ -120,40 +120,40 @@ BEGIN
         insert into flow.contact_custom_field_value_audit(contact_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(new.id,null,case when new.date_value is not null then new.date_value::text
                                 when new.timestamp_value is not null then new.timestamp_value::text
-                                when new.boolean_value is not null then new.boolean_value::text
                                 when new.text_value is not null then new.text_value
                                 when new.numeric_value is not null then new.numeric_value::text
                                 when new.int_value is not null then new.int_value::text
-                                when new.int_array_value is not null then new.int_array_value::text end,
+                                when new.int_array_value is not null then new.int_array_value::text
+                                when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
         insert into flow.contact_custom_field_value_audit(contact_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                case when new.date_value is not null then new.date_value::text
                     when new.timestamp_value is not null then new.timestamp_value::text
-                    when new.boolean_value is not null then new.boolean_value::text
                     when new.text_value is not null then new.text_value
                     when new.numeric_value is not null then new.numeric_value::text
                     when new.int_value is not null then new.int_value::text
-                    when new.int_array_value is not null then new.int_array_value::text end,
+                    when new.int_array_value is not null then new.int_array_value::text
+                    when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
         insert into flow.contact_custom_field_value_audit(contact_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                null,
                now(),
                new.modified_by_id);
@@ -177,40 +177,40 @@ BEGIN
         insert into flow.organization_custom_field_value_audit(organization_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(new.id,null,case when new.date_value is not null then new.date_value::text
                                 when new.timestamp_value is not null then new.timestamp_value::text
-                                when new.boolean_value is not null then new.boolean_value::text
                                 when new.text_value is not null then new.text_value
                                 when new.numeric_value is not null then new.numeric_value::text
                                 when new.int_value is not null then new.int_value::text
-                                when new.int_array_value is not null then new.int_array_value::text end,
+                                when new.int_array_value is not null then new.int_array_value::text
+                                when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
         insert into flow.organization_custom_field_value_audit(organization_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                case when new.date_value is not null then new.date_value::text
                     when new.timestamp_value is not null then new.timestamp_value::text
-                    when new.boolean_value is not null then new.boolean_value::text
                     when new.text_value is not null then new.text_value
                     when new.numeric_value is not null then new.numeric_value::text
                     when new.int_value is not null then new.int_value::text
-                    when new.int_array_value is not null then new.int_array_value::text end,
+                    when new.int_array_value is not null then new.int_array_value::text
+                    when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
         insert into flow.organization_custom_field_value_audit(organization_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                null,
                now(),
                new.modified_by_id);
@@ -235,40 +235,40 @@ BEGIN
         insert into flow.project_process_step_custom_field_value_audit(project_process_step_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(new.id,null,case when new.date_value is not null then new.date_value::text
                                 when new.timestamp_value is not null then new.timestamp_value::text
-                                when new.boolean_value is not null then new.boolean_value::text
                                 when new.text_value is not null then new.text_value
                                 when new.numeric_value is not null then new.numeric_value::text
                                 when new.int_value is not null then new.int_value::text
-                                when new.int_array_value is not null then new.int_array_value::text end,
+                                when new.int_array_value is not null then new.int_array_value::text
+                                when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
         insert into flow.project_process_step_custom_field_value_audit(project_process_step_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                case when new.date_value is not null then new.date_value::text
                     when new.timestamp_value is not null then new.timestamp_value::text
-                    when new.boolean_value is not null then new.boolean_value::text
                     when new.text_value is not null then new.text_value
                     when new.numeric_value is not null then new.numeric_value::text
                     when new.int_value is not null then new.int_value::text
-                    when new.int_array_value is not null then new.int_array_value::text end,
+                    when new.int_array_value is not null then new.int_array_value::text
+                    when new.boolean_value is not null then new.boolean_value::text end,
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
         insert into flow.project_process_step_custom_field_value_audit(project_process_step_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
-                           when old.boolean_value is not null then old.boolean_value::text
                            when old.text_value is not null then old.text_value
                            when old.numeric_value is not null then old.numeric_value::text
                            when old.int_value is not null then old.int_value::text
-                           when old.int_array_value is not null then old.int_array_value::text end,
+                           when old.int_array_value is not null then old.int_array_value::text
+                           when old.boolean_value is not null then old.boolean_value::text end,
                null,
                now(),
                new.modified_by_id);

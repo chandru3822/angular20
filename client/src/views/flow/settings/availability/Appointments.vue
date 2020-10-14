@@ -92,7 +92,20 @@
                   v-model="appt.allDay"
                   label="All Day"
                 ></v-checkbox>
+                <div v-if="VUE_APP_ENV === 'local'">
+                  <v-checkbox
+                    v-model="appt.repeat"
+                    label="Repeat"
+                  ></v-checkbox>
 
+                  <!-- i need the item id to be able to update the recurrence string on the callback -->
+                  <RRule v-if="appt.repeat"
+                         :recurrence="appt.recurrence"
+                         :item-id="appt.id"
+                         :recurrence-callback="recurrenceCallback"
+                  ></RRule>
+
+                </div>
                 <div v-if="saveError" class="error--text mt-3">
                   {{saveErrorMsg}}
                 </div>
@@ -157,16 +170,20 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
+  import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
   import moment from 'moment-timezone'
-  import constants from "@/helpers/constants";
+  import constants from "@/helpers/constants"
+
+  const { VUE_APP_ENV } = process.env
 
   export default {
     name: 'Appointments',
     components: {
       Snackbar,
+      RRule,
       DatetimePickerInput
     },
     props: {
@@ -193,6 +210,7 @@
     data() {
       return {
         snackbar: {},
+        VUE_APP_ENV,
         addNew: false,
         expanded: [],
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
@@ -299,6 +317,15 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      recurrenceCallback(recurrenceString, apptId, endDate) {
+        let appt = this.appointments.find(a => a.id === apptId)
+        console.log('randaLogger', appt.id)
+        if(appt) {
+          appt.recurrence = recurrenceString
+          appt.recurringEndTime = endDate
+        }
+      }
+
     }
   }
 </script>

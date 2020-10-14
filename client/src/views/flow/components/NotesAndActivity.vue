@@ -15,7 +15,7 @@
                     background-color="#F2F6F8"
                     filled v-model="note.note"></v-textarea>
         <div class="text-left mb-2">
-          <v-btn color="primary" class="white--text"
+          <v-btn color="primaryCustom" class="white--text"
                  :disabled="!note.note"
                  @click="saveNote(note)">Save</v-btn>
           <v-btn text v-if="note.note" @click="note={}">
@@ -55,7 +55,7 @@
                           background-color="#F2F6F8"
                           filled v-model="item.note"></v-textarea>
               <div class="text-left mb-2">
-                <v-btn color="primary" class="white--text"
+                <v-btn color="primaryCustom" class="white--text"
                        :disabled="!item.note"
                        @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save</v-btn>
                 <v-btn text @click="[item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
@@ -125,7 +125,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deleteNote(item, false)">
                           Yes
@@ -149,7 +149,7 @@
                           rows="1"
                           placeholder="Add a comment..." class="mt-1"></v-textarea>
               <div class="text-left py-2">
-                <v-btn color="primary white--text" @click="saveNote(item)"
+                <v-btn color="primaryCustom white--text" @click="saveNote(item)"
                        :disabled="!item.reply"
                 >
                   Save
@@ -167,7 +167,7 @@
                             background-color="#F2F6F8"
                             filled v-model="cn.note"></v-textarea>
                 <div class="text-left mb-2">
-                  <v-btn color="primary" class="white--text"
+                  <v-btn color="primaryCustom" class="white--text"
                          :disabled="!cn.note"
                          @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save</v-btn>
                   <v-btn text @click="[cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
@@ -231,7 +231,7 @@
                               No
                             </v-btn>
                             <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="deleteNote(cn, false)">
                               Yes
@@ -269,6 +269,8 @@ export default {
     showNotes: Boolean,
     showActivity: Boolean,
     primaryId: Number,
+    secondaryId: Number,
+    isWqtNote: Boolean,
     notes: Array,
     type: String
   },
@@ -311,11 +313,15 @@ export default {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         console.log('NOTE_HERE', n)
-        const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
+        let url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
+        const {data} = await postRequest(url, {
           primaryId: this.primaryId,
           id: n.reply ? null : n.id,
           note: n.reply ? n.reply : n.note,
-          parentId: n.reply ? n.id : null
+          parentId: n.reply ? n.id : null,
+          //these 2 fields are for pps pswqt notes which require 2 keys to save/get
+          projectProcessStepId: this.primaryId,
+          processStepWorkQueueTypeId: this.secondaryId,
         })
         // this.notes.unshift(data)
         if(n.reply) {

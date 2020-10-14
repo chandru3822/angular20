@@ -169,6 +169,17 @@ public class PostalCodeService {
     return results;
   }
 
+  public List<User> getAllZoneUsers() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+
+    List<User> results = sqlCache.query("postalCode.getAllZoneUsers", params, new UserService.UserMapper<>(User.class, om));
+    return results;
+  }
+
   public PostalCode getZonePostalCode(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);

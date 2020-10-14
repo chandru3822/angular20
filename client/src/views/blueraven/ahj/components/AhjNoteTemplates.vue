@@ -219,7 +219,7 @@
       max-width: 30px;
       height: 30px;
       padding: 5px;
-      border: 1px solid var(--v-primary-base) !important;
+      border: 1px solid var(--v-primaryCustom-base) !important;
       border-radius: 3px;
       display: flex;
       justify-content: center;

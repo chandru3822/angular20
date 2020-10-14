@@ -117,7 +117,7 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
+            <v-btn color="primaryCustom" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -180,7 +180,7 @@
                         class="mt-3"
                         @input="validateSaveEvent()"
               />
-              <v-btn color="primary"
+              <v-btn color="primaryCustom"
                      class="white--text"
                      :disabled="saveInvalid || !userCanEdit"
                      @click="scheduleProject">Save</v-btn>
@@ -194,7 +194,7 @@
             <v-progress-circular
               indeterminate
               :size="80"
-              :color="'primary'"
+              :color="'primaryCustom'"
             ></v-progress-circular>
           </div>
           <v-data-table
@@ -563,7 +563,7 @@
 
   .map-field-label {
     font-size: 12px;
-    color: var(--v-primary-base);
+    color: var(--v-primaryCustom-base);
   }
 
   .list-container {

@@ -223,6 +223,9 @@ public class AvailabilityService {
     params.put("companyId", user.getCompanyId());
     params.put("orgId", ra.getOrgId());
     params.put("userId", ra.getUserId());
+    params.put("recurrence", ra.getRecurrence());
+    params.put("recurringStartTime", ra.getRecurringStartTime());
+    params.put("recurringEndTime", ra.getRecurringEndTime());
 
     Long id = null;
 

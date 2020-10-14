@@ -251,7 +251,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deletePayment(item)">
                           Yes

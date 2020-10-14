@@ -9,9 +9,11 @@
 >
   <template #activator="{on}">
     <v-text-field
+      :class="customClass"
       :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
       :label="label"
-      prepend-icon="event"
+      :prepend-icon="hidePrependIcon ? '' : 'event'"
+      :append-icon="showAppendIcon ? 'event' : ''"
       readonly
       clear-icon="mdi-close-circle"
       :clearable="!readonly"
@@ -25,8 +27,8 @@
     v-model="date"
   >
     <v-spacer></v-spacer>
-    <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
-    <v-btn text color="primary" @click="saveDate()">OK</v-btn>
+    <v-btn text color="primaryCustom" @click="cancel()">Cancel</v-btn>
+    <v-btn text color="primaryCustom" @click="saveDate()">OK</v-btn>
   </v-date-picker>
 
   <v-time-picker
@@ -35,8 +37,8 @@
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
-    <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
-    <v-btn text color="primary" @click="saveTime()">OK</v-btn>
+    <v-btn text color="primaryCustom" @click="cancel()">Cancel</v-btn>
+    <v-btn text color="primaryCustom" @click="saveTime()">OK</v-btn>
   </v-time-picker>
 </v-menu>
 </template>
@@ -56,6 +58,10 @@ export default {
     label: String,
     format: String,
     inputFormat: String,
+    hidePrependIcon: Boolean,
+    customClass: String,
+    showAppendIcon: Boolean,
+    changeCallback: Function,
     readonly: {
       type: Boolean,
       default: false
@@ -90,6 +96,12 @@ export default {
     }
   },
   methods: {
+    changeHandler () {
+      //@humes hopefully this doesn't break anything. if no changeCallback is passed in it shouldn't do anything
+      if(this.changeCallback) {
+        this.changeCallback()
+      }
+    },
     saveDate () {
       if (this.type === 'date') {
         DateTime.local()
@@ -99,13 +111,13 @@ export default {
         this.showDate = false
         this.showTime = true
       }
+      this.changeHandler()
     },
     saveTime () {
       if (this.type === 'timestamp') {
         const date = this.utcDate ? DateTime.fromFormat(this.utcDate, 'yyyy-MM-dd', {zone: 'utc'})
           : DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
         let time = DateTime.fromISO(this.time, {zone: 'utc'})
-        console.log('randaLogger', date)
 
         const datetime = time.set({
           year: date.year,
@@ -119,10 +131,12 @@ export default {
         this.$emit('input', DateTime.fromISO(this.time, {zone: 'utc'}).toISOTime())
       }
       this.menu = false
+      this.changeHandler()
     },
     cancel () {
       this.menu = false
       this.init()
+      this.changeHandler()
     },
     init () {
       // let value = DateTime.fromFormat(this.$props.value, 'HH:mm')
@@ -147,6 +161,7 @@ export default {
     },
     clearInput () {
         this.$emit('input', null)
+        this.changeHandler()
     }
   }
 }

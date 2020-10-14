@@ -68,4 +68,9 @@ public class PostalCodeController {
     public List<User> getZoneUsers(@PathVariable Long id) {
         return postalCodeService.getZoneUsers(id);
     }
+
+    @GetMapping(value = "/zone/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getAllZoneUsers() {
+        return postalCodeService.getAllZoneUsers();
+    }
 }

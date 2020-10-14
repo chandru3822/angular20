@@ -414,7 +414,7 @@
                               No
                             </v-btn>
                             <v-btn
-                                color="primary"
+                                color="primaryCustom"
                                 text
                                 @click="deleteRequirement(item)">
                               Yes
@@ -599,7 +599,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                    color="primary"
+                                    color="primaryCustom"
                                     text
                                     @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
                                   Yes
@@ -688,7 +688,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                  color="primary"
+                                  color="primaryCustom"
                                   text
                                   @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
                                   Yes
@@ -852,7 +852,7 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                  color="primary"
+                                  color="primaryCustom"
                                   text
                                   @click="[cp.archived = true, deleteChildFunctionFromAction(item.id, cp.id)]">
                                   Yes
@@ -969,7 +969,7 @@
                               No
                             </v-btn>
                             <v-btn
-                                color="primary"
+                                color="primaryCustom"
                                 text
                                 @click="[item.archived = true, deleteAction(item)]">
                               Yes
@@ -1161,7 +1161,7 @@
             //get contact custom fields
             this.loadCustomFieldsByObjectType(2)
           } else {
-            const {data} = await getRequest(`/function`)
+            const {data} = await getRequest(`/function/requirement`)
             this.availableFunctions = data
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1174,7 +1174,7 @@
       async loadChildFunctions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/function`)
+          const {data} = await getRequest(`/function/action`)
           this.childFunctions = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

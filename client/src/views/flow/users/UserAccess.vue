@@ -7,7 +7,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="saveUserAccess"
-                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                   color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -25,7 +25,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]"
-                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                   color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
               <v-icon>add</v-icon>
               Add Org Calendar
             </v-btn>
@@ -93,7 +93,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteOrgCalendarFromUser(item)">
                         Yes

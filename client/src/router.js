@@ -169,6 +169,18 @@ export default new Router({
           return accessDenied()
         }
       }
+    },{
+      path: '/closerAvailability',
+      name: 'closerAvailability',
+      meta: { title: 'Albatross - Closer Availability'},
+      props: true,
+      component: () => {
+        if(store.getters.userHasFeature('CLOSER_AVAILABILITY')) {
+          return import(/* webpackChunkName: "schedule" */ './views/blueraven/closerAvailability/CloserAvailability.vue')
+        } else  {
+          return accessDenied()
+        }
+      }
     }, {
       path: '/ahj',
       name: 'ahj',

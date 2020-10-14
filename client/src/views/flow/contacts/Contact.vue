@@ -15,7 +15,7 @@
                 <template v-slot:activator="{ on: tooltip }">
                   <div v-on="{ ...tooltip }" class="d-inline-block">
                     <v-btn v-on="{ ...menu }"
-                           color="primary"
+                           color="primaryCustom"
                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
                            class="white--text"
                            @click="getAvailableProcesses">

@@ -24,6 +24,11 @@ body {
   max-width: unset !important;
 }
 
+.primary-custom-bg {
+  background-color: var(--v-primaryCustom-base) ;
+  border-color: var(--v-primaryCustom-base);
+}
+
 .app-toolbar {
   border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
   //-webkit-box-shadow: 0 6px 6px -6px #000 !important;
@@ -182,7 +187,7 @@ label[for="adminOriginatorSelect"] {
   border-color: #e0e1e2 !important;
 }
 .app-pre-wrapper {
-  white-space: pre-wrap;
+  white-space: pre-line;
   font-family: 'Lato', sans-serif;
   letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;

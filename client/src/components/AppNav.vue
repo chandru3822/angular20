@@ -2,7 +2,7 @@
   <div v-if="loadComplete">
     <v-row>
       <v-col cols="12" class="pt-0 pb-0">
-        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
+        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primaryCustom'" :size="100"></Spinner>
         <v-app-bar dense id="header" :color="headerColor" tabs dark>
           <v-menu data-app left
                   offset-y

@@ -12,7 +12,7 @@ import java.util.Date;
 public class ResourceAppointment {
 
   private Long id, companyId, userId, orgId;
-  private String description;
-  private Date startTime, endTime;
-  private Boolean archived, allDay;
+  private String description, recurrence;
+  private Date startTime, endTime, recurringStartTime, recurringEndTime;
+  private Boolean archived, allDay, repeat;
 }
