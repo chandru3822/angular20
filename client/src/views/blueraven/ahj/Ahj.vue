@@ -3,16 +3,16 @@
     <v-col cols="12">
       <v-toolbar color="white" class="elevation-1">
         <v-toolbar-title class="app-title">
-          <v-btn text to="/ahj" color="primary">
+          <v-btn text to="/ahj" color="primaryCustom">
             AHJ
           </v-btn>
-          <v-btn text to="/ahjUtility" color="primary">
+          <v-btn text to="/ahjUtility" color="primaryCustom">
             Utility
           </v-btn>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+          <v-btn text @click="addItem" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
             <v-icon>add</v-icon>
             <span v-if="!constants.IS_MOBILE">Add New</span>
           </v-btn>

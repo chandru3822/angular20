@@ -165,7 +165,7 @@
               :format="'MMMM DD, YYYY, h:mm A'"
               label="End Time"
             />
-            <v-text-field color="primary"
+            <v-text-field color="primaryCustom"
                           v-model="closerAppointmentDetails.userFullName"
                           readonly
                           label="Resource"></v-text-field>
@@ -241,7 +241,7 @@ import ActionButton from './ActionButton'
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
-import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+// import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -253,7 +253,7 @@ export default {
     ActionButton,
     Snackbar,
     Attachments,
-    NotesAndActivity,
+    // NotesAndActivity,
     CustomValueInput,
     DatetimePickerInput
   },

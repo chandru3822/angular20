@@ -84,7 +84,7 @@
                             No
                           </v-btn>
                           <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deletePostalCodeZone(item.id)]">
                             Yes

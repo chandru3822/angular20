@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pt-0">
+  <v-container class="pt-0" v-if="contact && contact.id">
     <v-row class="contact-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
         <div class="contact-title">
@@ -15,7 +15,7 @@
                 <template v-slot:activator="{ on: tooltip }">
                   <div v-on="{ ...tooltip }" class="d-inline-block">
                     <v-btn v-on="{ ...menu }"
-                           color="primary"
+                           color="primaryCustom"
                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
                            class="white--text"
                            @click="getAvailableProcesses">
@@ -190,6 +190,21 @@
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
+  <v-row align="center" justify="center" v-else-if="!contactLoading">
+    <v-col cols="12" sm="8">
+      <v-card color="secondaryMaster" class="elevation-12 pb-5">
+        <v-toolbar dark color="red">
+          <v-toolbar-title>Error</v-toolbar-title>
+        </v-toolbar>
+        <v-card-text class="login-card-text">
+          This contact either doesn't exist or you don't have access to it in this context.
+        </v-card-text>
+        <v-card-actions class="justify-center">
+          <v-btn to="/contacts">Click here to go back to Contacts</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -216,6 +231,7 @@ export default {
       states: [],
       contact: {},
       addressChanged: false,
+      contactLoading: true,
       customFieldGroups: [],
       notes: [],
       dirtyCfvs: [],
@@ -223,7 +239,7 @@ export default {
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
-      timezone: this.$store.state.user.details.timezone.value,
+      timezone: this.$store.state.user.details.timezone?.value,
       changeOwner: false,
       selectedProcess: null,
       availableProcesses: []
@@ -278,10 +294,12 @@ export default {
       try {
         const {data} = await getRequest(`/contact/${this.contactId}`)
         this.contact = data
+        this.contactLoading = false
 
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
+        this.contactLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

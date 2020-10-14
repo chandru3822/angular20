@@ -1,5 +1,5 @@
 <template>
-  <v-row id="project-container">
+  <v-row id="project-container" v-if="project && project.id">
     <v-col cols="12" class="py-0">
       <v-row>
         <v-col cols="12" class="pb-0">
@@ -120,6 +120,21 @@
     </v-col>
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
+  <v-row align="center" justify="center" v-else-if="!projectLoading">
+    <v-col cols="12" sm="8">
+      <v-card color="secondaryMaster" class="elevation-12 pb-5">
+        <v-toolbar dark color="red">
+          <v-toolbar-title>Error</v-toolbar-title>
+        </v-toolbar>
+        <v-card-text class="login-card-text">
+          This project either doesn't exist or you don't have access to it in this context.
+        </v-card-text>
+        <v-card-actions class="justify-center">
+          <v-btn to="/projects">Click here to go back to Projects</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -149,6 +164,7 @@ export default {
       project: {},
       states: [],
       countries: [],
+      projectLoading: true,
       breadcrumbs: [
         {
           text: 'Back',
@@ -166,10 +182,15 @@ export default {
   },
   methods: {
     getProject: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        this.projectLoading = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
+        this.projectLoading = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
       }
     },

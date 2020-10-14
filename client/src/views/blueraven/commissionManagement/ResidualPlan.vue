@@ -1,26 +1,25 @@
 <template>
-  <v-container class="pa-0" id="commission-container">
+  <v-container class="pa-0" id="residualPlan-container">
     <v-toolbar flat color="transparent">
       <v-toolbar-title>
-        <span v-if="planId">{{commission.name}}</span>
-        <span v-else>New Commission Plan</span>
+        <span v-if="planId">{{residualPlan.name}}</span>
+        <span v-else>New Residual Plan</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="commission-button-container">
           <v-btn color="primaryCustom" class="white--text mr-2"
-                 :disabled="!commission.name"
-                 v-if="userCanEdit"
+                 :disabled="!residualPlan.name"
                  @click="savePlan()">
             Save
           </v-btn>
           <v-btn color="green" class="white--text mr-2"
-                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
+                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && residualPlan.statusType === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approvePlan()">
             Approve
           </v-btn>
-          <v-dialog v-if="planId && !commission.approved && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+          <v-dialog v-if="planId && !residualPlan.approved"
                     v-model="deleteConfirm"
                     width="500">
             <template #activator="{ on }">
@@ -48,7 +47,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primary"
+                  color="primaryCustom"
                   text
                   @click="[deleteConfirm = true, deletePlan()]">
                   Yes
@@ -57,7 +56,7 @@
             </v-card>
           </v-dialog>
 
-          <v-dialog v-else-if="planId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
+          <v-dialog v-else-if="planId"
               v-model="inactivateConfirm"
               width="500">
             <template #activator="{ on }">
@@ -112,7 +111,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primary"
+                  color="primaryCustom"
                   text
                   @click="[inactivateConfirm = true, inactivatePlan()]">
                   Yes
@@ -122,9 +121,7 @@
           </v-dialog>
 
 
-          <v-dialog v-if="planId && commission && commission.users
-                        && userCanAdd
-                        && commission.users.filter(u => {return u.endDate == null}).length > 0"
+          <v-dialog v-if="planId && residualPlan && residualPlan.users && residualPlan.users.filter(u => {return u.endDate == null}).length > 0"
             v-model="cloneDialog"
             width="600"
           >
@@ -139,7 +136,7 @@
                 class="headline grey lighten-2"
                 primary-title
               >
-                Clone {{commission.name}}
+                Clone {{residualPlan.name}}
               </v-card-title>
 
               <v-card-text class="pt-4">
@@ -148,11 +145,11 @@
                   By default, no users are copied over.
                 </div>
                 Users to Copy:
-                <div v-for="u in filterBy(commission.users, (u) => { return u.endDate == null })">
+                <div v-for="u in filterBy(residualPlan.users, (u) => { return u.endDate == null })">
                   <input type="checkbox" class="mr-2" v-model="u.selected">
                   {{ u.name }}: {{u.startDate | formatDate('date')}}
                 </div>
-                <div class="mt-3" v-if="commission.users && commission.users.filter(u => u.selected).length > 0">
+                <div class="mt-3" v-if="residualPlan.users && residualPlan.users.filter(u => u.selected).length > 0">
                   <DatetimePickerInput
                     v-model="cloneStartDate"
                     :timezone="timezone"
@@ -181,8 +178,8 @@
                 </v-btn>
                 <v-btn
                   color="primaryCustom"
-                  :disabled="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
-                            (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
+                  :disabled="(residualPlan.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
+                            (residualPlan.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
                   class="white--text"
                   @click="validateStartDates()">
                   Clone
@@ -206,22 +203,18 @@
       </v-col>
     </v-row>
     <v-divider></v-divider>
-    <v-form ref="commissionForm">
+    <v-form ref="residualPlanForm">
       <v-container>
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat class="pa-3" color="transparent">
               <v-text-field text
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
                             label="Name"
-                            v-model="commission.name"></v-text-field>
+                            v-model="residualPlan.name"></v-text-field>
               <v-text-field text
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
                             label="Description"
-                            v-model="commission.description"></v-text-field>
-              <v-select v-model="commission.positionId"
+                            v-model="residualPlan.description"></v-text-field>
+              <v-select v-model="residualPlan.positionId"
                         :items="positions"
                         :disabled="true"
                         no-data-text="No Users Available"
@@ -229,11 +222,6 @@
                         item-text="label"
                         item-value="id"
               ></v-select>
-              <v-text-field text
-                            label="Rate per kW ($)"
-                            type="number"
-                            :disabled="commission.id && commission.statusType !== 'PENDING'"
-                            v-model.number="commission.total"></v-text-field>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
@@ -241,21 +229,21 @@
               <v-text-field text
                             label="Status"
                             disabled
-                            v-model="commission.statusType"></v-text-field>
+                            v-model="residualPlan.statusType"></v-text-field>
               <v-text-field text
                             disabled
                             label="Created By"
-                            v-model="commission.createdName"></v-text-field>
+                            v-model="residualPlan.createdName"></v-text-field>
               <v-text-field text
                             disabled
                             label="Approved"
-                            v-if="commission.approvedDate"
-                            v-model="commission.approvedDate"></v-text-field>
+                            v-if="residualPlan.approvedDate"
+                            v-model="residualPlan.approvedDate"></v-text-field>
               <v-text-field text
                             disabled
-                            v-if="commission.approvedName"
+                            v-if="residualPlan.approvedName"
                             label="Approved By"
-                            v-model="commission.approvedName"></v-text-field>
+                            v-model="residualPlan.approvedName"></v-text-field>
             </v-card>
           </v-col>
         </v-row>
@@ -265,243 +253,118 @@
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
-            Milestones
+            Levels
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]">
-              <v-icon v-if="addMilestone">remove</v-icon>
+            <v-btn text v-if="residualPlan.statusType === 'PENDING'" @click="[selectedLevel = {}, addLevel = !addLevel]">
+              <v-icon v-if="addLevel">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
-        <v-card v-if="addMilestone" class="square-card text-left pa-5">
-          <v-select v-model="selectedMilestone.id"
-                    :items="milestones"
-                    label="Select a Milestone..."
-                    item-text="milestoneType"
-                    item-value="id"
-                    autocomplete="off">
-          </v-select>
+        <v-card v-if="addLevel" class="square-card text-left pa-5">
+          <v-text-field text
+                        type="text"
+                        label="Name"
+                        v-model="selectedLevel.name">
+          </v-text-field>
           <v-text-field text
                         type="number"
-                        label="Milestone Payment $"
-                        v-model="selectedMilestone.allocation">
+                        label="Level"
+                        v-model="selectedLevel.level">
           </v-text-field>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addMilestoneToPlan()"
-                 :disabled="!selectedMilestone.id || !selectedMilestone.allocation">
+          <v-text-field text
+                        type="number"
+                        label="# FDC Lower"
+                        v-model="selectedLevel.nbrFdcLower">
+          </v-text-field>
+          <v-text-field text
+                        type="number"
+                        label="# FDC Upper"
+                        v-model="selectedLevel.nbrFdcUpper">
+          </v-text-field>
+          <v-text-field text
+                        type="number"
+                        label="Total"
+                        v-model="selectedLevel.total">
+          </v-text-field>
+          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addLevelToPlan()"
+                 :disabled="!selectedLevel.name || !selectedLevel.level || !selectedLevel.nbrFdcLower || !selectedLevel.nbrFdcUpper || !selectedLevel.total">
             Add
           </v-btn>
         </v-card>
-        <v-divider v-if="addMilestone"></v-divider>
+        <v-divider v-if="addLevel"></v-divider>
         <v-data-table
-          :headers="milestoneHeaders"
-          :items="commission.milestones"
+          :headers="levelHeaders"
+          :items="residualPlan.residualPlanAllocations"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
           :loading="dataLoading"
           single-expand
-          :expanded.sync="milestoneExpanded"
+          :expanded.sync="levelExpanded"
           hide-default-footer
           class="elevation-1"
         >
           <template #no-data>
-            No available milestones
+            No available levels
           </template>
 
           <template #no-results>
-            No available milestones
+            No available levels
           </template>
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left">
+              <v-text-field text
+                            type="text"
+                            label="Name"
+                            v-model="item.name">
+              </v-text-field>
               <v-text-field text
                             type="number"
-                            label="Milestone Payment $"
-                            v-model="item.allocation">
+                            label="Level"
+                            v-model="item.level">
               </v-text-field>
-              <v-btn :disabled="!item.allocation"
-                     @click="[milestoneExpanded = [], updateMilestone(item)]">Save</v-btn>
-            </td>
-          </template>
-
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.milestoneType}}</td>
-              <td class="text-left">{{item.allocation}}</td>
-              <td>
-                <v-btn small text @click="milestoneExpanded = [item]"
-                       v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text @click="milestoneExpanded = []"
-                       v-if="milestoneExpanded.includes(item)">cancel
-                </v-btn>
-                <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card v-if="checkIfMilestoneUsed(item.milestoneId)">
-                    <v-card-title class="headline grey lighten-2" primary-title>
-                      Error
-                    </v-card-title>
-                    <v-card-text>
-                      Cannot delete milestones that are in use by sources.
-                    </v-card-text>
-                    <v-divider></v-divider>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn @click="item.deleteConfirm = false">
-                        Ok
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                  <v-card v-else>
-                    <v-card-title class="headline grey lighten-2" primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this milestone: <strong>{{ item.milestoneType }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteMilestone(item.commissionPlanAllocationId)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
-    <v-row v-if="planId">
-      <v-col>
-        <v-toolbar flat>
-          <v-toolbar-title>
-            Source Deductions
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
-              <v-icon v-if="addSource">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-divider></v-divider>
-        <v-card v-if="addSource" class="square-card text-left pa-5">
-          <div v-if="!commission.milestones || commission.milestones.length === 0">
-            You must add milestones to this plan first.
-          </div>
-          <div v-else>
-            <v-select v-model="selectedSource.id"
-                      :items="sources"
-                      label="Select a Source..."
-                      item-text="sourceName"
-                      item-value="id"
-                      autocomplete="off">
-            </v-select>
-            <v-text-field text
-                          label="Fee Amount"
-                          v-model="selectedSource.feeAmount"></v-text-field>
-            <v-select v-model="selectedSource.feeTypeId"
-                      :items="feeTypes"
-                      label="Fee Type"
-                      item-text="label"
-                      item-value="id"
-            ></v-select>
-            <v-select v-model="selectedSource.milestoneId"
-                      :items="commission.milestones"
-                      label="Deduct at Milestone"
-                      item-text="milestoneType"
-                      item-value="milestoneId"
-            ></v-select>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="addSourceToPlan()"
-                   :disabled="!selectedSource.id || !selectedSource.feeTypeId || !selectedSource.feeAmount">
-              Add
-            </v-btn>
-          </div>
-        </v-card>
-        <v-divider v-if="addSource"></v-divider>
-        <v-data-table
-            :headers="sourceHeaders"
-            :items="commission.sources"
-            :fixed-header="true"
-            :items-per-page="-1"
-            disable-sort
-            :loading="dataLoading"
-            single-expand
-            :expanded.sync="sourceExpanded"
-            hide-default-footer
-            class="elevation-1"
-        >
-          <template #no-data>
-            No available sources
-          </template>
-
-          <template #no-results>
-            No available sources
-          </template>
-
-          <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4 text-left">
               <v-text-field text
-                            label="Fee Amount"
-                            v-model="item.feeAmount"></v-text-field>
-              <v-select v-model="item.feeTypeId"
-                        :items="feeTypes"
-                        label="Fee Type"
-                        item-text="label"
-                        item-value="id"
-              ></v-select>
-              <v-select v-model="item.milestoneId"
-                        :items="commission.milestones"
-                        label="Deduct at Milestone"
-                        item-text="milestoneType"
-                        item-value="milestoneId"
-              ></v-select>
-              <v-btn :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
-                     @click="[sourceExpanded = [], updateSource(item)]">Save</v-btn>
+                            type="number"
+                            label="# FDC Lower"
+                            v-model="item.nbrFdcLower">
+              </v-text-field>
+              <v-text-field text
+                            type="number"
+                            label="# FDC Upper"
+                            v-model="item.nbrFdcUpper">
+              </v-text-field>
+              <v-text-field text
+                            type="number"
+                            label="Total"
+                            v-model="item.total">
+              </v-text-field>
+              <v-btn :disabled="!item.name || !item.level || !item.nbrFdcLower || !item.nbrFdcUpper || !item.total"
+                     @click="[levelExpanded = [], updateLevel(item)]">Save</v-btn>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.sourceName}}</td>
-              <td class="text-left">{{item.feeAmount}}</td>
-              <td class="text-left">{{item.feeType}}</td>
-              <td class="text-left">{{item.milestoneType}}</td>
+              <td class="text-left">{{item.name}}</td>
+              <td class="text-left">{{item.level}}</td>
+              <td class="text-left">{{item.nbrFdcLower}}</td>
+              <td class="text-left">{{item.nbrFdcUpper}}</td>
+              <td class="text-left">{{item.total || 0 | currency('$', 2)}}</td>
               <td>
-                <v-btn small text @click="sourceExpanded = [item]"
-                       v-if="commission.statusType === 'PENDING' && !sourceExpanded.includes(item)">
+                <v-btn small text @click="levelExpanded = [item]"
+                       v-if="residualPlan.statusType === 'PENDING' && !levelExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="sourceExpanded = []"
-                       v-if="sourceExpanded.includes(item)">cancel
+                <v-btn small text @click="levelExpanded = []"
+                       v-if="levelExpanded.includes(item)">cancel
                 </v-btn>
                 <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
+                  v-if="residualPlan.statusType === 'PENDING'"
                   v-model="item.deleteConfirm"
                   width="500">
                   <template v-slot:activator="{ on }">
@@ -510,15 +373,12 @@
                     </v-btn>
                   </template>
                   <v-card>
-                    <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                    >
+                    <v-card-title class="headline grey lighten-2" primary-title>
                       Confirm
                     </v-card-title>
 
                     <v-card-text>
-                      Are you sure you want to delete this source: <strong>{{ item.sourceName }}</strong>?
+                      Are you sure you want to delete this level: <strong>{{ item.name }}</strong>?
                     </v-card-text>
 
                     <v-divider></v-divider>
@@ -530,9 +390,9 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
-                        @click="deleteSource(item.id)">
+                        @click="deleteLevel(item.id)">
                         Yes
                       </v-btn>
                     </v-card-actions>
@@ -552,8 +412,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]"
-                   v-if="userCanAdd">
+            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -630,7 +489,7 @@
         <v-divider v-if="addUser"></v-divider>
         <v-data-table
             :headers="headers"
-            :items="filterCommissionUsers()"
+            :items="filterResidualPlanUsers()"
             :fixed-header="true"
             :items-per-page="-1"
             disable-sort
@@ -659,7 +518,7 @@
                     :format="'MMMM DD, YYYY'"
                     label="End Date"
                     :readonly="errorLoadingUserHistory"
-                    @input="checkDates(item.startDate, item.endDate, userHistory, item, commission.id)"
+                    @input="checkDates(item.startDate, item.endDate, userHistory, item, residualPlan.id)"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
@@ -701,14 +560,14 @@
               <td>
 
                 <v-btn small text @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
-                       v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
+                       v-if="residualPlan.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text @click="assignedUserExpanded = []"
                        v-if="assignedUserExpanded.includes(item)">cancel
                 </v-btn>
                 <v-dialog
-                  v-if="commission.statusType === 'PENDING'"
+                  v-if="residualPlan.statusType === 'PENDING'"
                   v-model="item.deleteConfirm"
                   width="500">
                   <template v-slot:activator="{ on }">
@@ -737,7 +596,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteUserFromPlan(item)">
                         Yes
@@ -762,11 +621,10 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../helpers/helpers";
-  import orderBy from "lodash.orderby";
+  import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
-    name: 'Commission',
+    name: 'ResidualPlan',
     mixins: [Vue2Filters.mixin],
     components: {
       Snackbar,
@@ -774,7 +632,7 @@
     },
     created() {
       if(this.planId) {
-        this.getCommissionDetails()
+        this.getResidualPlanDetails()
       } else {
         this.dataLoading = false
       }
@@ -783,7 +641,7 @@
       $route(to, from) {
         // react to route changes...
         this.planId = to.params.id
-        this.getCommissionDetails()
+        this.getResidualPlanDetails()
       },
       userSearch (val, test, third) {
         if(!val) {
@@ -802,9 +660,18 @@
         usersToAdd: [],
         userSearch: null,
         userHistory: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         usersLoading: false,
+        levelExpanded: [],
+        levelHeaders: [
+          {text: 'Name', value: 'name', show: true},
+          {text: 'Level', value: 'level', show: true},
+          {text: '# FDC Lower', value: 'nbrFdcLower', show: true},
+          {text: '# FDC Upper', value: 'nbrFdcUpper', show: true},
+          {text: 'Total', value: 'total', show: true},
+          {text: '', value: 'icons', show: true},
+        ],
+        addLevel: false,
+        selectedLevel: {},
         moment,
         cloneStartDate: null,
         timezone: this.$store.state.user.details.timezone.value,
@@ -812,8 +679,6 @@
         inactivateConfirm: false,
         deleteConfirm: false,
         planId: this.$route.params.id,
-        milestoneExpanded: [],
-        sourceExpanded: [],
         errorLoadingUserHistory: false,
         assignedUserExpanded: [],
         headers: [
@@ -833,31 +698,9 @@
           {id: 1, label: 'Closer'},
           {id: 4, label: 'Setter'}
         ],
-        feeTypes: [
-          {id: 1, label: 'Per kW'},
-          {id: 2, label: 'Flat'}
-        ],
-        sourceHeaders: [
-          {text: 'Source', value: 'source', show: true},
-          {text: 'Fee Amount', value: 'feeAmount', show: true},
-          {text: 'Fee Type', value: 'feeType', show: true},
-          {text: 'Deduct at Milestone', value: 'deductAtMilestone', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        milestoneHeaders: [
-          {text: 'Milestone', value: 'milestoneType', show: true},
-          {text: 'Milestone Payment ($)', value: 'allocation', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        addMilestone: false,
-        selectedMilestone: {},
-        milestones: [],
-        addSource: false,
-        selectedSource: {},
-        sources: [],
         errorMessages: [],
         cloneDateError: false,
-        commission: {
+        residualPlan: {
           users: [],
           positionId: 1
         }
@@ -866,36 +709,36 @@
 
 
     methods: {
-      async getCommissionDetails () {
+      async getResidualPlanDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/plan/${this.planId}`, 'blueraven')
-          this.commission = data
-          if([2,3].includes(this.commission.statusId)) {
-            this.commission.approved = true
+          const {data} = await getRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
+          this.residualPlan = data
+          if([2,3].includes(this.residualPlan.statusId)) {
+            this.residualPlan.approved = true
           }
           // temporarily only allowing closers
-          this.commission.positionType = 'closers'
+          this.residualPlan.positionType = 'closers'
           this.checkErrorMessages()
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Details')
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Residual Plan Details')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       validateStartDates() {
         //this is used when cloning users
         this.cloneDateError = false
-        this.commission?.users?.forEach(u => {
+        this.residualPlan?.users?.forEach(u => {
           if(u.selected && u.startDate >= this.cloneStartDate) {
             this.cloneDateError = true
           }
         })
 
         if(!this.cloneDateError) {
-          this.clonePlan(commission.users, cloneStartDate)
+          this.clonePlan(this.residualPlan.users, this.cloneStartDate)
           this.cloneDialog = false;
         }
       },
@@ -939,18 +782,10 @@
       },
       checkErrorMessages () {
         this.errorMessages = []
-        if(this.commission.total === 0) {
-          this.errorMessages.push('The Rate per kW cannot be zero.')
-        }
-        //sum of m1 and m2 payment = rate per kw
-        let sum = this.commission.milestones.reduce((a, b) => a + b.allocation, 0)
-        if(sum !== this.commission.total) {
-          this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')
-        }
       },
       planHasActiveUsers () {
         let hasActive = false
-        this.commission?.users?.forEach(u => {
+        this.residualPlan?.users?.forEach(u => {
           if(u.endDate === null || u.endDate > new Date()){
             hasActive = true
           }
@@ -958,7 +793,7 @@
         return hasActive
       },
       activeUsers () {
-        return this.commission?.users?.filter(u => {
+        return this.residualPlan?.users?.filter(u => {
           return u.endDate === null || u.endDate > new Date()
         })
       },
@@ -966,59 +801,58 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
-            id: this.commission.id,
-            name: this.commission.name,
-            description: this.commission.description,
-            positionId: this.commission.positionId,
-            total: this.commission.total
+            id: this.residualPlan.id,
+            name: this.residualPlan.name,
+            description: this.residualPlan.description,
+            positionId: this.residualPlan.positionId
           }
-          const {data} = await postRequest(`/commissionManagement`, params, 'blueraven')
+          const {data} = await postRequest(`/commissionManagement/residuals/plan`, params, 'blueraven')
           if(!this.planId) {
             //need to reload some stuff if this was a new plan
-            this.$router.push({name: 'commission', params: {id: data.id}})
+            this.$router.push({name: 'residualPlan', params: {id: data.id}})
           }
           this.checkErrorMessages()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Commission Plan')
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Residual Plan')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async approvePlan () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/approve`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Approved')
-          this.commission = data
+          const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/approve`, {}, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Approved')
+          this.residualPlan = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Approving Commission Plan')
+          this.snackbar = getSnackbar('ERROR', 'Error Approving Residual Plan')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async inactivatePlan () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/commissionManagement/${this.planId}/inactivate`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Inactivated')
-          this.$router.push({name: 'commissions'})
+          await postRequest(`/commissionManagement/residuals/${this.planId}/inactivate`, {}, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Inactivated')
+          this.$router.push({name: 'residualPlans'})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Inactivating Commission Plan')
+          this.snackbar = getSnackbar('ERROR', 'Error Inactivating Residual Plan')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async deletePlan () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/${this.planId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Deleted')
-          this.$router.push({name: 'commissions'})
+          await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Deleted')
+          this.$router.push({name: 'residualPlans'})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1030,20 +864,20 @@
             startDate: startDate ?? null,
             backdateApprovalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/clone`, params, 'blueraven')
-          this.$router.push({name: 'commission', params: {id: data.id}})
+          const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/clone`, params, 'blueraven')
+          this.$router.push({name: 'residualPlan', params: {id: data.id}})
           // temporarily only allowing closers
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Cloning Commission')
+          this.snackbar = getSnackbar('ERROR', 'Error Cloning ResidualPlan')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/updateUser`, item, 'blueraven')
+          const {data} = await postRequest(`/commissionManagement/residuals/${this.planId}/updateUser`, item, 'blueraven')
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
@@ -1074,7 +908,7 @@
             this.usersLoading = false
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Commission Plan Users')
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Residual Plan Users')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -1088,125 +922,33 @@
             endDate: this.newUser.endDate,
             approvalCreds: null
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/users`, params, 'blueraven')
-          this.commission.users = data
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
+          const {data} = await postRequest(`/commissionManagement/residuals/${this.planId}/users`, params, 'blueraven')
+          this.residualPlan.users = data
+          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Added')
           this.addUser = false
           this.newUser = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Commission Plan User')
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Residual Plan User')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUserFromPlan(commissionPlanUser) {
+      async deleteUserFromPlan(residualPlanUser) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Deleted')
-          commissionPlanUser.archived = true
+          await deleteRequest(`/commissionManagement/residuals/${this.planId}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Deleted')
+          residualPlanUser.archived = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan User')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan User')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      filterCommissionUsers () {
-        return this.commission.users.filter(cu => { return !cu.archived})
-      },
-      async getMilestones() {
-        if(this.addMilestone) {
-          try {
-            const {data} = await getRequest(`/commissionManagement/${this.planId}/availableMilestones`, 'blueraven')
-            this.milestones = data
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async updateMilestone(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addMilestoneToPlan() {
-        try {
-          let params = {
-            milestoneTypeId: this.selectedMilestone.id,
-            allocation: this.selectedMilestone.allocation
-          }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/milestone`, params, 'blueraven')
-          this.commission.milestones.push(data)
-          this.checkErrorMessages()
-          this.selectedMilestone = {}
-          this.addMilestone = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Milestone')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteMilestone (commissionPlanAllocationId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Milestone Deleted')
-          this.commission.milestones = this.commission.milestones.filter(m => {
-            return m.commissionPlanAllocationId !== commissionPlanAllocationId
-          })
-          this.checkErrorMessages()
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Milestone')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      checkIfMilestoneUsed(milestoneId) {
-        let used = false
-        this.commission.sources.forEach(s => {
-          if(s.milestoneId === milestoneId) {
-            used = true
-          }
-        })
-
-        return used
-
-      },
-      async getSources() {
-        if(this.addSource) {
-          try {
-            const {data} = await getRequest(`/commissionManagement/${this.planId}/availableSources`, 'blueraven')
-            this.sources = data
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sources')
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async updateSource(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await putRequest(`/commissionManagement/${this.planId}/source`, item, 'blueraven')
-          item.milestoneType = data.milestoneType
-          item.feeType = data.feeType
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+      filterResidualPlanUsers () {
+        return this.residualPlan.users.filter(cu => { return !cu.archived})
       },
       async getUserHistory(userId) {
         //reset the rest of the new user fields if they change users
@@ -1219,7 +961,7 @@
         this.errorLoadingUserHistory = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/commissionUser/${userId}/history`, 'blueraven')
+          const {data} = await getRequest(`/commissionManagement/residuals/residualPlanUser/${userId}/history`, 'blueraven')
           this.userHistory = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -1229,36 +971,44 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async addSourceToPlan() {
+      async addLevelToPlan() {
         try {
           let params = {
-            sourceId: this.selectedSource.id,
-            milestoneId: this.selectedSource.milestoneId,
-            feeAmount: this.selectedSource.feeAmount,
-            feeTypeId: this.selectedSource.feeTypeId,
+            ...this.selectedLevel
           }
-          const {data} = await postRequest(`/commissionManagement/${this.planId}/source`, params, 'blueraven')
-          this.commission.sources.push(data)
-          this.selectedSource = {}
-          this.addSource = false
+          const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, params, 'blueraven')
+          this.residualPlan.residualPlanAllocations.push(data)
+          this.selectedLevel = {}
+          this.addLevel = false
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Source')
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Level')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteSource (id) {
+      async deleteLevel (residualPlanAllocationId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/commissionManagement/${this.planId}/source/${id}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Source Deleted')
-          this.commission.sources = this.commission.sources.filter(s => {
-            return s.id !== id
+          await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation/${residualPlanAllocationId}`, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Level Deleted')
+          this.residualPlan.residualPlanAllocations = this.residualPlan.residualPlanAllocations.filter(rpa => {
+            return rpa.id !== residualPlanAllocationId
           })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Source')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Level')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async updateLevel(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation`, item, 'blueraven')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Level')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

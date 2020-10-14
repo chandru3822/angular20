@@ -25,7 +25,7 @@
             ></v-select>
           </div>
           <v-btn :disabled="!selectedState"
-                 color="primary" class="white--text mr-2"
+                 color="primaryCustom" class="white--text mr-2"
                  @click="saveCompanyState(selectedState, true)">
             Save
           </v-btn>
@@ -64,7 +64,7 @@
                 <input class="ml-3" type="checkbox" v-model="item.active">
               </div>
               <v-btn :disabled="!item.mapLatitude || !item.mapLongitude || !item.mapZoom"
-                     color="primary" class="white--text mr-2"
+                     color="primaryCustom" class="white--text mr-2"
                      @click="saveCompanyState(item, false)">
                 Save
               </v-btn>
@@ -111,7 +111,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deleteCompanyState(item)">
                         Yes

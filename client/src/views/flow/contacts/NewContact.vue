@@ -5,11 +5,11 @@
         Add Contact
         <v-spacer></v-spacer>
         <v-btn v-if="!constants.IS_MOBILE" text class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn v-if="!constants.IS_MOBILE" color="primary" dark @click="validate">Save</v-btn>
+        <v-btn v-if="!constants.IS_MOBILE" color="primaryCustom" dark @click="validate">Save</v-btn>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
         <v-btn text class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn color="primary" dark @click="validate">Save</v-btn>
+        <v-btn color="primaryCustom" dark @click="validate">Save</v-btn>
       </v-card-text>
 
       <v-form ref="contactForm">

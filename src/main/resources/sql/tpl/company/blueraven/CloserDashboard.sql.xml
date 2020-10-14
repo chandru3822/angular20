@@ -24,13 +24,12 @@
                   then 2
                 else 1
                 end as q1points
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
-                and case when pd.primary_financier = 721
+                and case when pd.primary_financier = 119
                   then pd.first_cash_payment_paid_date is not null
                 and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
                   between (select q1_start from quarters) and (select q1_end from quarters)
@@ -43,13 +42,12 @@
               group by pd.first_cash_payment_paid_date, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.source) t
              ) as "q1",
              (select count(1)
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
-                and case when pd.primary_financier = 721
+                and case when pd.primary_financier = 119
                   then pd.first_cash_payment_paid_date is not null
                 and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
                   between (select q2_start from quarters) and (select q2_end from quarters)
@@ -61,14 +59,13 @@
                 and u.id = :currentUserId
              ) as "q2",
              (select count(1)
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
                 and pd.utility_bill_verified_date is not null
-                and case when pd.primary_financier = 721
+                and case when pd.primary_financier = 119
                   then pd.first_cash_payment_paid_date is not null
                     and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                       between (select q3_start from quarters) and (select q3_end from quarters)
@@ -84,14 +81,13 @@
                 and u.id = :currentUserId
              ) as "q3",
              (select count(1)
-              from flow.project p
-                inner join flow.contact c on c.id = p.contact_id
-                inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
                 and pd.utility_bill_verified_date is not null
-                and case when pd.primary_financier = 721
+                and case when pd.primary_financier = 119
                   then pd.first_cash_payment_paid_date is not null
                 and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q4_start from quarters) and (select q4_end from quarters)
@@ -109,6 +105,26 @@
     ]]>
   </closerDashboard.getIronmanFdcCounts>
 
+  <closerDashboard.getRoundRobins>
+    <![CDATA[
+      SELECT pcz.id,
+             pcz.company_id,
+             pcz.zone_name,
+             pczu.archived
+      FROM flow.postal_code_zone_user pczu
+        INNER JOIN flow.postal_code_zone pcz ON pcz.id = pczu.postal_code_zone_id
+      WHERE pczu.user_id = :userId
+        AND pczu.archived IS FALSE
+        AND pcz.archived IS FALSE
+    ]]>
+  </closerDashboard.getRoundRobins>
+
+  <closerDashboard.getOfficeLeadAllocationRank>
+    <![CDATA[
+      SELECT * FROM brs.get_office_lead_allocation_rank(:postalCodeZoneId::integer, :timeInterval::integer);
+    ]]>
+  </closerDashboard.getOfficeLeadAllocationRank>
+
   <closerDashboard.getCloserTableScores>
     <![CDATA[
       SELECT u.id,
@@ -117,51 +133,84 @@
              o.org_name as officeName,
              o2.org_name as region,
              coalesce(lov.name, '--') as metroArea,
-             count(case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
-               and pd.source not in (6, 8, 484)
-               and pd.final_design_signed_date is not null
-               and pd.financial_agreement_signed_date is not null
-               and pd.utility_bill_verified_date is not null
-               and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
-               and case when pd.primary_financier = 721
-                 then pd.first_cash_payment_paid_date is not null
-                 else 1=1
-                 end
-               and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3) then 1 end) as leadGenFdcPercentageNumerator,
-             count(case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
-               and pd.source not in (6, 8, 484) then 1 end) as leadGenFdcPercentageDenominator,
-             count(case when greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.first_cash_payment_paid_date::date, pd.utility_bill_verified_date::date, pd.proof_of_homeowners_insurance_obtained_date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
-               and pd.source in (6, 8, 484)
-               and pd.final_design_signed_date is not null
-               and pd.financial_agreement_signed_date is not null
-               and pd.utility_bill_verified_date is not null
-               and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
-               and case when pd.primary_financier = 721
-                 then pd.first_cash_payment_paid_date is not null
-                 else 1=1
-                 end
-               and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3) then 1 end) as selfGenFdc,
-             count(case when greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
-               and pd.final_design_signed_date is not null
-               and pd.financial_agreement_signed_date is not null
-               and case when pd.primary_financier = 721
-                 then pd.first_cash_payment_paid_date is not null
-                 else 1=1
-                 end
-               and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3) then 1 end) as totalFdc
-      FROM flow.project p
-        INNER JOIN flow.contact c ON c.id = p.contact_id
-        INNER JOIN brs.project_details pd ON pd.project_id = p.id
+             count(
+               case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+                 and pd.source not in (7, 8, 484)
+                 and pd.final_design_signed_date is not null
+                 and pd.financial_agreement_signed_date is not null
+                 and pd.utility_bill_verified_date is not null
+                 and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
+                 and case
+                   when pd.primary_financier = 119 then
+                     pd.first_cash_payment_paid_date is not null and
+                     greatest(final_design_signed_date, financial_agreement_signed_date,
+                              first_cash_payment_paid_date, utility_bill_verified_date,
+                              proof_of_homeowners_insurance_obtained_date)
+                       >= (now() at time zone 'US/Mountain')::date - :timeInterval
+                     else
+                       greatest(final_design_signed_date, financial_agreement_signed_date,
+                                proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
+                         >= (now() at time zone 'US/Mountain')::date - :timeInterval
+                     end
+                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                 and p.company_project_status_type_id != 3
+               then 1
+               end
+             ) as leadGenFdcPercentageNumerator,
+             count(
+               case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+                 and pd.source not in (7, 8, 484)
+               then 1
+               end
+             ) as leadGenFdcPercentageDenominator,
+             count(
+               case when greatest(final_design_signed_date, financial_agreement_signed_date,
+                                  first_cash_payment_paid_date, utility_bill_verified_date,
+                                  proof_of_homeowners_insurance_obtained_date)
+                           >= (now() at time zone 'US/Mountain')::date - :timeInterval
+                 and pd.source in (7, 8, 484)
+                 and pd.final_design_signed_date is not null
+                 and pd.financial_agreement_signed_date is not null
+                 and pd.utility_bill_verified_date is not null
+                 and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
+                 and case when pd.primary_financier = 119
+                   then pd.first_cash_payment_paid_date is not null
+                   else 1=1
+                   end
+                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                 and p.company_project_status_type_id != 3
+               then 1
+               end
+             ) as selfGenFdc,
+             count(
+               case when greatest(final_design_signed_date, financial_agreement_signed_date,
+                                  first_cash_payment_paid_date)
+                           >= (now() at time zone 'US/Mountain')::date - :timeInterval
+                 and pd.final_design_signed_date is not null
+                 and pd.financial_agreement_signed_date is not null
+                 and pd.utility_bill_verified_date is not null
+                 and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
+                 and case when pd.primary_financier = 119
+                   then pd.first_cash_payment_paid_date is not null
+                   else 1=1
+                   end
+                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                 and p.company_project_status_type_id != 3
+               then 1
+               end
+             ) as totalFdc
+      FROM brs.project_details pd
+        INNER JOIN flow.project p ON p.id = pd.project_id
         INNER JOIN flow.user u ON u.id = pd.closer_user_id
         INNER JOIN flow.user_position up ON up.user_id = u.id
-        inner join flow.company_user_status cus on cus.user_id = u.id
-        inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
+        INNER JOIN flow.company_user_status cus on cus.user_id = u.id
+        INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id
         INNER JOIN flow.org o ON o.id = up.org_id
         INNER JOIN flow.org o2 ON (o2.id = o.parent_org_id and o2.org_type_id = 2)
         LEFT JOIN flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
         LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
-      WHERE CASE WHEN :officeRanking IS TRUE
-        THEN -- Office Ranking (1st row of tables)
+      WHERE CASE WHEN :officeFdcRank IS TRUE
+        THEN -- Office FDC Rank table
           up.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived is false and primary_flag is true)
         ELSE -- Company Ranking (2nd row of tables)
           up.position_id = 1

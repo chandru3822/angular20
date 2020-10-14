@@ -2468,6 +2468,7 @@ SELECT setval('flow.associated_org_id_seq', COALESCE((SELECT MAX(id) + 1 FROM fl
 
 delete from flow.attachment_source where id = 1;
 delete from flow.attachment_source where id = 2;
+delete from flow.attachment_source where id = 3;
 
 
 insert into flow.attachment_source(id,attachment_id,source_id)
@@ -2477,6 +2478,8 @@ from blueraven.attachment_source;
 SELECT setval('flow.attachment_source_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.attachment_source), 1), false);
 
 INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 75503, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 75504, 3);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 13315, 2350555);
 
 insert into brs.ahj(id, name, archived, date_created, created_by_id, date_modified, modified_by_id)
     (select id, name, archived, created, created_by_id, updated, updated_by_id
@@ -5771,7 +5774,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Training Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             enter_in_solved_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -5826,7 +5829,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Kronos/Payroll Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             trumpia_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -6709,7 +6712,7 @@ inner join flow.org o on o.id = up.org_id and company_id = 3
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Training Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             enter_in_solved_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -6764,7 +6767,7 @@ inner join flow.org o on o.id = up.org_id and company_id = 3
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Kronos/Payroll Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             trumpia_date,
             2350555 as created_by_id
      FROM blueraven.user u
@@ -7018,9 +7021,7 @@ INSERT INTO flow.contact (city,
                            first_name,
                            id,
                            last_name,
-                           latitude,
                            location_unavailable,
-                           longitude,
                            mailing_city,
                            mailing_postal_code,
                            mailing_state,
@@ -7033,7 +7034,6 @@ INSERT INTO flow.contact (city,
                            state,
                            street1,
                            street2,
-                           time_zone,
                            contact_type_id,
                            created_by_id,
                            date_created,
@@ -7044,9 +7044,7 @@ INSERT INTO flow.contact (city,
             first_name,
             c.id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7059,13 +7057,62 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
             (select id from flow.company where company_name = 'Blue Raven Solar')
       from blueraven.customer c
      where  c.id in (select customer_id from blueraven.deal d  where (d.originator_id =1 or d.originator_id is null)));
+
+INSERT INTO flow.contact (city,
+                          country_id,
+                          email,
+                          first_name,
+                          id,
+                          last_name,
+                          location_unavailable,
+                          mailing_city,
+                          mailing_postal_code,
+                          mailing_state,
+                          mailing_street1,
+                          mailing_street2,
+                          mobile,
+                          phone,
+                          postal_code,
+                          prospect_status,
+                          state,
+                          street1,
+                          street2,
+                          contact_type_id,
+                          created_by_id,
+                          date_created,
+                          company_id)
+    (SELECT city,
+            1,
+            email,
+            first_name,
+            c.id,
+            last_name,
+            location_unavailable,
+            mailing_city,
+            mailing_postal_code,
+            mailing_state,
+            mailing_street1,
+            mailing_street2,
+            mobile,
+            phone,
+            postal_code,
+            prospect_status,
+            state,
+            street1,
+            street2,
+            (select id from flow.contact_type where contact_type='Customer'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Blue Raven Solar')
+     from blueraven.customer c
+
+     where  c.id = 238126);
 
 with contacts_no_deals as (
     select c2.id as customer_id
@@ -7079,9 +7126,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7094,7 +7139,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7105,9 +7149,7 @@ INSERT INTO flow.contact (city,
             first_name,
             c.id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7120,7 +7162,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Lead'),
             2350555 as created_by_id,
             created_date,
@@ -7134,9 +7175,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7149,7 +7188,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7160,9 +7198,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7175,7 +7211,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7189,9 +7224,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7204,7 +7237,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7215,9 +7247,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7230,7 +7260,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7244,9 +7273,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7259,7 +7286,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7270,9 +7296,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7285,7 +7309,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7299,9 +7322,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7314,7 +7335,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7325,9 +7345,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7340,7 +7358,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7354,9 +7371,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7369,7 +7384,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7380,9 +7394,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7395,7 +7407,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7409,9 +7420,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7424,7 +7433,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7435,9 +7443,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7450,7 +7456,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7464,9 +7469,7 @@ INSERT INTO flow.contact (city,
                           first_name,
                           id,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7479,7 +7482,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7490,9 +7492,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7505,7 +7505,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7519,9 +7518,7 @@ INSERT INTO flow.contact (city,
                            first_name,
                            id,
                            last_name,
-                           latitude,
                            location_unavailable,
-                           longitude,
                            mailing_city,
                            mailing_postal_code,
                            mailing_state,
@@ -7534,7 +7531,6 @@ INSERT INTO flow.contact (city,
                            state,
                            street1,
                            street2,
-                           time_zone,
                            contact_type_id,
                            created_by_id,
                            date_created,
@@ -7545,9 +7541,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7560,7 +7554,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7574,9 +7567,7 @@ INSERT INTO flow.contact (city,
                            first_name,
                            id,
                            last_name,
-                           latitude,
                            location_unavailable,
-                           longitude,
                            mailing_city,
                            mailing_postal_code,
                            mailing_state,
@@ -7589,7 +7580,6 @@ INSERT INTO flow.contact (city,
                            state,
                            street1,
                            street2,
-                           time_zone,
                            contact_type_id,
                            created_by_id,
                            date_created,
@@ -7600,9 +7590,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7615,7 +7603,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7630,9 +7617,7 @@ INSERT INTO flow.contact (city,
                            first_name,
                            id,
                            last_name,
-                           latitude,
                            location_unavailable,
-                           longitude,
                            mailing_city,
                            mailing_postal_code,
                            mailing_state,
@@ -7645,7 +7630,6 @@ INSERT INTO flow.contact (city,
                            state,
                            street1,
                            street2,
-                           time_zone,
                            contact_type_id,
                            created_by_id,
                            date_created,
@@ -7656,9 +7640,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7671,7 +7653,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7685,9 +7666,7 @@ INSERT INTO flow.contact (city,
                            first_name,
                            id,
                            last_name,
-                           latitude,
                            location_unavailable,
-                           longitude,
                            mailing_city,
                            mailing_postal_code,
                            mailing_state,
@@ -7700,7 +7679,6 @@ INSERT INTO flow.contact (city,
                            state,
                            street1,
                            street2,
-                           time_zone,
                            contact_type_id,
                            created_by_id,
                            date_created,
@@ -7711,9 +7689,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7726,7 +7702,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7740,9 +7715,7 @@ INSERT INTO flow.contact (city,
                            first_name,
                            id,
                            last_name,
-                           latitude,
                            location_unavailable,
-                           longitude,
                            mailing_city,
                            mailing_postal_code,
                            mailing_state,
@@ -7755,7 +7728,6 @@ INSERT INTO flow.contact (city,
                            state,
                            street1,
                            street2,
-                           time_zone,
                            contact_type_id,
                            created_by_id,
                            date_created,
@@ -7766,9 +7738,7 @@ INSERT INTO flow.contact (city,
             first_name,
             id,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7781,7 +7751,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7802,9 +7771,7 @@ INSERT INTO flow.contact (city,
                           email,
                           first_name,
                           last_name,
-                          latitude,
                           location_unavailable,
-                          longitude,
                           mailing_city,
                           mailing_postal_code,
                           mailing_state,
@@ -7817,7 +7784,6 @@ INSERT INTO flow.contact (city,
                           state,
                           street1,
                           street2,
-                          time_zone,
                           contact_type_id,
                           created_by_id,
                           date_created,
@@ -7827,9 +7793,7 @@ INSERT INTO flow.contact (city,
             email,
             first_name,
             last_name,
-            latitude,
             location_unavailable,
-            longitude,
             mailing_city,
             mailing_postal_code,
             mailing_state,
@@ -7842,7 +7806,6 @@ INSERT INTO flow.contact (city,
             state,
             street1,
             street2,
-            time_zone,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
@@ -7898,6 +7861,8 @@ set state_id = (select s.id
                 from flow.contact c
                          inner join flow.state s on s.state = c.state
                 where c.id = c2.id);
+
+alter table flow.contact drop column if exists state;
 
 
 -- with parent as (
@@ -8184,50 +8149,56 @@ INSERT INTO flow.project (id,
                           created_by_id,
                           company_process_id,
                           date_created,
-                          company_project_status_type_id)
-    (SELECT id,
+                          company_project_status_type_id,
+                          latitude,
+                          longitude,
+                          time_zone)
+    (SELECT d.id,
             customer_id,
             customer_name,
             2350555,
-            case when originator_id = 1 then
+            case when d.originator_id = 1 then
             (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-                 when originator_id = 2 then
+                 when d.originator_id = 2 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Solenrgi'))
-                 when originator_id = 4 then
+                 when d.originator_id = 4 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'B+C Electric'))
-                 when originator_id = 6 then
+                 when d.originator_id = 6 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Salient Solar'))
-                 when originator_id = 7 then
+                 when d.originator_id = 7 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Sun Run'))
-                 when originator_id = 8 then
+                 when d.originator_id = 8 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Eco Lux Solar'))
-                 when originator_id = 9 then
+                 when d.originator_id = 9 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Solar 101'))
-                 when originator_id = 10 then
+                 when d.originator_id = 10 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'TGE Solar'))
-                 when originator_id = 11 then
+                 when d.originator_id = 11 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Atlas Solar Advisors'))
-                 when originator_id = 12 then
+                 when d.originator_id = 12 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Direct Solar of America'))
-                 when originator_id = 13 then
+                 when d.originator_id = 13 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Revolution Solar'))
-                 when originator_id = 14 then
+                 when d.originator_id = 14 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Smart Money Solar'))
-                 when originator_id = 15 then
+                 when d.originator_id = 15 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Supernova Energy'))
                 else
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
                      end ,
             added_on,
             case when current_stage_id in (2,3) then (select id from flow.company_project_status_type where project_status_type = 'Cancelled' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
-                 when current_stage_id not in (2,3) and on_hold_date is not null then (select id from flow.company_project_status_type where project_status_type = 'On Hold' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
-                 when financier != '["One Roof Energy"]' then (select id from flow.company_project_status_type where project_status_type = 'Complete' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
-                 else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) end
+                 when current_stage_id not in (2,3) and on_hold is true then (select id from flow.company_project_status_type where project_status_type = 'On Hold' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
+                 when (financier = '["Dividend Solar"]' or financier = '["One Roof Energy"]') then (select id from flow.company_project_status_type where project_status_type = 'Complete' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
+                 else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) end,
+            c.latitude,
+            c.longitude,
+            c.time_zone
+     FROM blueraven.deal d
+    inner join blueraven.customer c on c.id = d.customer_id
+    where  d.originator_id !=5);  -- TODO Add all the other companies projects
 
-     FROM blueraven.deal where deal.customer_id IS NOT NULl
-        and originator_id !=5);  -- TODO Add all the other companies projects
-
-update flow.project set contact_id = (select id from flow.contact where first_name = 'Robert' and last_name = 'Earl' and city = 'Pahrump' and state = 'Nevada' and company_id = 7)
+update flow.project set contact_id = (select id from flow.contact where first_name = 'Robert' and last_name = 'Earl' and city = 'Pahrump' and  company_id = 7)
 where id =153066;
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
@@ -8465,6 +8436,313 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
      FROM blueraven.deal d
               inner join flow.list_of_value lov on lov.name = d.metro_area and parent_id = 172
      WHERE metro_area IS NOT NULL
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1073 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 919
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1055 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 818
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Main Panel Upgrade - In House%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1061 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 855
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1074 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 922
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Source Deadfront%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1060 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 873
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Main Breaker Derate%','%Non-standard Breaker%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1056 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 891
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Other - In House%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1057 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 894
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Other - Outsource%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1075 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 879
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Structural Upgrade%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1058 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 910
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Tree Trimming%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1059 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 885
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Trenching%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1054 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 882
+                                                 and name::boolean = case when non_standard_installation_work like any (array['%Reroof%'])
+                                                                              then true else false end),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1220 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 980
+                                                 and name = ancillary_expense_type_1),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_type_1 is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1221 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 990
+                                                 and name = ancillary_expense_type_2),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_type_2 is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1222 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 1000
+                                                 and name = ancillary_expense_type_3),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_type_3 is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1206 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 127
+                                                 and name::integer = homeowner_review_score),
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE homeowner_review_score is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1226 as custom_field_id,
+            d.ancillary_expense_actual_price_1 ,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_actual_price_1 is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1227 as custom_field_id,
+            d.ancillary_expense_actual_price_2 ,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_actual_price_2 is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1228 as custom_field_id,
+            d.ancillary_expense_actual_price_3 ,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_actual_price_3 is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1223 as custom_field_id,
+            d.ancillary_expense_estimated_price_1 ,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_estimated_price_1 is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1224 as custom_field_id,
+            d.ancillary_expense_estimated_price_2 ,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_estimated_price_2 is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1225 as custom_field_id,
+            d.ancillary_expense_estimated_price_3 ,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE ancillary_expense_estimated_price_3 is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1296 as custom_field_id,
+            d.annual_utility_usage::integer,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE annual_utility_usage is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT d.id,
+            1205 as custom_field_id,
+            d.homeowner_review_date,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE homeowner_review_date is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT d.id,
+            1235 as custom_field_id,
+            d.notice_of_cancellation_deadline_date,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE notice_of_cancellation_deadline_date is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, numeric_value, created_by_id)
+    (SELECT d.id,
+            1297 as custom_field_id,
+            d.maximum_loan_amount::numeric,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE maximum_loan_amount is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, numeric_value, created_by_id)
+    (SELECT d.id,
+            656 as custom_field_id,
+            d.retention_customer_concession_amount::numeric,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE retention_customer_concession_amount is not null
+       and  originator_id = 1);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, numeric_value, created_by_id)
+    (SELECT d.id,
+            1245 as custom_field_id,
+            d.total_brs_covered_ancillary_cost::numeric,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE total_brs_covered_ancillary_cost is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1099 as custom_field_id,
+            d.permit_number,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE permit_number is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1100 as custom_field_id,
+            d.electrical_permit_number,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE electrical_permit_number is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, boolean_value, created_by_id)
+    (SELECT d.id,
+            1424 as custom_field_id,
+            d.customer_review::boolean,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE customer_review is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT d.id,
+            1062 as custom_field_id,
+            d.non_standard_installation_work_details,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE non_standard_installation_work_details is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1425 as custom_field_id,
+            (select id from flow.list_of_value where parent_id = 1121
+                                                 and name = installation_partner) ,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE installation_partner is not null
        and  originator_id = 1);
 
 
@@ -8788,6 +9066,9 @@ from blueraven.payroll p
  select id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current, null
  from blueraven.payroll where id = 0);
 
+insert into brs.payroll(id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current)
+(select id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current
+    from blueraven.payroll where selected_deal_ids = '{}' and id != 0);
 
 insert into brs.payroll_adjustment_type
     (select * from blueraven.payroll_adjustment_type);

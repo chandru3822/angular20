@@ -71,7 +71,7 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'BRS Albatross Placeholder'
+  document.title = to.meta.title || 'Albatross'
   next()
 })
 

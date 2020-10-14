@@ -43,7 +43,7 @@
           </div>
           <v-btn color="secondary" class="mr-2"
                  @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
-          <v-btn color="primary" class="white--text mr-2"
+          <v-btn color="primaryCustom" class="white--text mr-2"
                  :disabled="!newPosition.startDate || !newPosition.positionId"
                  @click="savePosition(newPosition)">Add</v-btn>
         </v-card>
@@ -128,7 +128,7 @@
                   </template>
                 </v-autocomplete>
               </div>
-              <v-btn color="primary" class="white--text mr-2"
+              <v-btn color="primaryCustom" class="white--text mr-2"
                      :disabled="validatePositionFields(item)"
                      v-if="userCanEdit"
                      @click="savePosition(item)">Save</v-btn>
@@ -183,7 +183,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteUserPosition(item)">
                         Yes

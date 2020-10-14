@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Incentives</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newIncentive = {}, incentiveEntities = []]" color="primary">
+            <v-btn text @click="[addNew = !addNew, newIncentive = {}, incentiveEntities = []]" color="primaryCustom">
               <v-icon>add</v-icon>
               Add New
             </v-btn>
@@ -156,7 +156,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deleteIncentive(item.id)]">
                           Yes

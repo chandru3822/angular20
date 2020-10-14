@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!role.roleName" @click="saveRole" color="primary">
+            <v-btn text :disabled="!role.roleName" @click="saveRole" color="primaryCustom">
               <v-icon>save</v-icon>
               Save
             </v-btn>

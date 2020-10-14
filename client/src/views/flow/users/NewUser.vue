@@ -5,7 +5,7 @@
         Add User
         <v-spacer></v-spacer>
         <v-btn text class="mr-3" to="/users">Cancel</v-btn>
-        <v-btn color="primary" dark @click="validate">Save</v-btn>
+        <v-btn color="primaryCustom" dark @click="validate">Save</v-btn>
       </v-card-title>
 
       <v-form ref="userForm">

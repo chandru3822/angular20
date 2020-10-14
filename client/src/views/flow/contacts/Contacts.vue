@@ -14,7 +14,7 @@
               class="smartlist-selector pt-3"
             />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
-                   to="/newContact" color="primary">
+                   to="/newContact" color="primaryCustom">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Contact</span>
             </v-btn>

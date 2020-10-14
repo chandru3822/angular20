@@ -43,6 +43,14 @@ public class NoteService {
     return results;
   }
 
+  public List<Note> getProjectProcessStepWorkQueueNotes(Long projectProcessStepId, Long processStepWorkQueueTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("processStepWorkQueueTypeId", processStepWorkQueueTypeId);
+    List<Note> results = sqlCache.query("note.getProjectProcessStepWorkQueueNotes", params, new NoteMapper<>(Note.class, om));
+    return results;
+  }
+
   public Note getNote(Long noteId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", noteId);
@@ -52,6 +60,10 @@ public class NoteService {
   }
 
   public Note saveNote(Long typeId, Note note) {
+    return saveNote(typeId, note, false);
+  }
+
+  public Note saveNote(Long typeId, Note note, Boolean isPpsWqtNote) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
@@ -69,12 +81,20 @@ public class NoteService {
     } else {
       noteId = sqlCache.updateReturningId("note.insertNote", params, "id").longValue();
 
-      //add to the glue table only if it is a new note
       HashMap<String, Object> p2 = new HashMap<>();
-      p2.put("primaryId", note.getPrimaryId());
-      p2.put("noteId", noteId);
-      p2.put("typeId", typeId);
-      sqlCache.query("note.insertNoteRelation", p2, String.class);
+      if(isPpsWqtNote) {
+        p2.put("projectProcessStepId", note.getProjectProcessStepId());
+        p2.put("processStepWorkQueueTypeId", note.getProcessStepWorkQueueTypeId());
+        p2.put("noteId", noteId);
+        p2.put("typeId", typeId);
+        sqlCache.update("note.insertProjectProcessStepWorkQueueNoteRelation", p2);
+      } else {
+        //add to the glue table only if it is a new note
+        p2.put("primaryId", note.getPrimaryId());
+        p2.put("noteId", noteId);
+        p2.put("typeId", typeId);
+        sqlCache.query("note.insertNoteRelation", p2, String.class);
+      }
     }
 
     Note fetchedNote = getNote(noteId);

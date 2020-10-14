@@ -10,6 +10,18 @@
       order by cf.company_function_name
   ]]></companyFunction.getFunctions>
 
+  <companyFunction.getFunctionsByType><![CDATA[
+     select cf.*,
+           df.return_data_type_id,
+            df.db_function_type_id
+      from flow.company_function cf
+        inner join flow.db_function df on df.id = cf.db_function_id
+      where cf.company_id = :companyId
+        and cf.archived is not true
+        and df.db_function_type_id = :typeId
+      order by cf.company_function_name
+  ]]></companyFunction.getFunctionsByType>
+
   <companyFunction.deleteCompanyFunction><![CDATA[
     update flow.company_function
       set archived = true

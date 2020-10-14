@@ -53,14 +53,17 @@ public class SmartlistService {
 
   public Smartlist addSmartlist(Smartlist smartlist) {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId(), "ownerId", user.getId(), "createdById", user.getId());
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("ownerId", user.getId());
+    params.put("createdById", user.getId());
     Long smartlistId = sqlCache.updateReturningId("smartlist.add", params, "id").longValue();
     return getSmartlist(smartlistId);
   }
 
   public void updateSmartlist(Smartlist smartlist) {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("id", smartlist.getId(), "name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId(), "shared", smartlist.isShared(), "userId", user.getId());
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("userId", user.getId());
     sqlCache.update("smartlist.update", params);
   }
 
@@ -194,7 +197,7 @@ public class SmartlistService {
 
   public List<Smartlist> getSharedByType(Long objectTypeId) {
       User user = securityService.getCurrentUser();
-      return sqlCache.query("project.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), Smartlist.class);
+      return sqlCache.query("smartlist.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), Smartlist.class);
   }
 
   public SmartlistResult getSmartlistResults(Long smartlistId) {
@@ -392,11 +395,17 @@ public class SmartlistService {
             query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), joinAlias, joinAlias, joinUuid, f.getJoinColumn()));
           } else {
             query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinAlias, joinAlias, joinAlias, f.getProcessStepId()));
+            if (smartlist.isMainProcessSteps()) {
+              query.append(String.format("and \"%s\".main is true ", joinAlias));
+            }
           }
         } else {
           final String ppsUUID = UUID.randomUUID().toString();
 
           query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, f.getProcessStepId()));
+          if (smartlist.isMainProcessSteps()) {
+            query.append(String.format("and \"%s\".main is true ", ppsUUID));
+          }
 
           if (f.getHasListValues() != null && f.getHasListValues()) {
             if (f.getAllowMultiple()) {
@@ -429,11 +438,18 @@ public class SmartlistService {
 
           if (r.getCustomFieldGroupAssignmentId() != null) {
 
-              String referenceColumn = ((r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) || r.getCustomFieldSqlKey() != null) ? "id" : getReferenceColumn(r.getDataTypeId());
+            String referenceColumn;
+            if (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) {
+              referenceColumn = "int_value";
+            } else if (r.getCustomFieldSqlKey() != null) {
+              referenceColumn = "id";
+            } else {
+              referenceColumn = getReferenceColumn(r.getDataTypeId());
+            }
 
               // see if table we need is already been joined, if so use it
               final String referenceTable = joinTables.stream()
-                  .filter(t -> t.getCustomFieldGroupAssignmentId().equals(r.getCustomFieldGroupAssignmentId()))
+                  .filter(t -> t.getCustomFieldGroupAssignmentId()!= null && t.getCustomFieldGroupAssignmentId().equals(r.getCustomFieldGroupAssignmentId()))
                   .map(t -> {
                       if (t.getValueReferenceTable() != null) {
                           return t.getValueReferenceTable();
@@ -454,6 +470,10 @@ public class SmartlistService {
                       final String ppscfvUUID = UUID.randomUUID().toString();
 
                       additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, r.getProcessStepId()));
+                      if (smartlist.isMainProcessSteps()) {
+                        additionalJoins.append(String.format("and \"%s\".main is true ", ppsUUID));
+                      }
+
                       if (r.getCustomFieldSqlKey() != null) {
                           final String  customSqlUuid = UUID.randomUUID().toString();
 
@@ -489,11 +509,16 @@ public class SmartlistService {
               if (r.getJoinTable() != null && r.getJoinColumn() != null) {
 
                 // see if table we need is already been joined, if so use it
-                final String referenceTable = joinTables.stream()
-                  .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
-                  .map(SmartlistFieldAssignment::getValueReferenceTable)
-                  .findFirst()
-                  .orElse(null);
+                String referenceTable;
+                try {
+                  referenceTable = joinTables.stream()
+                    .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
+                    .map(SmartlistFieldAssignment::getValueReferenceTable)
+                    .findFirst()
+                    .orElse(null);
+                } catch (NullPointerException e) {
+                  referenceTable = null;
+                }
 
                 if (referenceTable != null) {
                   referenceLocation = "\"" + referenceTable + "\".id";
@@ -538,7 +563,9 @@ public class SmartlistService {
 
           // date, timestamp, and text (text only when it's a custom value) data types need single quotes around them
           if ((List.of(1L, 2L).contains(r.getDataTypeId())) || r.getDataTypeId() == 5 && r.getIsCustomValue()) {
-              requirementValue = String.format("'%s'", requirementValue);
+              if (!Objects.equals(requirementValue, "null")) {
+                requirementValue = String.format("'%s'", requirementValue);
+              }
           } else if (r.getDataTypeId() == 9) {
               requirementValue = r.getListOfValueId();
           }
@@ -548,6 +575,10 @@ public class SmartlistService {
           } else {
               whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
           }
+      }
+
+      if (smartlist.isMainProcessSteps() && smartlist.getObjectTypeId() == 4) {
+        whereClause.append("\nflow.project_process_step.main is true and ");
       }
 
     if (withClause.length() > 0) {

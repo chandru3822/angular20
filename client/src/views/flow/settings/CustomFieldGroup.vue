@@ -137,7 +137,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="deleteWithChecks(item, item.id, null)">
                             Yes
@@ -327,7 +327,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                  color="primary"
+                                  color="primaryCustom"
                                   text
                                   @click="deleteWithChecks(cf, null, cf.id)">
                                 Yes
@@ -399,7 +399,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[a.archived = true, deleteAttachmentType(a.id)]">
                           Yes

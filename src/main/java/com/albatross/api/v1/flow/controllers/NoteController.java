@@ -41,8 +41,14 @@ public class NoteController {
   }
 
   @GetMapping(value = "/getProjectProcessStepNotes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Note> getProjectProcessStepNote(@RequestParam Long primaryId) {
+  public List<Note> getProjectProcessStepNotes(@RequestParam Long primaryId) {
     return noteService.getByPrimaryAndType(ObjectType.PROCESS_STEP.id, primaryId);
+  }
+
+  @GetMapping(value = "/getProjectProcessStepWorkQueueNotes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Note> getProjectProcessStepWorkQueueNotes(@RequestParam Long projectProcessStepId,
+                                                        @RequestParam Long processStepWorkQueueTypeId) {
+    return noteService.getProjectProcessStepWorkQueueNotes(projectProcessStepId, processStepWorkQueueTypeId);
   }
 
   @PostMapping(value = "/saveContactNote", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,6 +69,11 @@ public class NoteController {
   @PostMapping(value = "/saveProjectProcessStepNote", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Note> saveProjectProcessStepNote(@RequestBody Note note) {
     return new ResponseEntity<>(noteService.saveNote(ObjectType.PROCESS_STEP.id, note), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/saveProjectProcessStepWorkQueueNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Note> saveProjectProcessStepWorkQueueNote(@RequestBody Note note) {
+    return new ResponseEntity<>(noteService.saveNote(null, note, true), HttpStatus.OK);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

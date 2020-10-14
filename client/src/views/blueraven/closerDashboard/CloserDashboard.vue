@@ -4,10 +4,10 @@
       <v-col cols="12" id="closer-dash-toolbar">
         <v-app-bar class="elevation-1" fixed style="top: 48px">
           <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-            <v-btn text @click="loadRankingTables('MTD')">MTD</v-btn>
-            <v-btn text @click="loadRankingTables('60 days')" class="text-lowercase">60 days</v-btn>
-            <v-btn text @click="loadRankingTables('90 days')" class="text-lowercase">90 days</v-btn>
-            <v-btn text @click="loadRankingTables('YTD')">YTD</v-btn>
+            <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
+            <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
+            <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
+            <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
           </v-btn-toggle>
         </v-app-bar>
       </v-col>
@@ -32,8 +32,8 @@
     <v-row v-if="showDashboard" class="mb-6" justify="center" no-gutters>
       <v-col cols="12" id="ironman-container">
         <v-card id="ironman-component" class="mb-4 pb-4">
-          <img id="ironman-banner-mobile" src="../../assets/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
-          <img id="ironman-banner" src="../../assets/ironman_banner.png"  alt="Desktop version of Ironman competition banner">
+          <img id="ironman-banner-mobile" src="../../../assets/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
+          <img id="ironman-banner" src="../../../assets/ironman_banner.png" alt="Desktop version of Ironman competition banner">
           <div id="milestones-container">
             <div id="swim-phase" class="milestone" :class="{'active-milestone': is_q1}"
                  @click="milestoneDrilldown(1)">
@@ -48,7 +48,7 @@
                     {{ q1_points === 1 ? q1_points + ' Point' : q1_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../assets/ironman_swim_icon.png" alt="A person swimming">
+                <img src="../../../assets/ironman_swim_icon.png" alt="A person swimming">
               </div>
               <span v-if="is_q1" class="milestone-bottom-label">{{ q1_lower_label }}</span>
             </div>
@@ -66,7 +66,7 @@
                     {{ q2_points === 1 ? q2_points + ' Point' : q2_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../assets/ironman_bike_icon.png" alt="A person riding a bike">
+                <img src="../../../assets/ironman_bike_icon.png" alt="A person riding a bike">
               </div>
               <span v-if="is_q2" class="milestone-bottom-label">{{ q2_lower_label }}</span>
             </div>
@@ -84,7 +84,7 @@
                     {{ q3_points === 1 ? q3_points + ' Point' : q3_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../assets/ironman_run_icon.png" alt="A person running">
+                <img src="../../../assets/ironman_run_icon.png" alt="A person running">
               </div>
               <span v-if="is_q3" class="milestone-bottom-label">{{ q3_lower_label }}</span>
             </div>
@@ -102,7 +102,7 @@
                     {{ q4_points === 1 ? q4_points + ' Point' : q4_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../assets/ironman_finish_icon.png" alt="A person crossing a finish line">
+                <img src="../../../assets/ironman_finish_icon.png" alt="A person crossing a finish line">
               </div>
               <span v-if="is_q4" class="milestone-bottom-label">{{ q4_lower_label }}</span>
             </div>
@@ -119,9 +119,9 @@
               <div id="sixth-segment" class="progress-bar-segment"></div>
               <div id="seventh-segment" class="progress-bar-segment"></div>
               <div id="eighth-segment" class="progress-bar-segment">
-                <img v-if="!progressBarIsFull" src="../../assets/progress_bar_icon_blue.png"
+                <img v-if="!progressBarIsFull" src="../../../assets/progress_bar_icon_blue.png"
                      alt="Blue Raven Solar logo in blue">
-                <img v-if="progressBarIsFull" src="../../assets/progress_bar_icon_white.png"
+                <img v-if="progressBarIsFull" src="../../../assets/progress_bar_icon_white.png"
                      alt="Blue Raven Solar logo in white">
               </div>
               <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '5px' : '5px 0 0 5px'}"></div>
@@ -196,20 +196,34 @@
     <!-- IRONMAN END -->
 
     <!-- RANKING TABLES FIRST HEADER START -->
-    <div v-if="showDashboard && leadAllocationRankingData.length > 0 && officeFdcRankingData.length > 0"
+    <div v-if="showDashboard"
          class="ranking-tables-section-header">
       Your Office Ranking
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
 
     <!-- RANKING TABLES TOP ROW START -->
-    <div v-if="showDashboard && leadAllocationRankingData.length > 0 && officeFdcRankingData.length > 0"
+    <div v-if="showDashboard"
          class="ranking-tables-section">
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
-        <div class="ranking-table-header">
-          <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
-          <span>Office Lead Allocation Rank</span>
+        <div class="ranking-table-header" id="lead-allocation-table-header">
+          <div class="lead-allocation-table-header-left-side">
+            <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
+            <span>Office Lead Allocation Rank</span>
+          </div>
+          <v-select class="round-robin-dropdown"
+                    label="Round Robin"
+                    v-model="selectedRoundRobin"
+                    :items="roundRobins"
+                    item-text="zoneName"
+                    item-value="id"
+                    no-data-text="No Round Robins available"
+                    outlined
+                    dense
+                    hide-details
+                    @input="loadRankingTables"
+          ></v-select>
         </div>
 
         <table v-if="leadAllocationRankingData.length > 0">
@@ -227,16 +241,16 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
+              <img v-else class="placeholder-img"
+                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
-            <td class="left-text">{{ row.name }}</td>
-            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
-            <td class="center-text">{{ row.selfGenFdc }}</td>
-            <td class="center-text">{{ row.avgAvailability }}</td>
-            <td class="center-text">{{ row.leadAllocationPercentage }}%</td>
+            <td class="left-text">{{ row.closerName }}</td>
+            <td class="center-text">{{ row.leadGenFdc }}%</td>
+            <td class="center-text">{{ row.selfGen }}</td>
+            <td class="center-text">{{ row.averageAvailability }}</td>
+            <td class="center-text">{{ row.score }}%</td>
           </tr>
         </table>
         <div v-else class="ranking-tables-no-data left-text">
@@ -266,10 +280,10 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
+              <img v-else class="placeholder-img"
+                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
@@ -357,10 +371,10 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
+              <img v-else class="placeholder-img"
+                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="left-text">{{ row.officeName }}</td>
@@ -373,10 +387,10 @@
               class="highlight-user-row">
             <td class="center-text">{{ userRow.rank }}</td>
             <td class="user-img-col">
-              <img v-if="userRow.userImageUrl" class="ranking-table-img default-img"
+              <img v-if="userRow.userImageUrl" class="ranking-table-img"
                    :src="userRow.userImageUrl" :alt="userRow.userImageAltText">
-              <img v-else class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
+              <img v-else class="placeholder-img"
+                   src="../../../assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
             </td>
             <td class="left-text">{{ userRow.name }}</td>
             <td class="left-text">{{ userRow.officeName }}</td>
@@ -419,7 +433,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
-                                  readonly outlined dense v-on="on"></v-text-field>
+                                  readonly outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_created_pipeline_dt1" :max="appts_created_pipeline_dt2"
                                  @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
@@ -429,7 +443,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
-                                  readonly outlined dense v-on="on"></v-text-field>
+                                  readonly outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_created_pipeline_dt2" :min="appts_created_pipeline_dt1"
                                  @input="updateApptsCreatedPipelineCalendar"></v-date-picker>
@@ -780,7 +794,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
+                                  outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_to_fdc_pipeline_dt1" :max="appts_to_fdc_pipeline_dt2"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
@@ -790,7 +804,7 @@
                         min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
-                                  outlined dense v-on="on"></v-text-field>
+                                  outlined dense hide-details v-on="on"></v-text-field>
                   </template>
                   <v-date-picker v-model="appts_to_fdc_pipeline_dt2" :min="appts_to_fdc_pipeline_dt1"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
@@ -828,21 +842,21 @@
                 <div v-if="[18,19,20,22,24,23,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'today', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
                   {{line.id === 21 ? '' : line.checked_in_today_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'today', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, true)">
                   {{line.checked_in_today_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'today', line.name, 'standard', false)">
+                <div @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
                   {{line.today_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'standard', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, viewSelect, false)">
                 {{line.today_count}}
               </div>
             </td>
@@ -855,21 +869,21 @@
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
                   {{line.id === 21 ? '' : line.checked_in_week_to_date_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, true)">
                   {{line.checked_in_week_to_date_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', false)">
+                <div @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
                   {{line.week_to_date_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, 'standard', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, viewSelect, false)">
                 {{line.week_to_date_count}}
               </div>
             </td>
@@ -883,21 +897,21 @@
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
-                     @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
                   {{line.id === 21 ? '' : line.checked_in_custom_date_range_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, true)">
                   {{line.checked_in_custom_date_range_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', false)">
+                <div @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
                   {{line.custom_date_range_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, 'standard', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, viewSelect, false)">
                 {{line.custom_date_range_count}}
               </div>
             </td>
@@ -939,13 +953,14 @@
             :items="funnelDrilldownData"
             @current-items="filteredFunnelDrilldownItems"
             :search="funnelDrilldownSearch"
-            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 355px)') : '105px'"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 395px)') : '105px'"
             dense
             multi-sort
             :sort-by="[]"
             :sort-desc="[]"
-            hide-default-footer
-            disable-pagination
+            :loading="funnelDrilldownLoading"
+            :items-per-page="500"
+            :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
@@ -1024,7 +1039,7 @@
                 <td style="width: 115px"></td>
                 <td style="width: 75px"></td>
                 <td style="width: 90px"></td>
-                <td style="width: 40px"></td>
+                <td style="width: 85px"></td>
                 <td id="total-system-size-label">Total Size:</td>
                 <td style="width: 110px">{{ totalSystemSize ? totalSystemSize : 0 }}</td>
               </tr>
@@ -1130,6 +1145,8 @@
       progressBarIsFull: false,
       rankingData: [],
       searchText: '',
+      roundRobins: [],
+      selectedRoundRobin: null,
       leadAllocationRankingData: [],
       officeFdcRankingData: [],
       officeRankingData: [],
@@ -1139,29 +1156,7 @@
       userRowIndex: -1,
       numOffices: 0,
       apptsCreatedPipelineData: [],
-      // TODO: Remove test data below
-      apptsToFdcPipelineData: [
-        // {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
-        // {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
-        // {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
-        // {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
-        // {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
-        // {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
-        // {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
-        // {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
-        // {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
-        // {id: 24, name: 'Non-dispositioned appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
-        // {id: 23, name: 'Yet to occur', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
-        // {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
-        // {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
-        // {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
-        // {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
-        // {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
-        // {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
-        // {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
-        // {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 22},
-        // {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 23}
-      ],
+      apptsToFdcPipelineData: [],
       apptsCreatedPipelineCustomSelectorIsOpen: false,
       apptsToFdcPipelineCustomSelectorIsOpen: false,
       todayUpperPercentage: 99,
@@ -1183,74 +1178,26 @@
       repModel: [],
       repData: [],
       apptsCreatedPipelineDateRanges: [
-        {
-          label: 'Yesterday',
-          value: 'yesterday'
-        },
-        {
-          label: 'Last Week',
-          value: 'lastWeek'
-        },
-        {
-          label: 'Month to Date',
-          value: 'MTD'
-        },
-        {
-          label: 'Last 60 days',
-          value: 60
-        },
-        {
-          label: 'Last 90 days',
-          value: 90
-        },
-        {
-          label: 'Year to Date',
-          value: 'YTD'
-        },
-        {
-          label: 'Custom',
-          value: 'Custom'
-        }
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'Last Week', value: 'lastWeek' },
+        { label: 'Month to Date', value: 'MTD' },
+        { label: 'Last 60 days', value: 60 },
+        { label: 'Last 90 days', value: 90 },
+        { label: 'Year to Date', value: 'YTD' },
+        { label: 'Custom', value: 'Custom' }
       ],
-      apptsCreatedPipelineDateRange: {
-        label: 'Month to Date',
-        value: 'MTD'
-      },
+      apptsCreatedPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
       showApptsCreatedPipelineCustomDates: false,
       apptsToFdcPipelineDateRanges: [
-        {
-          label: 'Yesterday',
-          value: 'yesterday'
-        },
-        {
-          label: 'Last Week',
-          value: 'lastWeek'
-        },
-        {
-          label: 'Month to Date',
-          value: 'MTD'
-        },
-        {
-          label: 'Last 60 days',
-          value: 60
-        },
-        {
-          label: 'Last 90 days',
-          value: 90
-        },
-        {
-          label: 'Year to Date',
-          value: 'YTD'
-        },
-        {
-          label: 'Custom',
-          value: 'Custom'
-        }
+        { label: 'Yesterday', value: 'yesterday' },
+        { label: 'Last Week', value: 'lastWeek' },
+        { label: 'Month to Date', value: 'MTD' },
+        { label: 'Last 60 days', value: 60 },
+        { label: 'Last 90 days', value: 90 },
+        { label: 'Year to Date', value: 'YTD' },
+        { label: 'Custom', value: 'Custom' }
       ],
-      apptsToFdcPipelineDateRange: {
-        label: 'Month to Date',
-        value: 'MTD'
-      },
+      apptsToFdcPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
       showApptsToFdcPipelineCustomDates: false,
       viewSelect: 'standard',
       appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
@@ -1267,37 +1214,45 @@
       appts_to_fdc_pipeline_menu2: false,
       funnelDrilldownTitle: '',
       funnelDrilldownHeaders: [
-        { text: '', value: '', show: true, sortable: false, width: 25 },
-        { text: 'Owner', value: 'owner_name', show: true, width: 90 },
-        { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
-        { text: 'State', value: 'state', show: true, width: 75 },
-        { text: 'Name', value: 'customer_name', show: true, width: 90 },
-        { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
-        { text: 'Source', value: 'source_name', show: true, width: 85 },
-        { text: 'System Size', value: 'system_size', show: true, width: 110 },
-        { text: 'Financier', value: 'financier', show: true, width: 95 },
-        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
-        { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
-        { text: 'Added On', value: 'added_on', show: false, width: 100 },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
-        { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
-        { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
-        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
-        { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
-        { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
-        { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
-        { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
-        { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
-        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
-        { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
-        { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
-        { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
+        { text: '', value: '', show: true, sortable: false, width: 25, optional: false },
+        { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false },
+        { text: 'Employee ID', value: 'employee_id', show: true, width: 115, optional: false },
+        { text: 'State', value: 'state', show: true, width: 75, optional: false },
+        { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false },
+        { text: 'Deal ID', value: 'deal_id', show: true, width: 85, optional: false },
+        { text: 'Source', value: 'source_name', show: true, width: 85, optional: false },
+        { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false },
+        { text: 'Financier', value: 'financier', show: true, width: 95, optional: false },
+        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145, optional: false },
+        { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130, optional: false },
+        { text: 'Added On', value: 'added_on', show: false, width: 100, optional: true },
+        { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true },
+        { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160, optional: true },
+        { text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true },
+        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 235, optional: true },
+        { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 160, optional: true },
+        { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155, optional: true },
+        { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165, optional: true },
+        { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 165, optional: true },
+        { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200, optional: true },
+        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175, optional: true },
+        { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195, optional: true },
+        { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160, optional: true },
+        { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175, optional: true }
       ],
       funnelDrilldownData: [],
+      funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
       funnelDrilldownRowCount: 0,
-      totalSystemSize: 0
+      totalSystemSize: 0,
+      footerProps: {
+        showFirstLastPage: !constants.IS_MOBILE,
+        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+        'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
+      }
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -1414,12 +1369,6 @@
       }
     },
     watch: {
-      // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
-      '$store.state.app.loading': function () {
-        if (!this.ironmanLoaded || !this.rankingTablesLoaded) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-        }
-      },
       appts_created_pipeline_dt1 () {
         this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
       },
@@ -1432,8 +1381,15 @@
       appts_to_fdc_pipeline_dt2 () {
         this.appts_to_fdc_pipeline_dt2_formatted = this.formatFunnelDate(this.appts_to_fdc_pipeline_dt2)
       },
-      funnelDrilldownDialog () {
-        this.funnelDrilldownSearch = ''
+      funnelDrilldownDialog (val) {
+        if (!val) {
+          this.funnelDrilldownSearch = ''
+
+          // resets the visibility of the optional headers
+          this.funnelDrilldownHeaders.forEach(header => {
+            if (header.optional) header.show = false
+          })
+        }
       },
       filteredFunnelDrilldownData () {
         this.calcTotalSystemSize()
@@ -1457,7 +1413,7 @@
             this.showFunnel = false
             if (!this.dashboardWasLoaded) {
               await this.loadIronman()
-              await this.loadRankingTables('MTD') // MTD is the default
+              await this.loadRoundRobins()
               this.dashboardWasLoaded = true
             }
         }
@@ -1489,9 +1445,9 @@
 
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         this.ironmanLoaded = false
 
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           getRequest('/closerDashboard/getIronmanFdcCounts', 'blueraven').then(res => {
             this.fdcCounts = res.data
@@ -1649,7 +1605,6 @@
 
       async milestoneDrilldown (quarter) {
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           const {data} = await getRequestWithParams('/closerDashboard/finalDesignsCompletedDrilldown', {params: {quarter}}, 'blueraven')
           this.drilldownData = cloneDeep(data)
@@ -1697,14 +1652,30 @@
       /* IRONMAN-RELATED CODE END */
 
       /* RANKING TABLES-RELATED CODE START */
-      async loadRankingTables (timeIntervalString) {
+      async loadRoundRobins () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        this.rankingTablesLoaded = false
-        this.timeIntervalString = timeIntervalString
-        this.rankingData = []
-        this.searchText = ''
+        try {
+          const {data} = await getRequest('/closerDashboard/getRoundRobins', 'blueraven')
+          this.roundRobins = data
 
-        switch (timeIntervalString) {
+          // if there's only one Round Robin for the current user, this auto-selects it
+          if (this.roundRobins?.length === 1) {
+            this.selectedRoundRobin = this.roundRobins[0]?.id
+            await this.loadRankingTables()
+          }
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving list of round robins')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+
+      setTimeInterval (timeIntervalString) {
+        this.timeIntervalString = timeIntervalString
+
+        switch (this.timeIntervalString) {
           case 'MTD':
             this.timeInterval = +moment().format('DD') // MTD
             break
@@ -1719,16 +1690,28 @@
             break
         }
 
+        if (this.selectedRoundRobin) {
+          this.loadRankingTables()
+        }
+      },
+
+      async loadRankingTables () {
+        this.rankingTablesLoaded = false
+        this.rankingData = []
+        this.searchText = ''
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {timeInterval: this.timeInterval}
-          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
+          const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
+          await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
+
+          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params: {timeInterval: this.timeInterval}}, 'blueraven')
 
           if (data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
             this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
           }
 
-          this.processRankingData(cloneDeep(data.officeRankingValues), 'Office Lead Allocation Rank')
-          this.processRankingData(cloneDeep(data.officeRankingValues), 'Office FDC Rank')
+          this.processRankingData(cloneDeep(data.officeFdcRankValues), 'Office FDC Rank')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Top Reps')
 
@@ -1744,61 +1727,7 @@
 
       processRankingData (rankingData, currentTable) {
         if (currentTable === 'Office Lead Allocation Rank') {
-          let leadAllocationScoreSum = 0
-          // let startDate = moment().subtract(3, 'weeks').format('YYYY-MM-DD')
-          // let endDate = moment().format('YYYY-MM-DD')
-          let userIds = []
-          // let closerAvgAvailMap = {}
-
-          rankingData.forEach(row => {
-            if (row.userId !== null && row.userId !== undefined) {
-              userIds.push(row.userId)
-            }
-          })
-
-          // TODO: Get closer availability stuff working
-          // calculate average availability values for each closer
-          if (userIds.length > 0) {
-          //   CloserAvailabilityService.getCsvCalendarData(startDate, endDate, userIds).then(resp => {
-          //     resp.forEach(closer => {
-          //       let avgAvail = 0
-          //       if (closer.appointments.length > 0) {
-          //         closer.appointments.forEach(appointment => {
-          //           // customer appointment
-          //           if (!appointment.personal) {
-          //             avgAvail++
-          //           }
-          //         })
-          //       }
-          //       avgAvail += closer.availabilities.length
-          //       closerAvgAvailMap[closer.name] = Math.round(avgAvail / 3)
-          //     })
-          //
-              // populate avgAvailability and calculate leadAllocationScore values
-              rankingData.forEach(closer => {
-          //       if (closer.name in closerAvgAvailMap) {
-          //         closer.avgAvailability = closerAvgAvailMap[closer.name]
-          //       } else {
-                  closer.avgAvailability = 0
-          //       }
-
-                let leadAllocationScore = (closer.leadGenFdcPercentage / 100 * 1000) + (closer.selfGenFdc * 2) + closer.avgAvailability
-                leadAllocationScoreSum += leadAllocationScore
-                closer.leadAllocationScore = leadAllocationScore
-              })
-
-              // calculate leadAllocationPercentage
-              rankingData.forEach(closer => {
-                if (leadAllocationScoreSum !== 0) {
-                  closer.leadAllocationPercentage = Math.round((closer.leadAllocationScore / leadAllocationScoreSum) * 100)
-                } else {
-                  closer.leadAllocationPercentage = 0
-                }
-              })
-
-              this.leadAllocationRankingData = this.assignCloserRanks(rankingData, 'leadAllocationPercentage')
-            // })
-          }
+          this.leadAllocationRankingData = this.assignCloserRanks(rankingData, 'score')
         } else {
           switch (currentTable) {
             case 'Office FDC Rank':
@@ -2071,7 +2000,6 @@
 
       loadSources () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           getRequest('/closerDashboard/getBrsProvidedSources', 'blueraven').then(res => {
             this.brsProvidedSourceData = res.data
@@ -2092,7 +2020,6 @@
       },
 
       async apptsCreatedPipelineLoad (start, end) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
         let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
 
@@ -2102,8 +2029,6 @@
             {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
             {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
           ]
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
           return
         }
 
@@ -2114,6 +2039,7 @@
           end: moment(end).format('YYYY-MM-DD')
         }
 
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven').then(res => {
             this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
@@ -2153,7 +2079,6 @@
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           await postRequest('/closerDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(res => {
             this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
@@ -2589,7 +2514,6 @@
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           await postRequest(`/closerDashboard/funnelDrilldown/${pipelineName}`, requestBody, 'blueraven').then(({data}) => {
             this.funnelDrilldownData = data?.length > 0 ? data : []
@@ -2806,7 +2730,6 @@
     },
     created () {
       this.currentUserId = this.$store.state.user.details.id
-
       if (this.$store.state.user.details.userPositions?.length > 0) {
         this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
           return (position.position === 'Closer' && !position.endDate && !position.archived && position.primaryFlag)
@@ -3243,6 +3166,40 @@
     padding: 10px 5px 5px 10px;
   }
 
+  #lead-allocation-table-header {
+    justify-content: space-between;
+
+    .round-robin-dropdown {
+      transform: scale(0.875);
+      transform-origin: left;
+      margin: 0 0 5px 5px;
+      max-width: 120px;
+
+      ::v-deep {
+        .v-input__control {
+          height: 25px;
+        }
+
+        label {
+          color: #888 !important;
+          font-size: 12px;
+          font-weight: normal;
+        }
+
+        i {
+          color: #888 !important;
+          font-size: 20px;
+        }
+
+        .v-select__selections .v-select__selection {
+          color: #888 !important;
+          font-size: 12px;
+          font-weight: normal;
+        }
+      }
+    }
+  }
+
   #top-reps-table-header {
     flex-wrap: wrap;
     justify-content: space-between;
@@ -3311,15 +3268,16 @@
     color: #fff;
   }
 
-  .ranking-table-img {
+  .ranking-table-img,
+  .placeholder-img {
+    border-radius: 50%;
+    padding: 1px;
     width: 28px;
     height: 28px;
   }
 
-  .default-img {
+  .placeholder-img {
     background-color: #e9e9e9;
-    padding : 1px;
-    border-radius: 50%;
   }
 
   #appts-created-pipeline-funnel-background,
@@ -3423,23 +3381,27 @@
     }
 
     .appts-created-pipeline-dropdown {
-      font-size: 10px;
       transform: scale(0.875);
       margin: 0 auto 12px auto;
-      width: 80px;
-      height: 25px;
+      width: 110px;
 
-      ::v-deep label {
-        color: #888 !important;
-      }
+      ::v-deep {
+        .v-input__control {
+          height: 25px;
+        }
 
-      ::v-deep i {
-        color: #888 !important;
-        font-size: 16px;
-      }
+        label {
+          color: #888 !important;
+        }
 
-      ::v-deep .v-text-field__details {
-        display: none;
+        i {
+          color: #888 !important;
+          font-size: 16px;
+        }
+
+        .v-select__selections span {
+          font-size: 10px !important;
+        }
       }
     }
 
@@ -3474,24 +3436,22 @@
             max-width: 40px;
             height: 12px;
 
-            ::v-deep .v-input__control {
-              max-width: 40px;
-              height: 14px;
-            }
+            ::v-deep {
+              .v-input__control {
+                max-width: 40px;
+                height: 14px;
+              }
 
-            ::v-deep .v-input__slot {
-              padding: 0;
-              width: 40px;
-              height: 12px;
-              min-height: 12px;
-            }
+              .v-input__slot {
+                padding: 0;
+                width: 40px;
+                height: 12px;
+                min-height: 12px;
+              }
 
-            ::v-deep .v-text-field__slot input {
-              text-align: center;
-            }
-
-            ::v-deep .v-text-field__details {
-              display: none;
+              .v-text-field__slot input {
+                text-align: center;
+              }
             }
           }
 
@@ -3609,6 +3569,10 @@
               color: #888 !important;
               font-size: 16px;
             }
+
+            .v-select__selections span {
+              font-size: 10px !important;
+            }
           }
         }
 
@@ -3677,24 +3641,22 @@
             max-width: 40px;
             height: 12px;
 
-            ::v-deep .v-input__control {
-              max-width: 40px;
-              height: 14px;
-            }
+            ::v-deep {
+              .v-input__control {
+                max-width: 40px;
+                height: 14px;
+              }
 
-            ::v-deep .v-input__slot {
-              padding: 0;
-              width: 40px;
-              height: 12px;
-              min-height: 12px;
-            }
+              .v-input__slot {
+                padding: 0;
+                width: 40px;
+                height: 12px;
+                min-height: 12px;
+              }
 
-            ::v-deep .v-text-field__slot input {
-              text-align: center;
-            }
-
-            ::v-deep .v-text-field__details {
-              display: none;
+              .v-text-field__slot input {
+                text-align: center;
+              }
             }
           }
 
@@ -3841,28 +3803,32 @@
       justify-content: space-between;
       align-items: center;
 
-      ::v-deep .v-input {
-        max-width: 70%;
-      }
+      ::v-deep {
+        .v-input {
+          max-width: 70%;
+        }
 
-      ::v-deep input,
-      #funnel-drilldown-row-count {
-        font-size: 11px;
+        input,
+        #funnel-drilldown-row-count {
+          font-size: 11px;
+        }
       }
     }
 
     #funnel-drilldown-table {
-      ::v-deep th, ::v-deep td {
-        font-size: 10px;
-        padding: 5px;
-      }
+      ::v-deep {
+        th, td {
+          font-size: 10px;
+          padding: 5px;
+        }
 
-      ::v-deep th {
-        line-height: 14px;
+        th {
+          line-height: 14px;
 
-        .v-data-table-header__icon {
-          font-size: 12px !important;
-          padding-bottom: 2px;
+          .v-data-table-header__icon {
+            font-size: 12px !important;
+            padding-bottom: 2px;
+          }
         }
       }
 
@@ -3873,7 +3839,7 @@
       #total-system-size-label {
         font-weight: bold;
         text-align: right;
-        min-width: 130px;
+        min-width: 85px;
       }
 
       .customer-name {
@@ -4191,8 +4157,26 @@
     }
 
     .ranking-table-header {
-      font-size: 24px;
+      font-size: 22px;
       padding: 20px 15px 15px 15px;
+    }
+
+    #lead-allocation-table-header {
+      .round-robin-dropdown {
+        transform: none;
+        margin: 0 0 10px 10px;
+        max-width: 200px;
+
+        ::v-deep {
+          label {
+            font-size: 14px;
+          }
+
+          .v-select__selections .v-select__selection {
+            font-size: 14px;
+          }
+        }
+      }
     }
 
     .ranking-table-icon {
@@ -4213,7 +4197,8 @@
       padding: 0 5px;
     }
 
-    .ranking-table-img {
+    .ranking-table-img,
+    .placeholder-img {
       width: 40px;
       height: 40px;
     }
@@ -4266,8 +4251,12 @@
         font-size: 12px;
         transform: none;
         margin-bottom: 0;
-        width: 100px;
+        width: 125px;
         height: 40px;
+
+        ::v-deep .v-select__selections span {
+          font-size: 12px !important;
+        }
       }
 
       .funnel-container {
@@ -4287,15 +4276,17 @@
               max-width: 50px;
               height: 15px;
 
-              ::v-deep .v-input__control {
-                max-width: 50px;
-                height: 15px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 50px;
+                  height: 15px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 50px;
-                height: 15px;
-                min-height: 15px;
+                .v-input__slot {
+                  width: 50px;
+                  height: 15px;
+                  min-height: 15px;
+                }
               }
             }
 
@@ -4416,6 +4407,7 @@
           .appts-to-fdc-pipeline-dropdown {
             transform: none;
             margin: 0 10px 10px 0;
+            max-width: 145px;
 
             ::v-deep {
               label {
@@ -4424,6 +4416,10 @@
 
               i {
                 font-size: 20px;
+              }
+
+              .v-select__selections span {
+                font-size: 12px !important;
               }
             }
           }
@@ -4466,15 +4462,17 @@
               max-width: 50px;
               height: 15px;
 
-              ::v-deep .v-input__control {
-                max-width: 50px;
-                height: 15px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 50px;
+                  height: 15px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 50px;
-                height: 15px;
-                min-height: 15px;
+                .v-input__slot {
+                  width: 50px;
+                  height: 15px;
+                  min-height: 15px;
+                }
               }
             }
 
@@ -4560,13 +4558,15 @@
       }
 
       #funnel-drilldown-search {
-        ::v-deep input,
-        #funnel-drilldown-row-count {
-          font-size: 12px;
-        }
+        ::v-deep {
+          input,
+          #funnel-drilldown-row-count {
+            font-size: 12px;
+          }
 
-        ::v-deep .v-input {
-          width: 80%;
+          .v-input {
+            width: 80%;
+          }
         }
 
         #funnel-drilldown-row-count {
@@ -4576,16 +4576,18 @@
       }
 
       #funnel-drilldown-table {
-        ::v-deep th, ::v-deep td {
-          font-size: 11px;
-        }
+        ::v-deep {
+          th, td {
+            font-size: 11px;
+          }
 
-        ::v-deep th {
-          line-height: 16px;
+          th {
+            line-height: 16px;
 
-          .v-data-table-header__icon {
-            font-size: 14px !important;
-            padding-bottom: 3px;
+            .v-data-table-header__icon {
+              font-size: 14px !important;
+              padding-bottom: 3px;
+            }
           }
         }
       }
@@ -4696,6 +4698,16 @@
     .ranking-table {
       width: 100%;
       max-width: calc((100% / 2) - 10px);
+    }
+
+    .ranking-table-header {
+      font-size: 19px;
+    }
+
+    #lead-allocation-table-header {
+      .round-robin-dropdown {
+        max-width: 135px;
+      }
     }
 
     .ranking-table-icon {
@@ -5022,6 +5034,10 @@
       margin: 0 auto;
     }
 
+    .ranking-table-header {
+      font-size: 24px;
+    }
+
     #appts-created-pipeline-funnel-background {
       border-top-width: 163px;
       width: 440px;
@@ -5042,15 +5058,17 @@
               max-width: 60px;
               height: 20px;
 
-              ::v-deep .v-input__control {
-                max-width: 60px;
-                height: 20px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 60px;
+                  height: 20px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 60px;
-                height: 20px;
-                min-height: 20px;
+                .v-input__slot {
+                  width: 60px;
+                  height: 20px;
+                  min-height: 20px;
+                }
               }
             }
 
@@ -5160,15 +5178,17 @@
               max-width: 60px;
               height: 20px;
 
-              ::v-deep .v-input__control {
-                max-width: 60px;
-                height: 20px;
-              }
+              ::v-deep {
+                .v-input__control {
+                  max-width: 60px;
+                  height: 20px;
+                }
 
-              ::v-deep .v-input__slot {
-                width: 60px;
-                height: 20px;
-                min-height: 20px;
+                .v-input__slot {
+                  width: 60px;
+                  height: 20px;
+                  min-height: 20px;
+                }
               }
             }
 
@@ -5222,15 +5242,17 @@
       }
 
       #funnel-drilldown-table {
-        ::v-deep th, ::v-deep td {
-          font-size: 12px;
-        }
+        ::v-deep {
+          th, td {
+            font-size: 12px;
+          }
 
-        ::v-deep th {
-          line-height: 18px;
+          th {
+            line-height: 18px;
 
-          .v-data-table-header__icon {
-            font-size: 16px !important;
+            .v-data-table-header__icon {
+              font-size: 16px !important;
+            }
           }
         }
       }

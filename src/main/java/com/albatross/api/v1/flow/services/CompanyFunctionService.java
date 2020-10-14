@@ -44,6 +44,15 @@ public class CompanyFunctionService {
     return results;
   }
 
+  public List<CompanyFunction> getCompanyFunctionsByType(Long typeId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("typeId", typeId);
+    List<CompanyFunction> results = sqlCache.query("companyFunction.getFunctionsByType", params, CompanyFunction.class);
+    return results;
+  }
+
   public void deleteCompanyFunction(Long id) {
 //    todo: add updated by and date
     HashMap<String, Object> params = new HashMap<>();

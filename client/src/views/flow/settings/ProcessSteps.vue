@@ -63,17 +63,15 @@
                 label="Search"
                 single-line
                 hide-details
-                @input="debounceGetSteps"
               ></v-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
               :items="filterProcessSteps()"
               :fixed-header="true"
-              disable-sort
-              :options.sync="options"
+              :items-per-page="100"
+              :search="search"
               :footer-props="footerProps"
-              :server-items-length="totalItems"
               hide-default-header
               class="elevation-1"
             >
@@ -84,12 +82,21 @@
                     <v-btn small text @click="goToProcessStep(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-dialog
-                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                      v-model="item.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-btn small text v-on="on">
+                    <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                        v-model="item.deleteConfirm" width="500">
+                      <template v-slot:activator="{ on: dialog }">
+                        <v-tooltip top v-if="item.workQueueTypes.length > 0">
+                          <template v-slot:activator="{ on: tooltip }">
+                            <div v-on="{ ...tooltip }" class="d-inline-block">
+                              <v-btn small text disabled>
+                                <v-icon>delete</v-icon>
+                              </v-btn>
+                            </div>
+                          </template>
+                          <span>Cannot delete a Process Step with assigned Work Queue Types</span>
+                        </v-tooltip>
+
+                        <v-btn small text v-on="{ ...dialog }" v-else>
                           <v-icon>delete</v-icon>
                         </v-btn>
                       </template>
@@ -114,7 +121,7 @@
                             No
                           </v-btn>
                           <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="deleteProcessStep(item)">
                             Yes
@@ -168,10 +175,6 @@
           'items-per-page-options': [25, 50, 100, 1000],
           'items-per-page-text': 'Rows per page:'
         },
-        options: {
-          itemsPerPage: 100
-        },
-        totalItems: 0,
       }
     },
     watch: {
@@ -193,15 +196,9 @@
       },
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequestWithParams(`/processStep/search`, { params: {
-            query: this.search,
-            page: page - 1,
-            size: itemsPerPage
-          } })
-          this.processSteps = data.content
-          this.totalItems = data.totalElements
+          const {data} = await getRequest(`/processStep`)
+          this.processSteps = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

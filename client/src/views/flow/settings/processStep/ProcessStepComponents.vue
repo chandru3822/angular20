@@ -4,7 +4,7 @@
       <v-col cols="12">
         <v-row class="mb-2">
           <v-col cols="12">
-            <v-text-field color="primary"
+            <v-text-field color="primaryCustom"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
@@ -122,7 +122,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primary"
+                                color="primaryCustom"
                                 text
                                 @click="deleteWorkQueueTypeFromStep(item)">
                                 Yes
@@ -169,7 +169,7 @@
 <!--                            No-->
 <!--                          </v-btn>-->
 <!--                          <v-btn-->
-<!--                            color="primary"-->
+<!--                            color="primaryCustom"-->
 <!--                            text-->
 <!--                            @click="[a.archived = true, deleteWorkQueueTypeFromStep(a.id)]">-->
 <!--                            Yes-->
@@ -242,7 +242,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="[a.archived = true, deleteLinkFromStep(a.id)]">
                             Yes
@@ -315,7 +315,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="[a.archived = true, deleteTypeFromStep(a.id)]">
                             Yes

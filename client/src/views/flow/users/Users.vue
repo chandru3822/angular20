@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newUser" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
+            <v-btn text to="/newUser" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
               <v-icon>add</v-icon>
               Add User
             </v-btn>
@@ -66,7 +66,7 @@
 <!--                    Cancel-->
 <!--                  </v-btn>-->
 <!--                  <v-btn-->
-<!--                      color="primary"-->
+<!--                      color="primaryCustom"-->
 <!--                      text-->
 <!--                      @click="exportUsers"-->
 <!--                  >-->
@@ -223,13 +223,11 @@
 
           <template #item="{ item, index }">
             <tr
-              class="clickable"
               :class="{'shaded-row': index % 2}"
-              @click="clickRow(item.id)"
             >
               <td><v-checkbox v-model="item.selected"></v-checkbox></td>
-              <td class="text-left user-column">{{item.firstName}}</td>
-              <td class="text-left user-column">{{item.lastName}}</td>
+              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.firstName}}</td>
+              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.lastName}}</td>
               <td class="text-left user-column">{{item.email}}</td>
               <td class="text-left user-column">{{item.phoneNumber}}</td>
               <td class="text-left user-column">{{item.userStatusType}}</td>
@@ -292,13 +290,13 @@
                 Close
               </v-btn>
               <v-btn
-                color="primary" class="white--text mr-2 "
+                color="primaryCustom" class="white--text mr-2 "
                 :disabled="this.disableSendEmail"
                 @click="sendMessage(true, false)">
                 Send Emails Only
               </v-btn>
               <v-btn
-                color="primary" class="white--text"
+                color="primaryCustom" class="white--text"
                 :disabled="this.disableSendEmail || this.disableSendText"
                 @click="sendMessage(true, true)">
                 Send Both
@@ -329,13 +327,13 @@
                 Close
               </v-btn>
               <v-btn
-                color="primary" class="white--text mr-2"
+                color="primaryCustom" class="white--text mr-2"
                 :disabled="this.disableSendText"
                 @click="sendMessage(false, true)">
                 Send Text Only
               </v-btn>
               <v-btn
-                color="primary" class="white--text"
+                color="primaryCustom" class="white--text"
                 :disabled="this.disableSendEmail || this.disableSendText"
                 @click="sendMessage(true, true)">
                 Send Both

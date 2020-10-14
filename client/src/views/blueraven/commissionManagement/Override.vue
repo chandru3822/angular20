@@ -48,7 +48,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primary"
+                  color="primaryCustom"
                   text
                   @click="[deleteConfirm = true, deleteOverride()]">
                   Yes
@@ -111,7 +111,7 @@
                   No
                 </v-btn>
                 <v-btn
-                  color="primary"
+                  color="primaryCustom"
                   text
                   @click="[inactivateConfirm = true, inactivateOverride()]">
                   Yes
@@ -391,7 +391,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteReceivingUser(item.userId)">
                         Yes
@@ -599,7 +599,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteAssignedUser(item.id)">
                         Yes
@@ -624,7 +624,7 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../helpers/helpers";
+  import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
     name: 'Override',

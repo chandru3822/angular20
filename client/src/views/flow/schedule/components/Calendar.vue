@@ -19,8 +19,8 @@
               slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedStates.length < 3">
-                <v-chip small close @click:close="selectedStates.splice(index, 1)"
-                        v-for="ss in selectedStates">
+                <v-chip small close @click:close="selectedStates.splice(idx, 1)"
+                        v-for="(ss, idx) in selectedStates">
                   <span>{{ ss.state }}</span>
                 </v-chip>
               </div>
@@ -62,8 +62,8 @@
                 slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedOrgTypes.length < 3">
-                <v-chip small close @click:close="selectedOrgTypes.splice(index, 1)"
-                        v-for="sr in selectedOrgTypes">
+                <v-chip small close @click:close="selectedOrgTypes.splice(idx, 1)"
+                        v-for="(sr, idx) in selectedOrgTypes">
                   <span>{{ sr.orgType }}</span>
                 </v-chip>
               </div>
@@ -106,8 +106,8 @@
                 slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedPositions.length < 3">
-                <v-chip small close @click:close="selectedPositions.splice(index, 1)"
-                        v-for="sr in selectedPositions">
+                <v-chip small close @click:close="selectedPositions.splice(idx, 1)"
+                        v-for="(sr, idx) in selectedPositions">
                   <span>{{ sr.position }}</span>
                 </v-chip>
               </div>
@@ -195,7 +195,7 @@
         <v-progress-circular
           indeterminate
           :size="80"
-          :color="'primary'"
+          :color="'primaryCustom'"
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar"
@@ -295,7 +295,7 @@
         return this.selectedPositions.length > 0 && !this.selectAllPositions
       },
       iconPositions () {
-        if (this.positions.length === this.selectedOrgTypes.length) {
+        if (this.positions.length === this.selectedPositions.length) {
           return 'check_box'
         }
         if (this.selectSomePositions) {
@@ -616,11 +616,11 @@
         console.log('count', this.countSelected)
         this.orgs.forEach(o => {
           let match = this.selectedOrgs.find(so => so.id === o.id)
-          o.disabled = !match && this.countSelected >= maxSelectionAllowed
+          o.disabled = !match && this.countSelected >= this.maxSelectionAllowed
         })
         this.users.forEach(u => {
           let match = this.selectedUsers.find(su => su.id === u.id)
-          u.disabled = !match && this.countSelected >= maxSelectionAllowed
+          u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
         })
       },
       async getEvents(isOrgs, reload) {

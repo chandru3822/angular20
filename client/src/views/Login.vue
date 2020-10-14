@@ -4,14 +4,14 @@
       <v-row align="center" justify="center">
         <v-col cols="12" sm="8">
           <v-card color="secondaryMaster" class="elevation-12">
-            <v-toolbar dark color="primary">
+            <v-toolbar dark color="primaryCustom">
               <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
               <h2 class="error" v-if="$store.state.user.loginError">{{$store.state.user.loginError}}</h2>
               <v-form ref="login" @submit.prevent="onSubmit()">
-                <v-text-field required color="primary" v-model="form.email" prepend-icon="person" name="login" label="Login" type="email"></v-text-field>
-                <v-text-field required color="primary" v-model="form.password" prepend-icon="lock" name="password" label="Password" id="password" type="password"></v-text-field>
+                <v-text-field required color="primaryCustom" v-model="form.email" prepend-icon="person" name="login" label="Login" type="email"></v-text-field>
+                <v-text-field required color="primaryCustom" v-model="form.password" prepend-icon="lock" name="password" label="Password" id="password" type="password"></v-text-field>
                 <v-card-actions>
                   <router-link :to="'/forgotPassword'" title="Forgot Password">
                     Forgot Password

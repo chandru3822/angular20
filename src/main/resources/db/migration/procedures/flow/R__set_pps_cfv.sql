@@ -12,7 +12,8 @@ BEGIN
     from flow.project_process_step_custom_field_value cfv
              inner join flow.project_process_step pps on cfv.project_process_step_id = pps.id
     where pps.project_id = p_project_id
-      and cfv.custom_field_group_assignment_id = p_cfga;
+      and cfv.custom_field_group_assignment_id = p_cfga
+      and pps.main is true;
 
     select pps.id, cdt.data_type_id into v_project_process_step_id, v_data_type_id
     from flow.project_process_step pps

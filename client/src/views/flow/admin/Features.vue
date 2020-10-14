@@ -34,7 +34,7 @@
             ></v-select>
           </div>
           <v-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
-                 color="primary" class="white--text mr-2"
+                 color="primaryCustom" class="white--text mr-2"
                  @click="saveFeature(true)">
             Save
           </v-btn>
@@ -73,7 +73,7 @@
                 </div>
               </div>
               <v-btn :disabled="!item.featureName"
-                     color="primary" class="white--text mr-2"
+                     color="primaryCustom" class="white--text mr-2"
                      @click="saveFeature(false, item)">
                 Save
               </v-btn>
@@ -120,7 +120,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deleteFeature(item)">
                         Yes
