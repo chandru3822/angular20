@@ -37,7 +37,7 @@
                   @click="loadDrilldown(wq)"
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
-            <v-card-text class="pt-1 pr-0">
+            <v-card-text class="pt-1">
               <div class="text-left">{{wq.workQueueType}}</div>
               <div class="card-count">{{wq.workQueueCount}}</div>
             </v-card-text>
