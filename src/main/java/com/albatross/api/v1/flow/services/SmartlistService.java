@@ -98,7 +98,7 @@ public class SmartlistService {
   }
 
     public SmartlistRequirement getRequirementById(Long requirementId) {
-        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
 
         if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
             final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
@@ -831,6 +831,10 @@ public class SmartlistService {
         //@TODO: blow up?
         return null;
     }
+  }
+
+  public List<ListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
+    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), ListOfValue.class);
   }
 
   public static class SmartlistRequirementMapper<T> extends BeanPropertyRowMapper<T> {
