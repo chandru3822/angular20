@@ -14,7 +14,8 @@ public class SmartlistRequirement {
   //@TODO humes: should probably make this have a field of type SmartlistField since it uses most of those fields anyways
 
   private Long id, smartlistId, smartlistFieldId, processStepId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
-               dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById, companySystemListId, listOfValueId, systemListOptionId, customSqlOptionId;
+               dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById, companySystemListId, listOfValueId, systemListOptionId, customSqlOptionId,
+               smartlistSystemListId;
 
   private String requirementValue, secondaryRequirementValue, processStepName, objectType, operatorType, name, customFieldSqlKey;
 

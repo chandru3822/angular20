@@ -112,6 +112,7 @@ select null as "smartlistFieldId",
 
 <smartlist.getAvailableFields><![CDATA[
 select sf.id as "smartlistFieldId",
+       sf.smartlist_system_list_id as "smartlistSystemListId",
        null as "customFieldGroupAssignmentId",
        sf.name as "name",
        null as "customFieldSqlKey",
@@ -120,9 +121,13 @@ select sf.id as "smartlistFieldId",
        null as "processStepId",
        null as "processStepName",
        cdt.data_type_id as "dataTypeId",
-       cdt.has_list_values as "hasListValues",
+       case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
        null as "allowMultiple",
-       '[]' as "listOfValues"
+       case when sf.smartlist_system_list_id is null then '[]' else
+         (select to_jsonb(array_agg(row_to_json(rows))) from (
+           select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+         ) rows)
+       end as "listOfValues"
 from flow.smartlist_field sf
 inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
@@ -132,6 +137,7 @@ where ot.id = :objectTypeId and
       cot.archived is not true
 union
 select null as "smartlistFieldId",
+       null as "smartlistSystemListId",
        cfga.id as "customFieldGroupAssignmentId",
        cf.field_name as "name",
        cf.custom_field_sql_key as "customFieldSqlKey",
@@ -188,13 +194,14 @@ select
   sf.reference_column,
   sf.join_table,
   sf.join_column,
+  sf.smartlist_system_list_id,
   case when sfa.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
   case when sfa.custom_field_group_assignment_id is not null then cot1.object_type_id else cot.object_type_id end as object_type_id,
   case when sfa.custom_field_group_assignment_id is not null then cdt1.data_type_id else cdt.data_type_id end as data_type_id,
   case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end as name,
   sfa.process_step_id,
-  cdt1.has_list_values,
+  case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
@@ -289,11 +296,12 @@ select
   sf.reference_column,
   sf.join_table,
   sf.join_column,
+  sf.smartlist_system_list_id,
   case when sfa.custom_field_group_assignment_id is not null then cdt1.data_type_id else cdt.data_type_id end as data_type_id,
   case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end as name,
   sfa.process_step_id,
-  cdt1.has_list_values,
+  case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
@@ -368,11 +376,12 @@ select sr.id,
        sf.reference_column,
        sf.join_table,
        sf.join_column,
+       sf.smartlist_system_list_id,
        ot.object_type,
        cf.custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
-       cdt1.has_list_values,
+       case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
        cdt1.allow_multiple,
        case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        opt.operator_type,
@@ -408,6 +417,10 @@ select sr.id,
               select *
               from flow.get_system_list_options(cf.company_id, cf.company_system_list_id, true, cf.system_list_option_ids)
             ) lov), '[]')
+          when sf.smartlist_system_list_id is not null then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+            ) rows)
           else '[]'
         end as available_list_of_values
 from flow.smartlist_requirement sr
@@ -455,11 +468,12 @@ select sr.id,
        sf.reference_column,
        sf.join_table,
        sf.join_column,
+       sf.smartlist_system_list_id,
        ot.object_type,
        cf.custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
-       cdt1.has_list_values,
+       case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
        cdt1.allow_multiple,
        case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        opt.operator_type,
@@ -495,6 +509,10 @@ select sr.id,
               select *
               from flow.get_system_list_options(cf.company_id, cf.company_system_list_id, true, cf.system_list_option_ids)
             ) lov), '[]')
+          when sf.smartlist_system_list_id is not null then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+             select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+           ) rows)
           else '[]'
         end as available_list_of_values,
         (select row_to_json(f) from(
@@ -599,6 +617,10 @@ set archived = true,
     date_modified = now()
 where id = :requirementId
 ]]></smartlist.deleteRequirement>
+
+<smartlist.getSmartlistSystemList><![CDATA[
+select * from flow.get_smartlist_system_list_options(:smartlistSystemListId::int, :companyId::int)
+]]></smartlist.getSmartlistSystemList>
 
 <smartlist.getLogic><![CDATA[
 select sl.id,
