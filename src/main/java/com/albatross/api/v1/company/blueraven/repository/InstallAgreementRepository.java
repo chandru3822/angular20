@@ -269,15 +269,15 @@ public class InstallAgreementRepository {
     }
 
   @Data
-  public static class ProposalNumber {
-      private Long proposalNbr;
+  public static class ProposalInfo {
+      private Long proposalNbr, loanType;
   }
 
-  public List<ProposalNumber> getProposalNumbers(Long projectId) {
+  public List<ProposalInfo> getProposalNumbers(Long projectId) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
 
-      List<ProposalNumber> results = sqlCache.query("installAgreement.getProposalNumbers", params, ProposalNumber.class);
+      List<ProposalInfo> results = sqlCache.query("installAgreement.getProposalNumbers", params, ProposalInfo.class);
       return results;
   }
 

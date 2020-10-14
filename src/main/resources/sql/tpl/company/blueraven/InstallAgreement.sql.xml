@@ -69,7 +69,8 @@
 
     <installAgreement.getProposalNumbers>
         <![CDATA[
-            select proposal_nbr
+            select proposal_nbr,
+                   loan_type
             from brs.proposal_log_history plh
             inner join flow.project p on p.id::text = plh.project_id::text
             where p.id = :projectId
