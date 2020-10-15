@@ -17,6 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -26,15 +30,11 @@ import java.util.Optional;
 @Service
 public class PostalCodeService {
 
-  @Autowired
-  SqlCache sqlCache;
 
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  ObjectMapper om;
-
+  private final SqlCache sqlCache;
+  private final DataSource dataSource;
+  private final SecurityService securityService;
+  private final ObjectMapper om;
 
   public List<PostalCodeZone> getZones() {
     User user = securityService.getCurrentUser();
@@ -154,7 +154,7 @@ public class PostalCodeService {
     sqlCache.update("postalCode.deleteZoneCode", params);
   }
 
-  public List<User> getZoneUsers(Long zoneId) {
+  public List<User> getAvailableZoneUsers(Long zoneId) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -165,19 +165,29 @@ public class PostalCodeService {
     params.put("isParent", isParent);
     params.put("isSchedulingTool", true);
 
-    List<User> results = sqlCache.query("postalCode.getZoneUsers", params, User.class);
+    List<User> results = sqlCache.query("postalCode.getAvailableZoneUsers", params, User.class);
     return results;
   }
 
-  public List<User> getAllZoneUsers() {
+  public List<User> getAllZoneUsers(List<Integer> zoneIds) throws SQLException {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("zoneIds", createSqlArrayOfType("int", zoneIds));
 
     List<User> results = sqlCache.query("postalCode.getAllZoneUsers", params, new UserService.UserMapper<>(User.class, om));
     return results;
+  }
+
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
+      }
+    }
+    return null;
   }
 
   public PostalCode getZonePostalCode(Long id) {

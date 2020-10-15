@@ -118,7 +118,7 @@
     where pc.id = :id
   ]]></postalCode.getZoneCode>
 
-  <postalCode.getZoneUsers><![CDATA[
+  <postalCode.getAvailableZoneUsers><![CDATA[
       select distinct upv.user_id as id,
                       upv.first_name,
                       upv.last_name,
@@ -139,7 +139,7 @@
                             and pczu.user_id = upv.user_id
                             and archived is not true)
       order by full_name
-  ]]></postalCode.getZoneUsers>
+  ]]></postalCode.getAvailableZoneUsers>
 
   <postalCode.getAllZoneUsers><![CDATA[
     with t1 as (
@@ -154,6 +154,7 @@
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
         where pczu.archived is not true
           and pcz.company_id = :companyId
+          and (cast(:zoneIds as int[]) is null) OR ARRAY[ pczu.postal_code_zone_id ] <@ ARRAY[ :zoneIds ]::INTEGER[]
     )
     select *,
            coalesce((
