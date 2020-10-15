@@ -270,7 +270,8 @@ public class InstallAgreementRepository {
 
   @Data
   public static class ProposalInfo {
-      private Long proposalNbr, loanType;
+      private Long proposalNbr;
+      private String loanType;
   }
 
   public List<ProposalInfo> getProposalNumbers(Long projectId) {
