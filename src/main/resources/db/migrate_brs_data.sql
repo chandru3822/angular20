@@ -8400,7 +8400,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
     (SELECT id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE cfg.id = 876 and field_name = 'AHJ'  and cfg.archived is false and cf.archived is false) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE cfg.id = 1048 and field_name = 'AHJ'  and cfg.archived is false and cf.archived is false) as custom_field_id,
             ahj_id,
             2350555 as created_by_id
      FROM blueraven.deal WHERE ahj_id IS NOT NULL
@@ -8597,6 +8597,24 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
             2350555 as created_by_id
      FROM blueraven.deal d
      WHERE homeowner_review_score is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1297 as custom_field_id,
+            d.maximum_loan_amount,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE maximum_loan_amount is not null
+       and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            1296 as custom_field_id,
+            d.annual_utility_usage,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+     WHERE annual_utility_usage is not null
        and  originator_id = 1);
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
