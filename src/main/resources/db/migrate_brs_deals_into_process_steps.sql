@@ -19739,3 +19739,33 @@ EXECUTE PROCEDURE flow.refresh_user_position_records();
 --        and a.local_deleted = 0
 --        and u.id != 2355131);
 /**/
+
+alter table flow.note
+    add column if not exists migrated_deal_id integer;
+
+WITH note_insert as (
+    INSERT INTO flow."note" (
+                             id,
+                             migrated_deal_id,
+                             note,
+                             date_created,
+                             date_modified,
+                             created_by_id,
+                             modified_by_id)
+        (SELECT id,
+                deal_id,
+                note,
+                created_date,
+                modified_date,
+                2350555,
+                2350555
+         FROM blueraven."deal_base_note"
+            where id = 20301)
+        returning *)
+INSERT INTO flow."project_note" (project_id,note_id)
+    (select ni.migrated_deal_id,
+            ni.id
+     from   note_insert ni);
+
+alter table flow.note
+    drop column if exists migrated_deal_id;
