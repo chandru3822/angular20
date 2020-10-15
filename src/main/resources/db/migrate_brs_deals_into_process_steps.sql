@@ -19759,8 +19759,7 @@ WITH note_insert as (
                 modified_date,
                 2350555,
                 2350555
-         FROM blueraven."deal_base_note"
-            where id = 20301)
+         FROM blueraven."deal_base_note")
         returning *)
 INSERT INTO flow."project_note" (project_id,note_id)
     (select ni.migrated_deal_id,
