@@ -16,6 +16,7 @@
   <customFieldGroup.updateCustomFieldGroup><![CDATA[
     update flow.custom_field_group
       set group_name = :groupName,
+          company_object_type_tab_id = :companyObjectTypeTabId,
           group_order = :groupOrder,
           modified_by_id = :modifiedById,
           date_modified = now()

@@ -13,9 +13,9 @@ import java.util.List;
 @Setter
 public class CustomFieldGroup {
 
-  private Long id, companyObjectTypeId, objectTypeId, groupOrder, processStepId, eventTypeId, uniqueBehaviorTypeId;
+  private Long id, companyObjectTypeId, objectTypeId, groupOrder, processStepId, eventTypeId, uniqueBehaviorTypeId, companyObjectTypeTabId, companyObjectTypeTabDisplayOrder;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)
-  private String groupName, objectType, originalGroupName, eventType;
+  private String groupName, objectType, originalGroupName, eventType, tabName;
   private Boolean archived;
 
   // This list is used when looking at custom field ASSIGNMENTS to a group

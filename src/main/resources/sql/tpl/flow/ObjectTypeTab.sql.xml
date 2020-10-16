@@ -1,0 +1,66 @@
+<sql>
+  <objectTypeTab.getProjectTabs><![CDATA[
+    select cott.id,
+           cott.tab_name,
+           cott.company_object_type_id,
+           cot.object_type_id,
+           cott.display_order,
+           cott.archived
+    from flow.company_object_type_tab cott
+        inner join flow.company_object_type cot on cot.id = cott.company_object_type_id
+    where cot.object_type_id = :objectTypeId
+        and cot.company_id = :companyId
+        and cott.archived is not true
+    order by cott.display_order
+  ]]></objectTypeTab.getProjectTabs>
+
+  <objectTypeTab.getTab><![CDATA[
+    select cott.id,
+           cott.tab_name,
+           cott.display_order,
+           cott.company_object_type_id,
+           cot.object_type_id,
+           cott.archived
+    from flow.company_object_type_tab cott
+        inner join flow.company_object_type cot on cot.id = cott.company_object_type_id
+    where cott.id = :id
+  ]]></objectTypeTab.getTab>
+
+  <objectTypeTab.updateTab><![CDATA[
+    update flow.company_object_type_tab
+        set tab_name = :tabName,
+            modified_by_id = :userId,
+            date_modified = now()
+    where id = :id
+  ]]></objectTypeTab.updateTab>
+
+  <objectTypeTab.deleteTab><![CDATA[
+    update flow.company_object_type_tab
+        set archived = true,
+            modified_by_id = :userId,
+            date_modified = now()
+    where id = :id
+  ]]></objectTypeTab.deleteTab>
+
+  <objectTypeTab.updateTabDisplayOrder><![CDATA[
+    update flow.company_object_type_tab
+        set display_order = :displayOrder,
+            modified_by_id = :userId,
+            date_modified = now()
+    where id = :id
+  ]]></objectTypeTab.updateTabDisplayOrder>
+
+  <objectTypeTab.insertTab><![CDATA[
+    insert into flow.company_object_type_tab(tab_name, display_order, company_object_type_id, date_created, created_by_id)
+    select :tabName,
+           (select coalesce(max(display_order) + 1, 0) from flow.company_object_type_tab cott
+                inner join flow.company_object_type cot on cot.id = cott.company_object_type_id
+                where cot.company_id = :companyId and cot.object_type_id = :objectTypeId),
+           (select cot.id
+                from flow.company_object_type cot
+                where cot.company_id = :companyId and cot.object_type_id = :objectTypeId),
+           now(),
+           :userId
+  ]]></objectTypeTab.insertTab>
+
+</sql>

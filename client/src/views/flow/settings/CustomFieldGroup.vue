@@ -36,7 +36,7 @@
       </v-card>
     </v-dialog>
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" class="shrink pt-0">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -61,11 +61,11 @@
               :items="filterCustomFieldGroups()"
               :items-per-page="-1"
               single-expand
-              :sort-by="['groupOrder']"
+              :sort-by="['companyObjectTypeTabDisplayOrder', 'groupOrder']"
               :sort-desc="[false]"
               :expanded.sync="expanded"
               hide-default-footer
-              hide-default-header
+              :hide-default-header="typeId !== 1"
               class="elevation-1 fix-column-width-bug mb-5"
           >
             <template #no-data>
@@ -87,17 +87,36 @@
                   <v-text-field text
                                 v-if="item.edit"
                                 v-model="item.groupName">
-                    <template slot="append-outer">
-                      <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
-                      <v-icon @click="item.edit = false">clear</v-icon>
-                    </template>
                   </v-text-field>
-                  <a style="text-decoration: underline;" v-else @click="item.edit = true">
-                    {{item.groupName}}
-                  </a>
+                  <span v-else>{{item.groupName}}</span>
+                </td>
+                <td class="text-left">
+                  <v-select v-if="item.edit && typeId === 1"
+                            v-model="item.companyObjectTypeTabId"
+                            :items="objectTypeTabs"
+                            label="Tab"
+                            item-text="tabName"
+                            item-value="id"
+                            autocomplete="off">
+                  </v-select>
+                  <span v-if="!item.edit && typeId === 1">
+                    {{item.tabName || 'n/a'}}
+                  </span>
                 </td>
                 <td>
                   <div class="item-icons">
+                    <div v-if="userCanEdit" class="flex-display">
+                      <v-btn small text
+                             @click="item.edit = !item.edit">
+                        <v-icon v-if="item.edit">remove</v-icon>
+                        <v-icon v-else>edit</v-icon>
+                      </v-btn>
+                      <v-btn small text
+                             v-if="item.edit"
+                             @click="[saveGroup(item), item.edit = false]">
+                        <v-icon>save</v-icon>
+                      </v-btn>
+                    </div>
                     <v-btn small text
                            v-if="userCanAdd"
                            @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
@@ -342,76 +361,6 @@
               </td>
             </template>
           </v-data-table>
-        <v-divider v-if="$route.params.id === '1'"></v-divider>
-        <v-row v-if="$route.params.id === '1'">
-          <v-col cols="12" class="pt-0">
-            <v-toolbar flat>
-              <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <v-btn text @click="getAttachmentTypesForProjects" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <v-icon v-if="!addNewType">add</v-icon>
-                  {{ addNewType ? 'Cancel' : 'Add Type'}}
-                </v-btn>
-              </v-toolbar-items>
-            </v-toolbar>
-            <v-select v-if="addNewType"
-                      v-model="newType.attachmentTypeId"
-                      :items="availableAttachmentTypes"
-                      label="Select Attachment Type"
-                      item-text="attachmentType"
-                      item-value="id"
-                      @input="assignNewType"
-            ></v-select>
-            <v-card flat >
-              <v-list v-for="(a, index) in filterBy(projectAttachmentTypes, false, 'archived')"
-                      :key="index">
-                <v-list-item :class="{'shaded-row': index % 2}">
-                  <v-list-item-content>
-                    {{a.attachmentType}}
-                  </v-list-item-content>
-                  <v-dialog
-                      v-model="a.deleteConfirm"
-                      width="500">
-                    <template v-slot:activator="{ on }">
-                      <v-list-item-action class="clickable" v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-list-item-action>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title
-                      >
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            @click="a.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                            color="primaryCustom"
-                            text
-                            @click="[a.archived = true, deleteAttachmentType(a.id)]">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-col>
-        </v-row>
       </v-container>
     </v-col>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -456,6 +405,8 @@ export default {
       newGroup: {
         groupName: null
       },
+      //ugh! is this a good idea? projects is a custom view that calls this but orgs/users/contacts do too and i dont want to add a view for each of those
+      typeId: this.$route.params.id ?? 1,
       addField: false,
       newField: {},
       customFieldGroups: [],
@@ -466,6 +417,7 @@ export default {
       headers: [
         { text: null, value: 'draggable', width: '50px', show: true },
         { text: 'Name', value: 'groupName', show: true },
+        { text: 'Tab', value: 'tabName', show: true },
         { text: null, value: 'icons', show: true }
       ],
       expanded: [],
@@ -473,11 +425,7 @@ export default {
       parentObjects: [],
       selectedAncillaryField: {},
       ancillaryCustomFields: [],
-
-      addNewType: false,
-      newType: {},
-      availableAttachmentTypes: [],
-      projectAttachmentTypes: []
+      objectTypeTabs: []
     }
   },
   mounted() {
@@ -506,7 +454,7 @@ export default {
   },
   created () {
     this.getCustomFieldGroups()
-    this.getProjectAttachmentTypes()
+    this.getObjectTypeTabs()
   },
   methods: {
     selectAll (f) {
@@ -524,12 +472,26 @@ export default {
       }
       return 'check_box_outline_blank'
     },
+    async getObjectTypeTabs() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //currently we only do this for projects.. will have to change if we allow custom tabs for other object types
+        const {data} = await getRequest(`/objectTypeTab/project`)
+        this.objectTypeTabs = data
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Tabs')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
-            companyObjectTypeId: this.$route.params.id
+            companyObjectTypeId: this.typeId
           }
         })
         this.customFieldGroups = cloneDeep(data)
@@ -546,7 +508,7 @@ export default {
         if(this.addField && this.newFieldType === 'native') {
           const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
             params: {
-              companyObjectTypeId: this.$route.params.id,
+              companyObjectTypeId: this.typeId,
               groupId
             }
           })
@@ -644,11 +606,13 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveGroupName (group) {
+    async saveGroup (group) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
+        const {data} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+        group.tabName = data.tabName
+        group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
+        this.snackbar = getSnackbar('SUCCESS', 'Custom Field Group Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -760,66 +724,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getProjectAttachmentTypes () {
-      //this one loads attachment types already assigned to a project
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data } = await getRequest(`/attachmentType/projectTypes`)
-        this.projectAttachmentTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAttachmentTypesForProjects () {
-      //this one loads attachment types AVAILABLE TO BE assigned to a project ...idk maybe this should be one function
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = !this.addNewType
-        if(this.addNewType){
-          const { data } = await getRequest(`/attachmentType/typesForProjects`)
-          this.availableAttachmentTypes = data
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async assignNewType () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newType.processStepId = this.$route.params.id
-        const { data } = await postRequest(`/attachmentType/projectType`, this.newType)
-        this.projectAttachmentTypes.push(data)
-        // reset fields
-        this.addNewType = false
-        this.newType = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteAttachmentType (id) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = false
-        await deleteRequest(`/attachmentType/projectType/${id}`)
-        // this.availableAttachmentTypes = data
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+
     async getPositions() {
       if(this.positions?.length === 0) {
         try {
