@@ -13,8 +13,6 @@ BEGIN
     FROM flow.company_system_list csl
     WHERE csl.id = p_company_system_list_id;
 
-    RAISE NOTICE 'A partition has been created %', v_system_list_id;
-
     -- 1 = users by org
     case when v_system_list_id = 1 and p_sub_options is not true then
         RETURN QUERY
