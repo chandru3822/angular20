@@ -32,7 +32,8 @@ select u.id                                      as user_id,
               inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
             where ust.company_id = p.company_id
               and cus.user_id = u.id
-              and cus.archived is not true) as has_access
+              and cus.archived is not true) as has_access,
+       p.scheduler                             as position_scheduler
 from flow."user" u
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id

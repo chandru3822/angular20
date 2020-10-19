@@ -39,7 +39,7 @@
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
-            Closers
+            Schedule To
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -51,15 +51,16 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addUser" class="square-card text-left pa-5">
-          <v-select v-model="selectedUser.id"
+          <v-select v-model="selectedUser"
                     :items="users"
-                    label="Select a Closer..."
+                    label="Select a User..."
                     :loading="usersLoading"
                     item-text="fullName"
                     item-value="id"
+                    return-object
                     autocomplete="off">
           </v-select>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone()"
+          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser)"
                  :disabled="!selectedUser.id">
             Add
           </v-btn>
@@ -68,11 +69,104 @@
         <v-divider v-if="addUser"></v-divider>
         <v-data-table
           :headers="userHeaders"
-          :items="filterPostalCodeZoneUsers()"
+          :items="filterUsers()"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
           :loading="dataLoading"
+          hide-default-footer
+          class="elevation-1"
+        >
+          <template #no-data>
+            No available users
+          </template>
+
+          <template #no-results>
+            No available users
+          </template>
+
+          <template #item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.fullName}}</td>
+              <td>
+                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
+                  <template v-slot:activator="{ on }">
+                    <v-btn text v-on="on">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title class="headline grey lighten-2" primary-title>
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text>
+                      Are you sure you want to remove this user: <strong>{{ item.fullName }}</strong>?
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="item.deleteConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primaryCustom"
+                        text
+                        @click="deleteUserFromZone(item)">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+    <v-divider></v-divider>
+    <v-row>
+      <v-col>
+        <v-toolbar flat>
+          <v-toolbar-title>
+            Schedule By
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text v-if="userCanEdit" @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
+              <v-icon v-if="addScheduler">remove</v-icon>
+              <v-icon v-else>add</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-divider></v-divider>
+        <v-card v-if="addScheduler" class="square-card text-left pa-5">
+          <v-select v-model="selectedScheduler"
+                    :items="schedulers"
+                    label="Select a User..."
+                    :loading="schedulersLoading"
+                    item-text="fullName"
+                    item-value="id"
+                    return-object
+                    autocomplete="off">
+          </v-select>
+          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
+                 :disabled="!selectedScheduler.id">
+            Add
+          </v-btn>
+
+        </v-card>
+        <v-divider v-if="addScheduler"></v-divider>
+        <v-data-table
+          :headers="schedulerHeaders"
+          :items="filterSchedulers()"
+          :fixed-header="true"
+          :items-per-page="-1"
+          disable-sort
+          :loading="schedulersLoading"
           hide-default-footer
           class="elevation-1"
         >
@@ -231,13 +325,21 @@
     data() {
       return {
         snackbar: {},
-        selectedUser: {},
         editZone: false,
         zone: {},
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        users: [],
         zoneId: this.$route.params.id,
         dataLoading: true,
+        selectedScheduler: {},
+        schedulers: [],
+        schedulersLoading: false,
+        addScheduler: false,
+        schedulerHeaders: [
+          {text: 'Name', value: 'name', show: true},
+          {text: '', value: 'icons', show: true},
+        ],
+        selectedUser: {},
+        users: [],
         usersLoading: false,
         addUser: false,
         userHeaders: [
@@ -256,8 +358,11 @@
       this.getZoneDetails()
     },
     methods: {
-      filterPostalCodeZoneUsers () {
-        return this.zone.postalCodeZoneUsers?.length ? this.zone.postalCodeZoneUsers.filter(pczu => { return !pczu.archived}) : []
+      filterUsers () {
+        return this.zone.users?.length ? this.zone.users.filter(pczu => { return !pczu.archived && pczu.schedulable}) : []
+      },
+      filterSchedulers () {
+        return this.zone.users?.length ? this.zone.users.filter(pczu => { return !pczu.archived && pczu.scheduler}) : []
       },
       filterPostalCodes () {
         return this.zone.postalCodes?.length ? this.zone.postalCodes.filter(pc => { return !pc.archived}) : []
@@ -300,17 +405,19 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async addUserToZone () {
+      async addUserToZone (selected) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
             postalCodeZoneId: this.zoneId,
-            userId: this.selectedUser.id,
+            userPositionId: selected.userPositionId,
           }
           const {data} = await postRequest(`/postalCode/zone/saveUser`, params)
-          this.zone.postalCodeZoneUsers.push(data)
+          this.zone.users.push(data)
           this.addUser = false
+          this.addScheduler = false
           this.selectedUser = {}
+          this.selectedScheduler = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -325,6 +432,19 @@
             const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/users`)
             this.users = data
             this.usersLoading = false
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
+          }
+        }
+      },
+      async getSchedulers() {
+        if (this.addScheduler) {
+          this.schedulersLoading = true
+          try {
+            const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/schedulers`)
+            this.schedulers = data
+            this.schedulersLoading = false
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Users')

@@ -10,8 +10,8 @@ BEGIN
     insert into flow.user_positions_vw(user_id, first_name, last_name,
                                        org_id, org_name, org_level_id, position_level,
                                        primary_flag, start_date, end_date, archived, state_id,
-                                       user_archived, position_schedulable, position,
-                                       position_id, user_position_id, company_id, email,
+                                       user_archived, position_schedulable, position_scheduler,
+                                       position, position_id, user_position_id, company_id, email,
                                        phone_number, available_to_children,
                                        user_status_type_id, has_access)
         (select u.id                             as user_id,
@@ -28,6 +28,7 @@ BEGIN
                 o.state_id,
                 u.archived,
                 p.schedulable,
+                p.scheduler,
                 p.position,
                 p.id,
                 up.id,

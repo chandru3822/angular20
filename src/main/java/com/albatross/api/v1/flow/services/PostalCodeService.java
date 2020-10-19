@@ -89,7 +89,7 @@ public class PostalCodeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
-    params.put("userId", zoneUser.getUserId());
+    params.put("userPositionId", zoneUser.getUserPositionId());
     params.put("createdById", user.getId());
 
     Long id = sqlCache.updateReturningId("postalCode.insertZoneUser", params, "id").longValue();
@@ -154,7 +154,7 @@ public class PostalCodeService {
     sqlCache.update("postalCode.deleteZoneCode", params);
   }
 
-  public List<User> getAvailableZoneUsers(Long zoneId) {
+  public List<User> getAvailableZoneUsers(Long zoneId, Boolean loadSchedulers) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -164,6 +164,7 @@ public class PostalCodeService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("isSchedulingTool", true);
+    params.put("loadSchedulers", loadSchedulers);
 
     List<User> results = sqlCache.query("postalCode.getAvailableZoneUsers", params, User.class);
     return results;
@@ -212,9 +213,9 @@ public class PostalCodeService {
       bw.registerCustomEditor(List.class, "postalCodes",
         new JsonCollectionDeserializer(postalCodesRef, objectMapper));
 
-      TypeReference<List<PostalCodeZoneUser>> postalCodeZoneUsersRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "postalCodeZoneUsers",
-        new JsonCollectionDeserializer(postalCodeZoneUsersRef, objectMapper));
+      TypeReference<List<PostalCodeZoneUser>> usersRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "users",
+        new JsonCollectionDeserializer(usersRef, objectMapper));
 
     }
   }

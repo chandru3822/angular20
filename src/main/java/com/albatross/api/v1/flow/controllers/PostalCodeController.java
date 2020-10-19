@@ -68,7 +68,12 @@ public class PostalCodeController {
 
     @GetMapping(value = "/zone/{id}/users", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<User> getAvailableZoneUsers(@PathVariable Long id) {
-        return postalCodeService.getAvailableZoneUsers(id);
+        return postalCodeService.getAvailableZoneUsers(id, false);
+    }
+
+    @GetMapping(value = "/zone/{id}/schedulers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getAvailableZoneSchedulers(@PathVariable Long id) {
+        return postalCodeService.getAvailableZoneUsers(id, true);
     }
 
     @Data

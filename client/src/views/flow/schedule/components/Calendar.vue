@@ -553,7 +553,7 @@
       async getPositions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/position/scheduling`)
+          const {data} = await getRequest(`/position/schedulable`)
           this.positions = data
           this.positionsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
