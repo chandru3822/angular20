@@ -13,11 +13,14 @@ $BODY$
 BEGIN
     return query
         with round_robin_users as (
-            select pczu.user_id, concat(u.first_name, ' ', u.last_name) as closer_name, pcz.distribution_time_frame_days
-            from flow.postal_code_zone pcz
-                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
-                     inner join flow.user u on u.id = pczu.user_id
-            where pcz.id = p_postal_code_zone_id),
+            select up.user_id, concat(u.first_name, ' ', u.last_name) as closer_name, pcz.distribution_time_frame_days
+            from flow.postal_code_zone_user pczu
+                     inner join flow.user_position up on up.id = pczu.user_position_id
+                     inner join flow.position p on p.id = up.position_id
+                     inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
+                     inner join flow.user u on u.id = up.user_id
+            where pcz.id = p_postal_code_zone_id
+              and p.schedulable is true),
              lead_gen_num as (
                  select rru.user_id, rru.closer_name, count(1) as lead_gen_num
                  from brs.project_details pd
@@ -121,7 +124,7 @@ BEGIN
                                     foo.lead_gen_num / foo.lead_gen_den::numeric * 1000 + foo.self_gen +
                                     ((foo.appointment_count + foo.avail) / 3) end     as score
                  from (
-                          select pczu.user_id,
+                          select up.user_id,
                              concat(u.first_name, ' ', u.last_name)                as closer_name,
                                  coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
                                  coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
@@ -131,15 +134,18 @@ BEGIN
                                  coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval
                           from flow.postal_code_zone pcz
                                    inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
-                                   inner join flow.user u on u.id = pczu.user_id
-                                   left join lead_gen_num lgn on lgn.user_id = pczu.user_id
-                                   left join lead_gen_den lgd on lgd.user_id = pczu.user_id
-                                   left join self_gen sg on sg.user_id = pczu.user_id
-                                   left join appointment_count ac on ac.user_id = pczu.user_id
-                                   left join total_avail ta on ta.user_id = pczu.user_id
-                                   left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
+                                   inner join flow.user_position up on up.id = pczu.user_position_id
+                                   inner join flow.position p on p.id = up.position_id
+                                   inner join flow.user u on u.id = up.user_id
+                                   left join lead_gen_num lgn on lgn.user_id = up.user_id
+                                   left join lead_gen_den lgd on lgd.user_id = up.user_id
+                                   left join self_gen sg on sg.user_id = up.user_id
+                                   left join appointment_count ac on ac.user_id = up.user_id
+                                   left join total_avail ta on ta.user_id = up.user_id
+                                   left join appointment_count_with_interval acwi on acwi.user_id = up.user_id
                           where pcz.id = p_postal_code_zone_id
-                          group by pczu.user_id, concat(u.first_name, ' ', u.last_name), lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
+                            and p.schedulable is true
+                          group by up.user_id, concat(u.first_name, ' ', u.last_name), lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                    ac.appointment_count,
                                    pcz.distribution_time_frame_days, ta.avail,
                                    acwi.appointment_count_with_interval) as foo
