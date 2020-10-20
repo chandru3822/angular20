@@ -52,7 +52,7 @@
               <v-text-field text
                             label="Zip Code"
                             v-model="contact.postalCode"></v-text-field>
-              <v-select v-model="contact.countryId"
+              <v-select v-model="contact.companyCountryId"
                         :items="countries"
                         label="Country"
                         item-text="country"
@@ -197,7 +197,7 @@ export default {
         street1: '1234 Oak St.',
         city: 'Salt Lake City',
         companyStateId: 2,
-        countryId: 1,
+        companyCountryId: 1,
         postalCode: '84115',
         email: 'randa@randa.com'
       }

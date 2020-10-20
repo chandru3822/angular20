@@ -68,8 +68,6 @@
         inner join flow.contact c on c.id = p.contact_id
         inner join flow.company_state cs on cs.id = p.company_state_id
         inner join flow.state s on s.id = cs.state_id
-        inner join flow.company_state cs on cs.id = p.company_state_id
-        inner join flow.state s on s.id = cs.state_id
         inner join flow.custom_field cf on cf.id = r.custom_field_id
         left join flow.event_type evt on evt.id = cfg.event_type_id
         left join flow.user_position up on up.id = r.int_value
@@ -190,7 +188,9 @@
                      then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
                  else ps.company_id = :companyId end
         and ps.archived is not true
-        and p.company_state_id in ( select id from flow.company_state where state_id = :stateId)
+        and case when :isParent then
+           p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
+        else p.company_state_id = :companyStateId end
         and cfg.archived is not true
         and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::date else 1=1 end
         and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::date else 1=1 end

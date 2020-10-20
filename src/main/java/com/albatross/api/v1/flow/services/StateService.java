@@ -92,6 +92,7 @@ public class StateService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    // i dont even know why we have this anymore
     List<CompanyState> states = sqlCache.query("state.getActiveStatesByHierarchy", params, CompanyState.class);
     return states;
   }
