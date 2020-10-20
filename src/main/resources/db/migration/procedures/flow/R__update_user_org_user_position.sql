@@ -25,7 +25,7 @@ BEGIN
                 up.start_date,
                 up.end_date,
                 up.archived,
-                o.state_id,
+                cs.state_id,
                 u.archived,
                 p.schedulable,
                 p.scheduler,
@@ -52,6 +52,7 @@ BEGIN
                   left join flow.user_position up on up.user_id = u.id
                   left join flow.position p on p.id = up.position_id
                   left join flow.org o on o.id = up.org_id and o.company_id = p.company_id
+                  left join flow.company_state cs on cs.id = o.company_state_id
                   cross join flow.user_org_hierarchy(o.id) org_hierarchy
          where u.id = any (p_user_ids));
 

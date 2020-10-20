@@ -66,7 +66,7 @@ begin
                           'custom_fields.Total Promotion Amount',
                           coalesce(((proposal->>'Promotion 18 Months Free')::numeric),0)::integer,
                           'custom_fields.Does Not Qualify for ETO',
-                          case when c.state_id != 37 then TRUE else FALSE end,
+                          case when cs.state_id != 37 then TRUE else FALSE end,
                           'custom_fields.Total Cash Down Payment',
                           case when (v_loan_type = 'Cash' and (proposal->>'Loan Amount')::numeric is null) then 0.00::numeric
                           when (v_loan_type = 'Cash' and (proposal->>'Loan Amount')::numeric > 0.00::numeric) then coalesce(round((proposal->>'Loan Amount')::numeric,2),0)::numeric
@@ -107,7 +107,7 @@ begin
                           'custom_fields.Notice of Cancellation Deadline',
                           (((now() AT TIME ZONE 'US/Mountain') :: DATE) + 3) :: DATE,
                          'custom_fields.Utility Rebate Amount ($ to BRS)',
-                          case when c.state_id = 37 then
+                          case when cs.state_id = 37 then
                                    coalesce(round(((proposal->>'Current OET Rebate')::numeric),2),0)::integer
                            when ((proposal->>'Utility Name')::text = 'NV Energy' OR (proposal->>'Utility Name')::text = 'Colorado Springs' OR (proposal->>'Utility Name')::text = 'ComEd') then
                                coalesce(round(((proposal->>'Down PaymentAbove Line Incentives')::numeric),2) - round(((proposal->>'Optional Down Payment')::numeric),2),0)::integer
@@ -131,6 +131,7 @@ begin
                from brs.proposal_log pl
                  INNER JOIN flow.project p on p.id = pl.project_id
                  INNER JOIN flow.contact c ON c.id = p.contact_id
+                 inner join flow.company_state cs on c.company_state_id = cs.id
                where pl.project_id = p_project_id and pl.proposal_nbr = p_proposal_nbr;
 
 END

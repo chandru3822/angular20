@@ -11,7 +11,7 @@ select u.id                                      as user_id,
        up.start_date,
        up.end_date,
        up.archived,
-       o.state_id,
+       cs.state_id,
        u.archived                                as user_archived,
        p.schedulable                             as position_schedulable,
        p.position,
@@ -38,6 +38,7 @@ from flow."user" u
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id
          left join flow.org o on o.id = up.org_id and o.company_id = p.company_id
+         left join flow.company_state cs on o.company_state_id = cs.id
          cross join flow.user_org_hierarchy(o.id) org_hierarchy
 WITH DATA;
 

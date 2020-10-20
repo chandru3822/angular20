@@ -30,7 +30,8 @@ BEGIN
             SELECT count(1) as count
             FROM flow.contact c
                      inner join flow.contact_type ct on ct.id = c.contact_type_id
-                     left join flow.state s on s.id = c.state_id
+                     left join flow.company_state cs on cs.id = c.company_state_id
+                     left join flow.state s on s.id = cs.state_id
                      left join flow.user_position up on up.id = c.owner_user_position_id
                      left join flow."user" u on u.id = up.user_id
             WHERE c.company_id = ANY (v_company_ids)
@@ -76,7 +77,8 @@ BEGIN
                 from ranked_contacts ranked
                          inner join flow.contact c on c.id = ranked.id
                          inner join flow.contact_type ct on ct.id = c.contact_type_id
-                         left join flow.state s on s.id = c.state_id
+                         left join flow.company_state cs on cs.id = c.company_state_id
+                         left join flow.state s on s.id = cs.state_id
                          left join flow.user_position up on up.id = c.owner_user_position_id
                          left join flow."user" u on u.id = up.user_id
                 where case when p_is_viewall is not true then u.id = p_userid else 1 = 1 end;
