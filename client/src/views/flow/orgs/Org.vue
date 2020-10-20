@@ -47,6 +47,14 @@
                       item-text="state"
                       item-value="id"
             ></v-select>
+            <v-autocomplete v-model="org.companyTimezoneId"
+                      :items="companyTimezones"
+                      label="Time Zone"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      item-text="timezone"
+                      item-value="id"
+            ></v-autocomplete>
             <div class="mb-3">
               <label>Active:</label>
               <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.activeFlag">

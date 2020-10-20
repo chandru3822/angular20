@@ -124,6 +124,7 @@ public class OrgService {
     params.put("availableToChildren", null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
     params.put("stateId", org.getStateId());
     params.put("active", org.getActiveFlag());
+    params.put("companyTimezoneId", org.getCompanyTimezoneId());
 
     Long id;
     if(null != org.getId()) {

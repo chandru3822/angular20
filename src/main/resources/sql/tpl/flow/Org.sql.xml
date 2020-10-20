@@ -14,6 +14,7 @@
   <org.getSchedulingOrgs><![CDATA[
     select o.id,
      o.company_id,
+     o.company_timezone_id,
      o.org_name,
      o.parent_org_id,
      o.org_type_id,
@@ -100,13 +101,14 @@
          schedulable = :schedulable,
          available_to_children = :availableToChildren,
          state_id = :stateId,
-         active_flag = :active
+         active_flag = :active,
+         company_timezone_id = :companyTimezoneId
     where id = :id
   ]]></org.updateOrg>
 
   <org.insertOrg><![CDATA[
-    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, state_id, available_to_children)
-    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :stateId, :availableToChildren)
+    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, state_id, available_to_children, company_timezone_id)
+    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :stateId, :availableToChildren, :companyTimezoneId)
   ]]></org.insertOrg>
 
   <org.getOne><![CDATA[
@@ -175,6 +177,7 @@
   <org.getOrgsForLevel><![CDATA[
     select o.id,
            o.company_id,
+           o.company_timezone_id,
            org_name,
            parent_org_id,
            org_type_id,
@@ -194,6 +197,7 @@
   <org.getOrgCalendarsForUser><![CDATA[
       select uoa.id,
              o.org_name,
+             o.company_timezone_id,
              o.id as org_id,
              uoa.user_id,
              uoa.org_id,
@@ -210,6 +214,7 @@
   <org.getOneOrgCalendarAccess><![CDATA[
       select uoa.id,
              o.org_name,
+             o.company_timezone_id,
              uoa.user_id,
              uoa.org_id,
              uoa.archived
