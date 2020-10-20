@@ -979,7 +979,7 @@
                 <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
                 <td>{{ item.cancelled_date_formatted ? item.cancelled_date_formatted : '' }}</td>
                 <td v-if="funnelDrilldownHeaders[11].show">
-                  {{ item.added_on_date_formatted ? item.added_on_date_formatted : '' }}
+                  {{ item.date_created_formatted ? item.date_created_formatted : '' }}
                 </td>
                 <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[12].show">
                   {{ item.appointment_outcome ? item.appointment_outcome : '' }}
@@ -1002,9 +1002,9 @@
                     v-if="funnelDrilldownHeaders[17].show">
                   {{ item.site_survey_completed_date_formatted ? item.site_survey_completed_date_formatted : '' }}
                 </td>
-                <td :class="item.final_design_sent_to_customer_date_class"
+                <td :class="item.final_design_sent_to_homeowner_date_class"
                     v-if="funnelDrilldownHeaders[18].show">
-                  {{ item.final_design_sent_to_customer_date_formatted ? item.final_design_sent_to_customer_date_formatted : '' }}
+                  {{ item.final_design_sent_to_homeowner_date_formatted ? item.final_design_sent_to_homeowner_date_formatted : '' }}
                 </td>
                 <td :class="item.final_design_signed_date_class"
                     v-if="funnelDrilldownHeaders[19].show">
@@ -1225,14 +1225,14 @@
         { text: 'Financier', value: 'financier', show: true, width: 95, optional: false },
         { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145, optional: false },
         { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130, optional: false },
-        { text: 'Added On', value: 'added_on', show: false, width: 100, optional: true },
+        { text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true },
         { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160, optional: true },
         { text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true },
         { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 235, optional: true },
         { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 160, optional: true },
         { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155, optional: true },
-        { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165, optional: true },
+        { text: 'FD Sent to Homeowner Date', value: 'final_design_sent_to_homeowner_date_formatted', show: false, width: 200, optional: true },
         { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 165, optional: true },
         { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200, optional: true },
         { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175, optional: true },
@@ -2415,13 +2415,13 @@
         switch (funnelId) {
           // Appointments Created Pipeline
           case 12: // BRS-provided appointments created
-            this.funnelDrilldownHeaders[11].show = true // added_on
+            this.funnelDrilldownHeaders[11].show = true // date_created
             break
           case 13: // Self-gen appointments created
-            this.funnelDrilldownHeaders[11].show = true // added_on
+            this.funnelDrilldownHeaders[11].show = true // date_created
             break
           case 10: // Total Appointments Created
-            this.funnelDrilldownHeaders[11].show = true // added_on
+            this.funnelDrilldownHeaders[11].show = true // date_created
             break
 
           // Appointments to FDC Pipeline
@@ -2477,7 +2477,7 @@
             this.funnelDrilldownHeaders[16].show = true // site_survey_verified_date
             break
           case 6: // Final Designs sent to Homeowner
-            this.funnelDrilldownHeaders[18].show = true // final_design_sent_to_customer_date
+            this.funnelDrilldownHeaders[18].show = true // final_design_sent_to_homeowner_date
             this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
             break
           case 7: // Final Designs Approved
@@ -2573,8 +2573,8 @@
             row.cancelled_date_formatted = moment(row.cancelled_date).format('MMM D, YYYY')
           }
 
-          if (row.added_on) {
-            row.added_on_date_formatted = moment(row.added_on).format('MMM D, YYYY')
+          if (row.date_created) {
+            row.date_created_formatted = moment(row.date_created).format('MMM D, YYYY')
           }
 
           if (row.credit_decision_date) {
@@ -2593,8 +2593,8 @@
             row.site_survey_completed_date_formatted = moment(row.site_survey_completed_date).format('MMM D, YYYY')
           }
 
-          if (row.final_design_sent_to_customer_date) {
-            row.final_design_sent_to_customer_date_formatted = moment(row.final_design_sent_to_customer_date).format('MMM D, YYYY')
+          if (row.final_design_sent_to_homeowner_date) {
+            row.final_design_sent_to_homeowner_date_formatted = moment(row.final_design_sent_to_homeowner_date).format('MMM D, YYYY')
           }
 
           if (row.final_design_signed_date) {
