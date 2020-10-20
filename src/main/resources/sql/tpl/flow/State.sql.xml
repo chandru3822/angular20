@@ -10,7 +10,7 @@
     order by s.state
   ]]></state.getAllStates>
 
-  <state.getAllStatesByCompany><![CDATA[
+  <state.getAllCompanyStates><![CDATA[
     select cs.id,
        s.state,
        cs.state_id,
@@ -25,7 +25,7 @@
         inner join flow.state s on s.id = cs.state_id
     where cs.company_id = :companyId
     order by s.state
-  ]]></state.getAllStatesByCompany>
+  ]]></state.getAllCompanyStates>
 
   <state.getActiveStatesByCompany><![CDATA[
     select cs.id,

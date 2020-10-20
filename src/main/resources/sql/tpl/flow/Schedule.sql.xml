@@ -53,7 +53,7 @@
         case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
         p.project_name,
         ps.process_step_name,
-        p.state_id,
+        p.company_state_id,
         s.state,
         pps.company_process_step_status_type_id,
         cpsst.process_step_status_type
@@ -66,7 +66,10 @@
         inner join flow.process_step ps on ps.id = pps.process_step_id
         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
         inner join flow.contact c on c.id = p.contact_id
-        inner join flow.state s on s.id = p.state_id
+        inner join flow.company_state cs on cs.id = p.company_state_id
+        inner join flow.state s on s.id = cs.state_id
+        inner join flow.company_state cs on cs.id = p.company_state_id
+        inner join flow.state s on s.id = cs.state_id
         inner join flow.custom_field cf on cf.id = r.custom_field_id
         left join flow.event_type evt on evt.id = cfg.event_type_id
         left join flow.user_position up on up.id = r.int_value
@@ -150,7 +153,7 @@
        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
        p.project_name,
        ps.process_step_name,
-       p.state_id,
+       p.company_state_id,
        s.state,
        pps.company_process_step_status_type_id,
        cpsst.process_step_status_type,
@@ -167,7 +170,8 @@
                inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                inner join flow.project p on p.id = pps.project_id
                inner join flow.contact c on c.id = p.contact_id
-               inner join flow.state s on s.id = c.state_id
+               inner join flow.company_state cs on cs.id = c.company_state_id
+                inner join flow.state s on s.id = cs.state_id
                left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
                left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
                left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3
@@ -224,7 +228,7 @@
            case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
            p.project_name,
            ps.process_step_name,
-           p.state_id,
+           p.company_state_id,
            s.state,
            pps.company_process_step_status_type_id,
            cpsst.process_step_status_type,
@@ -241,7 +245,8 @@
              inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
              inner join flow.project p on p.id = pps.project_id
              inner join flow.contact c on c.id = p.contact_id
-             inner join flow.state s on s.id = p.state_id
+             inner join flow.company_state cs on cs.id = p.company_state_id
+             inner join flow.state s on s.id = cs.state_id
              left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
              left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
              left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3

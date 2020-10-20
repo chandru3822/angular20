@@ -11,7 +11,7 @@ export async function getStates() {
 
 export async function getCompanyStates() {
   try {
-    const {data, status} = await getRequest(`/state/allForCompany`)
+    const {data, status} = await getRequest(`/state/company`)
     return {data, status}
   } catch (e) {
     throw e

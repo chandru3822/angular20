@@ -160,7 +160,7 @@
                         label="Data Type"
                         item-text="companyDataType"
                         item-value="id"
-                        autocomplete="off"
+                        autocomplete="new-password"
                         return-object
                     ></v-autocomplete>
                     <div class="text-left read-only-label" v-if="item.companyDataType && item.companyDataType.dataTypeId === 5">

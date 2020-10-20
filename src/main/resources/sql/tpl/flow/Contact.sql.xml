@@ -21,10 +21,10 @@
        c.company_id,
        c.street1,
        c.city,
-       c.state_id,
+       c.company_state_id,
        s.state,
        c.postal_code,
-       c.country_id,
+       c.company_country_id,
        ctr.country,
        c.owner_user_position_id,
        coalesce((
@@ -49,8 +49,10 @@
                   WHERE up.id = c.owner_user_position_id) o) AS owner
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id
-             left join flow.state s on s.id = c.state_id
-             left join flow.country ctr on ctr.id = c.country_id
+             left outer join flow.company_state cs on cs.id = c.company_state_id
+              left outer join flow.state s on s.id = cs.state_id
+             left outer join flow.company_country cc on cc.id = c.company_country_id
+             left join flow.country ctr on ctr.id = cc.country_id
     where c.id = :contactId
       and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -72,14 +74,16 @@
       c.company_id,
       c.street1,
       c.city,
-      c.state_id,
+      c.company_state_id,
       s.state,
-      c.country_id,
+      c.company_country_id,
       ct.country
     from flow.contact c
       inner join flow.project p on p.contact_id = c.id
-      left join flow.state s on s.id = c.state_id
-      inner join flow.country ct on ct.id = c.country_id
+      left outer join flow.company_state cs on cs.id = c.company_state_id
+      left outer join flow.state s on s.id = cs.state_id
+      inner join flow.company_country cc on cc.id = c.company_country_id
+      inner join flow.country ct on ct.id = cc.country_id
     where p.id = :projectId
        and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -100,14 +104,16 @@
       c.company_id,
       c.street1,
       c.city,
-      c.state_id,
+      c.company_state_id,
       s.state,
-      c.country_id,
+      c.company_country_id,
       ct.country
     from flow.contact c
       inner join flow.project p on p.contact_id = c.id
-      left join flow.state s on s.id = c.state_id
-      inner join flow.country ct on ct.id = c.country_id
+      left outer join flow.company_state cs on cs.id = c.company_state_id
+      left outer join flow.state s on s.id = cs.state_id
+      inner join flow.company_country cc on cc.id = c.company_country_id
+      inner join flow.country ct on ct.id = cc.country_id
     where c.phone = :phone
      and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -121,9 +127,9 @@
            last_name = :lastName,
            street1 = :street1,
            city = :city,
-           state_id = :stateId,
+           company_state_id = :companyStateId,
            postal_code = :postalCode,
-           country_id = :countryId,
+           company_country_id = :companyCountryId,
            phone = :phone,
            email = :email,
            mobile = :mobile,
@@ -134,8 +140,8 @@
   ]]></contact.updateContact>
 
   <contact.insertContact><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
-    values (:contactTypeId, :firstName, :lastName, :street1, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
+    values (:contactTypeId, :firstName, :lastName, :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
   ]]></contact.insertContact>
 
   <contact.getOwners><![CDATA[

@@ -94,7 +94,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
@@ -136,7 +136,7 @@
       this.getOrgTypes()
       await this.getOrg()
       this.getOrgsByType(this.org.parentOrgTypeId)
-      this.getStates()
+      this.getCompanyStates()
     },
     methods: {
       async saveOrg() {
@@ -224,10 +224,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getStates () {
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
+          const {data} = await getCompanyStates()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

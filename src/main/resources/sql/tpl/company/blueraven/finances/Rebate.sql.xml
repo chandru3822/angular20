@@ -345,7 +345,8 @@
         inner join brs.project_commission_snapshot s ON s.project_id = p.id
         inner join brs.project_rebate_payment drp on p.id = drp.project_id
         inner join flow.contact c on c.id = p.contact_id
-        left join flow.state s on s.id = c.state_id
+        left outer join flow.company_state cs on cs.id = c.company_state_id
+        left outer join flow.state s on s.id = cs.state_id
         left join brs.project_details pd on pd.project_id = p.id
       where p.id = :projectId
         and s.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)

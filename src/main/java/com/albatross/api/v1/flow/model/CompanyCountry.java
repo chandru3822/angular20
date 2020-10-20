@@ -9,9 +9,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class Country {
+public class CompanyCountry {
 
-  private Long id, companyId;
+  private Long id, companyId, countryId;
   private String country, abbreviation;
   private Boolean archived;
 

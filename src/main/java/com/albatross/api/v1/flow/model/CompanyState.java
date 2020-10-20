@@ -9,7 +9,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class State {
+public class CompanyState {
 
   private Long id, companyId, stateId;
   private String state, abbreviation;

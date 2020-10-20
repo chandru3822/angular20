@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Project {
 
-  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, companyStateId, countryId;
+  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, companyStateId, companyCountryId;
   private String projectName, processName, projectStatusType, state, timeZone, country, street1, street2, city, postalCode;
   Double latitude, longitude;
   private LocalDate dateCreated;

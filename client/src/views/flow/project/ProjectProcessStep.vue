@@ -36,7 +36,7 @@
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           return-object
-                          autocomplete="off"
+                          autocomplete="new-password"
                           @change="updateOwner"
           >
           </v-autocomplete>

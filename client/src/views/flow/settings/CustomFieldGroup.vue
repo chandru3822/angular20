@@ -97,7 +97,7 @@
                             label="Tab"
                             item-text="tabName"
                             item-value="id"
-                            autocomplete="off">
+                            autocomplete="new-password">
                   </v-select>
                   <span v-if="!item.edit && typeId === 1">
                     {{item.tabName || 'n/a'}}
@@ -184,7 +184,7 @@
                                   label="New Custom Field"
                                   item-text="fieldName"
                                   return-object
-                                  autocomplete="off"
+                                  autocomplete="new-password"
                                   @input="assignCustomField(item)"
                   >
                     <template slot='item' slot-scope='{ item }'>
@@ -197,7 +197,7 @@
                                   label="Parent Object"
                                   item-text="processStepName"
                                   return-object
-                                  autocomplete="off"
+                                  autocomplete="new-password"
                                   @input="loadFieldsByParent"
                   >
                     <template slot='item' slot-scope='{ item }'>
@@ -210,7 +210,7 @@
                                   label="Custom Field"
                                   item-text="fieldName"
                                   return-object
-                                  autocomplete="off"
+                                  autocomplete="new-password"
                                   @input="assignAncillaryCustomField(item)"
                   >
                     <template slot='item' slot-scope='{ item }'>

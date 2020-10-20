@@ -100,7 +100,7 @@
                               label="Customer..."
                               item-text="fullName"
                               item-value="id"
-                              autocomplete="off"
+                              autocomplete="new-password"
               ></v-autocomplete>
               <v-autocomplete v-model="accountingSearch.salesRepId"
                               :items="reps"
@@ -109,7 +109,7 @@
                               label="Sales Rep..."
                               item-text="name"
                               item-value="userId"
-                              autocomplete="off"
+                              autocomplete="new-password"
               ></v-autocomplete>
               <div class="text-left">
                 <v-btn color="primaryCustom" dark @click="getAccountingData()">Search</v-btn>

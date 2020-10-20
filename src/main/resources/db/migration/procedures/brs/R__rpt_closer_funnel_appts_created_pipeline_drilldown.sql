@@ -24,7 +24,8 @@ BEGIN
                     inner join flow.contact c on c.id = p.contact_id
                     left outer join flow.user u on pd.closer_user_id = u.id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                    left outer join flow.state s on s.id = p.state_id
+                    left outer join flow.company_state cs on cs.id = p.company_state_id
+                    left outer join flow.state s on s.id = cs.state_id
                     left outer join flow.list_of_value lov on lov.id = pd.source
                     left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                 where p.date_created::date between p_start_date and p_end_date and
@@ -55,7 +56,8 @@ BEGIN
                     inner join flow.contact c on c.id = p.contact_id
                     left outer join flow.user u on pd.closer_user_id = u.id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                    left outer join flow.state s on s.id = p.state_id
+                    left outer join flow.company_state cs on cs.id = p.company_state_id
+                    left outer join flow.state s on s.id = cs.state_id
                     left outer join flow.list_of_value lov on lov.id = pd.source
                     left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                 where p.date_created::date between p_start_date and p_end_date and
@@ -86,7 +88,8 @@ BEGIN
                     inner join flow.contact c on c.id = p.contact_id
                     left outer join flow.user u on pd.closer_user_id = u.id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                    left outer join flow.state s on s.id = p.state_id
+                    left outer join flow.company_state cs on cs.id = p.company_state_id
+                    left outer join flow.state s on s.id = cs.state_id
                     left outer join flow.list_of_value lov on lov.id = pd.source
                     left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                 where p.date_created::date between p_start_date and p_end_date and

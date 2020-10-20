@@ -30,11 +30,12 @@
                             v-model="user.city"></v-text-field>
               <v-autocomplete v-model="user.companyStateId"
                               :items="states"
+                              autocomplete="new-password"
                               label="State"
                               :rules="requiredRules"
                               item-text="state"
                               item-value="id"/>
-              <v-select v-model="user.countryId"
+              <v-select v-model="user.companyCountryId"
                         :items="countries"
                         :rules="requiredRules"
                         label="Country"
@@ -89,7 +90,7 @@ import Snackbar from '@/components/Snackbar.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
-import {getStates} from '@/services/stateService'
+import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import {getUserStatusTypes} from '@/services/userService'
@@ -121,7 +122,7 @@ export default {
       this.setFakeUser()
     }
     this.getUserStatusTypes()
-    this.getStates()
+    this.getCompanyStates()
     this.getCountries()
     this.getCustomFieldGroups()
   },
@@ -156,10 +157,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getStates () {
+    async getCompanyStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getStates()
+        const {data} = await getCompanyStates()
         this.states = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -205,8 +206,8 @@ export default {
         mobile: '1111111111',
         street1: '1234 Oak St.',
         city: 'Salt Lake City',
-        stateId: 44,
-        countryId: 1,
+        companyStateId: 2,
+        companyCountryId: 1,
         postalCode: '87654',
         email: 'randa@randa.com'
       }

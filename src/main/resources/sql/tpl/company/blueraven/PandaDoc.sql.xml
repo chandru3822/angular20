@@ -32,8 +32,10 @@
               JOIN brs.project_details pd on p.id = pd.project_id
               JOIN brs.proposal_log pl on pl.project_id = p.id
               JOIN flow.contact c ON c.id = p.contact_id
-              JOIN flow.state s ON s.id = p.state_id
-              JOIN flow.country cy on cy.id = c.country_id
+              join flow.company_state cs on cs.id = p.company_state_id
+              join flow.state s on s.id = cs.state_id
+              join flow.company_country cc on cc.id = p.company_country_id
+              JOIN flow.country cy on cy.id = cc.country_id
               JOIN flow.company_process cp on cp.id = p.company_process_id
             WHERE p.id = :projectId and pl.proposal_nbr = :proposalNbr
         ]]>

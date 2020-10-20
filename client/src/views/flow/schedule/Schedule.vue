@@ -94,7 +94,7 @@
                             prepend-icon="search"
                             text
                             label="Search for project..."
-                            autocomplete="off"
+                            autocomplete="new-password"
                             :loading="searchProjectsLoading"
                             item-value="id"
                             return-object

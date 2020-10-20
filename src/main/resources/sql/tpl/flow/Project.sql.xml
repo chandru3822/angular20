@@ -294,8 +294,8 @@
       street1 = :street1,
       city = :city,
       company_state_id = :companyStateId,
-      postal_code = :postalCode,
       company_country_id = :companyCountryId,
+      postal_code = :postalCode,
       modified_by_id = :modifiedById,
       date_modified = now()
     where id = :id
