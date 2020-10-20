@@ -53,7 +53,8 @@
     inner join flow.status_type st on st.id = cp.status_type_id
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
     inner join flow.contact c on c.id = p.contact_id
-    left join flow.state s on s.id = p.state_id
+    left join flow.company_state cs on cs.id = p.company_state_id
+    left join flow.state s on s.id = cs.state_id
     where
     case when :isParent
              then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -72,7 +73,8 @@
       inner join flow.status_type st on st.id = cp.status_type_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       inner join flow.contact c on c.id = p.contact_id
-      left join flow.state s on s.id = p.state_id
+      left join flow.company_state cs on cs.id = p.company_state_id
+      left join flow.state s on s.id = cs.state_id
     where
     case when :isParent
              then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -161,7 +163,8 @@
          inner join flow.status_type st on st.id = cp.status_type_id
          inner join flow.contact c on c.id = p.contact_id
          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-         inner join flow.state s on s.id = p.state_id
+         inner join flow.company_state cs on cs.id = p.company_state_id
+         inner join flow.state s on s.id = cs.state_id
     where pps.archived is not true
     order by date_created desc
     limit :limit
@@ -229,7 +232,8 @@
              inner join flow.status_type st on st.id = cp.status_type_id
              inner join flow.contact c on c.id = p.contact_id
              inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-             inner join flow.state s on s.id = p.state_id
+             inner join flow.company_state cs on cs.id = p.company_state_id
+             inner join flow.state s on s.id = cs.state_id
     where pps.archived is not true
   ]]></project.searchCountByOwner>
 
@@ -257,10 +261,10 @@
         p.street1,
         p.street2,
         p.city,
-        p.state_id,
+        p.company_state_id,
         s.state,
         p.postal_code,
-        p.country_id,
+        p.company_country_id,
         c.country,
         p.date_created,
         cp.company_id,
@@ -273,8 +277,10 @@
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
       inner join flow.process pro on pro.id = cp.process_id
-      left join flow.state s on s.id = p.state_id
-      left join flow.country c on c.id = p.country_id
+      left join flow.company_state cs on cs.id = p.company_state_id
+      left join flow.state s on s.id = cs.state_id
+      left join flow.company_country cc on cc.id = p.company_country_id
+      left join flow.country c on c.id = cc.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.id = :projectId
         and case when :isParent
@@ -287,9 +293,9 @@
     update flow.project set
       street1 = :street1,
       city = :city,
-      state_id = :stateId,
+      company_state_id = :companyStateId,
       postal_code = :postalCode,
-      country_id = :countryId,
+      company_country_id = :companyCountryId,
       modified_by_id = :modifiedById,
       date_modified = now()
     where id = :id
@@ -297,8 +303,8 @@
 
   <project.insert>
     <![CDATA[
-      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, state_id, country_id, postal_code)
-      values (:contactId, :processId, :projectName, :createdById, :companyProjectStatusTypeId, :street1, :city, :stateId, :countryId, :postalCode)
+      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code)
+      values (:contactId, :processId, :projectName, :createdById, :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, :postalCode)
     ]]>
   </project.insert>
 

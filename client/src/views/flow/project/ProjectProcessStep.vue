@@ -108,7 +108,7 @@
           </v-toolbar-items>
         </v-toolbar-items>
       </v-toolbar>
-      <v-card v-if="displayUniqueView(cfg) && !closerApptOverride && project.postalCode && project.stateId">
+      <v-card v-if="displayUniqueView(cfg) && !closerApptOverride && project.postalCode && project.companyStateId">
         <v-toolbar flat color="transparent">
           <v-toolbar-title>Lead Allocation</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -172,7 +172,7 @@
           </div>
         </v-card-text>
       </v-card>
-      <v-card class="pa-4" v-if="displayUniqueView(cfg) && !closerApptOverride && (!project.postalCode || !project.stateId)">
+      <v-card class="pa-4" v-if="displayUniqueView(cfg) && !closerApptOverride && (!project.postalCode || !project.companyStateId)">
         A state and postal code are required on the project to continue with scheduling.  Please return to the project screen and update.
       </v-card>
       <v-card class="pa-4" v-if="!displayUniqueView(cfg) || closerApptOverride">

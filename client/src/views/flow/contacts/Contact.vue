@@ -122,7 +122,7 @@
                             @change="addressChanged = true"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.stateId"
+              <v-select v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         :readonly="!userCanEdit"

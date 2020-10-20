@@ -21,7 +21,7 @@
      o.active_flag,
      o.schedulable,
      o.available_to_children,
-     o.state_id,
+     o.company_state_id,
      p.org_name as parentOrgName,
      o.org_name as title,
      ot.org_type
@@ -31,8 +31,8 @@
     where case when :isParent and :isSchedulingTool
         then array[o.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
         else (o.company_id = :companyId OR (:isSchedulingTool AND o.company_id = :parentCompanyId AND o.available_to_children is true )) end
-      and case when :stateId::integer is not null
-          then o.state_id = :stateId::integer and o.schedulable is true
+      and case when :companyStateId::integer is not null
+          then o.company_state_id = :companyStateId::integer and o.schedulable is true
           else o.schedulable is true end
       and o.archived is not true
       and o.active_flag is true
@@ -100,15 +100,15 @@
          org_type_id = :orgTypeId,
          schedulable = :schedulable,
          available_to_children = :availableToChildren,
-         state_id = :stateId,
-         active_flag = :active,
-         company_timezone_id = :companyTimezoneId
+         company_timezone_id = :companyTimezoneId,
+         company_state_id = :companyStateId,
+         active_flag = :active
     where id = :id
   ]]></org.updateOrg>
 
   <org.insertOrg><![CDATA[
-    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, state_id, available_to_children, company_timezone_id)
-    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :stateId, :availableToChildren, :companyTimezoneId)
+    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, company_state_id, available_to_children, company_timezone_id)
+    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :companyStateId, :availableToChildren, :companyTimezoneId)
   ]]></org.insertOrg>
 
   <org.getOne><![CDATA[

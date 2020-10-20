@@ -80,7 +80,7 @@ public class ScheduleService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("stateId", esp.getStateId());
+    params.put("companyStateId", esp.getCompanyStateId());
     params.put("eventTypeIds", esp.getEventTypeIds());
     params.put("processStepStatusTypeIds", esp.getProcessStepStatusTypeIds());
     params.put("startTime", esp.getStartTime());

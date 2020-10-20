@@ -28,7 +28,7 @@
                     v-model="project.postalCode"
                     label="Postal Code"
                   ></v-text-field>
-                  <v-select v-model="project.stateId"
+                  <v-select v-model="project.companyStateId"
                             :items="states"
                             label="State"
                             item-text="state"

@@ -28,7 +28,7 @@
                             label="City"
                             :rules="requiredRules"
                             v-model="user.city"></v-text-field>
-              <v-autocomplete v-model="user.stateId"
+              <v-autocomplete v-model="user.companyStateId"
                               :items="states"
                               label="State"
                               :rules="requiredRules"

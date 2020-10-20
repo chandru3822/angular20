@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 public class UserPosition {
 
-    private Long id, userId, positionId, orgId, stateId;
+    private Long id, userId, positionId, orgId, companyStateId;
     private String position, orgName;
     private String startDate, endDate;
     private Boolean archived, primaryFlag;

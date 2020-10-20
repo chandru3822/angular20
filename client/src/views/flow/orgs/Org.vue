@@ -39,7 +39,7 @@
                       item-text="orgName"
                       item-value="id"
             ></v-select>
-            <v-select v-model="org.stateId"
+            <v-select v-model="org.companyStateId"
                       :items="states"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"

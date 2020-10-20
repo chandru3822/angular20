@@ -45,14 +45,14 @@ public class OrgService {
     return results;
   }
 
-  public List<Org> getSchedulingOrgs(Long stateId, Boolean isSchedulingTool) {
+  public List<Org> getSchedulingOrgs(Long companyStateId, Boolean isSchedulingTool) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("stateId", stateId);
+    params.put("companyStateId", companyStateId);
     params.put("isParent", isParent);
     params.put("isSchedulingTool", isSchedulingTool);
 
@@ -122,7 +122,7 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
     params.put("schedulable", null != org.getSchedulable() ? org.getSchedulable() : false);
     params.put("availableToChildren", null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
-    params.put("stateId", org.getStateId());
+    params.put("companyStateId", org.getCompanyStateId());
     params.put("active", org.getActiveFlag());
     params.put("companyTimezoneId", org.getCompanyTimezoneId());
 

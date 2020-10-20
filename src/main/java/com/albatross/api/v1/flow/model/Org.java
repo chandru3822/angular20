@@ -14,7 +14,7 @@ import java.util.List;
 public class Org {
 
 
-  private Long id, companyId, parentOrgId, orgTypeId, orgLevelId, stateId, parentOrgTypeId, defaultAppointmentLength, orgId, companyTimezoneId;
+  private Long id, companyId, parentOrgId, orgTypeId, orgLevelId, companyStateId, parentOrgTypeId, defaultAppointmentLength, orgId, companyTimezoneId;
   private String orgName, orgType, parentOrgName, title; //title used for scheduling tool
   private Boolean activeFlag, schedulable, availableToChildren, showType, archived;
 

@@ -186,7 +186,7 @@
                      then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
                  else ps.company_id = :companyId end
         and ps.archived is not true
-        and p.state_id = :stateId
+        and p.company_state_id in ( select id from flow.company_state where state_id = :stateId)
         and cfg.archived is not true
         and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::date else 1=1 end
         and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::date else 1=1 end

@@ -11,7 +11,6 @@ select u.id                                      as user_id,
        up.start_date,
        up.end_date,
        up.archived,
-       cs.state_id,
        u.archived                                as user_archived,
        p.schedulable                             as position_schedulable,
        p.position,
@@ -33,7 +32,8 @@ select u.id                                      as user_id,
             where ust.company_id = p.company_id
               and cus.user_id = u.id
               and cus.archived is not true) as has_access,
-       p.scheduler                             as position_scheduler
+       p.scheduler                             as position_scheduler,
+       o.company_state_id
 from flow."user" u
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id

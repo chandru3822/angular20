@@ -30,7 +30,7 @@
               <v-text-field text
                             label="City"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.stateId"
+              <v-select v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         item-text="state"
@@ -196,7 +196,7 @@ export default {
         mobile: '1111111111',
         street1: '1234 Oak St.',
         city: 'Salt Lake City',
-        stateId: 44,
+        companyStateId: 44,
         countryId: 1,
         postalCode: '84115',
         email: 'randa@randa.com'

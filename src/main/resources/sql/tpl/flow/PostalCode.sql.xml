@@ -179,7 +179,7 @@
                                         p.position,
                                         up.position_id as "positionId",
                                         up.org_id as "orgId",
-                                        o.state_id as "stateId",
+                                        o.company_state_id as "companyStateId",
                                         up.start_date as "startDate",
                                         up.end_date as "endDate",
                                         up.primary_flag as "primaryFlag",

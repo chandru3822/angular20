@@ -11,10 +11,10 @@
   ]]></state.getAllStates>
 
   <state.getAllStatesByCompany><![CDATA[
-    select s.id,
+    select cs.id,
        s.state,
+       cs.state_id,
        s.abbreviation,
-       cs.id as company_state_id,
        cs.active,
        cs.archived,
        cs.company_id,
@@ -28,11 +28,11 @@
   ]]></state.getAllStatesByCompany>
 
   <state.getActiveStatesByCompany><![CDATA[
-    select s.id,
+    select cs.id,
        s.state,
+       cs.state_id,
        s.abbreviation,
        cs.active,
-       cs.id as company_state_id,
        cs.archived,
        cs.company_id,
        case when cs.map_latitude is not null then cs.map_latitude else s.map_latitude end as map_latitude,
@@ -46,8 +46,9 @@
   ]]></state.getActiveStatesByCompany>
 
   <state.getOneCompanyState><![CDATA[
-    select s.id,
+    select cs.id,
        s.state,
+       cs.state_id,
        s.abbreviation,
        cs.active,
        cs.id as company_state_id,
@@ -64,8 +65,9 @@
   <state.getActiveStatesByHierarchy><![CDATA[
     with companies as (
     select * from flow.company_hierarchy_filter_down(:companyId::int))
-        select distinct s.id,
+        select distinct cs.id,
                         s.state,
+                        cs.state_id,
                         s.abbreviation,
                         coalesce(cs.map_latitude, s.map_latitude) as map_latitude,
                         coalesce(cs.map_longitude, s.map_longitude) as map_longitude,

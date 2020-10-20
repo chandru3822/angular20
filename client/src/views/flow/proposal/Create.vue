@@ -19,7 +19,7 @@
               <v-text-field v-model="prop.customerName" label="Customer Name"></v-text-field>
               <v-text-field v-model="prop.address" label="Address"></v-text-field>
               <v-text-field v-model="prop.city" label="City"></v-text-field>
-              <v-select v-model="prop.stateId"
+              <v-select v-model="prop.companyStateId"
                         class="mr-4"
                         :items="states"
                         no-data-text="No States Available"
