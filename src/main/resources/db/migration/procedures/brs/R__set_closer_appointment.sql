@@ -33,11 +33,12 @@ BEGIN
      --   select p_users[1]
      --   into v_user_id;
         with round_robin_users as (
-            select pczu.user_id, pcz.distribution_time_frame_days
+            select up.user_id, pcz.distribution_time_frame_days
             from flow.project p
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
+                     inner join flow.user_position up on up.id = pczu.user_position_id and up.primary_flag is true
             where p.id = p_project_id),
              lead_gen_num as (
                  select rru.user_id, count(1) as lead_gen_num
@@ -138,7 +139,7 @@ BEGIN
                                               else appointment_count_with_interval /
                                                    sum(appointment_count_with_interval) over () end as acutal_lead_allocation
                                    from (
-                                            select pczu.user_id,
+                                            select up2.user_id,
                                                    coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
                                                    coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
                                                    coalesce(sg.self_gen, 0)                          as self_gen,
@@ -149,14 +150,15 @@ BEGIN
                                                      inner join flow.postal_code pc on pc.postal_code = p.postal_code
                                                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
                                                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
-                                                     left join lead_gen_num lgn on lgn.user_id = pczu.user_id
-                                                     left join lead_gen_den lgd on lgd.user_id = pczu.user_id
-                                                     left join self_gen sg on sg.user_id = pczu.user_id
-                                                     left join appointment_count ac on ac.user_id = pczu.user_id
-                                                     left join total_avail ta on ta.user_id = pczu.user_id
-                                                     left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
+                                                     inner join flow.user_position up2 on up2.id = pczu.user_position_id and up2.primary_flag is true
+                                                     left join lead_gen_num lgn on lgn.user_id = up2.user_id
+                                                     left join lead_gen_den lgd on lgd.user_id = up2.user_id
+                                                     left join self_gen sg on sg.user_id = up2.user_id
+                                                     left join appointment_count ac on ac.user_id = up2.user_id
+                                                     left join total_avail ta on ta.user_id = up2.user_id
+                                                     left join appointment_count_with_interval acwi on acwi.user_id = up2.user_id
                                             where p.id = p_project_id
-                                            group by pczu.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
+                                            group by up2.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                                      ac.appointment_count,
                                                      pcz.distribution_time_frame_days, ta.avail,
                                                      acwi.appointment_count_with_interval) as foo

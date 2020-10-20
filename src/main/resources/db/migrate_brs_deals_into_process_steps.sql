@@ -68,7 +68,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 6 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')) else null end,
              --    when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id::integer,d2.added_on::date) else null end,
-            case when p.custom_field_group_assignment_id = 1426 then d2.remote_appointment else null end,
+            case when p.custom_field_group_assignment_id = 1441 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
@@ -109,7 +109,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 6 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')) else null end,
              --   when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id::integer,d2.added_on::date) else null end,
-            case when p.custom_field_group_assignment_id = 1426 then d2.remote_appointment else null end,
+            case when p.custom_field_group_assignment_id = 1441 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
           left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
@@ -353,7 +353,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
                                                                     where d.id = d2.id and up.position_id in (67,43,44,114,42) and introduction_call_completed_by is not null limit 1)
-                 when p.custom_field_group_assignment_id = 27 then d2.proposal_nbr::integer
+                 when p.custom_field_group_assignment_id = 1434 then d2.proposal_nbr::integer
 --                  when p.custom_field_group_assignment_id = 14 then (select id from flow.list_of_value where parent_id = 140
 --                                                                                                         and name = d2.introduction_call)
                  when p.custom_field_group_assignment_id = 61 then (select id from flow.list_of_value where parent_id = 81
@@ -370,8 +370,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.secondary_financier)
                  when p.custom_field_group_assignment_id = 58 then (select id from flow.list_of_value where parent_id = 423
                                                                                                         and name::integer = d2.loan_term)
-                 when p.custom_field_group_assignment_id = 1299 then (select id from flow.list_of_value where parent_id = 1072
-                                                                                                          and name = d2.inverter_rating)
                  when p.custom_field_group_assignment_id = 54 then d2.number_of_promotion_payments
                  when p.custom_field_group_assignment_id = 1183 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 1184 then d2.smart_thermostat_quantity
@@ -435,7 +433,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
                                                                     where d.id = d2.id and up.position_id in (67,43,44,114,42) and introduction_call_completed_by is not null limit 1)
-                 when p.custom_field_group_assignment_id = 27 then d2.proposal_nbr::integer
+                 when p.custom_field_group_assignment_id = 1434 then d2.proposal_nbr::integer
                 --                  when p.custom_field_group_assignment_id = 14 then (select id from flow.list_of_value where parent_id = 140
 --                                                                                                         and name = d2.introduction_call)
                  when p.custom_field_group_assignment_id = 61 then (select id from flow.list_of_value where parent_id = 81
@@ -452,8 +450,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.secondary_financier)
                  when p.custom_field_group_assignment_id = 58 then (select id from flow.list_of_value where parent_id = 423
                                                                                                         and name::integer = d2.loan_term)
-                 when p.custom_field_group_assignment_id = 1299 then (select id from flow.list_of_value where parent_id = 1072
-                                                                                                          and name = d2.inverter_rating)
                  when p.custom_field_group_assignment_id = 54 then d2.number_of_promotion_payments
                  when p.custom_field_group_assignment_id = 1183 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 1184 then d2.smart_thermostat_quantity
@@ -884,7 +880,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,timestamp_value,numeric_value,text_value,int_value,
+                                                         date_value,timestamp_value,numeric_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case --when p.custom_field_group_assignment_id = 710 then ((credit_decision_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -897,10 +893,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 715 then d2.total_promotion_amount
                  when p.custom_field_group_assignment_id = 711 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 713 then d2.total_cash_down_payment
-                 when p.custom_field_group_assignment_id = 978 then total_brs_covered_ancillary_cost::numeric
                 else null end,
-            case when p.custom_field_group_assignment_id =700 then d2.inverter_rating
-                 else null end,
             case when p.custom_field_group_assignment_id =706 then (select id from flow.list_of_value where parent_id = 292
                                                                                                         and name = d2.product)
                  when p.custom_field_group_assignment_id =699 then (select id from flow.list_of_value where parent_id = 143
@@ -956,7 +949,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,timestamp_value,numeric_value,text_value,int_value,
+                                                         date_value,timestamp_value,numeric_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case --when p.custom_field_group_assignment_id = 710 then ((credit_decision_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -969,9 +962,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 715 then d2.total_promotion_amount
                  when p.custom_field_group_assignment_id = 711 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 713 then d2.total_cash_down_payment
-                 when p.custom_field_group_assignment_id = 978 then total_brs_covered_ancillary_cost::numeric
-                 else null end,
-            case when p.custom_field_group_assignment_id =700 then d2.inverter_rating
                  else null end,
             case when p.custom_field_group_assignment_id =706 then (select id from flow.list_of_value where parent_id = 292
                                                                                                         and name = d2.product)
@@ -19741,26 +19731,99 @@ EXECUTE PROCEDURE flow.refresh_user_position_records();
 --        and u.id != 2355131);
 /**/
 
+
+alter table flow.note
+    add column if not exists migrated_process_step_id integer;
+alter table flow.note
+    add column if not exists migrated_process_step_work_queue_type_id integer;
+
+
+WITH note_insert as (
+    INSERT INTO flow."note" (
+                             migrated_process_step_work_queue_type_id,
+                             migrated_process_step_id,
+                             note,
+                             date_created,
+                             date_modified,
+                             created_by_id,
+                             modified_by_id)
+        (SELECT
+             pswqt.id,
+             pps.id,
+             notes,
+             created,
+             updated,
+             2350555,
+             2350555
+         FROM inner join blueraven.card_note cn on cn.card_id = c.id
+                    inner join flow.project_process_step pps on pps.project_id = cn.deal_id
+                    inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = c.migrate_process_step_id
+             and pps.process_step_id = c.migrate_process_step_id
+             and c.migrate_process_step_id is not null and cn.deal_id is not null)
+        returning *)
+INSERT INTO flow.project_process_step_process_step_work_queue_type_note (project_process_step_id,process_step_work_queue_type_id,note_id)
+    (select ni.migrated_process_step_id,
+            ni.migrated_process_step_work_queue_type_id,
+            ni.id
+     from   note_insert ni);
+
+
+WITH note_insert as (
+    INSERT INTO flow."note" (
+                             migrated_process_step_work_queue_type_id,
+                             migrated_process_step_id,
+                             note,
+                             date_created,
+                             date_modified,
+                             created_by_id,
+                             modified_by_id)
+        (SELECT
+             pswqt.id,
+             pps.id,
+             notes,
+             created,
+             updated,
+             2350555,
+             2350555
+         FROM blueraven.card c
+                  inner join blueraven.card_note cn on cn.card_id = c.id
+                  inner join flow.project_process_step pps on pps.project_id = cn.deal_id and array[pps.process_step_id] <@ migrate_process_step_ids
+                  inner join flow.process_step_work_queue_type pswqt on array[pswqt.process_step_id] <@ c.migrate_process_step_ids
+             and c.migrate_process_step_ids is not null and cn.deal_id is not null)
+        returning *)
+INSERT INTO flow.project_process_step_process_step_work_queue_type_note (project_process_step_id,process_step_work_queue_type_id,note_id)
+    (select
+         ni.migrated_process_step_id,
+         ni.migrated_process_step_work_queue_type_id,
+         ni.id
+     from   note_insert ni);
+
+alter table flow.note
+    drop column if exists migrated_process_step_id;
+
+alter table flow.note
+    drop column if exists migrated_process_step_work_queue_type_id;
+
 alter table flow.note
     add column if not exists migrated_deal_id integer;
 
 WITH note_insert as (
     INSERT INTO flow."note" (
-                             id,
                              migrated_deal_id,
                              note,
                              date_created,
                              date_modified,
                              created_by_id,
                              modified_by_id)
-        (SELECT id,
+        (SELECT
                 deal_id,
                 note,
                 created_date,
                 modified_date,
                 2350555,
                 2350555
-         FROM blueraven."deal_base_note")
+         FROM blueraven."deal_base_note" dbn
+                  inner join flow.project p on p.id = dbn.deal_id)
         returning *)
 INSERT INTO flow."project_note" (project_id,note_id)
     (select ni.migrated_deal_id,

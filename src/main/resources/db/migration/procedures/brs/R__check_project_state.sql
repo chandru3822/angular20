@@ -12,7 +12,8 @@ BEGIN
     return (select coalesce( (
                 select s.abbreviation = p_state_abbreviation
                 from flow.project p
-                inner join flow.state s on s.id = p.state_id
+                inner join flow.company_state cs on p.company_state_id = cs.id
+                inner join flow.state s on s.id = cs.state_id
                 and p.id = p_project_id
         ), false) as result);
 
