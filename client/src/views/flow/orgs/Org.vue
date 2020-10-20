@@ -114,6 +114,7 @@
         orgTypes: [],
         parents: [],
         dirtyCfvs: [],
+        companyTimezones: [],
         states: [],
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
         orgId: this.$route.params.id,
@@ -123,6 +124,7 @@
     },
     async created () {
       this.getCustomFieldGroups()
+      this.getCompanyTimezones()
       this.getOrgTypes()
       await this.getOrg()
       this.getOrgsByType(this.org.parentOrgTypeId)
@@ -162,6 +164,18 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCompanyTimezones() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequestWithParams(`/timezone`)
+          this.companyTimezones = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
