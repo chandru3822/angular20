@@ -31,7 +31,7 @@ BEGIN
 --             select distinct upv.user_id::integer as id,
 --                             concat(upv.first_name,' ',upv.last_name::text) as name
             select distinct upv.user_position_id::integer as id,
-                    case when  ARRAY_LENGTH( p_system_list_option_ids::INTEGER[], 1 ) > 1
+                    case when  ARRAY_LENGTH( array[ p_system_list_option_ids ]::INTEGER[], 1 ) > 1
                              then concat(upv.first_name,' ',upv.last_name::text,' - ',upv.org_name)
                          else concat(upv.first_name,' ',upv.last_name::text) end as name
             from flow.user_positions_vw upv
@@ -66,7 +66,7 @@ BEGIN
 --             select distinct upv.user_id::integer as id,
 --                             concat(upv.first_name,' ',upv.last_name::text) as name
             select distinct upv.user_position_id::integer as id,
-                case when ARRAY_LENGTH( p_system_list_option_ids::INTEGER[], 1 ) > 1
+                case when ARRAY_LENGTH( array[ p_system_list_option_ids ]::INTEGER[], 1 ) > 1
                          then concat(upv.first_name,' ',upv.last_name::text,' - ', upv.position)
                          else concat(upv.first_name,' ',upv.last_name::text) end as name
             from flow.user_positions_vw upv
