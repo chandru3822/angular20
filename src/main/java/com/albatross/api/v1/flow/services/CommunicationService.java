@@ -55,7 +55,7 @@ public class CommunicationService {
   }
 
   @Async
-  public void sendEmail(String subject, String emailAddress, User user, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail) {
+  public Future<Void> sendEmail(String subject, String emailAddress, User user, String templateContent, Map<String, javax.activation.DataSource> attachments, URL emailUnsubscribeURL, String sentByEmail) {
     //don't send email if user does not have access to the system
     if (user != null && user.getUserStatusType() != null && user.getHasAccess()){
 
@@ -71,6 +71,7 @@ public class CommunicationService {
         log.error("EMAIL_ERROR: Error sending email to address={}", emailAddress, ex);
       }
     }
+    return new AsyncResult<>(null);
   }
 
   @Async
