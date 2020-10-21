@@ -421,6 +421,7 @@
                   calendarApi.prev()
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customNext: {
@@ -431,6 +432,7 @@
                   calendarApi.next()
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customTimelineDay: {
@@ -444,6 +446,7 @@
                   this.calendar.options.slotWidth = 45
                   calendarApi.changeView('resourceTimelineDay')
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customTimelineWeek: {
@@ -458,6 +461,7 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.changeView('resourceTimelineWeek')
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
             }

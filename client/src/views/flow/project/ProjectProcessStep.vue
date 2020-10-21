@@ -411,7 +411,6 @@ export default {
       try {
         // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
         // save dirty custom field values
-        console.log('dirty', this.dirtyCfvs)
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
