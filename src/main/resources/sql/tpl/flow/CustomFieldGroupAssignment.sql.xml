@@ -105,7 +105,7 @@
         from flow.custom_field_group cfg
                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
                  inner join flow.object_type ot on ot.id = cot.object_type_id
-                 left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id
+                 left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id and cott.archived is not true
         where cot.id = :companyObjectTypeId
           and cfg.archived is not true
         order by cott.display_order, cfg.group_order, cfg.group_name
