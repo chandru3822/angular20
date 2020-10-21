@@ -240,7 +240,7 @@
           cfg.group_order as "groupOrder",
           cfg.event_type_id as "eventTypeId",
           pps.process_step_id,
-          ps.unique_behavior_type_id,
+          cfg.unique_behavior_type_id,
           coalesce((
                        SELECT array_to_json(array_agg(row_to_json(fields)))
                        FROM (

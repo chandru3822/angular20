@@ -170,6 +170,18 @@ public class PostalCodeService {
     return results;
   }
 
+  public Boolean userCanSchedule(String postalCode) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("postalCode", postalCode);
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+
+    List<User> results = sqlCache.query("postalCode.userCanSchedule", params, User.class);
+    return results.size() > 0;
+  }
+
   public List<User> getAllZoneUsers(List<Integer> zoneIds) throws SQLException {
     User user = securityService.getCurrentUser();
 

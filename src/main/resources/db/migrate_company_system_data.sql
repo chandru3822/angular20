@@ -117,8 +117,8 @@
 
 
 
-insert into flow.process_step(company_id, process_step_name, date_created, date_modified, created_by_id, modified_by_id, archived, unique_behavior_type_id, non_admin_add,migrated_original_id)
-    (select c.id, process_step_name, ps.date_created, ps.date_modified, ps.created_by_id, ps.modified_by_id, archived, unique_behavior_type_id, non_admin_add,ps.id
+insert into flow.process_step(company_id, process_step_name, date_created, date_modified, created_by_id, modified_by_id, archived, non_admin_add,migrated_original_id)
+    (select c.id, process_step_name, ps.date_created, ps.date_modified, ps.created_by_id, ps.modified_by_id, archived, non_admin_add,ps.id
      from flow.process_step ps
               cross join flow.company c
      where ps.archived is false and c.id not in (1,2,3,9)
@@ -198,12 +198,12 @@ from flow.custom_field_object_type cfot
 
 
 
-insert into flow.custom_field_group( group_name, company_object_type_id, group_order,
+insert into flow.custom_field_group( group_name, company_object_type_id, group_order, unique_behavior_type_id,
                                      archived, process_step_id, event_type_id, date_created,
                                      date_modified, created_by_id, modified_by_id,migrated_original_id,migrated_company_id)
     (select group_name,(select cot1.id from flow.company_object_type cot1
                                            inner join flow.object_type ot1 on ot1.id = cot1.object_type_id
-                        where ot1.object_type = ob.object_type and cot1.company_id = c.id) , group_order,
+                        where ot1.object_type = ob.object_type and cot1.company_id = c.id) , group_order, unique_behavior_type_id,
             cfg.archived, (select id from flow.process_step ps
                            where ps.migrated_original_id = cfg.process_step_id and
                                    ps.company_id = c.id ) ,

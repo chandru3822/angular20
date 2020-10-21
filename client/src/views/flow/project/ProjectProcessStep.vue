@@ -2,7 +2,7 @@
 <v-row>
 
 <!--  screen header -->
-  <v-col cols="12">
+  <v-col cols="12" class="py-0">
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
@@ -50,7 +50,7 @@
     </v-row>
   </v-col>
 
-  <v-col class="text-left px-5">
+  <v-col class="text-left px-5 py-0">
     <v-btn
       class="back-btn"
       text
@@ -58,17 +58,21 @@
       @click="$router.go(-1)">Back</v-btn>
   </v-col>
 
-  <v-col cols="12" class="text-left px-5">
-    <h2>{{ processStep.processStepName }}</h2>
-<!--            <v-checkbox-->
-<!--                v-model="processStep.main"-->
-<!--                :disabled="processStep.main"-->
-<!--                label="Primary"-->
-<!--                @change="updateMain(processStep.projectProcessStepId)"-->
-<!--            />-->
+  <v-col cols="12" class="py-0 process-step-header" >
+    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
+      <v-toolbar-title class="px-5 process-step-name">{{ processStep.processStepName }}</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <div>
+        <v-btn
+          v-if="anyGroupNonUnique()"
+          color="primaryCustom"
+          class="white--text"
+          @click="updateFieldGroups"
+        >Save Process Step Fields</v-btn>
+      </div>
+    </v-toolbar>
   </v-col>
-
-  <v-col cols="12" lg="6" class="text-left">
+  <v-col cols="12" lg="6" class="text-left pt-0">
 
 <!--    process field groups-->
     <v-col
@@ -89,34 +93,33 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn
-            v-if="index === 0 && (cfg.uniqueBehaviorTypeId !== 1 || (cfg.uniqueBehaviorTypeId === 1 && closerApptOverride))"
-            text
-            @click="updateFieldGroups"
-          >Save Process Fields</v-btn>
-          <v-spacer></v-spacer>
           <v-toolbar-items v-if="displayUniqueView(cfg)">
-            <v-btn text @click="closerApptOverride = !closerApptOverride"
-                   v-if="!closerAppointmentDetails.userId">
-              {{ closerApptOverride ? 'Back' : 'Override' }}
-            </v-btn>
-<!--            todo: change to this button after they finish testing. this will make the override button only available to closers -->
+            <v-btn
+              v-if="cfg.uniqueBehaviorTypeId === 1 && closerApptOverride && !anyGroupNonUnique()"
+              text
+              @click="updateFieldGroups"
+            >Save Process Fields</v-btn>
+            <v-spacer></v-spacer>
 <!--            <v-btn text @click="closerApptOverride = !closerApptOverride"-->
-<!--                   v-if="!closerAppointmentDetails.userId && $store.getters.userHasPosition(1)">-->
+<!--                   v-if="!closerAppointmentDetails.userId">-->
 <!--              {{ closerApptOverride ? 'Back' : 'Override' }}-->
 <!--            </v-btn>-->
+<!--            todo: change to this button after they finish testing. this will make the override button only available to closers -->
+            <v-btn text @click="closerApptOverride = !closerApptOverride"
+                   v-if="!closerAppointmentDetails.userId && $store.getters.userHasPosition(1)">
+              {{ closerApptOverride ? 'Back' : 'Override' }}
+            </v-btn>
           </v-toolbar-items>
         </v-toolbar-items>
       </v-toolbar>
       <v-card v-if="displayUniqueView(cfg) && !closerApptOverride && project.postalCode && project.companyStateId">
         <v-toolbar flat color="transparent">
           <v-toolbar-title>Lead Allocation</v-toolbar-title>
-          <v-spacer></v-spacer>
         </v-toolbar>
-        <v-card-text>
+        <v-card-text class="py-0" v-if="!userIsScheduler || (userIsScheduler && schedulerCanEdit)">
           <div v-if="!closerAppointmentDetails.userId">
             <CustomValueInput
-                :readonly="false"
+                :readonly="!userCanEdit"
                 :callback="populateDirtyCfvs"
                 :field="availabilityDateField"
             />
@@ -129,6 +132,8 @@
             <v-select v-if="timeSlots.length > 0"
               v-model="selectedTimeSlot"
               :items="timeSlots"
+              :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
               label="Select an Available Time Slot"
               return-object
             >
@@ -171,6 +176,9 @@
                           label="Resource"></v-text-field>
           </div>
         </v-card-text>
+        <v-card-text class="pt-0" v-else-if="!schedulerLoading && userIsScheduler && !schedulerCanEdit">
+          You do not have access to schedule projects in this Postal Code
+        </v-card-text>
       </v-card>
       <v-card class="pa-4" v-if="displayUniqueView(cfg) && !closerApptOverride && (!project.postalCode || !project.companyStateId)">
         A state and postal code are required on the project to continue with scheduling.  Please return to the project screen and update.
@@ -204,11 +212,11 @@
 
   </v-col>
 
-  <v-col cols="12" lg="6" class="text-left">
+  <v-col cols="12" lg="6" class="text-left pt-0">
     <v-toolbar color="transparent" class="elevation-0">
       <v-toolbar-title>Actions</v-toolbar-title>
     </v-toolbar>
-    <v-col v-for="action in processStep.actions" :key="action.id">
+    <v-col v-for="action in processStep.actions" :key="action.id" class="pt-0">
       <ActionButton
         v-if="action.actionTypeId === 2"
         :actionId="action.id"
@@ -265,6 +273,9 @@ export default {
       selectedTimeSlot: {},
       closerApptOverride: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+      userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
+      schedulerCanEdit: false,
+      schedulerLoading: true,
       closerApptSaved: false,
       searchedTimeSlots: false,
       timezone: this.$store.state.user.details.timezone.value,
@@ -293,6 +304,10 @@ export default {
     this.getAvailableOwners()
   },
   methods: {
+    anyGroupNonUnique () {
+      let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
+      return null != nonUniqueGroups
+    },
     async getAvailableStatuses () {
       try {
         const {data} = await getRequest(`/processStep/status`)
@@ -342,6 +357,7 @@ export default {
       try {
         const {data} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        await this.userCanScheduleLeadAllocation()
       } catch (e) {
         logError(e)
       }
@@ -357,6 +373,24 @@ export default {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
         // this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async userCanScheduleLeadAllocation () {
+      //we only have to check this if the user is a scheduler otherwise we just use the userCanEdit value
+      if(this.userIsScheduler) {
+        console.log('proj', this.project)
+        this.schedulerLoading = true
+        try {
+          const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, { params: {
+            postalCode: this.project.postalCode
+          }})
+          this.schedulerCanEdit = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+        } finally {
+          this.schedulerLoading = false
+        }
       }
     },
     async updateProjectFieldGroups() {
@@ -377,6 +411,7 @@ export default {
       try {
         // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
         // save dirty custom field values
+        console.log('dirty', this.dirtyCfvs)
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
@@ -391,9 +426,12 @@ export default {
       }
     },
     populateDirtyCfvs(field) {
-      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
-      if(!match) {
-        this.dirtyCfvs.push(field)
+      //some fields are for unique behavior and they dont need to be saved. this check should filter them out
+      if(field.customFieldId) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+        if (!match) {
+          this.dirtyCfvs.push(field)
+        }
       }
     },
     async updateOwner() {
@@ -479,17 +517,19 @@ export default {
       if(cfg.uniqueBehaviorTypeId !== 1 || !this.userCanEdit) {
         return false
       } else {
-        let hasTime, hasResource = false
-        //we should only hit this for a schedule closer appt group. and it should always have 3 fields (start, end, resource)
+        let alreadyHasTime, alreadyHasResource = false
+        //we should only hit this for a schedule closer appt group.
+        // and it should always have 3 fields (start, end, resource)
+        // if any of the 3 fields are already populated, don't allow them to edit/save
         cfg.customFieldValues.forEach(cfv => {
-          if(cfv.intValue) {
-            hasResource = true
+          if(cfv.intValue && cfv.id) {
+            alreadyHasResource = true
           }
-          if(cfv.timestampValue) {
-            hasTime = true
+          if(cfv.timestampValue && cfv.id) {
+            alreadyHasTime = true
           }
         })
-        return !hasTime && !hasResource
+        return !alreadyHasTime && !alreadyHasResource
       }
     }
   }
@@ -504,6 +544,11 @@ export default {
 <style lang="scss" scoped>
 .process-step-header {
   border-bottom: solid 1px #EAEAF4;
+}
+
+.process-step-name {
+  font-weight: bold;
+  font-size: 22px;
 }
 
 ::v-deep {

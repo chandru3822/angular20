@@ -76,6 +76,11 @@ public class PostalCodeController {
         return postalCodeService.getAvailableZoneUsers(id, true);
     }
 
+    @GetMapping(value = "/zone/userCanSchedule", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Boolean userCanSchedule(@RequestParam String postalCode) {
+        return postalCodeService.userCanSchedule(postalCode);
+    }
+
     @Data
     public static class ZoneUserRequest {
         private List<Integer> zoneIds;

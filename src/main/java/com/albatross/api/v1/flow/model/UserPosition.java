@@ -12,6 +12,6 @@ public class UserPosition {
     private Long id, userId, positionId, orgId, companyStateId, stateId;
     private String position, orgName;
     private String startDate, endDate;
-    private Boolean archived, primaryFlag;
+    private Boolean archived, primaryFlag, scheduler, schedulable;
     private List<UserOrgHierarchy> hierarchy;
 }
