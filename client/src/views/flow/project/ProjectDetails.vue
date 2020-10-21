@@ -6,44 +6,71 @@
       <SpinnerInline :size="20" color="primaryCustom"/>
     </v-col>
 
-    <v-col
-      v-else
-      :class="{ 'mt-4': index !== 0 }"
-      class="py-0"
-      v-for="(group, index) in customFieldGroups"
-      :key="index"
-    >
-      <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
+    <div v-else>
+      <v-toolbar v-if="tabs.length > 0" flat color="primaryCustom" class="elevation-0 white--text process-step-toolbar">
+        <v-toolbar-title>
+          <v-menu v-model="menuOpen"
+                  :close-on-content-click="true"
+                  min-width="290px">
+            <template v-slot:activator="{ on }">
+              <v-toolbar flat v-on="on" color="transparent" class="white--text">
+                <v-icon class="mr-4" color="white">mdi-dots-vertical</v-icon>
+                <v-toolbar-title>
+                  {{selectedTab.tabName}}
+                </v-toolbar-title>
+              </v-toolbar>
+            </template>
+            <v-list>
+              <v-list-item v-for="(tab, idx) in tabs" @click="selectedTab = tab">
+                <v-list-item-content>
+                  <v-list-item-title>{{tab.tabName}}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-        <v-btn
-          v-if="index === 0 && userCanEdit"
-          text
-          @click="updateFieldGroups">Save</v-btn>
+          <v-btn
+            v-if="userCanEdit"
+            text
+            class="white--text"
+            @click="updateFieldGroups">Save Fields</v-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <v-card class="pa-4 text-left square-card">
-        <CustomValueInput
-          v-for="(field, idx) in group.customFieldValues"
-          :key="idx"
-          :callback="populateDirtyCfvs"
-          :readonly="getReadOnly(field)"
-          :showFieldName="false"
-          :field="field"
-        />
-      </v-card>
-    </v-col>
+      <v-col
+        :class="{ 'mt-4': index !== 0 }"
+        class="py-0"
+        v-for="(group, index) in displayedGroups"
+        :key="index"
+      >
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
+          <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+          <v-btn
+            v-if="!tabsLoading && tabs.length === 0 && index === 0 && userCanEdit"
+            text
+            @click="updateFieldGroups">Save</v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-card class="pa-4 text-left square-card">
+          <CustomValueInput
+            v-for="(field, idx) in group.customFieldValues"
+            :key="idx"
+            :callback="populateDirtyCfvs"
+            :readonly="getReadOnly(field)"
+            :showFieldName="false"
+            :field="field"
+          />
+        </v-card>
+      </v-col>
+    </div>
 
-    <v-col>
-      <v-row>
-        <Attachments :projectId="projectId"/>
-      </v-row>
-    </v-col>
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left pt-0">
-    <v-col class="pt-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+    <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-row>
         <v-toolbar color="transparent" class="elevation-0">
           <v-toolbar-title>Active Process Steps</v-toolbar-title>
@@ -80,6 +107,7 @@
         </v-col>
       </v-row>
     </v-col>
+
 
     <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-col
@@ -132,7 +160,15 @@
         </v-row>
       </v-col>
     </v-expand-transition>
+
+    <v-col  class="pt-0 px-0">
+      <v-row class="pt-0">
+        <Attachments :projectId="projectId"/>
+      </v-row>
+    </v-col>
   </v-col>
+
+
 
   <Snackbar :snackbar="snackbar"/>
 </v-row>
@@ -167,6 +203,10 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
       customFieldGroups: [],
+      tabs: [],
+      tabsLoading: true,
+      selectedTab: {},
+      menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       isProcessStepsLoading: false,
       isFieldsLoading: true,
@@ -179,10 +219,14 @@ export default {
   },
   created () {
     this.getProject()
-    this.getFieldGroups()
     this.getProcessSteps()
+    this.getFieldGroups()
+    this.getProcessStepTabs()
   },
   computed: {
+    displayedGroups () {
+      return this.tabs?.length > 0 ? this.customFieldGroups.filter(cfg => cfg.companyObjectTypeTabId === this.selectedTab.id ) : this.customFieldGroups
+    },
     processStepsByName () {
       const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 
@@ -213,6 +257,18 @@ export default {
      } finally {
        this.isProcessStepsLoading = false
      }
+    },
+    getProcessStepTabs: async function () {
+      this.tabsLoading = true
+      try {
+        const {data} = await getRequest(`/objectTypeTab/project`)
+        this.tabs = data
+        this.selectedTab = data[0]
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.tabsLoading = false
+      }
     },
     getFieldGroups: async function () {
       try {
@@ -293,6 +349,9 @@ export default {
 </style>
 
 <style lang="scss">
+.process-step-toolbar .v-toolbar__content {
+  padding-left: 10px !important;
+}
 .manage-btn {
 
   margin-left: 12px;

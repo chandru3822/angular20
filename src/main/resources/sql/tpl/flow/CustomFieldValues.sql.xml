@@ -3,6 +3,7 @@
     select
       cfg.id,
       cfg.group_name as "groupName",
+      cfg.company_object_type_tab_id as "companyObjectTypeTabId",
       cfg.group_order as "groupOrder",
       coalesce((
         SELECT array_to_json(array_agg(row_to_json(fields)))

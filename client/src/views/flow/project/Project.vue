@@ -99,7 +99,7 @@
       <v-divider></v-divider>
       <v-row>
         <v-col cols="12">
-          <v-toolbar flat class="app-toolbar" color="transparent">
+          <v-toolbar flat dense class="app-toolbar" color="transparent">
             <v-spacer></v-spacer>
             <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
               <v-tabs background-color="transparent">
