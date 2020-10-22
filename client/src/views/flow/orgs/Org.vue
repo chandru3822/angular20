@@ -253,5 +253,8 @@
   .org-subtitle {
     font-size: 20px;
   }
+  .v-select ::v-deep .v-select__selection {
+    color: var(--v-primaryText-base);
+  }
 </style>
 

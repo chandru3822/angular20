@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
@@ -36,6 +37,8 @@ public class OrgService {
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
+
+  private final CustomFieldValueService customFieldValueService;
 
   public List<Org> getOrgsForCompany() {
     User user = securityService.getCurrentUser();
@@ -135,6 +138,10 @@ public class OrgService {
     } else {
       params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("org.insertOrg", params, "id").longValue();
+    }
+
+    if (null != org.getCustomFieldGroups()) {
+      customFieldValueService.updateCustomFieldValues(org.getCustomFieldGroups().get(0).getCustomFieldValues(), id, ObjectType.ORGANIZATION.toString());
     }
 
     return getOrg(id);
