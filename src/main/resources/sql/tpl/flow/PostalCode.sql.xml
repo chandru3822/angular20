@@ -183,7 +183,8 @@
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
         where pczu.archived is not true
           and pcz.company_id = :companyId
-          and (cast(:zoneIds as int[]) is null) OR ARRAY[ pczu.postal_code_zone_id ] <@ ARRAY[ :zoneIds ]::INTEGER[]
+          and upv.position_schedulable is true
+          and ((cast(:zoneIds as int[]) is null) OR ARRAY[ pczu.postal_code_zone_id ] <@ ARRAY[ :zoneIds ]::INTEGER[])
     )
     select *,
            coalesce((
