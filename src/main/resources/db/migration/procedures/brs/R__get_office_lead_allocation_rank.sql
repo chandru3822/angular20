@@ -113,16 +113,16 @@ BEGIN
                             when foo.lead_gen_den is null or foo.lead_gen_den = 0 then
                                 0
                             else
-                                foo.lead_gen_num / foo.lead_gen_den::numeric end      as lead_gen_fdc,
-                        foo.self_gen                                                  as self_gen,
-                        ((foo.appointment_count + foo.avail) / 3)                     as average_availability,
+                                round((foo.lead_gen_num / foo.lead_gen_den::numeric) * 100, 1) end      as lead_gen_fdc,
+                        foo.self_gen                                                                    as self_gen,
+                        ((foo.appointment_count + foo.avail) / 3)                                       as average_availability,
                         case
                             when foo.lead_gen_den is null or foo.lead_gen_den = 0 then
                                     foo.self_gen +
                                     ((foo.appointment_count + foo.avail) / 3)
                             else
-                                    foo.lead_gen_num / foo.lead_gen_den::numeric * 1000 + foo.self_gen +
-                                    ((foo.appointment_count + foo.avail) / 3) end     as score
+                                    round(foo.lead_gen_num / foo.lead_gen_den::numeric * 1000 + foo.self_gen +
+                                    ((foo.appointment_count + foo.avail) / 3), 1) end     as score
                  from (
                           select up.user_id,
                              concat(u.first_name, ' ', u.last_name)                as closer_name,
