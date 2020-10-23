@@ -58,7 +58,7 @@
   </birdeye.saveReview>
   <birdeye.saveLocation>
     <![CDATA[
-      INSERT INTO brs.birdeye_locations(business_id, alias)
+      INSERT INTO brs.birdeye_location(business_id, alias)
       VALUES (:businessId, :alias)
       ON CONFLICT (business_id)
       DO UPDATE SET alias = :alias
