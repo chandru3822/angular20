@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -22,7 +24,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class HubspotWebhookService {
-    private final CloseableHttpClient client = HttpClients.createDefault();
+    private final RequestConfig requestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
+    private final CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
 
     public void postLeadToRicochet(RicochetLead lead) throws Exception {
         try {
