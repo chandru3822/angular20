@@ -7162,7 +7162,7 @@ VALUES ('Lead');
 
 -- migrate common contact data
 INSERT INTO flow.contact (city,
-                           country_id,
+                           company_country_id,
                            email,
                            first_name,
                            id,
@@ -7184,7 +7184,7 @@ INSERT INTO flow.contact (city,
                            date_created,
                            company_id)
     (SELECT city,
-            (select id
+            (select cc.id
             from flow.company_country cc
             inner join flow.country cy on cy.id = cc.country_id
                 where cc.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
@@ -7213,7 +7213,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where (d.originator_id =1 or d.originator_id is null)));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7235,7 +7235,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
@@ -7271,7 +7271,7 @@ with contacts_no_deals as (
     where d.id is null
 )
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7293,7 +7293,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
@@ -7322,7 +7322,7 @@ INSERT INTO flow.contact (city,
               inner join contacts_no_deals cnd on cnd.customer_id = c.id);
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7344,7 +7344,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Energy Pal')
@@ -7373,7 +7373,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =16));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7395,7 +7395,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Supernova Energy')
@@ -7424,7 +7424,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =15));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7446,7 +7446,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Solar 101')
@@ -7475,7 +7475,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =9));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7497,7 +7497,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'TGE Solar')
@@ -7526,7 +7526,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =10));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7548,7 +7548,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Atlas Solar Advisors')
@@ -7577,7 +7577,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =11));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7599,7 +7599,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Direct Solar of America')
@@ -7628,7 +7628,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =12));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7650,7 +7650,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Revolution Solar')
@@ -7679,7 +7679,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =13));
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           id,
@@ -7701,7 +7701,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Smart Money Solar')
@@ -7730,7 +7730,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =14));
 
 INSERT INTO flow.contact (city,
-                           country_id,
+                           company_country_id,
                            email,
                            first_name,
                            id,
@@ -7752,7 +7752,7 @@ INSERT INTO flow.contact (city,
                            date_created,
                            company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Sun Run')
@@ -7781,7 +7781,7 @@ INSERT INTO flow.contact (city,
         where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =7));
 
 INSERT INTO flow.contact (city,
-                           country_id,
+                           company_country_id,
                            email,
                            first_name,
                            id,
@@ -7803,7 +7803,7 @@ INSERT INTO flow.contact (city,
                            date_created,
                            company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Solenrgi')
@@ -7833,7 +7833,7 @@ INSERT INTO flow.contact (city,
         and c.id != 109137 and  c.id != 135115);
 
 INSERT INTO flow.contact (city,
-                           country_id,
+                           company_country_id,
                            email,
                            first_name,
                            id,
@@ -7855,7 +7855,7 @@ INSERT INTO flow.contact (city,
                            date_created,
                            company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Salient Solar')
@@ -7884,7 +7884,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =6));
 
 INSERT INTO flow.contact (city,
-                           country_id,
+                           company_country_id,
                            email,
                            first_name,
                            id,
@@ -7906,7 +7906,7 @@ INSERT INTO flow.contact (city,
                            date_created,
                            company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'B+C Electric')
@@ -7935,7 +7935,7 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =4));
 
 INSERT INTO flow.contact (city,
-                           country_id,
+                           company_country_id,
                            email,
                            first_name,
                            id,
@@ -7957,7 +7957,7 @@ INSERT INTO flow.contact (city,
                            date_created,
                            company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Eco Lux Solar')
@@ -7994,7 +7994,7 @@ SELECT setval('flow.customer_id_seq',
 
 
 INSERT INTO flow.contact (city,
-                          country_id,
+                          company_country_id,
                           email,
                           first_name,
                           last_name,
@@ -8015,7 +8015,7 @@ INSERT INTO flow.contact (city,
                           date_created,
                           company_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Solenrgi')
@@ -8045,7 +8045,7 @@ INSERT INTO flow.contact (city,
 --TODO as Judson if we should mover over description from LEAD
 
 INSERT INTO flow.contact (city,
-                           country_id,
+                           company_country_id,
                            email,
                            first_name,
                            last_name,
@@ -8063,7 +8063,7 @@ INSERT INTO flow.contact (city,
                            owner_user_position_id,
                            migrate_lead_id)
     (SELECT city,
-            (select id
+            (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
@@ -9670,7 +9670,7 @@ update flow.project p set
       city = c.city,
       company_state_id = c.company_state_id,
       postal_code = c.postal_code,
-      company_contry_id = c.company_country_id
+      company_country_id = c.company_country_id
 from (
          select id, street1, street2, city, company_state_id, postal_code, company_country_id
          from flow.contact
@@ -9733,9 +9733,11 @@ update flow.org o set
         from flow.company_timezone ct
                  inner join flow.timezone t on t.id = ct.timezone_id
                  inner join flow.state s on s.time_zone_abbreviation = t.timezone
-                 inner join flow.company_state cs on cs.state_id = t.id
+                 inner join flow.company_state cs on cs.state_id = s.id
         where cs.id = o.company_state_id
-    );
+          and ct.company_id = o.company_id
+    )
+where o.company_state_id is not null;
 
 alter table flow.state drop column if exists time_zone_abbreviation;
 

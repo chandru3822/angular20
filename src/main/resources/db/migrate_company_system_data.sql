@@ -532,7 +532,6 @@ alter table flow.process_step_action_company_function drop column if exists  mig
 
 
 -- TODO
---1) change all the note migrations to not have Judson's name as the creator
 -- 3) zachs function
 -- 2) project query down line
 -- 3) contact query down line
