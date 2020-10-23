@@ -69,6 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/api/v1/flow/user/forgotPassword/**").permitAll()
         .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
         .antMatchers("/webhook/twilio/**").permitAll()
+        .antMatchers("/webhook/hubspot/**").permitAll()
         .anyRequest().authenticated()
         .and()
         .exceptionHandling()
