@@ -67,7 +67,6 @@ public class HubspotWebhookController {
         customer.setAddress(address);
         lead.setCustomer(customer);
 
-        // Turned off for now.
-//        hubspotWebhookService.postLeadToRicochet(lead);
+        hubspotWebhookService.postLeadToRicochet(lead);
     }
 }
