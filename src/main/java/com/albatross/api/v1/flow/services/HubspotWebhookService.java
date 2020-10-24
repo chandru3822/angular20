@@ -14,6 +14,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -27,9 +28,12 @@ public class HubspotWebhookService {
     private final RequestConfig requestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
     private final CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
 
+    @Value(value = "${ricochet.token}")
+    private String token;
+
     public void postLeadToRicochet(RicochetLead lead) throws Exception {
         try {
-            String RICOCHET_URL = "https://leads.ricochet.me/api/v1/lead/create/hubspot?token=***REMOVED***";
+            String RICOCHET_URL = "https://leads.ricochet.me/api/v1/lead/create/hubspot?token=" + token;
             HttpPost req = new HttpPost(RICOCHET_URL);
 
             JSONObject contact = new JSONObject();
