@@ -54,7 +54,10 @@ public class ProcessStepRequirementService {
       if(null != psr.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(psr.getCustomFieldSqlKey());
         if(null != sql) {
-          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          HashMap<String, Object> params2 = new HashMap<>();
+          params2.put("projectId", null);
+          params2.put("userId", user.getId());
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           psr.setAvailableListOfValues(listOfValues);
         }
       }
