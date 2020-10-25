@@ -12,7 +12,8 @@
                        ), -1)) as company_project_status_type_ids
         from  flow.work_queue_type wqt
                   inner join flow.company p on p.id = wqt.company_id or p.parent_company_id = wqt.company_id
-                  left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = wqt.id and pswqtpst.archived is not true
+                  left join flow.process_step_work_queue_type pswqt on pswqt.work_queue_type_id = wqt.id
+                  left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = pswqt.id and pswqtpst.archived is not true
                   left join flow.company_project_status_type cpst on cpst.id = pswqtpst.company_project_status_type_id
         group by wqt.id, company_id_test
     )
@@ -61,7 +62,8 @@
                          ), -1)) as company_project_status_type_ids
           from  flow.work_queue_type wqt
                     inner join flow.company p on p.id = wqt.company_id or p.parent_company_id = wqt.company_id
-                    left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = wqt.id and pswqtpst.archived is not true
+                    left join flow.process_step_work_queue_type pswqt on pswqt.work_queue_type_id = wqt.id
+                    left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = pswqt.id and pswqtpst.archived is not true
                     left join flow.company_project_status_type cpst on cpst.id = pswqtpst.company_project_status_type_id
           group by wqt.id, company_id_test
       )
@@ -187,7 +189,8 @@
                        ), -1)) as company_project_status_type_ids
         from  flow.work_queue_type wqt
                   inner join flow.company p on p.id = wqt.company_id or p.parent_company_id = wqt.company_id
-                  left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = wqt.id and pswqtpst.archived is not true
+                  left join flow.process_step_work_queue_type pswqt on pswqt.work_queue_type_id = wqt.id
+                  left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = pswqt.id and pswqtpst.archived is not true
                   left join flow.company_project_status_type cpst on cpst.id = pswqtpst.company_project_status_type_id
         group by wqt.id, company_id_test
     )

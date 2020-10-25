@@ -25,6 +25,8 @@
   <v-date-picker
     v-if="showDate"
     v-model="date"
+    :min="minDate"
+    :max="maxDate"
   >
     <v-spacer></v-spacer>
     <v-btn text color="primaryCustom" @click="cancel()">Cancel</v-btn>
@@ -58,6 +60,8 @@ export default {
     label: String,
     format: String,
     inputFormat: String,
+    minDate: String,
+    maxDate: String,
     hidePrependIcon: Boolean,
     customClass: String,
     showAppendIcon: Boolean,

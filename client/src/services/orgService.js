@@ -11,7 +11,7 @@ export async function getOrgTypes() {
 
 export async function getSchedulingOrgTypes() {
   try {
-    const {data, status} = await getRequest(`/orgType/scheduling`)
+    const {data, status} = await getRequest(`/orgType/schedulable`)
     return {data, status}
   } catch (e) {
     throw e

@@ -52,7 +52,13 @@
           :items="availableFields"
           item-text="name"
           return-object
-          @input="[resetNewField(), getOperators(newRequirement.selectedField.dataTypeId), getDataTypeRequirements(newRequirement.selectedField.dataTypeId), getProcessStepFieldData()]"
+          @input="[
+            resetNewField(),
+            getOperators(newRequirement.selectedField.dataTypeId),
+            getDataTypeRequirements(newRequirement.selectedField.dataTypeId),
+            getProcessStepFieldData(),
+            checkSmartlistSystemList()
+          ]"
       />
 
       <v-select
@@ -65,11 +71,10 @@
         @input="resetNewOperatorType"
       />
 
-<!--      @TODO humes: on change, reset any value that follows -->
       <v-switch
         v-if="newRequirement.operatorTypeId !== null"
         v-model="newRequirement.isCustomValue"
-        :disabled="newRequirement.selectedField.dataTypeId === 3"
+        :disabled="newRequirement.selectedField.dataTypeId === 3 || !!newRequirement.selectedField.smartlistSystemListId"
         class="mx-2"
         label="Custom"
         @change="resetInputValues(newRequirement)"
@@ -233,7 +238,7 @@
           <v-switch
               v-if="expandedRequirement.operatorTypeId !== null"
               v-model="expandedRequirement.isCustomValue"
-              :disabled="expandedRequirement.dataTypeId === 3"
+              :disabled="expandedRequirement.dataTypeId === 3 || !!expandedRequirement.smartlistSystemListId"
               class="mx-2"
               label="Custom"
               @change="resetInputValues(expandedRequirement)"
@@ -513,7 +518,8 @@ export default {
         ...this.newRequirement,
         operatorTypeId: null,
         dataTypeRequirementId: null,
-        secondaryRequirementValue: null
+        secondaryRequirementValue: null,
+        isCustomValue: null
       }
     },
     resetNewOperatorType () {
@@ -536,10 +542,15 @@ export default {
       requirement.requirementValue = null
       requirement.secondaryRequirementValue = null
     },
-    getListValueName(listItem) {
+    getListValueName (listItem) {
       let idToUse = listItem.customSqlOptionId ? listItem.customSqlOptionId : listItem.systemListOptionId ? listItem.systemListOptionId : listItem.listOfValueId
       let match = listItem.availableListOfValues.find(i => i.id === idToUse)
       return match ? match.name : 'unknown'
+    },
+    checkSmartlistSystemList () {
+      if (this.newRequirement?.selectedField?.smartlistSystemListId) {
+        this.newRequirement.isCustomValue = true
+      }
     }
   }
 }

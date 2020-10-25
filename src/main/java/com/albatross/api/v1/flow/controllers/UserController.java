@@ -66,9 +66,9 @@ public class UserController {
     }
 
     @GetMapping(value = "/getSchedulingUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<User> getSchedulingUsers(@RequestParam(required = false) Long stateId,
+    public List<User> getSchedulingUsers(@RequestParam(required = false) Long companyStateId,
                                          @RequestParam Boolean isSchedulingTool) {
-        return userService.getSchedulingUsers(stateId, isSchedulingTool);
+        return userService.getSchedulingUsers(companyStateId, isSchedulingTool);
     }
 
     @GetMapping(value = "/statuses", produces = MediaType.APPLICATION_JSON_VALUE)

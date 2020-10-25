@@ -64,7 +64,7 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 || cot.flowTypeId === 3 })" :key="o.id"
+            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 })" :key="o.id"
                          :to="{ path: `/settings/customFieldGroup/${o.id}`}"
                          @click="setTitle"
                          :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
@@ -194,6 +194,10 @@ export default {
         show: this.hasSettingsAccess
       }, {
         header: 'Objects',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/project/customFieldGroups',
+        title: 'Project',
         show: this.hasSettingsAccess
       }
     ]

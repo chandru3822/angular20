@@ -49,6 +49,7 @@
                     :items="orgTypes"
                     label="Organization Resource Types"
                     multiple
+                    type="search"
                     :loading="orgTypesLoading"
                     hide-details
                     return-object
@@ -146,6 +147,7 @@
                     :error="countSelected >= maxSelectionAllowed"
                     :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                     return-object
+                    type="search"
                     item-text="orgName"
                     item-value="id"
                     @input="[orgValuesChanged = true, limiter()]"
@@ -357,7 +359,6 @@
         maxSelectionAllowed: 10,
         countErrorMessage: 'Maximum Selection Reached',
         selectedStates: [],
-        previousStateCount: 0,
         masterOrgs: [],
         orgValuesChanged: false,
         orgs: [],
@@ -371,11 +372,12 @@
         orgTypes: [],
         orgTypeValuesChanged: false,
         selectedOrgTypes: [],
-        previousTypeCount: 0,
         orgTypesLoading: true,
         positions: [],
         positionValuesChanged: false,
         selectedPositions: [],
+        previousStateCount: 0,
+        previousTypeCount: 0,
         previousPositionCount: 0,
         positionsLoading: true,
         resources: [],
@@ -419,6 +421,7 @@
                   calendarApi.prev()
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customNext: {
@@ -429,6 +432,7 @@
                   calendarApi.next()
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customTimelineDay: {
@@ -442,6 +446,7 @@
                   this.calendar.options.slotWidth = 45
                   calendarApi.changeView('resourceTimelineDay')
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customTimelineWeek: {
@@ -456,6 +461,7 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.changeView('resourceTimelineWeek')
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
             }
@@ -553,7 +559,7 @@
       async getPositions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/position/scheduling`)
+          const {data} = await getRequest(`/position/schedulable`)
           this.positions = data
           this.positionsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -754,16 +760,22 @@
 
       },
       filterOrgsAndUsers() {
-        //only filter if something is selected
+        //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
         let stateFilterRequired = this.selectedStates?.length > 0
+        let stateReset = this.previousStateCount > 0 && this.selectedStates?.length === 0
+        this.previousStateCount = this.selectedStates?.length
         let orgTypeFilterRequired = this.selectedOrgTypes?.length > 0
+        let typeReset = this.previousTypeCount > 0 && this.selectedOrgTypes?.length === 0
+        this.previousTypeCount = this.selectedOrgTypes?.length
         let positionFilterRequired = this.selectedPositions?.length > 0
-        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired) {
+        let positionReset = this.previousPositionCount > 0 && this.selectedOrgTypes?.length === 0
+        this.previousPositionCount = this.selectedPositions?.length
+        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired || stateReset || typeReset || positionReset) {
           this.orgs = this.masterOrgs.filter(mo => {
             let stateMatch = true
             let orgTypeMatch = true
             if(stateFilterRequired) {
-              let match = this.selectedStates.find(ss => ss.id === mo.stateId)
+              let match = this.selectedStates.find(ss => ss.stateId === mo.stateId)
               stateMatch = match !== null && match !== undefined
             }
             if(orgTypeFilterRequired) {
@@ -773,7 +785,7 @@
             return stateMatch && orgTypeMatch
           })
           let selectedPositionIds = this.selectedPositions.map(p => p.id)
-          let selectedStateIds = this.selectedStates.map(s => s.id)
+          let selectedStateIds = this.selectedStates.map(s => s.stateId)
           this.users = this.masterUsers.filter(mo => {
             let stateMatch = true
             let positionMatch = true

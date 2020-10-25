@@ -47,6 +47,7 @@
         <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
                           :key="idx"
                           :readonly="getReadOnly(cf)"
+                          :callback="populateDirtyCfvs"
                           :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
@@ -77,6 +78,7 @@
         org: {},
         orgTypes: [],
         parents: [],
+        dirtyCfvs: [],
         customFieldGroups: [],
         parentId: this.$store.state.user.details.parentCompanyId,
         requiredRules: constants.BASIC_REQUIRED_RULE,
@@ -146,6 +148,12 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      populateDirtyCfvs (field) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+        if (!match) {
+          this.dirtyCfvs.push(field)
+        }
+      },
       getReadOnly: function (field) {
         return getCustomFieldReadOnly(this.$store, field)
       },
@@ -161,5 +169,8 @@
 </script>
 
 <style lang="scss" scoped>
+  .v-select ::v-deep .v-select__selection {
+    color: var(--v-primaryText-base);
+  }
 </style>
 

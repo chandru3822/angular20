@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION flow.search_contacts(p_searchterm character varying, 
                 company_id      integer,
                 contact_type_id integer,
                 contact_type    character varying,
-                state_id        integer,
+                company_state_id        integer,
                 state           character varying,
                 abbreviation    character varying,
                 date_created    timestamp,
@@ -53,7 +53,7 @@ BEGIN
                    limited_contacts.company_id,
                    limited_contacts.contact_type_id,
                    limited_contacts.contact_type,
-                   limited_contacts.state_id,
+                   limited_contacts.company_state_id,
                    limited_contacts.state,
                    limited_contacts.abbreviation,
                    limited_contacts.date_created,
@@ -69,7 +69,7 @@ BEGIN
                             c.company_id,
                             c.contact_type_id,
                             ct.contact_type,
-                            c.state_id,
+                            c.company_state_id,
                             s.state,
                             s.abbreviation,
                             c.date_created,
@@ -81,7 +81,8 @@ BEGIN
                                         ))::jsonb                  as owner
                      FROM flow.contact c
                               inner join flow.contact_type ct on ct.id = c.contact_type_id
-                              left join flow.state s on s.id = c.state_id
+                              left join flow.company_state cs on cs.id = c.company_state_id
+                              left join flow.state s on s.id = cs.state_id
                               left join flow.user_position up on up.id = c.owner_user_position_id
                               left join flow."user" u on u.id = up.user_id
                      WHERE c.company_id = ANY (v_company_ids)
@@ -138,7 +139,7 @@ BEGIN
                        c.company_id,
                        c.contact_type_id,
                        ct.contact_type,
-                       c.state_id,
+                       c.company_state_id,
                        s.state,
                        s.abbreviation,
                        c.date_created,
@@ -151,7 +152,8 @@ BEGIN
                 from ranked_contacts ranked
                          inner join flow.contact c on c.id = ranked.id
                          inner join flow.contact_type ct on ct.id = c.contact_type_id
-                         left join flow.state s on s.id = c.state_id
+                         left join flow.company_state cs on cs.id = c.company_state_id
+                         left join flow.state s on s.id = cs.state_id
                          left join flow.user_position up on up.id = c.owner_user_position_id
                          left join flow."user" u on u.id = up.user_id
                 where case when p_is_viewall is not true then u.id = p_userid else 1 = 1 end;

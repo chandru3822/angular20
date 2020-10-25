@@ -206,7 +206,7 @@
                                     label="New Custom Field"
                                     item-text="fieldName"
                                     return-object
-                                    autocomplete="off"
+                                    autocomplete="new-password"
                                     @input="assignCustomField(item)"
                     >
                       <template slot='item' slot-scope='{ item }'>
@@ -219,7 +219,7 @@
                                     label="Parent Object"
                                     item-text="name"
                                     return-object
-                                    autocomplete="off"
+                                    autocomplete="new-password"
                                     @input="loadFieldsByParent"
                     >
                       <template slot='item' slot-scope='{ item }'>
@@ -232,7 +232,7 @@
                                     label="Custom Field"
                                     item-text="fieldName"
                                     return-object
-                                    autocomplete="off"
+                                    autocomplete="new-password"
                                     @input="assignAncillaryCustomField(item)"
                     >
                       <template slot='item' slot-scope='{ item }'>

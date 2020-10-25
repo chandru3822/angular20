@@ -56,7 +56,7 @@
               </template>
             </v-select>
 
-            <v-select v-model="selectedProcessStepStatusTypes"
+            <v-select v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Status"
                       clearable
@@ -64,26 +64,10 @@
                       item-value="id"
                       :disabled="selectedEventTypes.length === 0"
                       return-object
-                      multiple
-            >
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
-                <div v-if="index === 0 && selectedProcessStepStatusTypes.length < 3">
-                  <v-chip small v-for="sp in selectedProcessStepStatusTypes">
-                    <span>{{ sp.processStepStatusType }}</span>
-                  </v-chip>
-                </div>
-                <span
-                    v-if="index === 1 && selectedProcessStepStatusTypes.length >= 3"
-                    class="primary--text caption"
-                >{{ selectedProcessStepStatusTypes.length }} selected</span>
-              </template>
-            </v-select>
+            />
             <v-btn color="primaryCustom" class="white--text"
                    :disabled="!selectedEventTypes || selectedEventTypes.length === 0
-                   || !state || !selectedProcessStepStatusTypes || selectedProcessStepStatusTypes.length === 0"
+                   || !state || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
                    @click="getProjects(true)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
@@ -94,7 +78,7 @@
                             prepend-icon="search"
                             text
                             label="Search for project..."
-                            autocomplete="off"
+                            autocomplete="new-password"
                             :loading="searchProjectsLoading"
                             item-value="id"
                             return-object
@@ -117,7 +101,7 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primaryCustom" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
+            <v-btn color="primaryCustom" class="white--text" :disabled="!searchProject || !searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -197,15 +181,25 @@
               :color="'primaryCustom'"
             ></v-progress-circular>
           </div>
+          <v-text-field
+            v-model="projectFilter"
+            class="square-card"
+            prepend-inner-icon="search"
+            label="Filter"
+            solo
+            hide-details
+          ></v-text-field>
+          <v-divider></v-divider>
           <v-data-table
               :headers="headers"
               :items="projects"
+              :search="projectFilter"
               :fixed-header="true"
-              :items-per-page="-1"
               :mobile-breakpoint="0"
+              :footer-props="footerProps"
+              :options.sync="options"
               v-model="selectedRows"
               item-key="projectProcessStepId"
-              hide-default-footer
               :show-select="true"
               :item-selected="(item, value) => addToMap(item, value)"
               :toggle-select-all="(value) => addToMap(value)"
@@ -247,6 +241,7 @@
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'Schedule',
@@ -282,7 +277,7 @@
         state: {},
         states: [],
         processStepStatusTypes: [],
-        selectedProcessStepStatusTypes: [],
+        selectedProcessStepStatusType: {},
         eventTypes: [],
         //used for multi select
         selectedEventTypes: [],
@@ -305,6 +300,14 @@
           {text: 'Resource', value: 'resourceName', show: true},
         ],
         projects: [],
+        projectFilter: '',
+        options: {
+          itemsPerPage: 100
+        },
+        footerProps: {
+          'items-per-page-options': [25, 50, 100],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
         // masterProjects: []
       }
     },
@@ -327,7 +330,7 @@
     created() {
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
-      this.selectedProcessStepStatusTypes = JSON.parse(localStorage.getItem('scheduleProcessStepStatusTypes')) || []
+      this.selectedProcessStepStatusType = JSON.parse(localStorage.getItem('scheduleProcessStepStatusType')) || {}
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
@@ -410,7 +413,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getStatusTypes()
-          this.processStepStatusTypes = data
+          //only show active and complete
+          this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -426,15 +430,15 @@
         }
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
-        localStorage.setItem('scheduleProcessStepStatusTypes', JSON.stringify(this.selectedProcessStepStatusTypes))
+        localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))
 
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
           try {
             let params = {
               eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
-              processStepStatusTypeIds: this.selectedProcessStepStatusTypes?.length > 0 ? this.selectedProcessStepStatusTypes.map(o => o.processStepStatusTypeId) : [],
-              stateId: this.state.id,
+              processStepStatusTypeId: this.selectedProcessStepStatusType.id,
+              companyStateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime
             }
@@ -444,10 +448,6 @@
               d.coordinates = [ d.longitude, d.latitude ]
             })
             this.projects = data
-            // this.masterProjects = cloneDeep(data)
-            // if(this.selectedProcessStepStatusTypes?.length > 0) {
-            //   this.filterProjects()
-            // }
             this.listLoading = false
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -456,28 +456,8 @@
           }
         } else {
           this.projects = []
-          // this.masterProjects = []
         }
       },
-      // filterProjects () {
-      //   let statusIds = this.selectedProcessStepStatusTypes.map(st => st.processStepStatusTypeId)
-      //   if(statusIds?.length === 0) {
-      //     this.projects = cloneDeep(this.masterProjects)
-      //   } else {
-      //     this.projects = this.masterProjects.filter(p => {
-      //       return statusIds.includes(p.processStepStatusTypeId)
-      //     })
-      //   }
-      // },
-      // toggleSelectAllSteps () {
-      //   this.$nextTick(() => {
-      //     if (this.selectAll) {
-      //       this.selectedEventTypes = []
-      //     } else {
-      //       this.selectedEventTypes = cloneDeep(this.eventTypes)
-      //     }
-      //   })
-      // },
       async searchForProjects(search) {
         try {
           let params = {
@@ -568,6 +548,7 @@
 
   .list-container {
     position: relative;
+    background-color: white;
   }
 
   #list-loader {

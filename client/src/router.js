@@ -435,6 +435,35 @@ export default new Router({
             }
           },
         }, {
+          path: 'project',
+          name: 'ProjectSettings',
+          meta: {title: 'Albatross - Settings'},
+          props: true,
+          component: () => {
+            if (store.getters.userHasFeature('SETTINGS')) {
+              return import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/Project.vue')
+            } else {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'customFieldGroups',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectCustomFieldGroups.vue'),
+            },
+            {
+              path: 'tabs',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectTabs.vue'),
+            },
+            {
+              path: 'attachments',
+              meta: {title: 'Albatross - Settings'},
+              component: () => import (/* webpackChunkName: "projectSettings" */ './views/flow/settings/project/ProjectAttachments.vue'),
+            }
+          ]
+        }, {
           path: 'functions',
           meta: { title: 'Albatross - Settings'},
           component: () => {

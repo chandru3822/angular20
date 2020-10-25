@@ -3,46 +3,7 @@
     <div class="mb-2">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
-          <v-select v-model="selectedStates"
-                    :items="states"
-                    label="States"
-                    multiple
-                    class="mr-2"
-                    hide-details
-                    return-object
-                    item-text="state"
-                    item-value="id"
-          >
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
-              <div v-if="index === 0 && selectedStates.length < 3">
-                <v-chip small close @click:close="selectedStates.splice(index, 1)"
-                        v-for="ss in selectedStates">
-                  <span>{{ ss.state }}</span>
-                </v-chip>
-              </div>
-              <span
-                v-if="index === 1 && selectedStates.length >= 3"
-                class="primary--text caption"
-              >{{ selectedStates.length }} selected</span>
-            </template>
-            <v-list-item
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllStates()">
-              <v-list-item-action>
-                <v-icon>{{ iconStates }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
-          </v-select>
-
+        <v-col cols="12" md="6">
           <v-autocomplete v-model="selectedPostalCodeZones"
                     :items="postalCodeZones"
                     label="Round Robin"
@@ -52,6 +13,7 @@
                     hide-details
                     return-object
                     item-text="zoneName"
+                    @blur="getPostalCodeZoneUsers(selectedPostalCodeZones)"
                     item-value="id"
           >
             <template
@@ -69,63 +31,52 @@
                   class="primary--text caption"
               >{{ selectedPostalCodeZones.length }} selected</span>
             </template>
+          </v-autocomplete>
+        </v-col>
+        <v-col>
+          <v-autocomplete v-model="selectedPostalCodeZoneUsers"
+                          :items="postalCodeZoneUsers"
+                          label="Closers"
+                          multiple
+                          class="mr-3"
+                          :loading="postalCodeZoneUsersLoading"
+                          hide-details
+                          return-object
+                          @input="postalCodeZoneUserValuesChanged = true"
+                          item-text="fullName"
+                          item-value="id"
+                          @blur="getEvents(false)"
+          >
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedPostalCodeZoneUsers.length < 3">
+                <v-chip small close @click:close="selectedPostalCodeZoneUsers.splice(idx, 1)"
+                        v-for="(sr, idx) in selectedPostalCodeZoneUsers">
+                  <span>{{ sr.fullName }}</span>
+                </v-chip>
+              </div>
+              <span
+                v-if="index === 1 && selectedPostalCodeZoneUsers.length >= 3"
+                class="primary--text caption"
+              >{{ selectedPostalCodeZoneUsers.length }} selected</span>
+            </template>
             <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllPostalCodeZones()">
+              slot="prepend-item"
+              ripple
+              @click="toggleSelectAllPostalCodeZoneUsers()">
               <v-list-item-action>
-                <v-icon>{{ iconPostalCodeZones }}</v-icon>
+                <v-icon>{{ iconPostalCodeZoneUsers }}</v-icon>
               </v-list-item-action>
               <v-list-item-title>Select All</v-list-item-title>
             </v-list-item>
             <v-divider
-                slot="prepend-item"
-                class="mt-2"
+              slot="prepend-item"
+              class="mt-2"
             ></v-divider>
           </v-autocomplete>
-
-        <v-autocomplete v-model="selectedPostalCodeZoneUsers"
-                        :items="postalCodeZoneUsers"
-                        label="Closers"
-                        multiple
-                        class="mr-3"
-                        :loading="postalCodeZoneUsersLoading"
-                        hide-details
-                        return-object
-                        @input="postalCodeZoneUserValuesChanged = true"
-                        item-text="fullName"
-                        item-value="id"
-                        @blur="getEvents(false)"
-        >
-          <template
-            slot="selection"
-            slot-scope="{ item, index }"
-          >
-            <div v-if="index === 0 && selectedPostalCodeZoneUsers.length < 3">
-              <v-chip small close @click:close="selectedPostalCodeZoneUsers.splice(idx, 1)"
-                      v-for="(sr, idx) in selectedPostalCodeZoneUsers">
-                <span>{{ sr.fullName }}</span>
-              </v-chip>
-            </div>
-            <span
-              v-if="index === 1 && selectedPostalCodeZoneUsers.length >= 3"
-              class="primary--text caption"
-            >{{ selectedPostalCodeZoneUsers.length }} selected</span>
-          </template>
-          <v-list-item
-            slot="prepend-item"
-            ripple
-            @click="toggleSelectAllPostalCodeZoneUsers()">
-            <v-list-item-action>
-              <v-icon>{{ iconPostalCodeZoneUsers }}</v-icon>
-            </v-list-item-action>
-            <v-list-item-title>Select All</v-list-item-title>
-          </v-list-item>
-          <v-divider
-            slot="prepend-item"
-            class="mt-2"
-          ></v-divider>
-        </v-autocomplete>
+        </v-col>
       </v-row>
     </div>
     <div class="calendar-resize-container">
@@ -193,44 +144,12 @@
       states: {type: Array}
     },
     computed: {
-      //states
-      selectAllStates () {
-        return this.states.length === this.selectedStates.length
-      },
-      selectSomeStates () {
-        return this.selectedStates.length > 0 && !this.selectAllStates
-      },
-      iconStates () {
-        if (this.states.length === this.selectedStates.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeStates) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      //postal code zones
-      selectAllPostalCodeZones () {
-        return this.postalCodeZones.length === this.selectedPostalCodeZones.length
-      },
-      selectSomePostalCodeZones () {
-        return this.selectedPostalCodeZones.length > 0 && !this.selectAllPostalCodeZones
-      },
-      iconPostalCodeZones () {
-        if (this.postalCodeZones.length === this.selectedPostalCodeZones.length) {
-          return 'check_box'
-        }
-        if (this.selectSomePostalCodeZones) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
       //postal code zone users
       selectAllPostalCodeZoneUsers () {
         return this.postalCodeZoneUsers.length === this.selectedPostalCodeZoneUsers.length
       },
       selectSomePostalCodeZoneUsers () {
-        return this.selectedPostalCodeZones.length > 0 && !this.selectAllPostalCodeZoneUsers
+        return this.selectedPostalCodeZoneUsers.length > 0 && !this.selectAllPostalCodeZoneUsers
       },
       iconPostalCodeZoneUsers () {
         if (this.postalCodeZoneUsers.length === this.selectedPostalCodeZoneUsers.length) {
@@ -282,7 +201,6 @@
             events: [] }
         ],
         events: [],
-        selectedStates: [],
         postalCodeZones: [],
         postalCodeZoneValuesChanged: false,
         selectedPostalCodeZones: [],
@@ -406,24 +324,6 @@
           }
         })
       },
-      toggleSelectAllStates () {
-        this.$nextTick(() => {
-          if (this.selectAllStates) {
-            this.selectedStates = []
-          } else {
-            this.selectedStates = cloneDeep(this.states)
-          }
-        })
-      },
-      toggleSelectAllPostalCodeZones () {
-        this.$nextTick(() => {
-          if (this.selectAllPostalCodeZones) {
-            this.selectedPostalCodeZones = []
-          } else {
-            this.selectedPostalCodeZones = cloneDeep(this.postalCodeZones)
-          }
-        })
-      },
       toggleSelectAllPostalCodeZoneUsers () {
         this.$nextTick(() => {
           if (this.selectAllPostalCodeZoneUsers) {
@@ -446,10 +346,14 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getPostalCodeZoneUsers () {
+      async getPostalCodeZoneUsers (zones) {
+        this.postalCodeZoneUsers = []
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zone/users`)
+          let params = {
+            zoneIds: zones?.length > 0 ? zones.map(z => z.id) : null
+          }
+          const {data} = await postRequest(`/postalCode/zone/users`, params)
           this.postalCodeZoneUsers = data
           this.postalCodeZoneUsersLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

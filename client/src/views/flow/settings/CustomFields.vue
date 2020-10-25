@@ -160,7 +160,7 @@
                         label="Data Type"
                         item-text="companyDataType"
                         item-value="id"
-                        autocomplete="off"
+                        autocomplete="new-password"
                         return-object
                     ></v-autocomplete>
                     <div class="text-left read-only-label" v-if="item.companyDataType && item.companyDataType.dataTypeId === 5">
@@ -208,7 +208,7 @@
                       <draggable v-model="item.listOfValues"
                                  group="listOfValues" @start="drag=true" @end="drag=false">
                         <v-list v-for="(ddo, index2) in filterBy(item.listOfValues, false, 'archived')"
-                                :class="{'shaded-row': index % 2}"
+                                :class="{'shaded-row': selectedIndex % 2}"
                                 :key="index2">
                           <v-list-item class="grab">
                             <v-list-item-content>

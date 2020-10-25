@@ -3,7 +3,6 @@
     select s.id,
            s.state,
            s.abbreviation,
-           s.time_zone_abbreviation,
            s.map_latitude,
            s.map_longitude,
            s.map_zoom
@@ -11,12 +10,11 @@
     order by s.state
   ]]></state.getAllStates>
 
-  <state.getAllStatesByCompany><![CDATA[
-    select s.id,
+  <state.getAllCompanyStates><![CDATA[
+    select cs.id,
        s.state,
+       cs.state_id,
        s.abbreviation,
-       cs.id as company_state_id,
-       s.time_zone_abbreviation,
        cs.active,
        cs.archived,
        cs.company_id,
@@ -27,15 +25,14 @@
         inner join flow.state s on s.id = cs.state_id
     where cs.company_id = :companyId
     order by s.state
-  ]]></state.getAllStatesByCompany>
+  ]]></state.getAllCompanyStates>
 
   <state.getActiveStatesByCompany><![CDATA[
-    select s.id,
+    select cs.id,
        s.state,
+       cs.state_id,
        s.abbreviation,
-       s.time_zone_abbreviation,
        cs.active,
-       cs.id as company_state_id,
        cs.archived,
        cs.company_id,
        case when cs.map_latitude is not null then cs.map_latitude else s.map_latitude end as map_latitude,
@@ -49,10 +46,10 @@
   ]]></state.getActiveStatesByCompany>
 
   <state.getOneCompanyState><![CDATA[
-    select s.id,
+    select cs.id,
        s.state,
+       cs.state_id,
        s.abbreviation,
-       s.time_zone_abbreviation,
        cs.active,
        cs.id as company_state_id,
        cs.archived,
@@ -66,19 +63,19 @@
   ]]></state.getOneCompanyState>
 
   <state.getActiveStatesByHierarchy><![CDATA[
-    with companies as (
-    select * from flow.company_hierarchy_filter_down(:companyId::int))
-        select distinct s.id,
-                        s.state,
-                        s.abbreviation,
-                        s.time_zone_abbreviation,
-                        coalesce(cs.map_latitude, s.map_latitude) as map_latitude,
-                        coalesce(cs.map_longitude, s.map_longitude) as map_longitude,
-                        coalesce(cs.map_zoom, s.map_zoom) as map_zoom
-        from companies c
-            inner join flow.company_state cs on cs.company_id = c.id and cs.active is true
-            inner join flow.state s on s.id = cs.state_id
-        ORDER BY state;
+    select distinct cs.id,
+                s.state,
+                cs.state_id,
+                s.abbreviation,
+                coalesce(cs.map_latitude, s.map_latitude) as map_latitude,
+                coalesce(cs.map_longitude, s.map_longitude) as map_longitude,
+                coalesce(cs.map_zoom, s.map_zoom) as map_zoom
+    from flow.company_state cs
+             inner join flow.state s on s.id = cs.state_id
+    where cs.active is true
+        and cs.archived is not true
+        and cs.company_id = :companyId
+    ORDER BY state;
   ]]></state.getActiveStatesByHierarchy>
 
   <state.insertCompanyState><![CDATA[

@@ -1,13 +1,13 @@
 <template>
-<v-col v-if="attachmentTypes.length > 0">
+<v-col v-if="attachmentTypes.length > 0" class="pt-0">
   <v-row>
-    <v-col class="text-left">
+    <v-col class="text-left py-0">
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>Documents</v-toolbar-title>
       </v-toolbar>
     </v-col>
   </v-row>
-  <v-sheet color="#fff" class="elevation-2 mx-4">
+  <v-sheet color="#fff" class="elevation-2 mx-4 square-card">
     <v-col cols="12">
       <v-row v-if="displayType === null" class="d-flex justify-start">
         <v-col
@@ -159,7 +159,7 @@ export default {
     },
     getTypeCount: function(typeId) {
       try {
-        return this.attachments.filter(a => a.attachmentTypeId === typeId).length
+        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived).length
       } catch {
         return 0
       }

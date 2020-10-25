@@ -64,7 +64,7 @@ public class ProposalService {
     params.put("customerName", prop.getCustomerName());
     params.put("address", prop.getAddress());
     params.put("city", prop.getCity());
-    params.put("stateId", prop.getStateId());
+    params.put("companyStateId", prop.getCompanyStateId());
     params.put("zipCode", prop.getZipCode());
     params.put("phone", prop.getPhone());
     params.put("email", prop.getEmail());

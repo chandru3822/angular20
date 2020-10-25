@@ -19,7 +19,7 @@
               <v-text-field v-model="prop.customerName" label="Customer Name"></v-text-field>
               <v-text-field v-model="prop.address" label="Address"></v-text-field>
               <v-text-field v-model="prop.city" label="City"></v-text-field>
-              <v-select v-model="prop.stateId"
+              <v-select v-model="prop.companyStateId"
                         class="mr-4"
                         :items="states"
                         no-data-text="No States Available"
@@ -202,7 +202,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
 
   export default {
     name: 'Create',
@@ -264,7 +264,7 @@
       }
     },
     async created () {
-      this.getStates()
+      this.getCompanyStates()
       this.getUtilityCompanies()
       this.getProducts()
       this.getPanels()
@@ -276,10 +276,10 @@
       }
     },
     methods: {
-      async getStates () {
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
+          const {data} = await getCompanyStates()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

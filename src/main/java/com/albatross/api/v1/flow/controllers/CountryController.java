@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Country;
+import com.albatross.api.v1.flow.model.CompanyCountry;
 import com.albatross.api.v1.flow.services.CountryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class CountryController {
 
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Country> getAllCountriesForCompany() {
+  public List<CompanyCountry> getAllCountriesForCompany() {
     return countryService.getAllCountriesForCompany();
   }
 }

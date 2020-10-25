@@ -112,10 +112,13 @@
              pcz.zone_name,
              pczu.archived
       FROM flow.postal_code_zone_user pczu
+        INNER JOIN flow.user_position up ON up.id = pczu.user_position_id
+        INNER JOIN flow.position p ON p.id = up.position_id
         INNER JOIN flow.postal_code_zone pcz ON pcz.id = pczu.postal_code_zone_id
-      WHERE pczu.user_id = :userId
+      WHERE up.user_id = :userId
         AND pczu.archived IS FALSE
         AND pcz.archived IS FALSE
+        AND p.schedulable IS TRUE
     ]]>
   </closerDashboard.getRoundRobins>
 

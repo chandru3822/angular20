@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,26 +28,15 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CustomFieldGroupService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  CustomFieldService customFieldService;
-
-  @Autowired
-  CustomFieldValueService customFieldValueService;
-
-  @Autowired
-  ProcessStepRequirementService processStepRequirementService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final CustomFieldService customFieldService;
+  private final CustomFieldValueService customFieldValueService;
+  private final ProcessStepRequirementService processStepRequirementService;
+  private final ObjectMapper om;
 
   public CustomField addFieldToGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
@@ -272,6 +262,7 @@ public class CustomFieldGroupService {
     params.put("id", customFieldGroup.getId());
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
+    params.put("companyObjectTypeTabId", customFieldGroup.getCompanyObjectTypeTabId());
     params.put("modifiedById", user.getId());
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroup", params);

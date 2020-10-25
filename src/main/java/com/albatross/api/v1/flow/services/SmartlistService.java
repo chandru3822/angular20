@@ -98,7 +98,7 @@ public class SmartlistService {
   }
 
     public SmartlistRequirement getRequirementById(Long requirementId) {
-        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
 
         if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
             final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
@@ -246,45 +246,48 @@ public class SmartlistService {
 
     StringBuilder withClause = new StringBuilder();
 
+    // Always joining the smartlist system lists for selecting. If we run into performance issues, only selectively add these
+    withClause.append(String.format(" \n\"smartlist.systemlist.1\" as (select * from flow.get_smartlist_system_list_options(%s::int, %s::int)), ", 1, companyId));
+    withClause.append(String.format(" \n\"smartlist.systemlist.2\" as (select * from flow.get_smartlist_system_list_options(%s::int, %s::int)), ", 2, companyId));
+
     StringBuilder query = new StringBuilder("\nselect");
 
     for (SmartlistFieldAssignment f : fields) {
 
-      final boolean isSystemProcessStepField = f.getCustomFieldGroupAssignmentId() == null && f.getProcessStepId() != null;
-      final boolean isCustomSqlField = f.getCustomFieldSqlKey() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1;
-
-      if (f.getCustomFieldGroupAssignmentId() != null && joinTables.stream().noneMatch(t -> t.getId().equals(f.getId()))) {
+      if (f.getSmartlistSystemListId() == null)  {
+        if (f.getCustomFieldGroupAssignmentId() != null && joinTables.stream().noneMatch(t -> t.getId().equals(f.getId()))) {
           // When the field is custom (has a cfgaId), reference table will be a UUID to keep track of that specific relationship/join
           f.setReferenceTable(UUID.randomUUID().toString());
 
           // If field is a system list, we need the int_value from the object value table to get the actual display value (name column) from the with clause
           if (f.getSystemListTypeId() != null) {
-              f.setValueReferenceTable(UUID.randomUUID().toString());
+            f.setValueReferenceTable(UUID.randomUUID().toString());
           }
           joinTables.add(f);
-      } else if (isSystemProcessStepField && smartlist.getObjectTypeId() != 4) {
+        } else if (f.getCustomFieldGroupAssignmentId() == null && f.getProcessStepId() != null && smartlist.getObjectTypeId() != 4) {
 
           // When the field is system but has a process step ID, reference table will be a UUID to keep track of that specific relationship/join to the same process step
           if (joinTables.stream().noneMatch(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))) {
-              if (f.getJoinTable() != null && f.getJoinColumn() != null) {
-                // System fields with joins will use this property (for now at least) instead of referenceTable
-                f.setValueReferenceTable(UUID.randomUUID().toString());
-              } else {
-                f.setReferenceTable(UUID.randomUUID().toString());
-              }
-              joinTables.add(f);
+            if (f.getJoinTable() != null && f.getJoinColumn() != null) {
+              // System fields with joins will use this property (for now at least) instead of referenceTable
+              f.setValueReferenceTable(UUID.randomUUID().toString());
+            } else {
+              f.setReferenceTable(UUID.randomUUID().toString());
+            }
+            joinTables.add(f);
           } else {
-              final String uuid = joinTables.stream()
-                  .filter(t -> t.getProcessStepId().equals(f.getProcessStepId()))
-                  .map(SmartlistFieldAssignment::getReferenceTable)
-                  .findFirst()
-                  .orElse(null);
+            final String uuid = joinTables.stream()
+              .filter(t -> t.getProcessStepId().equals(f.getProcessStepId()))
+              .map(SmartlistFieldAssignment::getReferenceTable)
+              .findFirst()
+              .orElse(null);
 
-              f.setReferenceTable(uuid);
+            f.setReferenceTable(uuid);
           }
-      } else if (f.getJoinTable() != null && f.getJoinColumn() != null) {
-        f.setValueReferenceTable(UUID.randomUUID().toString());
-        joinTables.add(f);
+        } else if (f.getJoinTable() != null && f.getJoinColumn() != null) {
+          f.setValueReferenceTable(UUID.randomUUID().toString());
+          joinTables.add(f);
+        }
       }
 
       String location;
@@ -295,8 +298,11 @@ public class SmartlistService {
         .findFirst()
         .orElse(null);
 
+      if (f.getSmartlistSystemListId() != null) {
+        location = String.format("(select name from \"smartlist.systemlist.%s\" where id = %s.%s)", f.getSmartlistSystemListId(), f.getJoinTable(), f.getJoinColumn());
+      }
       // If field is custom, else it's system
-      if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
+      else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
         final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
         location = String.format("\"%s\".%s", referenceTable, column);
       } else {
@@ -327,7 +333,7 @@ public class SmartlistService {
         query.append(String.format(" \n%s as \"%s\", ", location, f.getName()));
       }
 
-      if (isCustomSqlField) {
+      if (f.getCustomFieldSqlKey() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
           withClause.append(String.format(" \n\"%s\" as  (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey())));
       }
     }
@@ -831,6 +837,10 @@ public class SmartlistService {
         //@TODO: blow up?
         return null;
     }
+  }
+
+  public List<ListOfValue> getSmartlistSystemListById(Long smartlistSystemListId) {
+    return sqlCache.query("smartlist.getSmartlistSystemList", Map.of("smartlistSystemListId", smartlistSystemListId, "companyId", securityService.getCurrentUser().getCompanyId()), ListOfValue.class);
   }
 
   public static class SmartlistRequirementMapper<T> extends BeanPropertyRowMapper<T> {

@@ -16,6 +16,7 @@
   <customFieldGroup.updateCustomFieldGroup><![CDATA[
     update flow.custom_field_group
       set group_name = :groupName,
+          company_object_type_tab_id = :companyObjectTypeTabId,
           group_order = :groupOrder,
           modified_by_id = :modifiedById,
           date_modified = now()
@@ -42,6 +43,8 @@
                                         cfga.id as "customFieldGroupAssignmentId",
                                         cfga.field_order as "fieldOrder",
                                         cf.list_of_value_id as "listOfValueId",
+                                        cf.company_system_list_id as "companySystemListId",
+                                        cf.system_list_option_ids as "systemListOptionIds",
                                         cf.id as "customFieldId",
                                         cf.field_name as "fieldName",
                                         cf.custom_field_sql_key as "customFieldSqlKey",

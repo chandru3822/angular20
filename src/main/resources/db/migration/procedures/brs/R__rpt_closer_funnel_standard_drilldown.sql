@@ -30,7 +30,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
@@ -59,7 +60,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -90,7 +92,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -121,7 +124,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -154,7 +158,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -188,7 +193,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -220,7 +226,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -253,7 +260,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -285,7 +293,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -318,7 +327,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -350,7 +360,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -383,7 +394,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -415,7 +427,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -448,7 +461,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -480,7 +494,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -513,7 +528,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -545,7 +561,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -578,7 +595,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -610,7 +628,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -644,7 +663,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -676,7 +696,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -710,7 +731,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -745,7 +767,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -780,7 +803,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.installation_agreement_signed_date :: DATE between p_start_date and p_end_date and
@@ -811,7 +835,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.installation_agreement_signed_date :: DATE between p_start_date and p_end_date and
@@ -842,7 +867,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.site_survey_verified_date :: DATE between p_start_date and p_end_date and
@@ -872,7 +898,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.site_survey_verified_date :: DATE between p_start_date and p_end_date and
@@ -904,7 +931,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_sent_to_homeowner_date :: DATE between p_start_date and p_end_date and
@@ -935,7 +963,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_sent_to_homeowner_date :: DATE between p_start_date and p_end_date and
@@ -970,7 +999,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_signed_date :: DATE between p_start_date and p_end_date and
@@ -1004,7 +1034,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_signed_date :: DATE between p_start_date and p_end_date and
@@ -1039,7 +1070,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_signed_date is not null and
@@ -1095,7 +1127,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_signed_date is not null and
@@ -1148,7 +1181,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.substantial_completion_date :: DATE between p_start_date and p_end_date and
@@ -1181,7 +1215,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
@@ -1212,7 +1247,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1245,7 +1281,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1278,7 +1315,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1313,7 +1351,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1350,7 +1389,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1384,7 +1424,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1419,7 +1460,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1453,7 +1495,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1488,7 +1531,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1522,7 +1566,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1557,7 +1602,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1591,7 +1637,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1626,7 +1673,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1660,7 +1708,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1695,7 +1744,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1729,7 +1779,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1764,7 +1815,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1798,7 +1850,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1834,7 +1887,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1869,7 +1923,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1906,7 +1961,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1945,7 +2001,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                         left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
@@ -1983,7 +2040,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2017,7 +2075,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2051,7 +2110,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2085,7 +2145,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2120,7 +2181,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2154,7 +2216,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2192,7 +2255,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2229,7 +2293,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2267,7 +2332,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2326,7 +2392,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
@@ -2382,7 +2449,8 @@ BEGIN
                         inner join flow.contact c on c.id = p.contact_id
                         left outer join flow.user u on pd.closer_user_id = u.id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                        left outer join flow.state s on s.id = p.state_id
+                        left outer join flow.company_state cs on cs.id = p.company_state_id
+                        left outer join flow.state s on s.id = cs.state_id
                         left outer join flow.list_of_value lov on lov.id = pd.source
                         left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where Array[pd.closer_user_id] <@ p_user_ids and
