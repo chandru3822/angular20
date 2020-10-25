@@ -187,11 +187,11 @@
                               :readonly="!item.custom || !userCanEdit"
                               label="System List Type"
                               item-text="systemList"
-                              item-value="id"
+                              item-value="companySystemListId"
                               @change="getSystemListOptions(item.companySystemListId)"
                     ></v-select>
 
-                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
+                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
                               v-model="item.systemListOptionIds"
                               :items="systemListOptions"
                               multiple
@@ -381,7 +381,7 @@
         }
       },
       async getSystemListOptions(listId) {
-        let match = this.systemLists.find(sl => sl.id === listId)
+        let match = this.systemLists.find(sl => sl.companySystemListId === listId)
         if(listId && match?.hasSubOptions) {
 
           this.$store.commit(AppMutations.SET_LOADING, true)
