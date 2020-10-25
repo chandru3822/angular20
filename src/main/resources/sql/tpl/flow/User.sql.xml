@@ -209,8 +209,8 @@
                     else (upv.company_id = :companyId OR
                           (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true)) end
             and case
-                    when :stateId::integer is not null
-                        then upv.state_id = :stateId::integer and upv.position_schedulable is true
+                    when :companyStateId::integer is not null
+                        then upv.company_state_id = :companyStateId::integer and upv.position_schedulable is true
                     else upv.position_schedulable is true end
             and upv.user_archived is not true
             and upv.start_date <= now()
@@ -228,9 +228,12 @@
                                    SELECT up.id,
                                           up.user_id as "userId",
                                           p.position,
+                                          p.schedulable,
+                                          p.scheduler,
                                           up.position_id as "positionId",
                                           up.org_id as "orgId",
-                                          o.state_id as "stateId",
+                                          o.company_state_id as "companyStateId",
+                                          cs.state_id as "stateId",
                                           up.start_date as "startDate",
                                           up.end_date as "endDate",
                                           up.primary_flag as "primaryFlag",
@@ -245,6 +248,7 @@
                                    FROM flow.user_position up
                                             inner join flow.position p on p.id = up.position_id
                                             inner join flow.org o on o.id = up.org_id
+                                            left join flow.company_state cs on cs.id = o.company_state_id
                                    WHERE up.user_id = t1.id
                                      and up.archived is not true
                                      and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
@@ -290,6 +294,8 @@
                          SELECT up.id,
                                 up.user_id as "userId",
                                 p.position,
+                                p.schedulable,
+                                p.scheduler,
                                 up.position_id as "positionId",
                                 up.org_id as "orgId",
                                 o.org_name as "orgName",

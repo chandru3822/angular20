@@ -198,13 +198,13 @@ public class UserService {
     return result;
   }
 
-  public List<User> getSchedulingUsers(Long stateId, Boolean isSchedulingTool) {
+  public List<User> getSchedulingUsers(Long companyStateId, Boolean isSchedulingTool) {
     //i had to change this to return user positions so that when filtering by position in the scheduling tool we have the data
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("stateId", stateId);
+    params.put("companyStateId", companyStateId);
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);

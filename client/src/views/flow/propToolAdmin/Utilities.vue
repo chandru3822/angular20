@@ -238,7 +238,7 @@
     },
     created() {
       this.getUtilities()
-      this.getStates()
+      this.getCompanyStates()
     },
     methods: {
       async getUtilities() {
@@ -269,7 +269,7 @@
           return !u.archived
         })
       },
-      async getStates () {
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getCompanyStates()

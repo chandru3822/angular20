@@ -30,7 +30,7 @@
               <v-text-field text
                             label="City"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.stateId"
+              <v-select v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         item-text="state"
@@ -52,7 +52,7 @@
               <v-text-field text
                             label="Zip Code"
                             v-model="contact.postalCode"></v-text-field>
-              <v-select v-model="contact.countryId"
+              <v-select v-model="contact.companyCountryId"
                         :items="countries"
                         label="Country"
                         item-text="country"
@@ -80,7 +80,7 @@ import Snackbar from '@/components/Snackbar.vue'
 import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
-import {getStates} from '@/services/stateService'
+import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
@@ -112,7 +112,7 @@ export default {
     if(VUE_APP_ENV === 'local') {
       this.setFakeContact()
     }
-    this.getStates()
+    this.getCompanyStates()
     this.getCountries()
     this.getCustomFieldGroups()
   },
@@ -138,10 +138,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getStates () {
+    async getCompanyStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getStates()
+        const {data} = await getCompanyStates()
         this.states = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -196,8 +196,8 @@ export default {
         mobile: '1111111111',
         street1: '1234 Oak St.',
         city: 'Salt Lake City',
-        stateId: 44,
-        countryId: 1,
+        companyStateId: 2,
+        companyCountryId: 1,
         postalCode: '84115',
         email: 'randa@randa.com'
       }

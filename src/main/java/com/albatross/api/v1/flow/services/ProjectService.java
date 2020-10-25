@@ -113,9 +113,9 @@ public class ProjectService {
     params.put("id", project.getId());
     params.put("street1", project.getStreet1());
     params.put("city", project.getCity());
-    params.put("stateId", project.getStateId());
+    params.put("companyStateId", project.getCompanyStateId());
     params.put("postalCode", project.getPostalCode());
-    params.put("countryId", project.getCountryId());
+    params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.getId());
 
     sqlCache.update("project.update", params);
@@ -140,8 +140,8 @@ public class ProjectService {
     params.put("processId", processId );
     params.put("street1", contact.getStreet1() );
     params.put("city", contact.getCity() );
-    params.put("stateId", contact.getStateId() );
-    params.put("countryId", contact.getCountryId() );
+    params.put("companyStateId", contact.getCompanyStateId());
+    params.put("companyCountryId", contact.getCompanyCountryId() );
     params.put("postalCode", contact.getPostalCode() );
     params.put("companyProjectStatusTypeId", companyStatusTypeId );
 

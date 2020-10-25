@@ -3835,7 +3835,7 @@ INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, acces
 INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2353101, 18, 2, true);
 INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2353101, 18, 3, true);
 INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2353101, 18, 4, true);
-INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2353101, 18, 5, true);
+INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id,post_wipe_script.sql enabled) VALUES (2353101, 18, 5, true);
 INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2353101, 9, 1, true);
 INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2353101, 9, 6, true);
 INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2353101, 9, 2, true);

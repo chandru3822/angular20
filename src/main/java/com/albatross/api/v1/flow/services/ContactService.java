@@ -113,9 +113,9 @@ public class ContactService {
     params.put("lastName", contact.getLastName());
     params.put("street1", contact.getStreet1());
     params.put("city", contact.getCity());
-    params.put("stateId", contact.getStateId());
+    params.put("companyStateId", contact.getCompanyStateId());
     params.put("postalCode", contact.getPostalCode());
-    params.put("countryId", contact.getCountryId());
+    params.put("companyCountryId", contact.getCompanyCountryId());
     params.put("phone", contact.getPhone());
     params.put("email", contact.getEmail());
     params.put("mobile", contact.getMobile());

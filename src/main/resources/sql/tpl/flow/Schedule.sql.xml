@@ -35,6 +35,8 @@
      )
     select
         cfg.group_name,
+        cfg.event_type_id,
+        evt.event_type,
         pps.process_step_id,
         pps.project_id,
         pps.id as project_process_step_id,
@@ -51,7 +53,7 @@
         case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
         p.project_name,
         ps.process_step_name,
-        p.state_id,
+        p.company_state_id,
         s.state,
         pps.company_process_step_status_type_id,
         cpsst.process_step_status_type
@@ -64,8 +66,10 @@
         inner join flow.process_step ps on ps.id = pps.process_step_id
         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
         inner join flow.contact c on c.id = p.contact_id
-        inner join flow.state s on s.id = p.state_id
+        inner join flow.company_state cs on cs.id = p.company_state_id
+        inner join flow.state s on s.id = cs.state_id
         inner join flow.custom_field cf on cf.id = r.custom_field_id
+        left join flow.event_type evt on evt.id = cfg.event_type_id
         left join flow.user_position up on up.id = r.int_value
         left join flow.user u on u.id = up.user_id
         left join flow.org o on o.id = r.int_value
@@ -147,7 +151,7 @@
        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
        p.project_name,
        ps.process_step_name,
-       p.state_id,
+       p.company_state_id,
        s.state,
        pps.company_process_step_status_type_id,
        cpsst.process_step_status_type,
@@ -164,7 +168,8 @@
                inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                inner join flow.project p on p.id = pps.project_id
                inner join flow.contact c on c.id = p.contact_id
-               inner join flow.state s on s.id = c.state_id
+               inner join flow.company_state cs on cs.id = c.company_state_id
+                inner join flow.state s on s.id = cs.state_id
                left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
                left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
                left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3
@@ -183,12 +188,15 @@
                      then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
                  else ps.company_id = :companyId end
         and ps.archived is not true
-        and p.state_id = :stateId
+        and case when :isParent then
+           p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
+        else p.company_state_id = :companyStateId end
         and cfg.archived is not true
         and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::date else 1=1 end
         and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::date else 1=1 end
         and ARRAY[coalesce(cfg.event_type_id,-1)] <@ ARRAY[ :eventTypeIds ]::INTEGER[]
-        and ARRAY[coalesce(cpsst.process_step_status_type_id,-1)] <@ ARRAY[ :processStepStatusTypeIds ]::INTEGER[]
+        and cpsst.process_step_status_type_id = :processStepStatusTypeId
+      order by start, p.project_name
     ]]>
 </schedule.getProjects>
 
@@ -221,7 +229,7 @@
            case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
            p.project_name,
            ps.process_step_name,
-           p.state_id,
+           p.company_state_id,
            s.state,
            pps.company_process_step_status_type_id,
            cpsst.process_step_status_type,
@@ -238,7 +246,8 @@
              inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
              inner join flow.project p on p.id = pps.project_id
              inner join flow.contact c on c.id = p.contact_id
-             inner join flow.state s on s.id = p.state_id
+             inner join flow.company_state cs on cs.id = p.company_state_id
+             inner join flow.state s on s.id = cs.state_id
              left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
              left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
              left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3

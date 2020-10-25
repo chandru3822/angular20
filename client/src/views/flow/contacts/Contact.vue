@@ -68,7 +68,7 @@
                     label="Select Owner"
                     item-text="fullName"
                     return-object
-                    autocomplete="off"
+                    autocomplete="new-password"
                     @change="updateOwner"
           >
           </v-autocomplete>
@@ -122,7 +122,7 @@
                             @change="addressChanged = true"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.stateId"
+              <v-select v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         :readonly="!userCanEdit"
@@ -214,7 +214,7 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import {getStates} from '@/services/stateService'
+import {getCompanyStates} from '@/services/stateService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 export default {
@@ -247,7 +247,7 @@ export default {
   },
   created () {
     this.getContact()
-    this.getStates()
+    this.getCompanyStates()
     this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
@@ -370,10 +370,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getStates () {
+    async getCompanyStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getStates()
+        const {data} = await getCompanyStates()
         this.states = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

@@ -936,7 +936,7 @@
         { text: 'Closer', value: 'owner_name', show: true, width: 90 },
         { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
-        { text: 'Added On', value: 'date_created_formatted', show: true, width: 105 },
+        { text: 'Date Created', value: 'date_created_formatted', show: true, width: 115 },
         { text: 'State', value: 'state', show: true, width: 80 },
         { text: 'Office', value: 'office', show: true, width: 90 }
       ],

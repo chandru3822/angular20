@@ -2,7 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.Country;
+import com.albatross.api.v1.flow.model.CompanyCountry;
 import com.albatross.api.v1.flow.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +26,12 @@ public class CountryService {
   @Autowired
   SecurityService securityService;
 
-  public List<Country> getAllCountriesForCompany() {
+  public List<CompanyCountry> getAllCountriesForCompany() {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
-    List<Country> results = sqlCache.query("country.getAllForCompany", params, Country.class);
+    List<CompanyCountry> results = sqlCache.query("country.getAllForCompany", params, CompanyCountry.class);
     return results;
   }
 

@@ -204,22 +204,22 @@ values (1, '97006', 2350555);
 insert into flow.postal_code(postal_code_zone_id, postal_code, created_by_id)
 values (1, '84115', 2350555);
 -- mike falls
-insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
-values (1, 2353957, 2350555);
+insert into flow.postal_code_zone_user(postal_code_zone_id, user_position_id, created_by_id)
+values (1, 19619, 2350555);
 update flow.user_company
     set default_appointment_length = 90
 where user_id = 2353957
 and company_id = 3;
 -- gary brever
-insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
-values (1, 2402401, 2350555);
+insert into flow.postal_code_zone_user(postal_code_zone_id, user_position_id, created_by_id)
+values (1, 20736, 2350555);
 update flow.user_company
 set default_appointment_length = 90
 where user_id = 2402401
   and company_id = 3;
 -- tyler ballard
-insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
-values (1, 2390155, 2350555);
+insert into flow.postal_code_zone_user(postal_code_zone_id, user_position_id, created_by_id)
+values (1, 23445, 2350555);
 update flow.user_company
 set default_appointment_length = 90
 where user_id = 2390155

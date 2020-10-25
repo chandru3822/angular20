@@ -20,14 +20,14 @@
                         placeholder="Select a status..."
                         item-text="userStatusType"
                         item-value="id"
-                        autocomplete="off">
+                        autocomplete="new-password">
               </v-select>
               <v-text-field text
                             label="Phone"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"
                             placeholder=" "
-                            v-model="user.phone"></v-text-field>
+                            v-model="user.phoneNumber"></v-text-field>
               <v-text-field text
                             label="E-Mail"
                             :readonly="!userCanEdit"
@@ -278,6 +278,9 @@
   .change-owner-button {
     text-decoration: underline;
     text-transform: lowercase;
+  }
+  .v-select ::v-deep .v-select__selection {
+    color: var(--v-primaryText-base);
   }
 </style>
 

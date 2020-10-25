@@ -9,10 +9,11 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class Country {
+public class CompanyTimezone {
 
-  private Long id, companyId;
-  private String country, abbreviation;
+
+  private Long id, companyId, timezoneId;
+  private String timezone;
   private Boolean archived;
 
 }

@@ -7,7 +7,7 @@
               item-text="label"
               return-object
               @input="updateRecurrenceString"
-              autocomplete="off">
+              autocomplete="new-password">
     </v-select>
     <v-text-field text
                   type="number"
@@ -22,7 +22,7 @@
               return-object
               multiple
               @input="updateRecurrenceString"
-              autocomplete="off">
+              autocomplete="new-password">
     </v-select>
     <v-select v-model="rrule.daysOfWeek"
               :items="rruleConfig.daysOfWeek"
@@ -31,7 +31,7 @@
               return-object
               @input="updateRecurrenceString"
               multiple
-              autocomplete="off">
+              autocomplete="new-password">
     </v-select>
 
     <label>Ends</label>

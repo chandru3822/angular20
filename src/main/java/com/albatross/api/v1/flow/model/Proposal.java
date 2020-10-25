@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Proposal {
 
-  private Long id, projectId, stateId, utilityCompanyId, productId, panelId, inverterId, auroraDesignId, proposalNumber;
+  private Long id, projectId, companyStateId, utilityCompanyId, productId, panelId, inverterId, auroraDesignId, proposalNumber;
   private String customerName, address, city, zipCode, phone, email, promotion, notes, proposalCreatedBy, qaCompletedBy;
 
   private Boolean monitor, addersChanged;

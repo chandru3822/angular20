@@ -12,10 +12,20 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <div class="pa-4">
+          <v-text-field
+            v-model="search"
+            prepend-inner-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </div>
         <v-data-table
             :headers="headers"
             :items="filterPositions()"
             :fixed-header="true"
+            :search="search"
             disable-sort
             :items-per-page="-1"
             hide-default-footer
@@ -109,6 +119,7 @@
         positions: [],
         descending: true,
         dataLoading: true,
+        search: '',
         headers: [
           {text: 'Position Name', value: 'positionName', show: true},
           {text: 'Org Type', value: 'orgType', show: true},
@@ -157,7 +168,7 @@
 
 <style lang="scss">
   #positions-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 </style>

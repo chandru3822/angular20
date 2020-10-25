@@ -9,7 +9,6 @@
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"
-                  :states="states"
                   :callback="this.resourceMapCallback"
                   :date-callback="this.dateCallback"></Calendar>
       </v-col>
@@ -22,7 +21,6 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import Calendar from './components/Calendar'
 
@@ -51,7 +49,6 @@
         selectedRows: [],
         selectedResources: [],
         state: {},
-        states: [],
         caState: null,
         eventTypes: [],
         selectedEventTypes: [],
@@ -61,10 +58,7 @@
       }
     },
     watch: {},
-    created() {
-      this.caState = JSON.parse(localStorage.getItem('closerAvailabilityState')) || {}
-      this.getActiveStatesByHierarchy()
-    },
+    created() {},
     methods: {
       resourceMapCallback (newValue) {
         this.mapResources = newValue
@@ -72,18 +66,6 @@
       dateCallback (startTime, endTime) {
         this.startTime = startTime
         this.endTime = endTime
-      },
-      async getActiveStatesByHierarchy() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getActiveStatesByHierarchy()
-          this.states = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
       },
     }
   }

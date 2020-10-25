@@ -28,13 +28,13 @@
                     v-model="project.postalCode"
                     label="Postal Code"
                   ></v-text-field>
-                  <v-select v-model="project.stateId"
+                  <v-select v-model="project.companyStateId"
                             :items="states"
                             label="State"
                             item-text="state"
                             item-value="id"
                   ></v-select>
-                  <v-select v-model="project.countryId"
+                  <v-select v-model="project.companyCountryId"
                             :items="countries"
                             label="Country"
                             item-text="country"
@@ -72,7 +72,7 @@
 <!--                                label="Select Owner"-->
 <!--                                item-text="fullName"-->
 <!--                                return-object-->
-<!--                                autocomplete="off"-->
+<!--                                autocomplete="new-password"-->
 <!--                                @change="updateOwner"-->
 <!--                >-->
 <!--                </v-autocomplete>-->
@@ -99,7 +99,7 @@
       <v-divider></v-divider>
       <v-row>
         <v-col cols="12">
-          <v-toolbar flat class="app-toolbar" color="transparent">
+          <v-toolbar flat dense class="app-toolbar" color="transparent">
             <v-spacer></v-spacer>
             <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
               <v-tabs background-color="transparent">
@@ -143,7 +143,7 @@ import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
-import {getStates} from '@/services/stateService'
+import {getCompanyStates} from '@/services/stateService'
 
 export default {
   name: 'Project',
@@ -256,14 +256,14 @@ export default {
     getStatesAndCountries: function () {
       // only load countries and states if they try to edit the project address and they haven't already been loaded
       if(this.states.length === 0 || this.countries.length === 0) {
-        this.getStates()
+        this.getCompanyStates()
         this.getCountries()
       }
     },
-    getStates: async function () {
+    getCompanyStates: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getStates()
+        const {data} = await getCompanyStates()
         this.states = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

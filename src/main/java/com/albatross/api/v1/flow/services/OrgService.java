@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
@@ -37,6 +38,8 @@ public class OrgService {
 
   private final SecurityService securityService;
 
+  private final CustomFieldValueService customFieldValueService;
+
   public List<Org> getOrgsForCompany() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -45,14 +48,14 @@ public class OrgService {
     return results;
   }
 
-  public List<Org> getSchedulingOrgs(Long stateId, Boolean isSchedulingTool) {
+  public List<Org> getSchedulingOrgs(Long companyStateId, Boolean isSchedulingTool) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("stateId", stateId);
+    params.put("companyStateId", companyStateId);
     params.put("isParent", isParent);
     params.put("isSchedulingTool", isSchedulingTool);
 
@@ -122,8 +125,9 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
     params.put("schedulable", null != org.getSchedulable() ? org.getSchedulable() : false);
     params.put("availableToChildren", null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
-    params.put("stateId", org.getStateId());
+    params.put("companyStateId", org.getCompanyStateId());
     params.put("active", org.getActiveFlag());
+    params.put("companyTimezoneId", org.getCompanyTimezoneId());
 
     Long id;
     if(null != org.getId()) {
@@ -134,6 +138,10 @@ public class OrgService {
     } else {
       params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("org.insertOrg", params, "id").longValue();
+    }
+
+    if (null != org.getCustomFieldGroups()) {
+      customFieldValueService.updateCustomFieldValues(org.getCustomFieldGroups().get(0).getCustomFieldValues(), id, ObjectType.ORGANIZATION.toString());
     }
 
     return getOrg(id);

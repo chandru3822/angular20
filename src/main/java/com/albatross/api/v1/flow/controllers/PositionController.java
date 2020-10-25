@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Position;
 import com.albatross.api.v1.flow.services.PositionService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,19 +18,19 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/position")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PositionController {
 
-  @Autowired
-  private PositionService positionService;
+  private final PositionService positionService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Position> getPositionsForCompany() {
     return positionService.getPositionsForCompany();
   }
 
-  @GetMapping(value = "/scheduling", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Position> getSchedulingPositions() {
-    return positionService.getSchedulingPositions();
+  @GetMapping(value = "/schedulable", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Position> getSchedulablePositions() {
+    return positionService.getSchedulablePositions();
   }
 
   @GetMapping(value = "/withParent", produces = MediaType.APPLICATION_JSON_VALUE)

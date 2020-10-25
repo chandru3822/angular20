@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.OrgLevel;
 import com.albatross.api.v1.flow.model.OrgType;
 import com.albatross.api.v1.flow.services.OrgTypeService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,19 +19,19 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/orgType")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class OrgTypeController {
 
-  @Autowired
-  private OrgTypeService orgTypeService;
+  private final OrgTypeService orgTypeService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<OrgType> getOrgTypesForCompany() {
     return orgTypeService.getOrgTypesForCompany();
   }
 
-  @GetMapping(value = "/scheduling", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<OrgType> getSchedulingOrgTypesForCompany() {
-    return orgTypeService.getSchedulingOrgTypesForCompany();
+  @GetMapping(value = "/schedulable", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<OrgType> getSchedulableOrgTypesForCompany() {
+    return orgTypeService.getSchedulableOrgTypesForCompany();
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -16,7 +16,9 @@
                c.street1 as customer_street1,
                c.street2 as customer_street2,
                c.city    as customer_city,
-               (select state.abbreviation from flow.state where state.id = c.state_id) as customer_state,
+               (select s.abbreviation from flow.state s
+                  inner join flow.company_state cs on cs.state_id = s.id
+                  where s.id = cs.state_id) as customer_state,
                c.postal_code as customer_postal_code
         from brs.project_rebate_payment prp
         inner join flow.project p  on prp.project_id = p.id
