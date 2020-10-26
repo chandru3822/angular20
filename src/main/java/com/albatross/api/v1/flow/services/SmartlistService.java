@@ -442,7 +442,13 @@ public class SmartlistService {
 
           String referenceLocation = "";
 
-          if (r.getCustomFieldGroupAssignmentId() != null) {
+          if (r.getSmartlistSystemListId() != null) {
+            final String referenceTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
+            if (additionalJoins.indexOf(referenceTable) == -1 ) {
+              additionalJoins.append(String.format("\nleft join \"%s\" on \"%s\".id = %s.%s ", referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
+            }
+            referenceLocation = String.format("\"%s\".id", referenceTable);
+          } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
             String referenceColumn;
             if (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) {
