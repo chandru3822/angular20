@@ -180,12 +180,12 @@
         ra.recurring_end_time as "recurringEndTime"
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
-             LEFT JOIN flow.user u ON u.id = ra.org_id
+             LEFT JOIN flow.user u ON u.id = ra.user_id
     WHERE case when :orgId::int is not null then ra.org_id = :orgId
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
-      and (ra.start_time >= now() OR ra.end_time >= now())
+      and (ra.start_time >= (now() - '7 days'::interval) OR ra.end_time >= (now() - '7 days'::interval))
       order by ra.start_time, ra.end_time, ra.all_day
       limit :limit
       offset :offset
@@ -195,12 +195,12 @@
     SELECT count (*)
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
-             LEFT JOIN flow.user u ON u.id = ra.org_id
+             LEFT JOIN flow.user u ON u.id = ra.user_id
     WHERE case when :orgId::int is not null then ra.org_id = :orgId
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
-      and (ra.start_time >= now() OR ra.end_time >= now())
+      and (ra.start_time >= (now() - '7 days'::interval) OR ra.end_time >= (now() - '7 days'::interval))
   ]]></availability.getAppointmentsForResourceCount>
 
   <availability.deleteAppointment><![CDATA[

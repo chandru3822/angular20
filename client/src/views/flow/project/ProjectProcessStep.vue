@@ -117,7 +117,7 @@
           <v-toolbar-title>Lead Allocation</v-toolbar-title>
         </v-toolbar>
         <v-card-text class="py-0" v-if="!userIsScheduler || (userIsScheduler && schedulerCanEdit)">
-          <div v-if="!closerAppointmentDetails.userId">
+          <div v-if="!closerAppointmentDetails.userId" class="pb-3">
             <CustomValueInput
                 :readonly="!userCanEdit"
                 :callback="populateDirtyCfvs"
