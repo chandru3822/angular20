@@ -21,6 +21,10 @@ constants.EMAIL_RULES = [
 constants.BASIC_REQUIRED_RULE = [
   v => !!v || 'Field is required'
 ]
+constants.USERNAME_RULES = [
+  v => !!v || 'Username is required',
+  v => !!v && v.length >= 3 || 'Must be at least 3 characters'
+]
 constants.COLOR_LIST = [
   '#e7211b', '#39b942', '#181e1e', '#eceb50',
   '#3ca5d6', '#9e4ed6', '#919393', '#e68f35',
