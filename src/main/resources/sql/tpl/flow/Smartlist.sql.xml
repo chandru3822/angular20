@@ -49,7 +49,7 @@ where s.id = :smartlistId;
 
 <smartlist.add><![CDATA[
 insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps)
-values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps)
+values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, true)
 returning id;
 ]]></smartlist.add>
 
@@ -60,7 +60,6 @@ set
   company_object_type_id = :companyObjectTypeId,
   shared = :shared,
   view_object_type_id = :viewObjectTypeId,
-  main_process_steps = :mainProcessSteps,
   modified_by_id = :userId,
   date_modified = now()
 where

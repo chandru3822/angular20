@@ -748,6 +748,9 @@ public class SmartlistService {
 
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 5:
+                if (r.getSmartlistSystemListId() != null) {
+                  return r.getListOfValueId();
+                }
                 if (r.getIsCustomValue()) {
                     return requirementValue;
                 }

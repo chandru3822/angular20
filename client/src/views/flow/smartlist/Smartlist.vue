@@ -78,12 +78,13 @@
                   />
                 </v-col>
 
-                <v-col cols="6" md="3">
-                  <v-checkbox
-                    v-model="smartlist.mainProcessSteps"
-                    label="Primary Process Steps Only"
-                  />
-                </v-col>
+<!--                @TODO: humes, holding off until after MVP -->
+<!--                <v-col cols="6" md="3">-->
+<!--                  <v-checkbox-->
+<!--                    v-model="smartlist.mainProcessSteps"-->
+<!--                    label="Primary Process Steps Only"-->
+<!--                  />-->
+<!--                </v-col>-->
 
                 <v-col cols="6" md="3">
                   <v-checkbox
