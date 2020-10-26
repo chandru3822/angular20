@@ -52,10 +52,10 @@ public class BirdeyeReviewController {
         try {
             birdeye.sendInvitation(invitation);
             result.put("message", "Invite sent.");
-            return ResponseEntity.badRequest().body(result.toString());
+            return ResponseEntity.ok(result.toString());
         } catch (Exception e) {
             result.put("message", e.getMessage());
-            return ResponseEntity.ok(result.toString());
+            return ResponseEntity.badRequest().body(result.toString());
         }
     }
 }
