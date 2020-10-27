@@ -19597,68 +19597,7 @@ declare
     END
 $do$;
 
---this is a test
--- with update_main as(
---     select project_id,process_step_id
---     from flow.project_process_step
---     group by project_id, process_step_id
---     having count(1) >1),
---      max_day as (
---          select max(date_created)as date_created,pp2.project_id,pp2.process_step_id
---          from flow.project_process_step pp2
---                   inner join update_main um2 on um2.project_id = pp2.project_id and um2.process_step_id = pp2.process_step_id
---          group by pp2.project_id,pp2.process_step_id
---      ),
---      id_to_update as(
---          select id
---          from flow.project_process_step pp3
---                   inner join max_day md on md.date_created = pp3.date_created and md.project_id = pp3.project_id and md.process_step_id = pp3.process_step_id
---      )select * from id_to_update;
--- update flow.project_process_step pps
--- set main = true
--- from id_to_update um
--- where um.id = pps.id;
 
 
 
-/*This needs to come after the updates above*/
-DROP TRIGGER update_project_details_trg on flow.project_process_step_custom_field_value;
-CREATE TRIGGER update_project_details_trg
-    after INSERT or update
-    ON flow.project_process_step_custom_field_value
-    FOR EACH ROW
-EXECUTE PROCEDURE flow.update_project_details_process_steps();
 
-DROP TRIGGER user_view_trg on flow.user;
-CREATE TRIGGER user_view_trg
-    AFTER INSERT OR UPDATE OR DELETE
-    ON flow.user
-    FOR EACH ROW
-EXECUTE PROCEDURE flow.refresh_user_records();
-
-
-DROP TRIGGER org_view_trg on flow.org;
-CREATE TRIGGER org_view_trg
-    AFTER UPDATE
-    ON flow.org
-    FOR EACH ROW
-EXECUTE PROCEDURE flow.refresh_org_records();
-
-
-DROP TRIGGER user_position_trg on flow.user_position;
-CREATE TRIGGER user_position_trg
-    AFTER INSERT OR UPDATE OR DELETE
-    ON flow.user_position
-    FOR EACH ROW
-EXECUTE PROCEDURE flow.refresh_user_position_records();
-
-
-
--- with ids as(
---     select ppscfv.id
---     from flow.project_process_step_custom_field_value ppscfv
---              inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id and pps.main is true and pps.process_step_id = 98)
--- update flow.project_process_step_custom_field_value p
--- set id = i.id
--- from ids i
--- where i.id = p.id;
