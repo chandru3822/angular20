@@ -489,6 +489,23 @@ insert into brs.project_details_config(company_id, custom_field_group_assignment
   cross join flow.company c
  where c.id not in (1,2,3,9));
 
+insert into flow.process_step_process_owning_position( position_id, process_step_process_id,
+                                                       archived, date_created, date_modified,
+                                                       created_by_id, modified_by_id)
+    (select position_id,
+            (select psp1.id
+             from flow.process_step_process psp1
+                      inner join flow.process p1 on p1.id = psp1.process_id
+                      inner join flow.company_process cp1 on cp1.process_id = p1.id
+                      inner join flow.process_step ps1 on ps1.id = psp1.process_step_id
+             where cp1.company_id = c.id and ps1.migrated_original_id = psp.process_step_id),
+            pspop.archived, pspop.date_created, pspop.date_modified,
+            pspop.created_by_id, pspop.modified_by_id
+     from flow.process_step_process_owning_position pspop
+              inner join flow.process_step_process psp on psp.id = pspop.process_step_process_id
+              inner join flow.process_step ps on ps.id = psp.process_step_id and ps.archived is false
+              cross join flow.company c
+     where c.id not in (1,2,3,9));
 
 
 alter table flow.process_step add column migrated_original_id integer;
@@ -532,6 +549,7 @@ alter table flow.process_step_action_company_function drop column if exists  mig
 
 
 -- TODO
+--1 migrate org email and birdeye from orgs  custom_field_group_assignemnet_id 17257
 -- 3) zachs function
 -- 2) project query down line
 -- 3) contact query down line
