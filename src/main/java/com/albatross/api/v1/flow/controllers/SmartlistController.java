@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.SmartlistService;
@@ -22,8 +23,14 @@ public class SmartlistController {
 
   private final CustomFieldService customFieldService;
 
+  private final SecurityService securityService;
+
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlist>> getSmartlists() {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", "VIEW_ALL")) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
     return new ResponseEntity<>(smartlistService.getSmartlists(), HttpStatus.OK);
   }
 

@@ -44,11 +44,18 @@ public class SmartlistService {
   private final SystemListService systemListService;
 
   public List<Smartlist> getSmartlists() {
-    return sqlCache.query("smartlist.get", null, Smartlist.class);
+    User user = securityService.getCurrentUser();
+
+    if (securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", "ADMIN")) {
+      return sqlCache.query("smartlist.getAdmin", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    } else {
+      return sqlCache.query("smartlist.get", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    }
   }
 
   public Smartlist getSmartlist(Long id) {
-    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id), Smartlist.class).orElse(null);
+    User user = securityService.getCurrentUser();
+    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class).orElse(null);
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
