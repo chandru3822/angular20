@@ -5,11 +5,13 @@ select
   s.*,
   ot.object_type,
   cot.object_type_id,
-  ot1.object_type as view_object_type
+  ot1.object_type as view_object_type,
+  concat(u.first_name, ' ', u.last_name) as owner
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
 inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
+inner join flow.user u on u.id = s.owner_id
 ]]></smartlist.get>
 
 <smartlist.getById><![CDATA[
@@ -17,11 +19,13 @@ select
   s.*,
   ot.object_type,
   cot.object_type_id,
-  ot1.object_type as view_object_type
+  ot1.object_type as view_object_type,
+  concat(u.first_name, ' ', u.last_name) as owner
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
 inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
+inner join flow.user u on u.id = s.owner_id
 where s.id = :smartlistId;
 ]]></smartlist.getById>
 
