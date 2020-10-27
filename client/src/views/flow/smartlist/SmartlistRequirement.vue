@@ -158,7 +158,7 @@
       <tr>
         <td class="text-left" style="width: 65px">{{requirement.displayOrder}}</td>
         <td class="text-left">{{requirement.name}}</td>
-        <td class="text-left">{{(requirement.smartlistFieldId) ? requirement.objectType : 'Custom'}}</td>
+        <td class="text-left">{{requirement.objectType}}</td>
         <td class="text-left">{{requirement.processStepName}}</td>
         <td class="text-left">{{requirement.operatorType}}</td>
         <td class="text-left">
