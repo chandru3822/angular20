@@ -890,6 +890,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 10096 then d2.total_promotion_amount
                  when p.custom_field_group_assignment_id = 12358 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 12345 then d2.total_cash_down_payment
+                 else null end,
             case when p.custom_field_group_assignment_id =10122 then (select id from flow.list_of_value where parent_id = 1977
                                                                                                         and name = d2.product)
                  when p.custom_field_group_assignment_id =10811 then (select id from flow.list_of_value where parent_id = 1782
@@ -958,6 +959,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 10096 then d2.total_promotion_amount
                  when p.custom_field_group_assignment_id = 12358 then d2.loan_amount
                  when p.custom_field_group_assignment_id = 12345 then d2.total_cash_down_payment
+                 else null end,
             case when p.custom_field_group_assignment_id =10122 then (select id from flow.list_of_value where parent_id = 1977
                                                                                                         and name = d2.product)
                  when p.custom_field_group_assignment_id =10811 then (select id from flow.list_of_value where parent_id = 1782
