@@ -374,7 +374,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 1183 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 1184 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 172 then (select id from flow.list_of_value where parent_id = 292
-                                                                                                         and name = d2.product)
+                                                                                                         and name = d2.base_product)
                  when p.custom_field_group_assignment_id = 1150 then (select id from flow.list_of_value where parent_id = 124
                                                                                                           and name = d2.hoa_approval_needed)
                  else null end,
@@ -454,7 +454,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 1183 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 1184 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 172 then (select id from flow.list_of_value where parent_id = 292
-                                                                                                         and name = d2.product)
+                                                                                                         and name = d2.base_product)
                  when p.custom_field_group_assignment_id = 1150 then (select id from flow.list_of_value where parent_id = 124
                                                                                                           and name = d2.hoa_approval_needed)
                  else null end,
@@ -915,7 +915,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 713 then d2.total_cash_down_payment
                 else null end,
             case when p.custom_field_group_assignment_id =706 then (select id from flow.list_of_value where parent_id = 292
-                                                                                                        and name = d2.product)
+                                                                                                        and name = d2.base_product)
                  when p.custom_field_group_assignment_id =699 then (select id from flow.list_of_value where parent_id = 143
                                                                                                         and name = d2.inverter_brand)
                  when p.custom_field_group_assignment_id =716 then d2.number_of_promotion_payments
@@ -984,7 +984,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 713 then d2.total_cash_down_payment
                  else null end,
             case when p.custom_field_group_assignment_id =706 then (select id from flow.list_of_value where parent_id = 292
-                                                                                                        and name = d2.product)
+                                                                                                        and name = d2.base_product)
                  when p.custom_field_group_assignment_id =699 then (select id from flow.list_of_value where parent_id = 143
                                                                                                         and name = d2.inverter_brand)
                  when p.custom_field_group_assignment_id =716 then d2.number_of_promotion_payments

@@ -351,7 +351,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 10057 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 10070 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 10200 then (select id from flow.list_of_value where parent_id = 1977
-                                                                                                         and name = d2.product)
+                                                                                                         and name = d2.base_product)
                  when p.custom_field_group_assignment_id = 13138 then (select id from flow.list_of_value where parent_id = 1730
                                                                                                           and name = d2.hoa_approval_needed)
                  else null end,
@@ -431,7 +431,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 10057 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 10070 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 10200 then (select id from flow.list_of_value where parent_id = 1977
-                                                                                                         and name = d2.product)
+                                                                                                         and name = d2.base_product)
                  when p.custom_field_group_assignment_id = 13138 then (select id from flow.list_of_value where parent_id = 1730
                                                                                                           and name = d2.hoa_approval_needed)
                  else null end,
@@ -892,7 +892,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 12345 then d2.total_cash_down_payment
                  else null end,
             case when p.custom_field_group_assignment_id =10122 then (select id from flow.list_of_value where parent_id = 1977
-                                                                                                        and name = d2.product)
+                                                                                                        and name = d2.base_product)
                  when p.custom_field_group_assignment_id =10811 then (select id from flow.list_of_value where parent_id = 1782
                                                                                                         and name = d2.inverter_brand)
                  when p.custom_field_group_assignment_id =9823 then d2.number_of_promotion_payments
@@ -961,7 +961,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 12345 then d2.total_cash_down_payment
                  else null end,
             case when p.custom_field_group_assignment_id =10122 then (select id from flow.list_of_value where parent_id = 1977
-                                                                                                        and name = d2.product)
+                                                                                                        and name = d2.base_product)
                  when p.custom_field_group_assignment_id =10811 then (select id from flow.list_of_value where parent_id = 1782
                                                                                                         and name = d2.inverter_brand)
                  when p.custom_field_group_assignment_id =9823 then d2.number_of_promotion_payments
@@ -19598,5 +19598,12 @@ declare
             END LOOP;
     END
 $do$;
+
+
+CREATE TRIGGER update_project_details_trg
+    after INSERT or update
+    ON flow.project_process_step_custom_field_value
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.update_project_details_process_steps();
 
 

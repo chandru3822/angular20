@@ -351,7 +351,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 10058 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 10071 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 10201 then (select id from flow.list_of_value where parent_id = 292
-                                                                                                         and name = d2.product)
+                                                                                                         and name = d2.base_product)
                  when p.custom_field_group_assignment_id = 13139 then (select id from flow.list_of_value where parent_id = 124
                                                                                                           and name = d2.hoa_approval_needed)
                  else null end,
@@ -431,7 +431,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 10058 then d2.led_lightbulb_quantity
                  when p.custom_field_group_assignment_id = 10071 then d2.smart_thermostat_quantity
                  when p.custom_field_group_assignment_id = 10201 then (select id from flow.list_of_value where parent_id = 1978
-                                                                                                         and name = d2.product)
+                                                                                                         and name = d2.base_product)
                  when p.custom_field_group_assignment_id = 13139 then (select id from flow.list_of_value where parent_id = 1731
                                                                                                           and name = d2.hoa_approval_needed)
                  else null end,
@@ -892,7 +892,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 12346 then d2.total_cash_down_payment
                  else null end,
          case when p.custom_field_group_assignment_id =10123 then (select id from flow.list_of_value where parent_id = 1978
-         and name = d2.product)
+         and name = d2.base_product)
          when p.custom_field_group_assignment_id =10812 then (select id from flow.list_of_value where parent_id = 1783
          and name = d2.inverter_brand)
          when p.custom_field_group_assignment_id =9824 then d2.number_of_promotion_payments
@@ -946,7 +946,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,timestamp_value,numeric_value,text_value,int_value,
+                                                         date_value,timestamp_value,numeric_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case --when p.custom_field_group_assignment_id = 710 then ((credit_decision_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
@@ -961,7 +961,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 12346 then d2.total_cash_down_payment
                  else null end,
          case when p.custom_field_group_assignment_id =10123 then (select id from flow.list_of_value where parent_id = 1978
-                                                                                                     and name = d2.product)
+                                                                                                     and name = d2.base_product)
          when p.custom_field_group_assignment_id =10812 then (select id from flow.list_of_value where parent_id = 1783
                                                                                                      and name = d2.inverter_brand)
          when p.custom_field_group_assignment_id =9824 then d2.number_of_promotion_payments
@@ -7362,7 +7362,7 @@ with process_step1 as (
             select deal_id,dce.updated as complete_date
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
-            where  originator_id = 7 and work_type_id = 13 and deleted is false
+            where  originator_id = 7 and work_type_id = 13 and deleted is false and
                 d.non_standard_installation_work_date::date != dce.start_time::date
               and (NOT (non_standard_installation_work LIKE ANY (ARRAY ['%Structural Upgrade%', '%Trenching%',
                 '%Main Panel Upgrade - Outsource%','Main Panel Upgrade','%Main Panel Upgrade - In House%',
@@ -18821,7 +18821,7 @@ and plan_set_qa_date is not null
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         date_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -19600,6 +19600,12 @@ declare
 $do$;
 
 
+
+CREATE TRIGGER update_project_details_trg
+    after INSERT or update
+    ON flow.project_process_step_custom_field_value
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.update_project_details_process_steps();
 
 
 
