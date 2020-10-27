@@ -67,7 +67,7 @@ export default {
       smartlists: [],
       headers: [
         {text: 'Name', value: 'name'},
-        {text: 'Type', value: 'companyObjectTypeId'},
+        {text: 'Table Display View', value: 'companyObjectTypeId'},
         {text: 'Owner', value: 'ownerId'},
         {text: 'Public', value: 'shared'}
       ]
