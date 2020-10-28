@@ -5432,16 +5432,18 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
         (SELECT project.id,
                 426,
-                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
-                                                                        and company_id = (select id from flow.company where company_name = 'Sun Run')) AS process_step_status_id,
-                2350555 as created_by_id,
-now(),
-                greatest(verified_inspection_approval_received_by_utility_date,ahj_inspection_approval_submitted_date)
+                (SELECT id
+                 FROM flow.company_process_step_status_type
+                 WHERE process_step_status_type = 'Complete'
+                   and company_id = (select id from flow.company where company_name = 'Sun Run')) AS process_step_status_id,
+                2350555                                                                           as created_by_id,
+                now(),
+                greatest(verified_inspection_approval_received_by_utility_date, ahj_inspection_approval_submitted_date)
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
-             verified_inspection_approval_received_by_utility_date is not null or ahj_inspection_approval_submitted_date is not null
+        (verified_inspection_approval_received_by_utility_date is not null or ahj_inspection_approval_submitted_date is not null)
            and originator_id = 7)
         returning *),
      p as (
@@ -7757,7 +7759,7 @@ now(),
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
-             energized_date is not null or energization_visit_requested_date is not null
+             (energized_date is not null or energization_visit_requested_date is not null)
            and originator_id = 7)
         returning *),
      p as (
@@ -18174,7 +18176,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where additional_ahj_inspection_fail_reason is not null OR additional_ahj_inspection_fail_feedback is not null
+         where (additional_ahj_inspection_fail_reason is not null OR additional_ahj_inspection_fail_feedback is not null)
            and originator_id = 7)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id

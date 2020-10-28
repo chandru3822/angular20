@@ -5441,7 +5441,7 @@ now(),
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
-             verified_inspection_approval_received_by_utility_date is not null or ahj_inspection_approval_submitted_date is not null
+             (verified_inspection_approval_received_by_utility_date is not null or ahj_inspection_approval_submitted_date is not null)
            and originator_id = 2)
         returning *),
      p as (
@@ -7757,7 +7757,7 @@ now(),
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
-             energized_date is not null or energization_visit_requested_date is not null
+             (energized_date is not null or energization_visit_requested_date is not null)
            and originator_id = 2)
         returning *),
      p as (
@@ -18174,7 +18174,7 @@ with process_step1 as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where additional_ahj_inspection_fail_reason is not null OR additional_ahj_inspection_fail_feedback is not null
+         where (additional_ahj_inspection_fail_reason is not null OR additional_ahj_inspection_fail_feedback is not null)
            and originator_id = 2)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
