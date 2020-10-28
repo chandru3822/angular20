@@ -75,15 +75,14 @@ jobs:
                     cluster: br-stage-cluster
                     wait-for-service-stability: true
 
-    frontend-deploy:
-        name: run deploy via Netlify
-        needs: build
-        runs-on: ubuntu-18.04
-        steps:
-        - uses: actions/checkout@v2
+    frontend-build:
+      needs: build
+      runs-on: ubuntu-18.04
+      steps:
+      - uses: actions/checkout@v2
 
-        # Deploy the site with netlify-cli
-        - name: Deploy Site
+    # Deploy the site with netlify-cli
+      - name: Deploy Site
         env:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
