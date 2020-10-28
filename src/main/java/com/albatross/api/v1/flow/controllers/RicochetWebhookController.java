@@ -26,10 +26,10 @@ public class RicochetWebhookController {
                 "lastName: {}, " +
                 "mobile: {}, " +
                 "email: {}, " +
-                "street1: {}" +
-                "city: {}" +
-                "zip: {}" +
-                "state: {}" +
+                "street1: {}, " +
+                "city: {}, " +
+                "zip: {}, " +
+                "state: {}, " +
                 "lead_source: {}, " +
                 "lead_source_detail: {}, " +
                 "hubspotId: {}, ",
