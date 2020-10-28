@@ -46,6 +46,9 @@
           <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
+        <v-btn text x-small v-if="userCanEdit && processStep.owner && processStep.owner.userId" class="change-owner-button" @click="removeOwner">
+          remove
+        </v-btn>
       </v-col>
     </v-row>
   </v-col>
@@ -431,6 +434,19 @@ export default {
         if (!match) {
           this.dirtyCfvs.push(field)
         }
+      }
+    },
+    async removeOwner() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.processStep.owner = {}
+        await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+        this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateOwner() {

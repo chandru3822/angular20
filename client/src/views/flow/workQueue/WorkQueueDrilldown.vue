@@ -48,6 +48,7 @@
                   <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
                     {{item.notes[0].note}}
                   </pre>
+                  <v-spacer></v-spacer>
                   <v-btn small fab text @click="item.showNotesModal = true">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>

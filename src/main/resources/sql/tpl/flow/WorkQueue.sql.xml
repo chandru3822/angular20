@@ -172,8 +172,9 @@
 
         and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
         and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
+      order by pps.date_created
       limit :limit
-    offset :offset
+      offset :offset
   ]]></workQueue.getProcessStepsByTypeId>
 
   <workQueue.getProcessStepsByTypeIdCount><![CDATA[
