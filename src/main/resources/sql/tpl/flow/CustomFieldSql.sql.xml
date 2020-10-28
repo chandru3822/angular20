@@ -23,4 +23,12 @@
     order by plh.proposal_nbr
   ]]></customFieldSql.brs.proposalLogNumbers>
 
+  <customFieldSql.brs.designLogNumbers><![CDATA[
+    select dlh.id,
+           dlh.reference_nbr as name
+    from brs.design_log_history dlh
+    where dlh.project_id = :projectId
+    order by dlh.design_log_id
+  ]]></customFieldSql.brs.designLogNumbers>
+
 </sql>
