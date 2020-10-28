@@ -46,16 +46,17 @@ public class SmartlistService {
   public List<Smartlist> getSmartlists() {
     User user = securityService.getCurrentUser();
 
-    if (securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", "ADMIN")) {
-      return sqlCache.query("smartlist.getAdmin", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    if (securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN", "VIEW_ALL"))) {
+      return sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
     } else {
-      return sqlCache.query("smartlist.get", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+      return sqlCache.query("smartlist.getOwnAndShared", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
     }
   }
 
   public Smartlist getSmartlist(Long id) {
     User user = securityService.getCurrentUser();
-    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class).orElse(null);
+    final boolean isSmartlistAdmin = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
+    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId(), "isSmartlistAdmin", isSmartlistAdmin), Smartlist.class).orElse(null);
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {

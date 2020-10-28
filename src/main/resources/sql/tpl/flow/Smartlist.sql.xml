@@ -1,6 +1,6 @@
 <sql>
 
-<smartlist.get><![CDATA[
+<smartlist.getOwnAndShared><![CDATA[
 select
   s.*,
   ot.object_type,
@@ -15,9 +15,9 @@ inner join flow.user u on u.id = s.owner_id
 where cot.company_id = :companyId and
       (s.owner_id = :userId or s.shared is true) and
       s.archived is not true
-]]></smartlist.get>
+]]></smartlist.getOwnAndShared>
 
-<smartlist.getAdmin><![CDATA[
+<smartlist.getAll><![CDATA[
 select
   s.*,
   ot.object_type,
@@ -31,7 +31,7 @@ inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
 inner join flow.user u on u.id = s.owner_id
 where cot.company_id = :companyId and
       s.archived is not true
-]]></smartlist.getAdmin>
+]]></smartlist.getAll>
 
 <smartlist.getById><![CDATA[
 select
@@ -47,7 +47,7 @@ inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
 inner join flow.user u on u.id = s.owner_id
 where s.id = :smartlistId and
       cot.company_id = :companyId and
-      s.owner_id = :userId and
+      (s.owner_id = :userId or s.shared or :isSmartlistAdmin) and
       s.archived is not true
 ]]></smartlist.getById>
 

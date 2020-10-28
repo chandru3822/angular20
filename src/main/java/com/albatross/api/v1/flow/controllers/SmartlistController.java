@@ -28,7 +28,7 @@ public class SmartlistController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlist>> getSmartlists() {
     User user = securityService.getCurrentUser();
-    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", "VIEW_ALL")) {
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW_ALL"))) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
     return new ResponseEntity<>(smartlistService.getSmartlists(), HttpStatus.OK);
