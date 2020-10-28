@@ -506,6 +506,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 7 and deleted is false
               and not exists (
                     SELECT d.id
@@ -1819,6 +1820,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 9 and deleted is false
               and not exists (
                     SELECT d.id
@@ -1898,6 +1900,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 16 and deleted is false
               and not exists (
                     SELECT d.id
@@ -1981,6 +1984,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 18 and deleted is false
               and not exists (
                     SELECT d.id
@@ -2063,6 +2067,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 19 and deleted is false
               and not exists (
                     SELECT d.id
@@ -2714,7 +2719,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
-            69,
+            1167,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Sun Run')) AS process_step_status_id,
             2350555 as created_by_id,
@@ -3454,6 +3459,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 25 and deleted is false
               and not exists (
                     SELECT d.id
@@ -3733,6 +3739,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 8 and deleted is false
               and not exists (
                     SELECT d.id
@@ -3804,6 +3811,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 17 and deleted is false
               and not exists (
                     SELECT d.id
@@ -3875,6 +3883,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 20 and deleted is false
               and not exists (
                     SELECT d.id
@@ -3946,6 +3955,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 21 and deleted is false
               and not exists (
                     SELECT d.id
@@ -4054,6 +4064,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 30 and deleted is false
               and not exists (
                     SELECT d.id
@@ -4354,6 +4365,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 1 and deleted is false
               and not exists (
                     SELECT d.id
@@ -4548,6 +4560,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 2 and deleted is false
               and not exists (
                     SELECT d.id
@@ -5050,6 +5063,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 3 and deleted is false
               and not exists (
                     SELECT d.id
@@ -5660,6 +5674,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 6 and deleted is false
               and not exists (
                     SELECT d.id
@@ -7176,6 +7191,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 27 and deleted is false
               and not exists (
                     SELECT d.id
@@ -7370,6 +7386,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -7636,6 +7653,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 4 and deleted is false
               and not exists (
                     SELECT d.id
@@ -7826,6 +7844,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 12 and deleted is false
               and not exists (
                     SELECT d.id
@@ -9205,7 +9224,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
               inner join blueraven.stage sd on sd.id = d.current_stage_id
-     where energization_visit_date >= (now() AT TIME ZONE 'US/Mountain')::date AND
+     where originator_id = 7 and energization_visit_date >= (now() AT TIME ZONE 'US/Mountain')::date AND
          energized_date IS NULL)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -9410,6 +9429,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 11 and deleted is false
               and not exists (
                     SELECT d.id
@@ -9487,6 +9507,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 28 and deleted is false
               and not exists (
                     SELECT d.id
@@ -9563,6 +9584,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 29 and deleted is false
               and not exists (
                     SELECT d.id
@@ -12085,6 +12107,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -12275,6 +12298,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 27 and deleted is false
               and not exists (
                     SELECT d.id
@@ -12465,6 +12489,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -12654,6 +12679,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -12842,6 +12868,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -13029,6 +13056,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -13217,6 +13245,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -13403,6 +13432,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 13 and deleted is false
               and not exists (
                     SELECT d.id
@@ -13784,6 +13814,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 5 and deleted is false
               and not exists (
                     SELECT d.id
@@ -13860,6 +13891,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 23 and deleted is false
               and not exists (
                     SELECT d.id
@@ -14818,6 +14850,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 24 and deleted is false
               and not exists (
                     SELECT d.id
@@ -15089,6 +15122,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 3 and deleted is false
               and not exists (
                     SELECT d.id
@@ -15167,6 +15201,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 5 and deleted is false
               and not exists (
                     SELECT d.id
@@ -15245,6 +15280,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 23 and deleted is false
               and not exists (
                     SELECT d.id
@@ -15433,6 +15469,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 22 and deleted is false
               and not exists (
                     SELECT d.id
@@ -15621,6 +15658,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 26 and deleted is false
               and not exists (
                     SELECT d.id
@@ -16918,6 +16956,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 14 and deleted is false
               and not exists (
                     SELECT d.id
@@ -17266,6 +17305,7 @@ with process_step1 as (
             union all
             SELECT dce.deal_id,dce.updated as complete_date
             FROM  blueraven.deal_calendar_event dce
+                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 7
             where  work_type_id = 15 and deleted is false
               and not exists (
                     SELECT d.id
@@ -19600,12 +19640,8 @@ declare
 $do$;
 
 
-
 CREATE TRIGGER update_project_details_trg
     after INSERT or update
     ON flow.project_process_step_custom_field_value
     FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_details_process_steps();
-
-
-
