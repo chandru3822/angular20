@@ -91,6 +91,15 @@ public class ScheduleService {
     return results;
   }
 
+  public List<ListOfValue> getAvailableProjectResource(ScheduleController.ResourceRequest req) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", req.getCompanyId());
+    params.put("systemListId", req.getSystemListId());
+    params.put("systemListOptionIds", req.getSystemListOptionIds());
+    List<ListOfValue> results = sqlCache.query("schedule.getAvailableProjectResources", params, ListOfValue.class);
+    return results;
+  }
+
   public List<ScheduleEvent> getProject(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
@@ -196,6 +205,10 @@ public class ScheduleService {
       TypeReference<List<ListOfValue>> resourcesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "resources",
           new JsonCollectionDeserializer(resourcesRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds",
+        new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
     }
   }
 
