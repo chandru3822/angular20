@@ -197,10 +197,13 @@ public class SecurityService implements UserDetailsService {
         return results;
     }
 
-    public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, String accessCode) {
+    /*
+    Return whether user has any of the given access levels to the given feature
+     */
+    public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, List<String> accessCode) {
         List<FeatureAccessControl> featureAccessControlList = getUserFeatureAccess(userId, companyId);
         for(FeatureAccessControl fac : featureAccessControlList) {
-            if(fac.getFeatureCode().equals(featureCode) && fac.getAccessCode().equals(accessCode)) {
+            if(fac.getFeatureCode().equals(featureCode) && accessCode.contains(fac.getAccessCode())) {
                 return true;
             }
         }
