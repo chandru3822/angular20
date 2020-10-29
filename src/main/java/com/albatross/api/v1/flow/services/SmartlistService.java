@@ -60,6 +60,10 @@ public class SmartlistService {
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
+    if (!this.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("ownerId", user.getId());
@@ -69,10 +73,29 @@ public class SmartlistService {
   }
 
   public void updateSmartlist(Smartlist smartlist) {
+
+    Smartlist existingSmartlist = this.getSmartlist(smartlist.getId());
+    final boolean updatingName = !existingSmartlist.getName().trim().toLowerCase().equals(smartlist.getName().trim().toLowerCase());
+
+    if (updatingName && !this.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("userId", user.getId());
     sqlCache.update("smartlist.update", params);
+  }
+
+  public boolean isNameUnique(String name) {
+    User user = securityService.getCurrentUser();
+    List<Smartlist> smartlists = sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    for (Smartlist s: smartlists) {
+      if (s.getName().trim().toLowerCase().equals(name.trim().toLowerCase())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public List<SmartlistFieldAssignment> getAvailableFields(Long objectTypeId) {
@@ -253,6 +276,8 @@ public class SmartlistService {
     List<SmartlistFieldAssignment> joinTables = new ArrayList<>();
 
     StringBuilder withClause = new StringBuilder();
+    StringBuilder additionalJoins = new StringBuilder();
+    StringBuilder whereClause = new StringBuilder();
 
     // Always joining the smartlist system lists for selecting. If we run into performance issues, only selectively add these
     withClause.append(String.format(" \n\"smartlist.systemlist.1\" as (select * from flow.get_smartlist_system_list_options(%s::int, %s::int)), ", 1, companyId));
@@ -372,18 +397,26 @@ public class SmartlistService {
 
     switch (smartlist.getObjectTypeId().intValue()) {
       case 1:
-        query.append(" \nfrom flow.project ");
+        query.append("\nfrom flow.project ");
+        query.append("\ninner join flow.company_process on flow.company_process.id = flow.project.company_process_id ");
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
+
+        whereClause.append(String.format("\nflow.company_process.company_id = %s and ", companyId));
         break;
       case 2:
         query.append(" \nfrom flow.contact ");
         query.append("\nleft join flow.project on flow.project.contact_id = flow.contact.id ");
+
+        whereClause.append(String.format("\nflow.contact.company_id = %s and ", companyId));
         break;
       case 4:
         query.append(" \nfrom flow.project_process_step ");
         query.append("\ninner join flow.process_step on flow.process_step.id = flow.project_process_step.process_step_id ");
         query.append("\nleft join flow.project on flow.project.id = flow.project_process_step.project_id  ");
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
+
+        whereClause.append(String.format("\nflow.process_step.company_id = %s and ", companyId));
+        break;
     }
 
     for (SmartlistFieldAssignment f : joinTables) {
@@ -456,9 +489,6 @@ public class SmartlistService {
         }
       }
     }
-
-    StringBuilder additionalJoins = new StringBuilder();
-    StringBuilder whereClause = new StringBuilder();
 
       for (SmartlistRequirement r : requirements) {
           String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
