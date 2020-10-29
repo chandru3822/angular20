@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/webhook/ricochet")
 @Slf4j
 public class RicochetWebhookController {
-    @Value(value = "${ricochet.token}")
-    private String token;
+    @Value(value = "${ricochet.apiKey}")
+    private String apiKey;
 
 //    @Autowired
 //    private RicochetWebhookService ricochetWebhookService;
@@ -23,7 +23,7 @@ public class RicochetWebhookController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/lead")
     public ResponseEntity saveLead(@RequestBody RicochetLead lead, @RequestHeader("Authorization") String authHeader) throws Exception {
-        if (!StringUtils.equals(authHeader, token))
+        if (!StringUtils.equals(authHeader, apiKey))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authorization configured");
 
         log.info(
