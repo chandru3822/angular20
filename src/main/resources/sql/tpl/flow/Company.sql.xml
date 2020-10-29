@@ -20,13 +20,27 @@
 
   <company.getCompaniesAssignedToUser>
     <![CDATA[
-      select c.id,
-         c.company_name
-      from flow.company c
-         inner join flow.user_company uc on uc.company_id = c.id
-      where uc.user_id = :userId
-          and uc.archived is not true
-      order by c.level, c.company_name
+      with companies as (
+        select id, company_name
+        from flow.company_hierarchy_filter_down((select c1.id
+                                                 from (
+                                                          select min(level) as level
+                                                          from flow.company c
+                                                                   inner join flow.user_company uc on uc.company_id = c.id
+                                                          where user_id = :userId
+                                                      ) as foo
+                                                          inner join flow.company c1 on c1.level = foo.level
+                                                          inner join flow.user_company uc1
+                                                                     on uc1.company_id = c1.id and uc1.user_id = :userId
+                                                 limit 1))
+        where id != 1
+    )
+    select c.id, c.company_name
+    from companies c
+    inner join flow.user_status_type ust on ust.company_id = c.id
+    inner join flow.company_user_status cus on cus.user_status_type_id = ust.id
+    where cus.user_id = :userId
+        and ust.has_access is true
     ]]>
   </company.getCompaniesAssignedToUser>
 

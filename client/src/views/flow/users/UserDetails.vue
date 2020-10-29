@@ -42,7 +42,7 @@
                             v-model="user.username"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
-                <div v-if="userCanEdit">
+                <div v-if="userIsAdmin">
                   <v-select
                       v-model="user.companies"
                       :items="companies"
@@ -58,7 +58,7 @@
                 </div>
               </div>
               <v-text-field text
-                            v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN')"
+                            v-if="userIsAdmin"
                             label="Password"
                             placeholder=" "
                             v-model="user.newPassword"></v-text-field>
@@ -119,6 +119,7 @@
         ],
         snackbar: {},
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'),
         companies: [],
         dirtyCfvs: [],
         user: {},
