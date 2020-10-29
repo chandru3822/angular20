@@ -1,14 +1,9 @@
 <sql>
   <country.getAll><![CDATA[
-    select cc.id,
-       cc.company_id,
-       cc.archived,
-       cc.country_id,
+    select c.id,
        c.country,
        c.abbreviation
-    from flow.company_country cc
-        inner join flow.country c on c.id = cc.country_id
-    where cc.archived is not true
+    from flow.country c
     order by c.country
   ]]></country.getAll>
 
