@@ -25,8 +25,10 @@ public class RicochetWebhookController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/lead")
     public ResponseEntity saveLead(@RequestBody RicochetLead lead, @RequestHeader("Authorization") String authHeader) throws Exception {
-        if (!StringUtils.equals(authHeader, apiKey))
+        if (!StringUtils.equals(authHeader, (apiKey)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authorization configured");
+
+        log.info("Authorization Header received from Ricochet: {}", authHeader);
 
         log.info(
             "Received new contact information from Ricochet. " +
