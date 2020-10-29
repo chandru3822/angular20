@@ -3,7 +3,11 @@
   <v-row>
     <v-col cols="12">
       <v-card>
-        <v-form ref="smartlistForm" class="one-hunned">
+        <v-form
+          ref="smartlistForm"
+          class="one-hunned"
+          :disabled="!canEdit"
+        >
           <v-col cols="12">
             <v-toolbar flat class="app-toolbar">
               <v-btn
@@ -27,12 +31,21 @@
                 </v-btn>
 
                 <v-btn
+                  v-if="canEdit"
                   text
-                  color="primaryCustom"
                   @click="validateForm"
                 >
                   <v-icon>save</v-icon>
                   <span v-if="!constants.IS_MOBILE">Save</span>
+                </v-btn>
+
+                <v-btn
+                  v-if="canEdit"
+                  text
+                  color="brRed"
+                >
+                  <v-icon>delete</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Delete</span>
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
@@ -105,7 +118,7 @@
         <v-spacer />
         <v-toolbar-items>
           <v-btn
-            v-if="!showNewFieldForm"
+            v-if="!showNewFieldForm && canEdit"
             text
             :disabled="!smartlist.id"
             @click="showNewFieldForm = true"
@@ -169,13 +182,12 @@
 
         <v-list dense>
           <v-list-item>
-            <v-list-item-action>
+            <v-list-item-action v-if="canEdit">
               <v-icon></v-icon>
             </v-list-item-action>
 
             <v-list-item-content>
               <v-row>
-                <!--                  @TODO: put inline styles in class -->
                 <v-col cols="1" class="text-left smartlist-field">Order</v-col>
                 <v-col cols="3" class="text-left smartlist-field">Field Name</v-col>
                 <v-col cols="4" class="text-left smartlist-field">Object Type</v-col>
@@ -191,11 +203,20 @@
           <v-divider />
           <v-divider />
 
-          <draggable v-model="assignedFields" @change="reorderFields" group="assignedFields">
+          <draggable
+            :disabled="!canEdit"
+            v-model="assignedFields"
+            @change="reorderFields"
+            group="assignedFields"
+          >
 
-            <v-list-item class="grab" v-for="(field, index) in assignedFields" :key="field.id">
+            <v-list-item
+              :class="{grab: canEdit}"
+              v-for="(field, index) in assignedFields"
+              :key="field.id"
+            >
 
-              <v-list-item-action>
+              <v-list-item-action v-if="canEdit">
                 <v-icon>drag_handle</v-icon>
               </v-list-item-action>
 
@@ -209,7 +230,8 @@
               </v-list-item-content>
 
               <v-list-item-action class="clickable">
-                <v-icon @click="deleteField(index)">delete</v-icon>
+                <v-icon v-if="canEdit" @click="deleteField(index)">delete</v-icon>
+                <v-icon v-else></v-icon>
               </v-list-item-action>
             </v-list-item>
           </draggable>
@@ -221,6 +243,7 @@
       :company-object-types="companyObjectTypes"
       :reset-form="resetRequirementForm"
       :disabled="!smartlist.id"
+      :can-edit="canEdit"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -353,6 +376,9 @@ export default {
   computed: {
     isNewFieldButtonDisabled () {
       return !this.newField?.selectedField
+    },
+    canEdit () {
+      return this.$store.state.user.details.id === this?.smartlist?.ownerId || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     }
   },
   methods: {

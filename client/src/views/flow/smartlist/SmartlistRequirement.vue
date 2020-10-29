@@ -5,7 +5,7 @@
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn
-        v-if="!showNewRequirementForm"
+        v-if="!showNewRequirementForm && canEdit"
         :disabled="disabled"
         @click="showNewRequirementForm = true"
         text
@@ -169,7 +169,7 @@
           <template v-else-if="requirement.listOfValueId || requirement.customFieldSqlKey || requirement.companySystemListId">{{getListValueName(requirement)}}</template>
           <template v-else-if="requirement.listOfValues">{{requirement.listOfValues.map(v => ` ${v.name}`).toString()}}</template>
         </td>
-        <td class="action-cell">
+        <td v-if="canEdit" class="action-cell">
 <!--          Vuetify keeps its own copy of requirements, so we can't just send `requirement` to functions for form reset 💩 -->
           <v-icon
             v-if="expandedRequirement && expandedRequirement.id !== requirement.id"
@@ -195,6 +195,7 @@
             delete
           </v-icon>
         </td>
+        <td v-else></td>
       </tr>
     </template>
 
@@ -347,6 +348,10 @@ export default {
       default: false
     },
     disabled: {
+      type: Boolean,
+      default: false
+    },
+    canEdit: {
       type: Boolean,
       default: false
     }
