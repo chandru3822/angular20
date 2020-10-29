@@ -40,7 +40,7 @@
                 </v-btn>
 
                 <v-btn
-                  v-if="canEdit"
+                  v-if="smartlist.id && canEdit"
                   text
                   color="brRed"
                 >
@@ -378,7 +378,7 @@ export default {
       return !this.newField?.selectedField
     },
     canEdit () {
-      return this.$store.state.user.details.id === this?.smartlist?.ownerId || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+      return !this.smartlist.id || this.$store.state.user.details.id === this?.smartlist?.ownerId || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     }
   },
   methods: {
@@ -467,7 +467,7 @@ export default {
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+        this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -515,7 +515,7 @@ export default {
         await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+        this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
