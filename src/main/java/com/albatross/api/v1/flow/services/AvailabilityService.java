@@ -11,6 +11,10 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.dmfs.rfc5545.DateTime;
+import org.dmfs.rfc5545.recur.InvalidRecurrenceRuleException;
+import org.dmfs.rfc5545.recur.RecurrenceRule;
+import org.dmfs.rfc5545.recur.RecurrenceRuleIterator;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,10 +34,11 @@ import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 
 /**
@@ -224,6 +229,7 @@ public class AvailabilityService {
     params.put("orgId", ra.getOrgId());
     params.put("userId", ra.getUserId());
     params.put("recurrence", ra.getRecurrence());
+    params.put("recurringEventEndType", ra.getRecurringEventEndType());
     params.put("recurringStartTime", ra.getRecurringStartTime());
     params.put("recurringEndTime", ra.getRecurringEndTime());
 
@@ -235,11 +241,162 @@ public class AvailabilityService {
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.updateAppointment", params);
     } else {
-      params.put("createdById", user.getId());
-      id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
+      if(!ra.getRepeat()) {
+        params.put("createdById", user.getId());
+        params.put("recurringEventId", null);
+        id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
+      } else {
+        createRecurringEvents(ra);
+      }
     }
 
     return getOneResourceAppointment(id);
+  }
+
+  public void processFutureRecurringEvents() {
+    //list of distinct recurring events for active users with all of the existing events beyond the starting date
+    Calendar cal = Calendar.getInstance();
+    cal.add(Calendar.MONTH, 11);
+    log.info("here is the starting date: {}", cal);
+    Date startingDate = cal.getTime();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startingDate", startingDate);
+    List<RecurringResourceAppointment> recurringAppointments = sqlCache.query("availability.getDistinctRecurringEvents", Collections.emptyMap(), new RecurringAppointmentMapper<>(RecurringResourceAppointment.class, om));
+
+    for(RecurringResourceAppointment rra : recurringAppointments) {
+      //create a rule and start saving a months worth of new appts.
+      //check if the new appt already exists
+      try {
+        SimpleDateFormat formatNowDay = new SimpleDateFormat("dd");
+        SimpleDateFormat formatNowMonth = new SimpleDateFormat("MM");
+        SimpleDateFormat formatNowYear = new SimpleDateFormat("yyyy");
+        SimpleDateFormat formatNowHour = new SimpleDateFormat("HH");
+        SimpleDateFormat formatNowMinute = new SimpleDateFormat("mm");
+
+        String recurringStartDay = formatNowDay.format(startingDate);
+        String recurringStartMonth = formatNowMonth.format(startingDate);
+        String recurringStartYear = formatNowYear.format(startingDate);
+        String recurringStartHour = formatNowHour.format(startingDate);
+        String recurringStartMinute = formatNowMinute.format(startingDate);
+
+        //convert the start date to a !isFloating() value otherwise it will fail when using a rule with an end date
+        DateTime recurringStartDate = new DateTime(TimeZone.getTimeZone("UTC"), Integer.parseInt(recurringStartYear), Integer.parseInt(recurringStartMonth) - 1, Integer.parseInt(recurringStartDay), Integer.parseInt(recurringStartHour), Integer.parseInt(recurringStartMinute), 00);
+
+        RecurrenceRule rule = new RecurrenceRule((rra.getRecurrence()));
+        RecurrenceRuleIterator it = rule.iterator(recurringStartDate);
+
+        // Arbitrary limit for recurring events that never end.
+        boolean limitReached = false;
+        boolean alreadyExists = false;
+
+        while (it.hasNext() && !limitReached) {
+          LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+          LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
+          //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
+          if(currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
+            limitReached = true;
+          } else {
+//            check if the appointment trying to be created already exists.
+            ResourceAppointment appt = rra.getAppointments().stream().filter(a -> a.getStartTime().toString().equals(currentEventStart.toString()) && a.getEndTime().toString().equals(currentEventEnd.toString())).findFirst().orElse(null);
+            if(null != appt) {
+              alreadyExists = true;
+            }
+          }
+
+          if(!limitReached && !alreadyExists){
+            HashMap<String, Object> params2 = new HashMap<>();
+            params2.put("startTime", currentEventStart);
+            params2.put("endTime", currentEventEnd);
+            params2.put("description", rra.getDescription());
+            params2.put("allDay", rra.getAllDay() != null && rra.getAllDay());
+            params2.put("companyId", rra.getCompanyId());
+            params2.put("createdById", 2350555);
+            params2.put("orgId", rra.getOrgId());
+            params2.put("userId", rra.getUserId());
+            params2.put("recurrence", rra.getRecurrence());
+            params2.put("recurringEventEndType", rra.getRecurringEventEndType());
+            params2.put("recurringStartTime", rra.getRecurringStartTime());
+            params2.put("recurringEndTime", rra.getRecurringEndTime());
+            params2.put("recurringEventId", rra.getRecurringEventId());
+
+
+            insertEvent(params2);
+          }
+        }
+
+
+      } catch (InvalidRecurrenceRuleException e) {
+        log.error(e.getMessage());
+      }
+    }
+  }
+
+  public void createRecurringEvents(ResourceAppointment ra) {
+    try {
+      User user = securityService.getCurrentUser();
+
+      final String newRecurringEventId = UUID.randomUUID().toString();
+      //the recurring start time is the same as the start time of the appt they are creating
+      ra.setRecurringStartTime(ra.getStartTime());
+
+      SimpleDateFormat formatNowDay = new SimpleDateFormat("dd");
+      SimpleDateFormat formatNowMonth = new SimpleDateFormat("MM");
+      SimpleDateFormat formatNowYear = new SimpleDateFormat("yyyy");
+      SimpleDateFormat formatNowHour = new SimpleDateFormat("HH");
+      SimpleDateFormat formatNowMinute = new SimpleDateFormat("mm");
+
+      String recurringStartDay = formatNowDay.format(ra.getRecurringStartTime());
+      String recurringStartMonth = formatNowMonth.format(ra.getRecurringStartTime());
+      String recurringStartYear = formatNowYear.format(ra.getRecurringStartTime());
+      String recurringStartHour = formatNowHour.format(ra.getRecurringStartTime());
+      String recurringStartMinute = formatNowMinute.format(ra.getRecurringStartTime());
+
+      //convert the start date to a !isFloating() value otherwise it will fail when using a rule with an end date
+      DateTime recurringStartDate = new DateTime(TimeZone.getTimeZone("UTC"), Integer.parseInt(recurringStartYear), Integer.parseInt(recurringStartMonth) - 1, Integer.parseInt(recurringStartDay), Integer.parseInt(recurringStartHour), Integer.parseInt(recurringStartMinute), 00);
+
+      RecurrenceRule rule = new RecurrenceRule((ra.getRecurrence()));
+      RecurrenceRuleIterator it = rule.iterator(recurringStartDate);
+
+      // Arbitrary limit for recurring events that never end.
+      boolean limitReached = false;
+
+      final long duration = ChronoUnit.MINUTES.between(ra.getStartTime().toInstant(), ra.getEndTime().toInstant());
+      //todo: get list of events for the event id
+      while (it.hasNext() && !limitReached) {
+        LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
+        LocalDateTime currentEventEnd = currentEventStart.plusMinutes(duration);
+        //if the recurring event start time is greater than 1 year from now, stop adding appointments
+        if(currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
+          limitReached = true;
+        } else {
+          //todo: check if event exists in the list from above
+          HashMap<String, Object> params = new HashMap<>();
+          params.put("startTime", currentEventStart);
+          params.put("endTime", currentEventEnd);
+          params.put("description", ra.getDescription());
+          params.put("allDay", ra.getAllDay() != null && ra.getAllDay());
+          params.put("companyId", user.getCompanyId());
+          params.put("createdById", user.getId());
+          params.put("orgId", ra.getOrgId());
+          params.put("userId", ra.getUserId());
+          params.put("recurrence", ra.getRecurrence());
+          params.put("recurringEventEndType", ra.getRecurringEventEndType());
+          params.put("recurringStartTime", ra.getRecurringStartTime());
+          params.put("recurringEndTime", ra.getRecurringEndTime());
+          params.put("recurringEventId", newRecurringEventId);
+
+          insertEvent(params);
+        }
+      }
+
+    } catch (InvalidRecurrenceRuleException e) {
+      log.error(e.getMessage());
+    }
+  }
+
+  public void insertEvent(HashMap<String, Object> params) {
+    //insert using the params we created before
+    sqlCache.update("availability.insertAppointment", params);
   }
 
   public void deleteAppointment(Long id) {
@@ -250,6 +407,16 @@ public class AvailabilityService {
     params.put("modifiedById", user.getId());
 
     sqlCache.update("availability.deleteAppointment", params);
+  }
+
+  public void deleteAppointmentsByRecurrence(String recurringEventId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("recurringEventId", recurringEventId);
+    params.put("modifiedById", user.getId());
+
+    sqlCache.update("availability.deleteAppointmentsByRecurrence", params);
   }
 
   public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate) {
@@ -376,6 +543,22 @@ public class AvailabilityService {
       TypeReference<List<Integer>> usersRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "users",
         new JsonCollectionDeserializer(usersRef, objectMapper));
+    }
+  }
+
+  public static class RecurringAppointmentMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public RecurringAppointmentMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ResourceAppointment>> appointmentsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "appointments",
+        new JsonCollectionDeserializer(appointmentsRef, objectMapper));
     }
   }
 

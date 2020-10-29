@@ -181,6 +181,7 @@
                                 inner join flow.company c on c.id = uc.company_id
                        where uc.user_id = u.id
                          and uc.archived is not true
+                         and c.archived is not true
                        order by c.company_name
                    ) companies), '[]') as companies
       from flow."user" u
@@ -389,6 +390,7 @@
              inner join flow.user_company uc on uc.company_id = c.id
              where uc.user_id = u.id
               and uc.archived is not true
+              and c.archived is not true
              order by level
              limit 1
            ) as highest_company_id
@@ -397,6 +399,8 @@
       inner join flow.company c on c.id = uc.company_id
     where u.id = :id
       and uc.is_default is true
+      and uc.archived is not true
+      and c.archived is not true
   ]]></user.findUserById>
 
   <user.getCompanyUserStatuses><![CDATA[

@@ -30,8 +30,25 @@
             v-model="newAppt.allDay"
             label="All Day"
           ></v-checkbox>
+          <v-checkbox
+            v-model="newAppt.repeat"
+            label="Repeat"
+          ></v-checkbox>
+
+          <!-- i need the item id to be able to update the recurrence string on the callback -->
+          <RRule v-if="newAppt.repeat"
+                 :recurrence="newAppt.recurrence"
+                 :item-id="newAppt.id"
+                 :readonly="false"
+                 :max-occurrences="100"
+                 :recurrence-callback="recurrenceCallback"
+          ></RRule>
+
           <div v-if="saveError" class="error--text mt-3">
             {{saveErrorMsg}}
+          </div>
+          <div v-if="newSaveError" class="error--text mt-3">
+            {{newSaveErrorMsg}}
           </div>
           <v-card-actions>
             <v-card-actions>
@@ -69,14 +86,18 @@
           <template #expanded-item="{ headers, item: appt }">
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
               <v-card flat color="transparent" class="px-3">
+                <!-- no edits allowed to recurring events for now -->
                 <v-text-field
                   v-model="appt.description"
                   counter="50"
+                  :readonly="appt.recurringEventId != null"
+                  :disabled="appt.recurringEventId != null"
                   label="Description"
                 ></v-text-field>
                 <DatetimePickerInput
                   v-model="appt.startTime"
                   :timezone="timezone"
+                  :readonly="appt.recurringEventId != null"
                   :type="appt.allDay ? dateType : timestampType"
                   :format="appt.allDay ? dateFormat : timestampFormat"
                   :label="appt.allDay ? 'Start Date' : 'Start Time'"
@@ -84,6 +105,7 @@
                 <DatetimePickerInput
                   v-model="appt.endTime"
                   :timezone="timezone"
+                  :readonly="appt.recurringEventId != null"
                   :type="appt.allDay ? dateType : timestampType"
                   :format="appt.allDay ? dateFormat : timestampFormat"
                   :label="appt.allDay ? 'End Date' : 'End Time'"
@@ -91,21 +113,26 @@
                 <v-checkbox
                   v-model="appt.allDay"
                   label="All Day"
+                  :readonly="appt.recurringEventId != null"
+                  :disabled="appt.recurringEventId != null"
                 ></v-checkbox>
-                <div v-if="VUE_APP_ENV === 'local'">
-                  <v-checkbox
-                    v-model="appt.repeat"
-                    label="Repeat"
-                  ></v-checkbox>
+                <!-- for now i am not going to allow them to change a non-recurring event to be a recurring event. they would just have to delete the non recurring one and make a new recurring one                -->
+                <v-checkbox
+                  v-model="appt.repeat"
+                  :readonly="true"
+                  :disabled="true"
+                  label="Repeat"
+                ></v-checkbox>
 
-                  <!-- i need the item id to be able to update the recurrence string on the callback -->
-                  <RRule v-if="appt.repeat"
-                         :recurrence="appt.recurrence"
-                         :item-id="appt.id"
-                         :recurrence-callback="recurrenceCallback"
-                  ></RRule>
+                <!-- i need the item id to be able to update the recurrence string on the callback -->
+                <RRule v-if="appt.repeat"
+                       :recurrence="appt.recurrence"
+                       :item-id="appt.id"
+                       :readonly="true"
+                       :max-occurrences="100"
+                       :recurrence-callback="recurrenceCallback"
+                ></RRule>
 
-                </div>
                 <div v-if="saveError" class="error--text mt-3">
                   {{saveErrorMsg}}
                 </div>
@@ -113,7 +140,7 @@
                 <v-card-actions>
                   <v-card-actions>
                     <v-btn color="primaryCustom"  @click="saveAppt(appt)" class="white--text"
-                           :disabled="!appt.startTime || !appt.endTime || !appt.description || appt.description.length > 50">
+                           :disabled="saveError || !appt.startTime || !appt.endTime || !appt.description || appt.description.length > 50">
                       Save
                     </v-btn>
                   </v-card-actions>
@@ -145,15 +172,25 @@
                     <v-card-title>
                       <span class="headline">Confirm</span>
                     </v-card-title>
-                    <v-card-text>
+                    <v-card-text v-if="item.recurringEventId">
+                      Do you want to delete all occurrences or this one only?<br>
+                      <strong>{{ item.startTime | formatDate(item.allDay ? 'date' : 'timestamp') }} - {{ item.endTime | formatDate(item.allDay ? 'date' : 'timestamp') }}</strong>
+                    </v-card-text>
+                    <v-card-text v-else>
                       Are you sure you want to archive this appointment?<br>
                       <strong>{{ item.startTime | formatDate(item.allDay ? 'date' : 'timestamp') }} - {{ item.endTime | formatDate(item.allDay ? 'date' : 'timestamp') }}</strong>
                     </v-card-text>
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <v-btn color="secondaryButton" text @click="item.deleteConfirm = false">No</v-btn>
-                      <v-btn color="brRed" class="white--text"
-                             @click="deleteAppointment(item)">Yes</v-btn>
+                      <v-btn color="secondaryButton mr-3" text @click="item.deleteConfirm = false">Cancel</v-btn>
+                      <div v-if="item.recurringEventId">
+                        <v-btn color="primaryCustom" class="white--text mr-2"
+                               @click="deleteAppointment(item, false)">One Only</v-btn>
+                        <v-btn color="brRed" class="white--text"
+                               @click="deleteAppointment(item, true)">All Occurrences</v-btn>
+                      </div>
+                      <v-btn color="brRed" class="white--text" v-else
+                             @click="deleteAppointment(item, false)">Yes</v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
@@ -218,6 +255,8 @@
         appointments: [],
         saveError: false,
         saveErrorMsg: '',
+        newSaveError: false,
+        newSaveErrorMsg: '',
         dateType: 'date',
         options: {
           itemsPerPage: 100
@@ -242,6 +281,16 @@
     },
     created() {
       this.getAppointments()
+      if(VUE_APP_ENV === 'local') {
+        //randa test stuff
+        this.addNew = true
+        this.newAppt = {
+          description: 'hello world',
+          startTime: '2020-10-28T19:00:00.000Z',
+          endTime: '2020-10-28T21:00:00.000Z',
+          repeat: true
+        }
+      }
     },
     methods: {
       async getAppointments() {
@@ -253,7 +302,7 @@
             const {data} = await getRequestWithParams(`/availability/appointments`, { params: {
                 userId: this.userId,
                 orgId: this.orgId,
-                page: page - 1,
+                page: page - 1 || 0,
                 size: itemsPerPage
               }})
             this.appointments = data.content
@@ -287,7 +336,11 @@
             const {data} = await postRequest(`/availability/appointment`, params)
             this.addNew = false
             this.expanded = []
-            if(!appt.id) {
+            //if repeating appointment - reload appointments to get full list
+            if(appt.repeat) {
+              await this.getAppointments()
+            } else if(!appt.id) {
+              //else if new appointment - push into appointments
               this.appointments.push(data)
             }
             this.newAppt = {}
@@ -303,7 +356,27 @@
       filterAppointments () {
         return this.appointments.filter(a => { return !a.archived})
       },
-      async deleteAppointment(item) {
+      async deleteAppointment(item, deleteAllRecurring) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          let url = deleteAllRecurring ? `/availability/appointment/recurrence/${item.recurringEventId}` : `/availability/appointment/${item.id}`
+
+          await deleteRequest(url)
+          item.archived = true
+          if(deleteAllRecurring) {
+            //reload appointments if we deleted more than one
+            await this.getAppointments()
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Appointment Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting appointment')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteRecurring(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
@@ -317,12 +390,29 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      recurrenceCallback(recurrenceString, apptId, endDate) {
-        let appt = this.appointments.find(a => a.id === apptId)
-        console.log('randaLogger', appt.id)
-        if(appt) {
-          appt.recurrence = recurrenceString
-          appt.recurringEndTime = endDate
+      recurrenceCallback(recurrenceString, endDate, count, endsType) {
+        console.log('string', recurrenceString)
+        console.log('randaLogger', endsType)
+        console.log('wtf', endDate)
+        if(endsType === 'fixed' && count > 100) {
+          this.newSaveError = true
+          this.newSaveErrorMsg = 'Cannot exceed 100 repetitions'
+        } else if(endsType === 'fixed' && count == null) {
+          this.newSaveError = true
+          this.newSaveErrorMsg = 'A occurrence count is required'
+        } else if(endsType === 'date' && endDate == null) {
+          this.newSaveError = true
+          this.newSaveErrorMsg = 'An end date is required'
+        } else if(endsType === 'date' && moment(endDate, 'YYYY-MM-DD').isAfter(moment().add(1, 'y').add(1, 'd'))) {
+          this.newSaveError = true
+          this.newSaveErrorMsg = 'Cannot exceed 1 year from today'
+        } else {
+          this.newSaveError = false
+          this.newSaveErrorMsg = ''
+
+          this.newAppt.recurringEventEndType = endsType === 0 ? null : endsType
+          this.newAppt.recurrence = recurrenceString
+          this.newAppt.recurringEndTime = endDate
         }
       }
 

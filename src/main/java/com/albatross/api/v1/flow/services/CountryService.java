@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,6 +26,11 @@ public class CountryService {
 
   @Autowired
   SecurityService securityService;
+
+  public List<CompanyCountry> getAllCountries() {
+    List<CompanyCountry> results = sqlCache.query("country.getAll", Collections.emptyMap(), CompanyCountry.class);
+    return results;
+  }
 
   public List<CompanyCountry> getAllCountriesForCompany() {
     User currentUser = securityService.getCurrentUser();

@@ -77,6 +77,11 @@ public class AvailabilityController {
     availabilityService.deleteAppointment(id);
   }
 
+  @DeleteMapping(value = "/appointment/recurrence/{recurringEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteAppointmentsByRecurrence(@PathVariable String recurringEventId) {
+    availabilityService.deleteAppointmentsByRecurrence(recurringEventId);
+  }
+
   @GetMapping(value = "/timeSlots", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<TimeSlot> getTimeSlots(@RequestParam Long projectId,
                                      @RequestParam String startTime,
