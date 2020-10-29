@@ -28,8 +28,6 @@ public class RicochetWebhookController {
         if (!StringUtils.equals(authHeader, (apiKey)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authorization configured");
 
-        log.info("Authorization Header received from Ricochet: {}", authHeader);
-
         log.info(
             "Received new contact information from Ricochet. " +
                 "uniqueIdentifier: {}, " +
