@@ -150,7 +150,7 @@ public class SmartlistController {
   public ResponseEntity<List<Smartlist>> getPublicSmartlistsByType(@RequestParam Long objectTypeId) {
     User user = securityService.getCurrentUser();
     if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW", "VIEW_ALL", "ADMIN"))) {
-      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(smartlistService.getSharedByType(objectTypeId), HttpStatus.OK);
   }
