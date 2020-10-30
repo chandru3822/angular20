@@ -32,6 +32,7 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left underline" @click="clickRow(item)">{{item.projectName}}</td>
               <td class="text-left">{{item.processStepName}}</td>
+              <td class="text-left">{{item.daysInQueue}}</td>
               <td class="text-left">
                 <div v-if="item.owner">{{item.owner}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
@@ -48,6 +49,7 @@
                   <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
                     {{item.notes[0].note}}
                   </pre>
+                  <v-spacer></v-spacer>
                   <v-btn small fab text @click="item.showNotesModal = true">
                     <v-icon>mdi-comment-text-multiple</v-icon>
                   </v-btn>
@@ -130,6 +132,7 @@
         headers: [
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
+          { text: 'Days In Queue', value: 'daysInQueue', show: true },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
           { text: 'Notes', value: 'notes', show: true },

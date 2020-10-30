@@ -11,7 +11,7 @@ public class Smartlist {
 
   private Long id, companyObjectTypeId, ownerId, createdById, modifiedById, objectTypeId, viewObjectTypeId;
 
-  private String name, objectType, viewObjectType;
+  private String name, objectType, viewObjectType, owner;
 
   private boolean shared, archived, mainProcessSteps;
 

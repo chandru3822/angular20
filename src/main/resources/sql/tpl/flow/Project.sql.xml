@@ -269,6 +269,7 @@
         p.date_created,
         cp.company_id,
         cp.process_id,
+        p.time_zone,
         pro.process_name,
         p.contact_id,
         p.project_name,

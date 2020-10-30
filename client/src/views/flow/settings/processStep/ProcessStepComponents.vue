@@ -270,14 +270,14 @@
               </v-toolbar-items>
             </v-toolbar>
             <div class="pl-5">
-              <v-select v-if="addNewType"
+              <v-autocomplete v-if="addNewType"
                         v-model="newType.attachmentTypeId"
                         :items="availableAttachmentTypes"
                         label="Select Attachment Type"
                         item-text="attachmentType"
                         item-value="id"
                         @input="assignNewType"
-              ></v-select>
+              ></v-autocomplete>
               <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
                 <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"
                         :key="index">

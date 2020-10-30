@@ -2,12 +2,11 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.config.ScheduledConfig;
-import com.albatross.api.exceptions.EmailInUseException;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.flow.model.UserStatusType;
 import com.albatross.api.v1.flow.model.PasswordResetRequest;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserSearch;
+import com.albatross.api.v1.flow.model.UserStatusType;
 import com.albatross.api.v1.flow.services.CommunicationService;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.InputStream;
 import java.util.*;
@@ -50,18 +50,29 @@ public class UserController {
     }
 
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity saveUser(@RequestBody User user) throws EmailInUseException {
+    public ResponseEntity saveUser(@RequestParam(required = false) Boolean userIsAlbatross,
+                                   @RequestBody User user) {
         if (userService.emailExists(user.getEmail(), user.getId())) {
-            throw new EmailInUseException(user.getEmail(), "Email");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use", new Exception());
+        }
+        if (userService.usernameExists(user.getUsername(), user.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use", new Exception());
+        }
+        if(null != user.getNewPassword() && user.getNewPassword().length() < 8) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
+        }
+        if(user.getUsername().length() < 3) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Username", new Exception());
         }
 
-        Optional<User> result = userService.saveUser(user);
+        Optional<User> result = userService.saveUser(user, null != userIsAlbatross ? userIsAlbatross : false);
         return result.isEmpty() ? ResponseEntity.badRequest().body("Cannot Access User") : ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getUser(@PathVariable Long id) {
-        Optional<User> result = userService.getUser(id);
+    public ResponseEntity getUser(@PathVariable Long id,
+                                  @RequestParam(required = false) Boolean userIsAlbatross) {
+        Optional<User> result = userService.getUser(id, null != userIsAlbatross ? userIsAlbatross : false);
         return result.isEmpty() ? ResponseEntity.badRequest().body("Cannot Access User") : ResponseEntity.ok(result);
     }
 

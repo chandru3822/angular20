@@ -298,7 +298,7 @@ public class ProjectProcessStepService {
 
     Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
 
-    asyncRunChildFunctions(action.getId(), pps.getProjectProcessStepId(), user.getId());
+    asyncRunChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getProcessStepId());
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
       Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId);
@@ -341,7 +341,7 @@ public class ProjectProcessStepService {
     // Check to if individual requirements are fulfilled
     for (ProjectProcessStepRequirement r: requirements) {
       try {
-        r.setFulfilled(this.isRequirementMet(r));
+        r.setFulfilled(this.isRequirementMet(r, pps.getProjectProcessStepId()));
       } catch (Exception e) {
         log.error(String.format("Exception while parsing date requirement value for process step requirement ID: %s", r.getId()));
         e.printStackTrace();
@@ -371,12 +371,12 @@ public class ProjectProcessStepService {
   }
 
   // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
-  public boolean isRequirementMet(ProjectProcessStepRequirement r) throws Exception {
+  public boolean isRequirementMet(ProjectProcessStepRequirement r, Long ppsId) throws Exception {
 
     boolean requirementMet = false;
 
     if (r.getProcessStepRequirementTypeId() == 2) {
-      String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId()));
+      String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId(), r.getProcessStepId(), ppsId));
       String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
       //@TODO: Account for function return data types 7 and 9 returning lists
       Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
@@ -722,11 +722,11 @@ public class ProjectProcessStepService {
   }
 
     @Async
-    public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long userId) {
+    public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long projectId, Long processStepId) {
         List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, projectProcessStepId);
         childFunctions.forEach(childFunction -> {
             try {
-                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId()));
+                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, projectProcessStepId));
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
                 log.info(String.format("Successfully executed child action function. CFA ID: %s, action ID: %s",childFunction.getId(), actionId));
@@ -737,7 +737,7 @@ public class ProjectProcessStepService {
         });
     }
 
-  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId) throws Exception {
+  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId) throws Exception {
     Map<Long, String> params = new TreeMap<>();
 
     functionParams.forEach(param -> {
@@ -750,6 +750,12 @@ public class ProjectProcessStepService {
               break;
             case 2:
               systemValue = projectId;
+              break;
+            case 3:
+              systemValue = ppsId;
+              break;
+            case 4:
+              systemValue = processStepId;
               break;
             default:
               //@TODO: die a horrible death

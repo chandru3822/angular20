@@ -489,6 +489,23 @@ insert into brs.project_details_config(company_id, custom_field_group_assignment
   cross join flow.company c
  where c.id not in (1,2,3,9));
 
+insert into flow.process_step_process_owning_position( position_id, process_step_process_id,
+                                                       archived, date_created, date_modified,
+                                                       created_by_id, modified_by_id)
+    (select position_id,
+            (select psp1.id
+             from flow.process_step_process psp1
+                      inner join flow.process p1 on p1.id = psp1.process_id
+                      inner join flow.company_process cp1 on cp1.process_id = p1.id
+                      inner join flow.process_step ps1 on ps1.id = psp1.process_step_id
+             where cp1.company_id = c.id and ps1.migrated_original_id = psp.process_step_id),
+            pspop.archived, pspop.date_created, pspop.date_modified,
+            pspop.created_by_id, pspop.modified_by_id
+     from flow.process_step_process_owning_position pspop
+              inner join flow.process_step_process psp on psp.id = pspop.process_step_process_id
+              inner join flow.process_step ps on ps.id = psp.process_step_id and ps.archived is false
+              cross join flow.company c
+     where c.id not in (1,2,3,9));
 
 
 alter table flow.process_step add column migrated_original_id integer;
@@ -531,25 +548,11 @@ alter table flow.process_step_action_company_function drop column if exists  mig
 
 
 
--- TODO
--- 3) zachs function
--- 2) project query down line
--- 3) contact query down line
--- 10) migrating the position for zach
--- 4) test commissions
--- 5) test lead allocation
--- 7) look at deals that are not bringing over closer
--- 8) look at all resource data from deal calendar event
--- 9) test all data
--- 11) make sure the anything in the future has a resource
---12)  migrate schedule notes to process steps
--- [ ] Do migration for:
--- - [ ] deal_note
--- - [ ] event_closeout_queue
--- - [ ] feedback
+
 -- - [ ] Double check installation agreement request tables with John
--- - [ ] Predesign_status_log
--- cached available time on a cron job as well as the user_position_vw
+
+
+
 
 
 

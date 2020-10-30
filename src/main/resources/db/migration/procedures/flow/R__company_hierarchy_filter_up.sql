@@ -12,10 +12,12 @@ BEGIN
             select c.id,c.parent_company_id,c.company_name
             from flow.company c
             where c.id = p_company_id
+                and c.archived is not true
             UNION
             select c.id,c.parent_company_id,c.company_name
             from flow.company c
                      INNER JOIN subordinates s ON s.parent_company_id = c.id
+            where c.archived is not true
         ) SELECT
               s1.id,s1.parent_company_id,s1.company_name::text
         FROM

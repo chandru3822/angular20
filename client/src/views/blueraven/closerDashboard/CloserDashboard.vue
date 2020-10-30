@@ -3,12 +3,15 @@
     <v-row v-if="showDashboard" id="closer-dash-toolbar-container">
       <v-col cols="12" id="closer-dash-toolbar">
         <v-app-bar class="elevation-1" fixed style="top: 48px">
-          <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-            <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
-            <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
-            <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
-            <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
-          </v-btn-toggle>
+          <v-toolbar-title>Closer Dashboard</v-toolbar-title>
+          <v-toolbar-items>
+            <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory style="align-self: flex-end">
+              <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
+              <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
+              <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
+              <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
+            </v-btn-toggle>
+          </v-toolbar-items>
         </v-app-bar>
       </v-col>
     </v-row>
@@ -2766,9 +2769,23 @@
       padding: 0;
 
       .v-toolbar {
-        display: flex;
-        justify-content: flex-end;
         margin-top: -12px;
+
+        ::v-deep .v-toolbar__content {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+
+          .v-toolbar__title {
+            font-size: 13px;
+          }
+
+          .v-toolbar__items {
+            display: flex;
+            flex-flow: column nowrap;
+            justify-content: center;
+          }
+        }
 
         .v-btn-toggle {
           margin-right: -5px;
@@ -3865,6 +3882,10 @@
   }
 
   @media (min-width: 500px) {
+    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-toolbar__content .v-toolbar__title {
+      font-size: 16px;
+    }
+
     #progress-bar-container {
       span {
         font-size: 14px;
@@ -3990,12 +4011,18 @@
   }
 
   @media (min-width: 737px) {
-    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-btn-toggle {
-      margin-right: 0;
+    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-toolbar__content {
+      .v-toolbar__title {
+        font-size: 18px;
+      }
 
-      .v-btn {
-        font-size: 12px;
-        height: 30px;
+      .v-btn-toggle {
+        margin-right: 0;
+
+        .v-btn {
+          font-size: 12px;
+          height: 30px;
+        }
       }
     }
 
@@ -4642,12 +4669,18 @@
   }
 
   @media (min-width: 1070px) {
-    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-btn-toggle {
-      margin-right: -2px;
+    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-toolbar__content {
+      .v-toolbar__title {
+        font-size: 20px;
+      }
 
-      .v-btn {
-        font-size: 13px;
-        height: 35px;
+      .v-btn-toggle {
+        margin-right: -2px;
+
+        .v-btn {
+          font-size: 13px;
+          height: 35px;
+        }
       }
     }
 

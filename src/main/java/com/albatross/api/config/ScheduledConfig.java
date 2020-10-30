@@ -1,6 +1,8 @@
 package com.albatross.api.config;
 
+import com.albatross.api.v1.flow.services.AvailabilityService;
 import com.albatross.api.v1.flow.services.SMSService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import java.util.concurrent.Executors;
 @Configuration
 @EnableAsync
 @EnableScheduling
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
 @ConditionalOnProperty(prefix = "app.scheduled", value = "enabled")
 public class ScheduledConfig implements SchedulingConfigurer {
@@ -28,8 +31,11 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
 
-    @Autowired
-    private SMSService smsService;
+    @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
+    private Boolean processFutureAppointments;
+
+    private final SMSService smsService;
+    private final AvailabilityService availabilityService;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -47,6 +53,15 @@ public class ScheduledConfig implements SchedulingConfigurer {
             // method will rollback the db transaction which contains very important information
             // about outbound texts
             smsService.processTwilioWebhookPayloads();
+        }
+    }
+
+    // last day of every month
+//    @Scheduled(cron = "0 0 0 L * ?")
+    @Scheduled(cron = "0 0 0 28-31 * ?")
+    public void populateNextMonthsBudgets() {
+        if(processFutureAppointments) {
+            availabilityService.processFutureRecurringEvents();
         }
     }
 

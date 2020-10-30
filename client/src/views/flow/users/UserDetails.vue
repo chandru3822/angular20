@@ -156,7 +156,7 @@
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            let errorMsg = e?.data?.message ? 'Error Saving User: ' + e.data.message : 'Error Saving User'
+            let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
             this.snackbar = getSnackbar('ERROR', errorMsg)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
@@ -188,7 +188,6 @@
         try {
           const {data} = await getRequest(`/user/${this.userId}`)
           this.user = data
-
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

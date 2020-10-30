@@ -80,25 +80,25 @@ export default {
       tabs: [ {
         label: 'Contacts',
         path: '/contacts',
-          display: this.$store.getters.userHasFeature('CONTACTS')
+        feature: 'CONTACTS'
       }, {
         label: 'Projects',
         path: '/projects',
-        display: this.$store.getters.userHasFeature('PROJECTS')
+        feature: 'PROJECTS'
       },
         {
         label: 'Schedule',
         path: '/schedule',
-        display: this.$store.getters.userHasFeature('SCHEDULE')
+        feature: 'SCHEDULE'
       },
         {
         label: 'Work Queue',
         path: '/workQueue',
-        display: this.$store.getters.userHasFeature('WORK_QUEUE')
+        feature: 'WORK_QUEUE'
       }, {
         label: 'Smartlists',
         path: '/smartlist',
-        display: this.$store.getters.userHasFeature('SMARTLIST')
+        feature: 'SMARTLIST'
       }]
     }
   },
@@ -109,7 +109,7 @@ export default {
 	},
   computed: {
     displayedTabs () {
-      return this.tabs.filter(tab => tab.display)
+      return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature))
     },
   },
   methods: {

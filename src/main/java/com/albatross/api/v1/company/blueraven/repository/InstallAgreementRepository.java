@@ -45,7 +45,7 @@ public class InstallAgreementRepository {
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", "VIEW_ALL");
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", List.of("VIEW_ALL"));
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
