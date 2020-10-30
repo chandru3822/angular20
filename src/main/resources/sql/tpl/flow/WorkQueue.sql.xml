@@ -76,6 +76,7 @@
              pps.project_id,
              ps.process_step_name,
              p.company_project_status_type_id,
+             DATE_PART('day', now() - pps.date_created) as days_in_queue,
              cpst.project_status_type_id,
              p.contact_id,
              concat(u.first_name, ' ', u.last_name) AS owner,
