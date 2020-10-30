@@ -56,6 +56,7 @@ public class AvailabilityService {
   private final ObjectMapper om;
   private final CommunicationService communicationService;
   private final ProjectService projectService;
+  private final ProjectProcessStepService projectProcessStepService;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -445,6 +446,9 @@ public class AvailabilityService {
 
         if (!results.isEmpty()) {
           if (null != results.get(0) && results.get(0).getSuccess()) {
+
+            projectProcessStepService.performAutoTriggerActions(request.getProjectProcessStepId(), securityService.getCurrentUserDetails());
+
             //on success send email to the closer
             String closerEmail = results.get(0).getUserEmail();
             if(null != closerEmail) {
