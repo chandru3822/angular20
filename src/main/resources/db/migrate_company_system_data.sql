@@ -548,26 +548,11 @@ alter table flow.process_step_action_company_function drop column if exists  mig
 
 
 
--- TODO
---1 migrate org email and birdeye from orgs  custom_field_group_assignemnet_id 17257
--- 3) zachs function
--- 2) project query down line
--- 3) contact query down line
--- 10) migrating the position for zach
--- 4) test commissions
--- 5) test lead allocation
--- 7) look at deals that are not bringing over closer
--- 8) look at all resource data from deal calendar event
--- 9) test all data
--- 11) make sure the anything in the future has a resource
---12)  migrate schedule notes to process steps
--- [ ] Do migration for:
--- - [ ] deal_note
--- - [ ] event_closeout_queue
--- - [ ] feedback
+
 -- - [ ] Double check installation agreement request tables with John
--- - [ ] Predesign_status_log
--- cached available time on a cron job as well as the user_position_vw
+
+
+
 
 
 

@@ -531,6 +531,39 @@ insert into flow.user_company(company_id,user_id,is_default)
  where u2.id not in (select user_id from blueraven.user_position)
       and u2.id not in (2350555,99999999,2405363, 2356764, 2410143));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (
+         select u1.id
+         FROM blueraven."user" u1
+         where u1.id not in (2350555,99999999,2405363, 2356764, 2410143)
+           and u1.id not in ( select distinct u.id
+                              from blueraven.user u
+                                       inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
+                                       inner join blueraven.org o on o.id = up.org_id
+                                  and o.org_type_id in (15,16))
+           and u1.id in (select up1.user_id from blueraven.user_position up1
+                                                     inner join blueraven.org o1 on o1.id = up1.org_id
+                         where up1.primary_flag is true and
+                                 up1.org_id in (select distinct a.id
+                                                from blueraven.org_hierarchy_filter_down(
+                                                             '{215}') a
+                                                         inner join blueraven.org_type ot on ot.id = a.org_type_id
+                                                where org_type_id not in (15,16)))
+         union
+         select u2.id
+         FROM blueraven."user" u2
+         where u2.id not in (select user_id from blueraven.user_position)
+           and u2.id not in (2350555,99999999,2405363, 2356764, 2410143)));
+
+
+
 insert into flow.user_company(company_id,user_id,is_default)
 (with
       companies as (
@@ -548,13 +581,15 @@ insert into flow.user_company(company_id,user_id,is_default)
           union
           select id from flow.company where company_name = 'Sun Run'
           union
-          select id from flow.company where company_name = 'Solar 101n'
+          select id from flow.company where company_name = 'Solar 101'
           union
           select id from flow.company where company_name = 'TGE Solar'
           union
           select id from flow.company where company_name = 'Atlas Solar Advisors'
           union
           select id from flow.company where company_name = 'Direct Solar of America'
+          union
+          select id from flow.company where company_name = 'Smart Money Solar'
           union
           select id from flow.company where company_name = 'Revolution Solar'
           union
@@ -579,6 +614,34 @@ insert into flow.user_company(company_id,user_id,is_default)
                                                                                '{216,217}') a
                                                                            inner join blueraven.org_type ot on ot.id = a.org_type_id
                                                                   where org_type_id not in (15,16))));
+
+
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (
+         select u1.id
+         FROM blueraven."user" u1
+         where u1.id not in (2350555,99999999,2405363, 2356764, 2410143)
+           and u1.id not in ( select distinct u.id
+                              from blueraven.user u
+                                       inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
+                                       inner join blueraven.org o on o.id = up.org_id
+                                  and o.org_type_id in (15,16))
+           and u1.id in (select up1.user_id from blueraven.user_position up1
+                                                     inner join blueraven.org o1 on o1.id = up1.org_id
+                         where up1.primary_flag is true and
+                                 up1.org_id in (select distinct a.id
+                                                from blueraven.org_hierarchy_filter_down(
+                                                             '{216,217}') a
+                                                         inner join blueraven.org_type ot on ot.id = a.org_type_id
+                                                where org_type_id not in (15,16)))));
+
 
 
 insert into flow.user_position(id, user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
@@ -755,6 +818,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (911,910)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (911,910)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -899,6 +976,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (575,574)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (575,574)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -1041,6 +1132,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (883,888)));
+
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (883,888)));
 
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
@@ -1187,6 +1292,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (684,683)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (684,683)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -1332,6 +1451,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (572,573)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (572,573)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -1475,6 +1608,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                                 inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (569,571,570)));
+
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (569,571,570)));
 
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
@@ -1622,6 +1769,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (620,619)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (620,619)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -1748,6 +1909,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (860,861,862)));
+
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (860,861,862)));
 
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
@@ -1880,6 +2055,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (863,864)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (863,864)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -2007,6 +2196,19 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (867,870)));
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (867,870)));
 
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
@@ -2138,6 +2340,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (868,871)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (868,871)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -2265,6 +2481,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (869,872)));
+
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (869,872)));
 
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
@@ -2394,6 +2624,20 @@ insert into flow.user_company(company_id,user_id,is_default)
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (874,875)));
 
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (874,875)));
+
 
 insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
@@ -2431,14 +2675,7 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
-insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
-    (select u.id,ust.id,false,now(),now(),2350555,2350555
-     from blueraven.user u
-              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
-              inner join flow.user_company uc on uc.user_id = u.id
-              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
-     where ust2.user_status_type = ust.user_status_type
-        and u.id not in (2350555,99999999,2405363, 2356764, 2410143));
+
 
 -- insert into brs.sales_area_type(id, sales_area_type)
 --     (select id, sales_area_type
@@ -8009,7 +8246,51 @@ SELECT setval('flow.customer_id_seq',
                         FROM flow.contact), 1), false);
 
 
+--TODO as Judson if we should mover over description from LEAD
 
+INSERT INTO flow.contact (city,
+                           company_country_id,
+                           email,
+                           first_name,
+                           last_name,
+                           mobile,
+                           phone,
+                           postal_code,
+                           state,
+                           street1,
+                           street2,
+                           contact_type_id,
+                           created_by_id,
+                           date_created,
+                           company_id,
+                           title,
+                           owner_user_position_id,
+                           migrate_lead_id)
+    (SELECT city,
+            (select cc.id
+             from flow.company_country cc
+                      inner join flow.country cy on cy.id = cc.country_id
+             where cc.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+               and cy.id = 1),
+            email,
+            substr(first_name,1,100),
+            substr(last_name,1,100),
+            mobile,
+            phone,
+            postal_code,
+            state,
+            street1,
+            street2,
+            (select id from flow.contact_type where contact_type='Lead'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Blue Raven Solar'),
+            title,
+            (select up.id
+             from flow.user_position up
+             where up.user_id = l.setter_user_id and primary_flag is true),
+            id
+     FROM blueraven.lead l);
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -8058,53 +8339,8 @@ INSERT INTO flow.contact (city,
             created_date,
             (select id from flow.company where company_name = 'Solenrgi')
      from blueraven.customer c
-     where  c.id = 109137);
-
---TODO as Judson if we should mover over description from LEAD
-
-INSERT INTO flow.contact (city,
-                           company_country_id,
-                           email,
-                           first_name,
-                           last_name,
-                           mobile,
-                           phone,
-                           postal_code,
-                           state,
-                           street1,
-                           street2,
-                           contact_type_id,
-                           created_by_id,
-                           date_created,
-                           company_id,
-                           title,
-                           owner_user_position_id,
-                           migrate_lead_id)
-    (SELECT city,
-            (select cc.id
-             from flow.company_country cc
-                      inner join flow.country cy on cy.id = cc.country_id
-             where cc.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-               and cy.id = 1),
-            email,
-            substr(first_name,1,100),
-            substr(last_name,1,100),
-            mobile,
-            phone,
-            postal_code,
-            state,
-            street1,
-            street2,
-            (select id from flow.contact_type where contact_type='Lead'),
-            2350555 as created_by_id,
-            created_date,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            title,
-            (select up.id
-             from flow.user_position up
-             where up.user_id = l.setter_user_id and primary_flag is true),
-            id
-     FROM blueraven.lead l);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2)
+       and c.id in ( 109137,135115));
 
 
 update flow.contact c2
@@ -8542,10 +8778,127 @@ INSERT INTO flow.project (id,
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
                      end ,
             added_on,
-            case when current_stage_id in (2,3) then (select id from flow.company_project_status_type where project_status_type = 'Cancelled' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
-                 when current_stage_id not in (2,3) and on_hold is true then (select id from flow.company_project_status_type where project_status_type = 'On Hold' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
-                 when (financier = '["Dividend Solar"]' or financier = '["One Roof Energy"]') then (select id from flow.company_project_status_type where project_status_type = 'Complete' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
-                 else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) end,
+            case when current_stage_id in (2,3) then
+                (select id
+                from flow.company_project_status_type
+                where project_status_type = 'Cancelled' and company_id =
+                                      case when d.originator_id = 1 then
+                                      (select id from flow.company where company_name = 'Blue Raven Solar')
+                                           when d.originator_id = 2 then
+                                               (select id from flow.company where company_name = 'Solenrgi')
+                                           when d.originator_id = 4 then
+                                               (select id from flow.company where company_name = 'B+C Electric')
+                                           when d.originator_id = 6 then
+                                               (select id from flow.company where company_name = 'Salient Solar')
+                                           when d.originator_id = 7 then
+                                               (select id from flow.company where company_name = 'Sun Run')
+                                           when d.originator_id = 8 then
+                                               (select id from flow.company where company_name = 'Eco Lux Solar')
+                                           when d.originator_id = 9 then
+                                               (select id from flow.company where company_name = 'Solar 101')
+                                           when d.originator_id = 10 then
+                                               (select id from flow.company where company_name = 'TGE Solar')
+                                           when d.originator_id = 11 then
+                                               (select id from flow.company where company_name = 'Atlas Solar Advisors')
+                                           when d.originator_id = 12 then
+                                               (select id from flow.company where company_name = 'Direct Solar of America')
+                                           when d.originator_id = 13 then
+                                               (select id from flow.company where company_name = 'Revolution Solar')
+                                           when d.originator_id = 14 then
+                                               (select id from flow.company where company_name = 'Smart Money Solar')
+                                           when d.originator_id = 15 then
+                                               (select id from flow.company where company_name = 'Supernova Energy')
+                                           when d.originator_id = 16 then
+                                               (select id from flow.company where company_name = 'Energy Pal')end)
+                 when current_stage_id not in (2,3) and on_hold is true then
+                     (select id from flow.company_project_status_type where project_status_type = 'On Hold' and company_id =
+                                                                                                                case when d.originator_id = 1 then
+                                                                                                                         (select id from flow.company where company_name = 'Blue Raven Solar')
+                                                                                                                     when d.originator_id = 2 then
+                                                                                                                         (select id from flow.company where company_name = 'Solenrgi')
+                                                                                                                     when d.originator_id = 4 then
+                                                                                                                         (select id from flow.company where company_name = 'B+C Electric')
+                                                                                                                     when d.originator_id = 6 then
+                                                                                                                         (select id from flow.company where company_name = 'Salient Solar')
+                                                                                                                     when d.originator_id = 7 then
+                                                                                                                         (select id from flow.company where company_name = 'Sun Run')
+                                                                                                                     when d.originator_id = 8 then
+                                                                                                                         (select id from flow.company where company_name = 'Eco Lux Solar')
+                                                                                                                     when d.originator_id = 9 then
+                                                                                                                         (select id from flow.company where company_name = 'Solar 101')
+                                                                                                                     when d.originator_id = 10 then
+                                                                                                                         (select id from flow.company where company_name = 'TGE Solar')
+                                                                                                                     when d.originator_id = 11 then
+                                                                                                                         (select id from flow.company where company_name = 'Atlas Solar Advisors')
+                                                                                                                     when d.originator_id = 12 then
+                                                                                                                         (select id from flow.company where company_name = 'Direct Solar of America')
+                                                                                                                     when d.originator_id = 13 then
+                                                                                                                         (select id from flow.company where company_name = 'Revolution Solar')
+                                                                                                                     when d.originator_id = 14 then
+                                                                                                                         (select id from flow.company where company_name = 'Smart Money Solar')
+                                                                                                                     when d.originator_id = 15 then
+                                                                                                                         (select id from flow.company where company_name = 'Supernova Energy')
+                                                                                                                     when d.originator_id = 16 then
+                                                                                                                         (select id from flow.company where company_name = 'Energy Pal')end)
+                 when (financier = '["Dividend Solar"]' or financier = '["One Roof Energy"]') then
+                     (select id from flow.company_project_status_type where project_status_type = 'Complete' and company_id =
+                                                                                                                 case when d.originator_id = 1 then
+                                                                                                                          (select id from flow.company where company_name = 'Blue Raven Solar')
+                                                                                                                      when d.originator_id = 2 then
+                                                                                                                          (select id from flow.company where company_name = 'Solenrgi')
+                                                                                                                      when d.originator_id = 4 then
+                                                                                                                          (select id from flow.company where company_name = 'B+C Electric')
+                                                                                                                      when d.originator_id = 6 then
+                                                                                                                          (select id from flow.company where company_name = 'Salient Solar')
+                                                                                                                      when d.originator_id = 7 then
+                                                                                                                          (select id from flow.company where company_name = 'Sun Run')
+                                                                                                                      when d.originator_id = 8 then
+                                                                                                                          (select id from flow.company where company_name = 'Eco Lux Solar')
+                                                                                                                      when d.originator_id = 9 then
+                                                                                                                          (select id from flow.company where company_name = 'Solar 101')
+                                                                                                                      when d.originator_id = 10 then
+                                                                                                                          (select id from flow.company where company_name = 'TGE Solar')
+                                                                                                                      when d.originator_id = 11 then
+                                                                                                                          (select id from flow.company where company_name = 'Atlas Solar Advisors')
+                                                                                                                      when d.originator_id = 12 then
+                                                                                                                          (select id from flow.company where company_name = 'Direct Solar of America')
+                                                                                                                      when d.originator_id = 13 then
+                                                                                                                          (select id from flow.company where company_name = 'Revolution Solar')
+                                                                                                                      when d.originator_id = 14 then
+                                                                                                                          (select id from flow.company where company_name = 'Smart Money Solar')
+                                                                                                                      when d.originator_id = 15 then
+                                                                                                                          (select id from flow.company where company_name = 'Supernova Energy')
+                                                                                                                      when d.originator_id = 16 then
+                                                                                                                          (select id from flow.company where company_name = 'Energy Pal') end)
+                 else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id =
+                                                                                                                case when d.originator_id = 1 then
+                                                                                                                         (select id from flow.company where company_name = 'Blue Raven Solar')
+                                                                                                                     when d.originator_id = 2 then
+                                                                                                                         (select id from flow.company where company_name = 'Solenrgi')
+                                                                                                                     when d.originator_id = 4 then
+                                                                                                                         (select id from flow.company where company_name = 'B+C Electric')
+                                                                                                                     when d.originator_id = 6 then
+                                                                                                                         (select id from flow.company where company_name = 'Salient Solar')
+                                                                                                                     when d.originator_id = 7 then
+                                                                                                                         (select id from flow.company where company_name = 'Sun Run')
+                                                                                                                     when d.originator_id = 8 then
+                                                                                                                         (select id from flow.company where company_name = 'Eco Lux Solar')
+                                                                                                                     when d.originator_id = 9 then
+                                                                                                                         (select id from flow.company where company_name = 'Solar 101')
+                                                                                                                     when d.originator_id = 10 then
+                                                                                                                         (select id from flow.company where company_name = 'TGE Solar')
+                                                                                                                     when d.originator_id = 11 then
+                                                                                                                         (select id from flow.company where company_name = 'Atlas Solar Advisors')
+                                                                                                                     when d.originator_id = 12 then
+                                                                                                                         (select id from flow.company where company_name = 'Direct Solar of America')
+                                                                                                                     when d.originator_id = 13 then
+                                                                                                                         (select id from flow.company where company_name = 'Revolution Solar')
+                                                                                                                     when d.originator_id = 14 then
+                                                                                                                         (select id from flow.company where company_name = 'Smart Money Solar')
+                                                                                                                     when d.originator_id = 15 then
+                                                                                                                         (select id from flow.company where company_name = 'Supernova Energy')
+                                                                                                                     when d.originator_id = 16 then
+                                                                                                                         (select id from flow.company where company_name = 'Energy Pal')end)end ,
             c.latitude,
             c.longitude,
             c.time_zone
@@ -8555,6 +8908,9 @@ INSERT INTO flow.project (id,
 
 update flow.project set contact_id = (select id from flow.contact where first_name = 'Robert' and last_name = 'Earl' and city = 'Pahrump' and  company_id = 7)
 where id =153066;
+update flow.project set contact_id = (select id from flow.contact where first_name = 'Arturo' and last_name = 'Gonzalez' and city = 'Joliet' and  company_id = 7)
+where id =179198;
+
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
 refresh materialized view blueraven.commission_plan_vw;
@@ -9400,9 +9756,11 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT d.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id
-            WHERE field_name = 'Electrical Permit Number' and cf.company_id = c.company_id
-                and cfg.archived is false),
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg
+                                    inner join flow.custom_field cf on  cf.id = cfg.custom_field_id
+                                    inner join flow.custom_field_group cfg2 on cfg2.id = cfg.custom_field_group_id
+             WHERE field_name = 'Electrical Permit Number' and cf.company_id = c.company_id
+               and cfg.archived is false and cfg2.process_step_id is null),
             d.electrical_permit_number,
             2350555 as created_by_id
      FROM blueraven.deal d
@@ -9413,7 +9771,10 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, boolean_value, created_by_id)
     (SELECT d.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Homeowner Review' and cf.company_id = c.company_id),
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg
+                inner join flow.custom_field cf on  cf.id = cfg.custom_field_id
+            WHERE field_name = 'Homeowner Review' and cf.company_id = c.company_id
+                and cfg.archived is false),
             d.customer_review::boolean,
             2350555 as created_by_id
      FROM blueraven.deal d

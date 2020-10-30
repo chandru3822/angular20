@@ -118,6 +118,15 @@ INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_fi
 INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, archived, date_created, date_modified, created_by_id, modified_by_id, schedule_field_type_id) VALUES ((select id from flow.custom_field_group where group_name = 'Kory Test Project Group DONT DELETE PLEASE'), 562, null, 0, false, '2020-05-04 20:57:12.401288', null, 2350555, null, null);
 INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, archived, date_created, date_modified, created_by_id, modified_by_id, schedule_field_type_id) VALUES ((select id from flow.custom_field_group where group_name = 'Kory Test Project Group DONT DELETE PLEASE'), 564, null, 0, false, '2020-05-04 20:57:15.347502', null, 2350555, null, null);
 
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-268.plist', 'application/octet-stream', null, null, false, '2020-10-27 15:34:38.356619', '2020-10-28 15:30:21.106224', true, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-268.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-269.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-27 16:02:15.587778', '2020-10-28 15:30:24.009405', true, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-269.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-271.plist', 'application/octet-stream', null, null, false, '2020-10-28 17:51:33.280250', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-271.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-272.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-28 18:19:06.830545', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-272.apk');
+
+INSERT INTO blueraven.attachment_source ( attachment_id, source_id, attachment_source_type_id) VALUES ( 175117, 2, 8);
+INSERT INTO blueraven.attachment_source ( attachment_id, source_id, attachment_source_type_id) VALUES ( 175118, 4, 8);
+INSERT INTO blueraven.attachment_source ( attachment_id, source_id, attachment_source_type_id) VALUES ( 175119, 2, 8);
+INSERT INTO blueraven.attachment_source ( attachment_id, source_id, attachment_source_type_id) VALUES ( 175120, 4, 8);
 
 -- INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2371455, 6, 1, true);
 -- INSERT INTO flow.user_feature_access_control (user_id, company_feature_id, access_control_id, enabled) VALUES (2371455, 6, 6, true);
