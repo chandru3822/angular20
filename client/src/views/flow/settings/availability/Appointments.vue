@@ -322,6 +322,7 @@
           this.saveErrorMsg = '* Appointment End must be after Appointment Start'
         } else {
           try {
+            this.$store.commit(AppMutations.SET_LOADING, true)
             if( appt.allDay) {
               appt.startTime = moment(appt.startTime).startOf('day').utc().format()
               appt.endTime = moment(appt.endTime).endOf('day').utc().format()
@@ -337,15 +338,15 @@
             this.addNew = false
             this.expanded = []
             //if repeating appointment - reload appointments to get full list
+            this.newAppt = {}
             if(appt.repeat) {
               await this.getAppointments()
             } else if(!appt.id) {
               //else if new appointment - push into appointments
               this.appointments.push(data)
+              this.appointments = orderBy(this.appointments, [s => s.startDate])
+              this.$store.commit(AppMutations.SET_LOADING, false)
             }
-            this.newAppt = {}
-            this.appointments = orderBy(this.appointments, [s => s.startDate])
-            this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
