@@ -71,6 +71,7 @@
       c.phone,
       c.mobile,
       c.contact_type_id,
+      c.postal_code,
       c.company_id,
       c.street1,
       c.city,

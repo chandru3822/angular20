@@ -3,6 +3,11 @@ CREATE OR REPLACE FUNCTION flow.project_details()
 $$
 declare
     v_company_id integer;
+    v_contact_email  character varying(255);
+    v_contact_mobile_phone  character varying(50);
+    v_contact_phone  character varying(50);
+    v_state_id integer;
+    v_state_abbrev character varying (2);
 BEGIN
     select company_id
     into v_company_id
@@ -10,8 +15,37 @@ BEGIN
     where process_id = new.company_process_id
     limit 1;
 
+    select email, phone,mobile
+    into v_contact_email,v_contact_phone,v_contact_mobile_phone
+        from flow.contact
+    where  id = new.contact_id;
+
+    select s.id, s.abbreviation
+    into v_state_id,v_state_abbrev
+    from flow.company_state cs
+    inner join flow.state s on cs.state_id = s.id
+    where cs.id = new.company_state_id;
+
     IF (TG_OP = 'INSERT') THEN
-        insert into brs.project_details(project_id, company_id) values (new.id, v_company_id);
+        insert into brs.project_details(project_id, company_id,contact_email,
+                                        contact_phone,contact_mobile_phone,
+                                        project_street1,project_city,project_postal_code,
+                                        project_time_zone,project_state_id,project_state_abbreviation)
+        values (new.id, v_company_id,v_contact_email,v_contact_phone,v_contact_mobile_phone,
+                new.street1,new.city,new.postal_code,new.time_zone,v_state_id,v_state_abbrev);
+    elsif (TG_OP = 'UPDATE') THEN
+        update brs.project_details
+            set contact_email = v_contact_email,
+                contact_phone = v_contact_phone,
+                contact_mobile_phone = v_contact_mobile_phone,
+                project_street1 = new.street1,
+                project_city = new.city,
+                project_postal_code = new.postal_code,
+                project_time_zone = new.time_zone,
+                project_state_id = v_state_id,
+                project_state_abbreviation = v_state_abbrev
+        where project_id = new.id;
+
     elsif (TG_OP = 'DELETE') THEN
         DELETE FROM brs.project_details where project_id = old.id;
     end if;
@@ -22,7 +56,7 @@ $$
 
 drop trigger if exists project_project_details_trg on flow.project;
 CREATE TRIGGER project_project_details_trg
-    after INSERT or delete
+    after INSERT or delete or update
     ON flow.project
     FOR EACH ROW
 EXECUTE PROCEDURE flow.project_details();

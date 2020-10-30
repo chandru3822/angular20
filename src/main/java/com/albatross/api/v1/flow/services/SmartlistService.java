@@ -44,14 +44,26 @@ public class SmartlistService {
   private final SystemListService systemListService;
 
   public List<Smartlist> getSmartlists() {
-    return sqlCache.query("smartlist.get", null, Smartlist.class);
+    User user = securityService.getCurrentUser();
+
+    if (securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN", "VIEW_ALL"))) {
+      return sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    } else {
+      return sqlCache.query("smartlist.getOwnAndShared", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    }
   }
 
   public Smartlist getSmartlist(Long id) {
-    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id), Smartlist.class).orElse(null);
+    User user = securityService.getCurrentUser();
+    final boolean isSmartlistAdmin = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
+    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId(), "isSmartlistAdmin", isSmartlistAdmin), Smartlist.class).orElse(null);
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
+    if (!this.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("ownerId", user.getId());
@@ -61,10 +73,29 @@ public class SmartlistService {
   }
 
   public void updateSmartlist(Smartlist smartlist) {
+
+    Smartlist existingSmartlist = this.getSmartlist(smartlist.getId());
+    final boolean updatingName = !existingSmartlist.getName().trim().toLowerCase().equals(smartlist.getName().trim().toLowerCase());
+
+    if (updatingName && !this.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("userId", user.getId());
     sqlCache.update("smartlist.update", params);
+  }
+
+  public boolean isNameUnique(String name) {
+    User user = securityService.getCurrentUser();
+    List<Smartlist> smartlists = sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
+    for (Smartlist s: smartlists) {
+      if (s.getName().trim().toLowerCase().equals(name.trim().toLowerCase())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public List<SmartlistFieldAssignment> getAvailableFields(Long objectTypeId) {
@@ -245,6 +276,8 @@ public class SmartlistService {
     List<SmartlistFieldAssignment> joinTables = new ArrayList<>();
 
     StringBuilder withClause = new StringBuilder();
+    StringBuilder additionalJoins = new StringBuilder();
+    StringBuilder whereClause = new StringBuilder();
 
     // Always joining the smartlist system lists for selecting. If we run into performance issues, only selectively add these
     withClause.append(String.format(" \n\"smartlist.systemlist.1\" as (select * from flow.get_smartlist_system_list_options(%s::int, %s::int)), ", 1, companyId));
@@ -288,9 +321,12 @@ public class SmartlistService {
           f.setValueReferenceTable(UUID.randomUUID().toString());
           joinTables.add(f);
         }
+      } else {
+        f.setValueReferenceTable(UUID.randomUUID().toString());
+        joinTables.add(f);
       }
 
-      String location;
+      String location = "";
 
       final String referenceTable = joinTables.stream()
         .filter(t -> t.getCustomFieldGroupAssignmentId() != null && t.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
@@ -299,7 +335,17 @@ public class SmartlistService {
         .orElse(null);
 
       if (f.getSmartlistSystemListId() != null) {
-        location = String.format("(select name from \"smartlist.systemlist.%s\" where id = %s.%s)", f.getSmartlistSystemListId(), f.getJoinTable(), f.getJoinColumn());
+        if (f.getSmartlistSystemListId() == 1) {
+          location = String.format("(select name from \"smartlist.systemlist.%s\" where id = %s.%s)", f.getSmartlistSystemListId(), f.getJoinTable(), f.getJoinColumn());
+        } else if (f.getSmartlistSystemListId() == 2) {
+          final String ppsTable = joinTables.stream()
+            .filter(t -> t.getProcessStepId() != null && f.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
+            .map(SmartlistFieldAssignment::getReferenceTable)
+            .findFirst()
+            .orElse(null);
+
+          location = String.format("(select name from \"smartlist.systemlist.%s\" where id = %s.%s)", f.getSmartlistSystemListId(), ppsTable, f.getJoinColumn());
+        }
       }
       // If field is custom, else it's system
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
@@ -351,24 +397,34 @@ public class SmartlistService {
 
     switch (smartlist.getObjectTypeId().intValue()) {
       case 1:
-        query.append(" \nfrom flow.project ");
+        query.append("\nfrom flow.project ");
+        query.append("\ninner join flow.company_process on flow.company_process.id = flow.project.company_process_id ");
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
+
+        whereClause.append(String.format("\nflow.company_process.company_id = %s and ", companyId));
         break;
       case 2:
         query.append(" \nfrom flow.contact ");
         query.append("\nleft join flow.project on flow.project.contact_id = flow.contact.id ");
+
+        whereClause.append(String.format("\nflow.contact.company_id = %s and ", companyId));
         break;
       case 4:
         query.append(" \nfrom flow.project_process_step ");
         query.append("\ninner join flow.process_step on flow.process_step.id = flow.project_process_step.process_step_id ");
         query.append("\nleft join flow.project on flow.project.id = flow.project_process_step.project_id  ");
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
+
+        whereClause.append(String.format("\nflow.process_step.company_id = %s and ", companyId));
+        break;
     }
 
     for (SmartlistFieldAssignment f : joinTables) {
       final String joinAlias = (f.getSystemListTypeId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null)) ? f.getValueReferenceTable() : f.getReferenceTable();
 
-      if (f.getObjectTypeId() == 1 || f.getObjectTypeId() == 2) {
+      if (f.getSmartlistSystemListId() != null) {
+        //@TODO stuff goes here for doing system list joins for smartlist system list fields
+      } else if (f.getObjectTypeId() == 1 || f.getObjectTypeId() == 2) {
 
         final String joinField = (f.getObjectTypeId() == 1) ? "project_id" : "contact_id";
         final String joinedField = (f.getObjectTypeId() == 1) ? "id" : "contact_id";
@@ -434,15 +490,49 @@ public class SmartlistService {
       }
     }
 
-    StringBuilder additionalJoins = new StringBuilder();
-    StringBuilder whereClause = new StringBuilder();
-
       for (SmartlistRequirement r : requirements) {
           String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
           String referenceLocation = "";
 
-          if (r.getCustomFieldGroupAssignmentId() != null) {
+          if (r.getSmartlistSystemListId() != null) {
+            final String referenceTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
+
+            if (r.getSmartlistSystemListId() == 1) {
+              if (additionalJoins.indexOf("left join " + referenceTable) == -1 && query.indexOf("left join " + referenceTable) == -1) {
+                additionalJoins.append(String.format("\nleft join \"%s\" on \"%s\".id = %s.%s ", referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
+              }
+            } else if (r.getSmartlistSystemListId() == 2) {
+              String joinTable;
+              try {
+                joinTable = joinTables.stream()
+                  .filter(t -> t.getProcessStepId() != null && r.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
+                  .map(t -> {
+                    if (t.getJoinTable() != null) {
+                      return t.getValueReferenceTable();
+                    } else {
+                      return t.getReferenceTable();
+                    }
+                  })
+                  .findFirst()
+                  .orElse(null);
+              } catch (NullPointerException e) {
+                joinTable = UUID.randomUUID().toString();
+              }
+
+              if (additionalJoins.indexOf(joinTable) == -1 && query.indexOf(joinTable) == -1) {
+                additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinTable, joinTable, joinTable, r.getProcessStepId()));
+                if (smartlist.isMainProcessSteps()) {
+                  additionalJoins.append(String.format("and \"%s\".main is true ", joinTable));
+                }
+              }
+
+              if (additionalJoins.indexOf("left join " + referenceTable) == -1 && query.indexOf("left join " + referenceTable) == -1) {
+                additionalJoins.append(String.format("\nleft join \"%s\" on \"%s\".id = \"%s\".%s ", referenceTable, referenceTable, joinTable, r.getJoinColumn()));
+              }
+            }
+            referenceLocation = String.format("\"%s\".id", referenceTable);
+          } else if (r.getCustomFieldGroupAssignmentId() != null) {
 
             String referenceColumn;
             if (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) {
@@ -748,6 +838,9 @@ public class SmartlistService {
 
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 5:
+                if (r.getSmartlistSystemListId() != null) {
+                  return r.getListOfValueId();
+                }
                 if (r.getIsCustomValue()) {
                     return requirementValue;
                 }

@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class RicochetLead {
-    private Long hubspotId;
+    private Long uniqueIdentifier, hubspotId;
     private Customer customer;
     private String lead_source, status, leadOwner, lead_source_detail;
 

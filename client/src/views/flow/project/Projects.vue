@@ -8,6 +8,7 @@
                 <v-spacer />
 
                 <v-select
+                    v-if="$store.getters.userHasFeature('SMARTLIST')"
                     v-model="selectedSmartlistId"
                     :items="smartlists"
                     item-text="name"
@@ -147,7 +148,9 @@ export default {
         }
     },
     created () {
-        this.getSharedSmartlists()
+        if (this.$store.getters.userHasFeature('SMARTLIST')) {
+          this.getSharedSmartlists()
+        }
     },
     methods: {
         async getProjects() {

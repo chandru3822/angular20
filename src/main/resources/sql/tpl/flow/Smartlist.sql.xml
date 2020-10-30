@@ -1,55 +1,84 @@
 <sql>
 
-<smartlist.get><![CDATA[
+<smartlist.getOwnAndShared><![CDATA[
 select
   s.*,
   ot.object_type,
   cot.object_type_id,
-  ot1.object_type as view_object_type
+  ot1.object_type as view_object_type,
+  concat(u.first_name, ' ', u.last_name) as owner
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
 inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
-]]></smartlist.get>
+inner join flow.user u on u.id = s.owner_id
+where cot.company_id = :companyId and
+      (s.owner_id = :userId or s.shared is true) and
+      s.archived is not true
+]]></smartlist.getOwnAndShared>
+
+<smartlist.getAll><![CDATA[
+select
+  s.*,
+  ot.object_type,
+  cot.object_type_id,
+  ot1.object_type as view_object_type,
+  concat(u.first_name, ' ', u.last_name) as owner
+from flow.smartlist s
+inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+inner join flow.object_type ot on ot.id = cot.object_type_id
+inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
+inner join flow.user u on u.id = s.owner_id
+where cot.company_id = :companyId and
+      s.archived is not true
+]]></smartlist.getAll>
 
 <smartlist.getById><![CDATA[
 select
   s.*,
   ot.object_type,
   cot.object_type_id,
-  ot1.object_type as view_object_type
+  ot1.object_type as view_object_type,
+  concat(u.first_name, ' ', u.last_name) as owner
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
 inner join flow.object_type ot1 on ot1.id = s.view_object_type_id
-where s.id = :smartlistId;
+inner join flow.user u on u.id = s.owner_id
+where s.id = :smartlistId and
+      cot.company_id = :companyId and
+      (s.owner_id = :userId or s.shared or :isSmartlistAdmin) and
+      s.archived is not true
 ]]></smartlist.getById>
 
 <smartlist.getSharedByObjectType><![CDATA[
-  select
-      s.id,
-      s.name,
-      s.company_object_type_id,
-      cot.object_type_id,
-      s.shared,
-      s.owner_id,
-      s.date_created,
-      s.date_modified,
-      s.created_by_id,
-      s.modified_by_id,
-      s.archived
-  from flow.smartlist s
-  inner join flow.company_object_type cot on cot.id = s.company_object_type_id
-  where
-      (s.shared is true or s.owner_id = :userId) and
+-- selecting smartlists via smartlist_field_assignment makes sure we get smartlists with at least 1 field
+select
+  distinct s.id,
+  s.name,
+  s.company_object_type_id,
+  cot.object_type_id,
+  s.shared,
+  s.owner_id,
+  s.date_created,
+  s.date_modified,
+  s.created_by_id,
+  s.modified_by_id,
+  s.archived
+from flow.smartlist_field_assignment sfa
+inner join flow.smartlist s on s.id = sfa.smartlist_id
+inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+where cot.company_id = :companyId and
+      s.archived is not true and
+      sfa.archived is not true and
       s.view_object_type_id = :objectTypeId and
-      cot.company_id = :companyId
-  order by s.name
+      (s.shared is true or s.owner_id = :userId)
+order by s.name
 ]]></smartlist.getSharedByObjectType>
 
 <smartlist.add><![CDATA[
 insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps)
-values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, :mainProcessSteps)
+values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, true)
 returning id;
 ]]></smartlist.add>
 
@@ -60,7 +89,6 @@ set
   company_object_type_id = :companyObjectTypeId,
   shared = :shared,
   view_object_type_id = :viewObjectTypeId,
-  main_process_steps = :mainProcessSteps,
   modified_by_id = :userId,
   date_modified = now()
 where
@@ -377,7 +405,7 @@ select sr.id,
        sf.join_table,
        sf.join_column,
        sf.smartlist_system_list_id,
-       ot.object_type,
+       case when ot.object_type is null then 'Process Step' else ot.object_type end as object_type,
        cf.custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -469,7 +497,7 @@ select sr.id,
        sf.join_table,
        sf.join_column,
        sf.smartlist_system_list_id,
-       ot.object_type,
+       case when ot.object_type is null then 'Process Step' else ot.object_type end as object_type,
        cf.custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,

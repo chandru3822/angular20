@@ -326,6 +326,7 @@
                       :readonly="item.immutable || !userCanEdit"
                       label="Available Values"
                       item-text="dataTypeValue"
+                      item-value="id"
                       return-object
                   ></v-select>
                   <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"

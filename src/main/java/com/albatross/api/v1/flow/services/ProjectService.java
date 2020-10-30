@@ -75,7 +75,7 @@ public class ProjectService {
   public Page<Project> searchProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", "VIEW_ALL");
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());

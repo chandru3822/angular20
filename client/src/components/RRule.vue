@@ -6,6 +6,8 @@
               label="Repeats"
               item-text="label"
               return-object
+              :readonly="readonly"
+              :disabled="readonly"
               @input="updateRecurrenceString"
               autocomplete="new-password">
     </v-select>
@@ -13,6 +15,8 @@
                   type="number"
                   label="Repeat every (add here)"
                   placeholder=" "
+                  :readonly="readonly"
+                  :disabled="readonly"
                   @input="updateRecurrenceString"
                   v-model="rrule.interval"></v-text-field>
     <v-select v-model="rrule.months"
@@ -21,6 +25,8 @@
               item-text="label"
               return-object
               multiple
+              :readonly="readonly"
+              :disabled="readonly"
               @input="updateRecurrenceString"
               autocomplete="new-password">
     </v-select>
@@ -29,13 +35,17 @@
               label="By Day of Week"
               item-text="label"
               return-object
+              :readonly="readonly"
+              :disabled="readonly"
               @input="updateRecurrenceString"
               multiple
               autocomplete="new-password">
     </v-select>
 
     <label>Ends</label>
-    <v-radio-group v-model="rrule.endsType" @change="updateRecurrenceString">
+    <v-radio-group :readonly="readonly"
+                   :disabled="readonly"
+                   v-model="rrule.endsType" @change="updateRecurrenceString">
       <v-radio label="Never" :value="0"></v-radio>
       <div class="flex-display align-center">
         <v-radio class="mb-0" value="fixed"></v-radio>
@@ -44,6 +54,8 @@
                       type="number"
                       label=""
                       solo
+                      :readonly="readonly"
+                      :disabled="readonly"
                       @input="updateRecurrenceString"
                       hide-details
                       class="mx-2 shrink"
@@ -56,9 +68,12 @@
         On
         <DatetimePickerInput
           v-model="rrule.endDate"
+          :min-date="minDate"
+          :max-date="maxDate"
           :hide-prepend-icon="true"
           :show-append-icon="true"
           custom-class="shrink ml-2"
+          :readonly="readonly"
           :change-callback="updateRecurrenceString"
           :input-format="'YYYY-MM-DD'"
           :type="'date'"
@@ -74,6 +89,7 @@
 <script>
   import { RRule, RRuleSet, rrulestr } from 'rrule'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import moment from 'moment-timezone'
 
   const { VUE_APP_ENV } = process.env
 
@@ -86,15 +102,18 @@
       recurrence: String,
       itemId: Number,
       recurrenceCallback: Function,
+      readonly: Boolean
     },
     watch: {
-      recurrence: function () {
+      itemId: function () {
         //have to re-init when they click a different appointment in a data table
         this.initRecurrence()
       }
     },
     data () {
       return {
+        minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
+        maxDate: moment().add(1, 'y').add(1, 'd').format('YYYY-MM-DDTHH:mm:ssZ'),
         rrule: {},
         rruleText: '',
         rruleEnd: '',
@@ -133,7 +152,13 @@
         },
       }
     },
-    created () {
+    // updated () {
+    //   this.initRecurrence()
+    // },
+    // created () {
+    //   this.initRecurrence()
+    // },
+    mounted () {
       this.initRecurrence()
     },
     methods: {
@@ -159,7 +184,7 @@
         this.rruleString = rrule.toString()
         this.rruleSubString = this.rruleString.substring(6)
 
-        this.recurrenceCallback(this.rruleSubString, this.itemId, this.rrule.endDate)
+        this.recurrenceCallback(this.rruleSubString, this.rrule.endDate, this.rrule.count, this.rrule.endsType)
       },
       async initRule() {
         let rrule = RRule.fromString(this.recurrence)
@@ -171,6 +196,7 @@
 
         this.rrule.interval = rrule.options.interval || 1
 
+        console.log('should not have been here', rrule)
         if (rrule.options.count) {
           this.rrule.endsType = 'fixed';
           this.rrule.count = rrule.options.count;
@@ -197,6 +223,8 @@
           interval: this.rrule.interval
         }
 
+        console.log('real ender', this.rrule.endsType)
+
         if (this.rrule.endsType === 'fixed') {
           opts.count = this.rrule.count
         } else {
@@ -204,9 +232,11 @@
           delete opts.count
         }
 
-        if (this.rrule.endsType === 'date' && this.rrule.endDate) {
+        if (this.rrule.endsType === 'date' && null != this.rrule.endDate) {
+          console.log('randaLogger', this.rrule.endDate)
+          console.log('until', new Date(this.rrule.endDate))
           opts.until = new Date(this.rrule.endDate)
-        } else {
+        } else if(this.rrule.endsType !== 'date') {
           //unset if not date
           delete this.rrule.until
           delete this.rrule.endDate

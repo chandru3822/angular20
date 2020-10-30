@@ -5,14 +5,16 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
 @NoArgsConstructor
-public class ResourceAppointment {
+public class RecurringResourceAppointment {
 
-  private Long id, companyId, userId, orgId;
+  private Long companyId, userId, orgId, duration;
   private String description, recurrence, recurringEventId, recurringEventEndType;
-  private Date startTime, endTime, recurringStartTime, recurringEndTime;
-  private Boolean archived, allDay, repeat;
+  private Date recurringStartTime, recurringEndTime;
+  private Boolean repeat, allDay;
+  private List<ResourceAppointment> appointments;
 }

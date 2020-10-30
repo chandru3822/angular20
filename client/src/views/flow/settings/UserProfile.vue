@@ -37,6 +37,18 @@
                         :rules="emailRules"
                         label="E-mail">
           </v-text-field>
+          <v-text-field v-model="user.username"
+                        placeholder="Enter a value"
+                        required
+                        type="search"
+                        :rules="usernameRules"
+                        label="Username">
+          </v-text-field>
+          <v-text-field v-model="user.phoneNumber"
+                        placeholder="Enter a value"
+                        required
+                        label="Phone">
+          </v-text-field>
         </v-col>
         <v-col cols="12" md="6">
           <v-text-field v-model="user.newPassword"
@@ -109,6 +121,7 @@ import moment from 'moment'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar.vue'
+import cloneDeep from 'lodash.clonedeep'
 
 export default {
   name: 'UserProfile',
@@ -124,9 +137,11 @@ export default {
       // timeValue: '2014-06-01T12:00:00Z',
       // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
       timeValue: moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-      user: this.$store.state.user.details,
+      user: {},
+      userIsAlbatross: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
+      usernameRules: constants.USERNAME_RULES,
       acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
       savingUserImage: false,
       attachmentTypeId: 9,
@@ -153,9 +168,32 @@ export default {
         return true
       }
     },
-    saveUser () {
-      this.user.newPassword = null
-      this.user.newPasswordConfirm = null
+    async getUser (userIsAlbatross) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/user/${this.userId}?userIsAlbatross=${userIsAlbatross}`)
+        this.user = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveUser () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/user?userIsAlbatross=${this.userIsAlbatross}`, this.user)
+        this.user.newPassword = null
+        this.user.newPasswordConfirm = null
+        this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
+        this.snackbar = getSnackbar('ERROR', errorMsg)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteAttachment (id) {
       try {
@@ -215,6 +253,13 @@ export default {
     }
   },
   async created () {
+    if(this.$store.state.user.details.highestCompanyId === 1) {
+      //this was all super dumb because we can't load albatross users the same way as regular users
+      this.userIsAlbatross = true
+      this.getUser(this.userIsAlbatross)
+    } else {
+      this.getUser(false)
+    }
     this.loadProfileImage()
   }
 }

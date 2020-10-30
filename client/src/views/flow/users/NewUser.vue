@@ -313,6 +313,7 @@ export default {
     async saveUser () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.user.customFieldGroups = this.customFieldGroups
+      this.user.username = this.user.email
       try {
         // save user
         const {data} = await putRequest(`/user`, this.user)

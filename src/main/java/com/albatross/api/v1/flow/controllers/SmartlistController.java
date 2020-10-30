@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.SmartlistService;
@@ -18,27 +19,46 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/api/v1/flow/smartlist")
 public class SmartlistController {
 
+
   private final SmartlistService smartlistService;
 
   private final CustomFieldService customFieldService;
 
+  private final SecurityService securityService;
+
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlist>> getSmartlists() {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW_ALL", "VIEW", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
     return new ResponseEntity<>(smartlistService.getSmartlists(), HttpStatus.OK);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> addSmartlist(@RequestBody Smartlist smartlist) {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADD", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
     return new ResponseEntity<>(smartlistService.addSmartlist(smartlist), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> getSmartlist(@PathVariable Long smartlistId) {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW", "VIEW_ALL", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
     return new ResponseEntity<>(smartlistService.getSmartlist(smartlistId), HttpStatus.OK);
   }
 
   @PutMapping(value = "/{smartlistId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateSmartlist(@RequestBody Smartlist smartlist) {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("EDIT", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
     smartlistService.updateSmartlist(smartlist);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
@@ -129,6 +149,10 @@ public class SmartlistController {
 
   @GetMapping(value = "/shared", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlist>> getPublicSmartlistsByType(@RequestParam Long objectTypeId) {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW", "VIEW_ALL", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
     return new ResponseEntity<>(smartlistService.getSharedByType(objectTypeId), HttpStatus.OK);
   }
 }

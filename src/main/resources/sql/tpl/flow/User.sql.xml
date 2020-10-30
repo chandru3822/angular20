@@ -181,6 +181,7 @@
                                 inner join flow.company c on c.id = uc.company_id
                        where uc.user_id = u.id
                          and uc.archived is not true
+                         and c.archived is not true
                        order by c.company_name
                    ) companies), '[]') as companies
       from flow."user" u
@@ -191,6 +192,25 @@
         and uc.company_id = :companyId
         and uc.archived is not true
   ]]></user.getOne>
+
+  <user.getOneAlbatross><![CDATA[
+      select u.id,
+             u.phone_number,
+             u.email,
+             u.username,
+             u.created_by_id,
+             u.first_name,
+             u.last_name,
+             concat(u.first_name, ' ', u.last_name) AS full_name,
+             u.modified_by_id,
+             u.date_modified,
+             u.default_company_id
+      from flow."user" u
+               inner join flow.user_company uc on uc.user_id = u.id
+      where u.id = :id
+        and uc.company_id = 1
+        and u.archived is not true
+  ]]></user.getOneAlbatross>
 
   <user.getSchedulingUsers><![CDATA[
             with t1 as (
@@ -261,7 +281,9 @@
        u.first_name,
        u.last_name,
        u.password,
+       u.username,
        u.email,
+       u.phone_number,
        u.username,
        (select has_access
           from flow.company_user_status cus
@@ -331,6 +353,7 @@
        u.password,
        u.email,
        u.username,
+       u.phone_number,
        concat(u.first_name, ' ', u.last_name) AS full_name
     from flow.user u
     where lower(:usernameOrEmail::text) = lower(username)
@@ -342,6 +365,8 @@
     select u.id,
            u.first_name,
            u.last_name,
+           u.email,
+           u.phone_number,
            concat(u.first_name, ' ', u.last_name) AS full_name,
            u.password,
            coalesce(u.default_company_id, uc.company_id) as company_id,
@@ -365,6 +390,7 @@
              inner join flow.user_company uc on uc.company_id = c.id
              where uc.user_id = u.id
               and uc.archived is not true
+              and c.archived is not true
              order by level
              limit 1
            ) as highest_company_id
@@ -373,6 +399,8 @@
       inner join flow.company c on c.id = uc.company_id
     where u.id = :id
       and uc.is_default is true
+      and uc.archived is not true
+      and c.archived is not true
   ]]></user.findUserById>
 
   <user.getCompanyUserStatuses><![CDATA[
@@ -442,9 +470,17 @@
       select id,
          email
       from flow."user"
-      where email ILIKE :email
+      where lower(trim(email)) = lower(trim(:email))
       and case when :userId::int is not null then :userId::int != id else 1=1 end
   ]]></user.checkEmailExists>
+
+  <user.checkUsernameExists><![CDATA[
+      select id,
+         username
+      from flow."user"
+      where lower(trim(username)) = lower(trim(:username))
+      and case when :userId::int is not null then :userId::int != id else 1=1 end
+  ]]></user.checkUsernameExists>
 
   <user.saveForgotPasswordFields><![CDATA[
       update flow."user"

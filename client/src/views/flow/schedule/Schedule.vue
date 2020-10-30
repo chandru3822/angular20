@@ -218,7 +218,7 @@
             </template>
 
             <template #item.projectName="{ item }">
-              <a @click="[selectedProject = item, selectedProject.resource = { id: item.resourceId, name: item.resourceName }]" style="text-decoration: underline">{{item.projectName}}</a>
+              <a @click="[getResources(item), selectedProject = item, selectedProject.resource = { id: item.resourceId, name: item.resourceName }]" style="text-decoration: underline">{{item.projectName}}</a>
             </template>
 
           </v-data-table>
@@ -232,7 +232,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import {getEventTypes} from '@/services/scheduleService'
@@ -419,6 +419,24 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Types')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getResources(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+
+          let params = {
+            companyId: item.companyId,
+            systemListId: item.systemListId,
+            systemListOptionIds: item.systemListOptionIds
+          }
+          const {data} = await postRequest(`/schedule/projectResources`, params)
+          item.resources = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

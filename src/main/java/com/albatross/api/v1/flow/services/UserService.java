@@ -112,12 +112,20 @@ public class UserService {
   }
 
   public boolean emailExists(String email, Long userId) {
-    //using ILIKE to prevent duplicates with different casing
     HashMap<String, Object> params = new HashMap<>();
     params.put("email", email);
     params.put("userId", userId);
 
     List<User> results = sqlCache.query("user.checkEmailExists", params, User.class);
+    return null != results && !results.isEmpty();
+  }
+
+  public boolean usernameExists(String username, Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("username", username);
+    params.put("userId", userId);
+
+    List<User> results = sqlCache.query("user.checkUsernameExists", params, User.class);
     return null != results && !results.isEmpty();
   }
 
@@ -134,7 +142,7 @@ public class UserService {
     }
   }
 
-  public Optional<User> saveUser(User user) {
+  public Optional<User> saveUser(User user, Boolean userIsAlbatross) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", user.getFirstName());
@@ -152,9 +160,13 @@ public class UserService {
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
       //save user status
-      saveUserStatus(true, id, user.getUserStatusTypeId());
+      if(null != user.getUserStatusTypeId()) {
+        saveUserStatus(true, id, user.getUserStatusTypeId());
+      }
       //save user companies
-      handleSavingUserCompanies(user.getCompanies(), user.getId());
+      if(null != user.getCompanies()) {
+        handleSavingUserCompanies(user.getCompanies(), user.getId());
+      }
       //save user password if sent in
       if(null != user.getNewPassword()) {
         String newPwd = BCrypt.hashpw(user.getNewPassword(), BCrypt.gensalt(10));
@@ -182,18 +194,22 @@ public class UserService {
       saveUserStatus(false, id, user.getUserStatusTypeId());
     }
 
-
-
-    return getUser(id);
+    return getUser(id, userIsAlbatross);
   }
 
-  public Optional<User> getUser(Long id) {
+  public Optional<User> getUser(Long id, Boolean userIsAlbatross) {
+    //this userIsAlbatross stuff was all super dumb because we can't load albatross users the same way as regular users
     User currentUser = securityService.getCurrentUser();
     // using currentUser.companyId validates that the user requesting the info can actually access this user...i think
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("companyId", currentUser.getCompanyId());
-    Optional<User> result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
+    Optional<User> result;
+    if(userIsAlbatross) {
+      result = sqlCache.get("user.getOneAlbatross", params, new UserMapper<>(User.class, om));
+    } else {
+      result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
+    }
 
     return result;
   }
