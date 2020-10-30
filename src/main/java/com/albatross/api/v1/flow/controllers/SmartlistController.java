@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/api/v1/flow/smartlist")
 public class SmartlistController {
 
+
   private final SmartlistService smartlistService;
 
   private final CustomFieldService customFieldService;
