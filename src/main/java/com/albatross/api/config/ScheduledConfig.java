@@ -31,6 +31,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
 
+    @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
+    private Boolean processFutureAppointments;
+
     private final SMSService smsService;
     private final AvailabilityService availabilityService;
 
@@ -54,9 +57,12 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
 
     // last day of every month
-    @Scheduled(cron = "0 0 0 L * ?")
+//    @Scheduled(cron = "0 0 0 L * ?")
+    @Scheduled(cron = "0 0 0 28-31 * ?")
     public void populateNextMonthsBudgets() {
-        availabilityService.processFutureRecurringEvents();
+        if(processFutureAppointments) {
+            availabilityService.processFutureRecurringEvents();
+        }
     }
 
     @Bean(destroyMethod = "shutdown")
