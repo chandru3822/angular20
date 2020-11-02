@@ -19699,6 +19699,24 @@ CREATE TRIGGER user_position_trg
     FOR EACH ROW
 EXECUTE PROCEDURE flow.refresh_user_position_records();
 
+CREATE TRIGGER update_contact_details_project_details_trg
+    after INSERT or update
+    ON flow.contact_custom_field_value
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.update_contact_details_project_details();
+
+CREATE TRIGGER project_project_details_trg
+    after INSERT or delete or update
+    ON flow.project
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.project_details();
+
+CREATE TRIGGER update_project_details_project_trg
+    after INSERT or update
+    ON flow.project_custom_field_value
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.update_project_details_project();
+
 
 
 -- with ids as(

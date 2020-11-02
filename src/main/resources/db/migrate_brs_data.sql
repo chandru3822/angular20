@@ -16,6 +16,8 @@ drop trigger if exists project_audit_trg ON flow.project_custom_field_value;
 drop trigger if exists user_view_trg on flow.user;
 drop trigger if exists org_view_trg on flow.org;
 drop trigger if exists user_position_trg on flow.user_position;
+drop trigger if exists update_project_details_project_trg on flow.project_custom_field_value;
+drop trigger if exists update_contact_details_project_details_trg on flow.contact_custom_field_value;
 
 
 /*
@@ -8551,70 +8553,32 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
-
-with leads as (
-    SELECT c.id as contact_id,
-           company_id,
-           s.source_name,
-           2350555 as created_by_id
-    FROM blueraven.deal d
-             inner join flow.project p on p.id = d.id
-             inner join flow.contact c on c.id = p.contact_id
-             inner join blueraven.source s on s.id = d.source_id
-    WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
-),
-     list_of_values as (
-         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
-         from flow.list_of_value lov
-                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
-                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
-                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-         where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
-INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
-    (SELECT l.contact_id,
-            lov.custom_field_group_assignemnt_id,
-            lov.list_of_value_id,
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Referred By' and cf.company_id = c.company_id) as custom_field_id,
+            referred_by,
             2350555 as created_by_id
-     from leads l
-              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
+     FROM blueraven.customer c1
+              inner join flow.contact c on c.id = c1.id
+     WHERE referred_by IS NOT NULL);
 
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Referral Follow-up' and cf.company_id = c.company_id) as custom_field_id,
---             needs_final_referral_followup_date,
---             2350555 as created_by_id
---      FROM blueraven.deal d
---          inner join flow.project p on p.id= d.id
---          inner join blueraven.customer c1 on c1.id = d.customer_id
---           inner join flow.contact c on c.id = c1.id
---      WHERE needs_final_referral_followup_date IS NOT NULL);
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Lead Created Date' and cf.company_id = c.company_id) as custom_field_id,
+            lead_created_date,
+            2350555 as created_by_id
+     FROM blueraven.customer c1
+              inner join flow.contact c on c.id = c1.id
+     WHERE lead_created_date IS NOT NULL);
 
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Referred By' and cf.company_id = c.company_id) as custom_field_id,
---             referred_by,
---             2350555 as created_by_id
---      FROM blueraven.customer c1
---               inner join flow.contact c on c.id = c1.id
---      WHERE referred_by IS NOT NULL);
-
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Lead Created Date' and cf.company_id = c.company_id) as custom_field_id,
---             lead_created_date,
---             2350555 as created_by_id
---      FROM blueraven.customer c1
---               inner join flow.contact c on c.id = c1.id
---      WHERE lead_created_date IS NOT NULL);
-
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'LG Unique ID' and cf.company_id = c.company_id) as custom_field_id,
---             lg_unique_id,
---             2350555 as created_by_id
---      FROM blueraven.customer c1
---               inner join flow.contact c on c.id = c1.id
---      WHERE lg_unique_id IS NOT NULL);
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'LG Unique ID' and cf.company_id = c.company_id) as custom_field_id,
+            lg_unique_id,
+            2350555 as created_by_id
+     FROM blueraven.customer c1
+              inner join flow.contact c on c.id = c1.id
+     WHERE lg_unique_id IS NOT NULL);
 
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT c.id,
@@ -8656,8 +8620,6 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
             2350555 as created_by_id
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.status);
-
-
 
 
 -- add the company project status types
@@ -8910,6 +8872,72 @@ update flow.project set contact_id = (select id from flow.contact where first_na
 where id =153066;
 update flow.project set contact_id = (select id from flow.contact where first_name = 'Arturo' and last_name = 'Gonzalez' and city = 'Joliet' and  company_id = 7)
 where id =179198;
+
+
+with leads as (
+    SELECT c.id as contact_id,
+           company_id,
+           s.source_name,
+           2350555 as created_by_id
+    FROM blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+             inner join blueraven.source s on s.id = d.source_id
+    WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
+),
+     list_of_values as (
+         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
+         from flow.list_of_value lov
+                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
+                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+         where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
+    (SELECT l.contact_id,
+            lov.custom_field_group_assignemnt_id,
+            lov.list_of_value_id,
+            2350555 as created_by_id
+     from leads l
+              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
+
+with leads as (
+    SELECT c.id as contact_id,
+           company_id,
+           lead_source_detail,
+           2350555 as created_by_id
+    FROM blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+    WHERE d.lead_source_detail IS NOT NULL and c.contact_type_id = 1
+),
+     list_of_values as (
+         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
+         from flow.list_of_value lov
+                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
+                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+         where cf2.field_name = 'Lead Source Detail' and lov.name = 'Lead Source Detail' and lov.parent_id is null)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
+    (SELECT l.contact_id,
+            lov.custom_field_group_assignemnt_id,
+            lov.list_of_value_id,
+            2350555 as created_by_id
+     from leads l
+              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.lead_source_detail);
+
+
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Referral Follow-up' and cf.company_id = c.company_id) as custom_field_id,
+            needs_final_referral_followup_date,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+         inner join flow.project p on p.id= d.id
+         inner join blueraven.customer c1 on c1.id = d.customer_id
+          inner join flow.contact c on c.id = c1.id
+     WHERE needs_final_referral_followup_date IS NOT NULL);
+
+
 
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
