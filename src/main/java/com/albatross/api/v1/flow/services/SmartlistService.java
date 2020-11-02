@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -55,8 +56,8 @@ public class SmartlistService {
 
   public Smartlist getSmartlist(Long id) {
     User user = securityService.getCurrentUser();
-    final boolean isSmartlistAdmin = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
-    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId(), "isSmartlistAdmin", isSmartlistAdmin), Smartlist.class).orElse(null);
+    final boolean canViewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW_ALL"));
+    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId(), "canViewAll", canViewAll), Smartlist.class).orElse(null);
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
@@ -275,6 +276,8 @@ public class SmartlistService {
 
     List<SmartlistFieldAssignment> joinTables = new ArrayList<>();
 
+    List<Long> usedProcessStepIds = new ArrayList<>();
+
     StringBuilder withClause = new StringBuilder();
     StringBuilder additionalJoins = new StringBuilder();
     StringBuilder whereClause = new StringBuilder();
@@ -286,6 +289,10 @@ public class SmartlistService {
     StringBuilder query = new StringBuilder("\nselect");
 
     for (SmartlistFieldAssignment f : fields) {
+
+      if (f.getProcessStepId() != null) {
+        usedProcessStepIds.add(f.getProcessStepId());
+      }
 
       if (f.getSmartlistSystemListId() == null)  {
         if (f.getCustomFieldGroupAssignmentId() != null && joinTables.stream().noneMatch(t -> t.getId().equals(f.getId()))) {
@@ -385,6 +392,11 @@ public class SmartlistService {
     }
 
     for (SmartlistRequirement r: requirements) {
+
+        if (r.getProcessStepId() != null) {
+          usedProcessStepIds.add(r.getProcessStepId());
+        }
+
         // If this custom sql is not already in the "with" clause, add it
         if (r.getCustomFieldSqlKey() != null && withClause.indexOf(r.getCustomFieldSqlKey()) == -1) {
             withClause.append(String.format(" \n\"%s\" as  (%s), ", r.getCustomFieldSqlKey(), sqlCache.getByKey(r.getCustomFieldSqlKey())));
@@ -412,6 +424,11 @@ public class SmartlistService {
       case 4:
         query.append(" \nfrom flow.project_process_step ");
         query.append("\ninner join flow.process_step on flow.process_step.id = flow.project_process_step.process_step_id ");
+
+        if (!usedProcessStepIds.isEmpty()) {
+          query.append(String.format("and flow.project_process_step.process_step_id = any('{%s}')", usedProcessStepIds.stream().map(String::valueOf).collect(Collectors.joining(","))));
+        }
+
         query.append("\nleft join flow.project on flow.project.id = flow.project_process_step.project_id  ");
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
 
