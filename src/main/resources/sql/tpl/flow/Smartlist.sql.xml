@@ -405,7 +405,7 @@ select sr.id,
        sf.join_table,
        sf.join_column,
        sf.smartlist_system_list_id,
-       case when ot.object_type is null then 'Process Step' else ot.object_type end as object_type,
+       case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
        cf.custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -464,6 +464,7 @@ left join flow.custom_field cf on cf.id = cfga.custom_field_id
 left join flow.company_data_type cdt1 on cdt1.id = cf.company_data_type_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
+left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 where sr.id = :requirementId and
@@ -497,7 +498,7 @@ select sr.id,
        sf.join_table,
        sf.join_column,
        sf.smartlist_system_list_id,
-       case when ot.object_type is null then 'Process Step' else ot.object_type end as object_type,
+       case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
        cf.custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -610,6 +611,7 @@ left join flow.custom_field cf on cf.id = cfga.custom_field_id
 left join flow.company_data_type cdt1 on cdt1.id = cf.company_data_type_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
+left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 where sr.smartlist_id = :smartlistId and
