@@ -444,7 +444,7 @@
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <v-card flat class="mb-3" v-if="addNewAction">
+          <v-card flat class="mb-3 mx-3" v-if="addNewAction">
             <v-text-field v-model="newAction.actionName"
                           placeholder="Enter a name"
                           label="Action Name">
@@ -463,8 +463,18 @@
                       item-value="id"
             ></v-select>
             <v-checkbox
+              dense
+              hide-details
               v-model="newAction.triggerAutomatically"
               label="Trigger Automatically"
+            />
+            <v-checkbox
+              class="pl-3 pt-0"
+              dense
+              v-if="newAction.triggerAutomatically"
+              hide-details
+              v-model="newAction.timeBasedTrigger"
+              label="Time Based"
             />
             <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                    @click="saveNewAction">
@@ -520,10 +530,22 @@
                               item-value="id"
                     ></v-select>
                     <v-checkbox
-                        v-model="item.triggerAutomatically"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Trigger Automatically"
+                      dense
+                      hide-details
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-model="item.triggerAutomatically"
+                      label="Trigger Automatically"
+                    />
+                    <v-checkbox
+                      class="pl-3 pt-0"
+                      dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-if="item.triggerAutomatically"
+                      hide-details
+                      v-model="newAction.timeBasedTrigger"
+                      label="Time Based"
                     />
 
                     <!-- LINK -->
@@ -1445,6 +1467,10 @@
       async saveNewAction() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          if(!this.newAction.triggerAutomatically) {
+            //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
+            this.newAction.timeBasedTrigger = false
+          }
           this.newAction.processStepId = this.processStepId
           const {data} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
           this.actions.push(data)
@@ -1464,6 +1490,10 @@
           action.processStepLogicList = action.processStepLogicList.filter(l => {
             return !l.archived
           })
+          if(!action.triggerAutomatically) {
+            //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
+            action.timeBasedTrigger = false
+          }
 
           // build the list of psr's that need to be set to immutable  do that if the save is successful
           const psrListToUpdate = action.processStepLogicList.filter(l => {
