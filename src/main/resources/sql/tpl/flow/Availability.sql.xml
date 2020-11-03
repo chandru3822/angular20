@@ -141,7 +141,7 @@
 
   <availability.insertAppointment><![CDATA[
     insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type)
-    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :recurrence, now(), :recurringEndTime, :recurringEventId, :recurringEventEndType)
+    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType)
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
@@ -259,8 +259,13 @@
 
   <availability.getDistinctRecurringEvents><![CDATA[
     with recurring as (
-        select distinct ra.recurring_event_id, ra.recurrence,
-                        ra.recurring_event_end_type, ra.recurring_start_time,
+        select distinct ra.recurring_event_id,
+                        ra.recurrence,
+                        ra.company_id,
+                        ra.user_id,
+                        ra.org_id,
+                        ra.recurring_event_end_type,
+                        ra.recurring_start_time,
                         ra.description, ra.all_day,
                         EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration
         from flow.resource_appointment ra
@@ -272,8 +277,13 @@
           and ra.archived is not true
           and ust.has_access is true
         union
-        select distinct ra.recurring_event_id, ra.recurrence,
-                        ra.recurring_event_end_type, ra.recurring_start_time,
+        select distinct ra.recurring_event_id,
+                        ra.recurrence,
+                        ra.company_id,
+                        ra.user_id,
+                        ra.org_id,
+                        ra.recurring_event_end_type,
+                        ra.recurring_start_time,
                         ra.description, ra.all_day,
                         EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration
         from flow.resource_appointment ra
@@ -286,10 +296,14 @@
     )
     select recurring_event_id,
            recurrence,
+           user_id,
+           org_id,
            recurring_event_end_type,
            recurring_start_time,
            description,
+           company_id,
            all_day,
+           duration,
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(appointments)))
                         FROM (
@@ -297,8 +311,10 @@
                                      ra.id,
                                      ra.org_id as "orgId",
                                      ra.start_time as "startTime",
+                                     ra.start_time as "startTimeString",
                                      case when ra.recurrence is not null then true else false end as repeat,
                                      ra.end_time as "endTime",
+                                     ra.end_time as "endTimeString",
                                      ra.archived,
                                      ra.description,
                                      ra.company_id as "companyId",
