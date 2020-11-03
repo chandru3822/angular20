@@ -160,9 +160,10 @@ public class PayrollService {
         params.put("cancelEndDate", request.getCancelEndDate());
         params.put("overridePlanId", request.getOverridePlanId());
         params.put("commissionPlanId", request.getCommissionPlanId());
+        params.put("selectedProjectIds", null != request.getSelectedProjectIds() ? createSqlArrayOfType("int", request.getSelectedProjectIds()) : null);
 
         if (request.getProjectId() != null) {
-            params.put("projectId", createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
+            params.put("selectedProjectIds", createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
         }
 
         Optional<String> bySql = sqlCache.get("payroll.getAccountReview", params, new SingleColumnRowMapper<>(String.class));

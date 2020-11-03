@@ -16,6 +16,8 @@ drop trigger if exists project_audit_trg ON flow.project_custom_field_value;
 drop trigger if exists user_view_trg on flow.user;
 drop trigger if exists org_view_trg on flow.org;
 drop trigger if exists user_position_trg on flow.user_position;
+drop trigger if exists update_project_details_project_trg on flow.project_custom_field_value;
+drop trigger if exists update_contact_details_project_details_trg on flow.contact_custom_field_value;
 
 
 /*
@@ -2675,7 +2677,13 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
-
+INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT o.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            o.birdeye_business_id,
+            2350555 as created_by_id
+     FROM blueraven.org o
+     WHERE birdeye_business_id IS NOT NULL);
 
 -- insert into brs.sales_area_type(id, sales_area_type)
 --     (select id, sales_area_type
@@ -8551,70 +8559,32 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
-
-with leads as (
-    SELECT c.id as contact_id,
-           company_id,
-           s.source_name,
-           2350555 as created_by_id
-    FROM blueraven.deal d
-             inner join flow.project p on p.id = d.id
-             inner join flow.contact c on c.id = p.contact_id
-             inner join blueraven.source s on s.id = d.source_id
-    WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
-),
-     list_of_values as (
-         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
-         from flow.list_of_value lov
-                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
-                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
-                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
-         where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
-INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
-    (SELECT l.contact_id,
-            lov.custom_field_group_assignemnt_id,
-            lov.list_of_value_id,
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Referred By' and cf.company_id = c.company_id) as custom_field_id,
+            referred_by,
             2350555 as created_by_id
-     from leads l
-              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
+     FROM blueraven.customer c1
+              inner join flow.contact c on c.id = c1.id
+     WHERE referred_by IS NOT NULL);
 
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Referral Follow-up' and cf.company_id = c.company_id) as custom_field_id,
---             needs_final_referral_followup_date,
---             2350555 as created_by_id
---      FROM blueraven.deal d
---          inner join flow.project p on p.id= d.id
---          inner join blueraven.customer c1 on c1.id = d.customer_id
---           inner join flow.contact c on c.id = c1.id
---      WHERE needs_final_referral_followup_date IS NOT NULL);
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Lead Created Date' and cf.company_id = c.company_id) as custom_field_id,
+            lead_created_date,
+            2350555 as created_by_id
+     FROM blueraven.customer c1
+              inner join flow.contact c on c.id = c1.id
+     WHERE lead_created_date IS NOT NULL);
 
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Referred By' and cf.company_id = c.company_id) as custom_field_id,
---             referred_by,
---             2350555 as created_by_id
---      FROM blueraven.customer c1
---               inner join flow.contact c on c.id = c1.id
---      WHERE referred_by IS NOT NULL);
-
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Lead Created Date' and cf.company_id = c.company_id) as custom_field_id,
---             lead_created_date,
---             2350555 as created_by_id
---      FROM blueraven.customer c1
---               inner join flow.contact c on c.id = c1.id
---      WHERE lead_created_date IS NOT NULL);
-
--- INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
---     (SELECT c.id,
---             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'LG Unique ID' and cf.company_id = c.company_id) as custom_field_id,
---             lg_unique_id,
---             2350555 as created_by_id
---      FROM blueraven.customer c1
---               inner join flow.contact c on c.id = c1.id
---      WHERE lg_unique_id IS NOT NULL);
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'LG Unique ID' and cf.company_id = c.company_id) as custom_field_id,
+            lg_unique_id,
+            2350555 as created_by_id
+     FROM blueraven.customer c1
+              inner join flow.contact c on c.id = c1.id
+     WHERE lg_unique_id IS NOT NULL);
 
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT c.id,
@@ -8656,8 +8626,6 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
             2350555 as created_by_id
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.status);
-
-
 
 
 -- add the company project status types
@@ -8911,29 +8879,75 @@ where id =153066;
 update flow.project set contact_id = (select id from flow.contact where first_name = 'Arturo' and last_name = 'Gonzalez' and city = 'Joliet' and  company_id = 7)
 where id =179198;
 
+
+with leads as (
+    SELECT c.id as contact_id,
+           company_id,
+           s.source_name,
+           2350555 as created_by_id
+    FROM blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+             inner join blueraven.source s on s.id = d.source_id
+    WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
+),
+     list_of_values as (
+         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
+         from flow.list_of_value lov
+                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
+                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+         where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
+    (SELECT l.contact_id,
+            lov.custom_field_group_assignemnt_id,
+            lov.list_of_value_id,
+            2350555 as created_by_id
+     from leads l
+              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
+
+with leads as (
+    SELECT c.id as contact_id,
+           company_id,
+           lead_source_detail,
+           2350555 as created_by_id
+    FROM blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+    WHERE d.lead_source_detail IS NOT NULL and c.contact_type_id = 1
+),
+     list_of_values as (
+         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
+         from flow.list_of_value lov
+                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
+                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+         where cf2.field_name = 'Lead Source Detail' and lov.name = 'Lead Source Detail' and lov.parent_id is null)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
+    (SELECT l.contact_id,
+            lov.custom_field_group_assignemnt_id,
+            lov.list_of_value_id,
+            2350555 as created_by_id
+     from leads l
+              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.lead_source_detail);
+
+
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT c.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Referral Follow-up' and cf.company_id = c.company_id) as custom_field_id,
+            needs_final_referral_followup_date,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+         inner join flow.project p on p.id= d.id
+         inner join blueraven.customer c1 on c1.id = d.customer_id
+          inner join flow.contact c on c.id = c1.id
+     WHERE needs_final_referral_followup_date IS NOT NULL);
+
+
+
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
-refresh materialized view blueraven.commission_plan_vw;
-refresh materialized view blueraven.override_plan_vw;
-insert into brs.project_commission(project_id, commission_plan_id)
-    (select d.id,cpv.commission_plan_id
-     from blueraven.deal d
-              inner join flow.project p on p.id = d.id
-              inner join blueraven.commission_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
-              inner join brs.commission_plan cp on cp.id = cpv.commission_plan_id);
 
-insert into brs.project_override(project_id, override_plan_id)
-    (select d.id,cpv.override_plan_id
-     from blueraven.deal d
-              inner join flow.project p on p.id = d.id
-              inner join blueraven.override_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
-              inner join brs.override_plan op on op.id = cpv.override_plan_id);
-
-insert into brs.exclude_commission(project_id)
-    (select d.id
-     from blueraven.deal d
-     where d.exclude_commission is true
-        and d.id in (select id from flow.project));
 
 -- change the flow.project id sequence so the imported ids don't cause problems
 SELECT setval('flow.project_id_seq',
@@ -10079,9 +10093,9 @@ insert into brs.commission_plan_source_allocation(id, commission_plan_id, milest
 (select cpsa.id, commission_plan_id, milestone_id, fee_amount, fee_type_id, (select lov.id
                                                                         from flow.custom_field cf
                                                                         inner join flow.list_of_value lov on lov.parent_id = cf.list_of_value_id
-                                                                        where cf.id = 5
+                                                                        where cf.id = 573
                                                                         and lov.name = s.source_name
-                                                                        and lov.parent_id = 5)
+                                                                        and lov.parent_id = 520)
     from  blueraven.commission_plan_source_allocation cpsa
             inner join blueraven.source s on s.id =cpsa.source_id);
 
@@ -10178,6 +10192,28 @@ from blueraven.deal_commission_snapshot;
 insert into brs.project_override_commission_snapshot(id, project_commission_snapshot_id, user_id, milestone_type_id, total)
 select id, deal_commission_snapshot_id, user_id, milestone_type_id, total
 from blueraven.deal_override_commission_snapshot;
+
+refresh materialized view blueraven.commission_plan_vw;
+refresh materialized view blueraven.override_plan_vw;
+insert into brs.project_commission(project_id, commission_plan_id)
+    (select d.id,cpv.commission_plan_id
+     from blueraven.deal d
+              inner join flow.project p on p.id = d.id
+              inner join blueraven.commission_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
+              inner join brs.commission_plan cp on cp.id = cpv.commission_plan_id);
+
+insert into brs.project_override(project_id, override_plan_id)
+    (select d.id,cpv.override_plan_id
+     from blueraven.deal d
+              inner join flow.project p on p.id = d.id
+              inner join blueraven.override_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
+              inner join brs.override_plan op on op.id = cpv.override_plan_id);
+
+insert into brs.exclude_commission(project_id)
+    (select d.id
+     from blueraven.deal d
+     where d.exclude_commission is true
+       and d.id in (select id from flow.project));
 
 
 SELECT setval('brs.project_override_commission_snapshot_id_seq',

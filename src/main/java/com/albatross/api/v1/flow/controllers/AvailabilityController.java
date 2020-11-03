@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.AvailabilityService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,12 +21,16 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping(value = "/api/v1/flow/availability")
 public class AvailabilityController {
 
-  @Autowired
-  private AvailabilityService availabilityService;
+  private final AvailabilityService availabilityService;
 
+  @GetMapping(value = "/temp", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void tempCallScheduledProcess() {
+    availabilityService.processFutureRecurringEvents();
+  }
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ResourceSchedule> getResourceAvailability(@RequestParam(required = false) Long userId,

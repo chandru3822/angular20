@@ -23,6 +23,7 @@
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn
+                  v-if="smartlist.id"
                   text
                   @click="runReport"
                 >
@@ -378,7 +379,7 @@ export default {
       return !this.newField?.selectedField
     },
     canEdit () {
-      return !this.smartlist.id || this.$store.state.user.details.id === this?.smartlist?.ownerId || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+      return this.smartlist.id && (this.$store.state.user.details.id === this?.smartlist?.ownerId || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN'))
     }
   },
   methods: {

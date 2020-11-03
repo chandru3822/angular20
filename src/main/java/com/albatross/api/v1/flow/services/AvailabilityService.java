@@ -4,6 +4,7 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -155,7 +156,6 @@ public class AvailabilityService {
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.updateHours", params);
     } else {
-
       sqlCache.update("availability.insertHours", params);
     }
 
@@ -258,11 +258,10 @@ public class AvailabilityService {
     //list of distinct recurring events for active users with all of the existing events beyond the starting date
     Calendar cal = Calendar.getInstance();
     cal.add(Calendar.MONTH, 11);
-    log.info("here is the starting date: {}", cal);
     Date startingDate = cal.getTime();
     HashMap<String, Object> params = new HashMap<>();
     params.put("startingDate", startingDate);
-    List<RecurringResourceAppointment> recurringAppointments = sqlCache.query("availability.getDistinctRecurringEvents", Collections.emptyMap(), new RecurringAppointmentMapper<>(RecurringResourceAppointment.class, om));
+    List<RecurringResourceAppointment> recurringAppointments = sqlCache.query("availability.getDistinctRecurringEvents", params, new RecurringAppointmentMapper<>(RecurringResourceAppointment.class, om));
 
     for(RecurringResourceAppointment rra : recurringAppointments) {
       //create a rule and start saving a months worth of new appts.
@@ -277,8 +276,8 @@ public class AvailabilityService {
         String recurringStartDay = formatNowDay.format(startingDate);
         String recurringStartMonth = formatNowMonth.format(startingDate);
         String recurringStartYear = formatNowYear.format(startingDate);
-        String recurringStartHour = formatNowHour.format(startingDate);
-        String recurringStartMinute = formatNowMinute.format(startingDate);
+        String recurringStartHour = formatNowHour.format(rra.getRecurringStartTime());
+        String recurringStartMinute = formatNowMinute.format(rra.getRecurringStartTime());
 
         //convert the start date to a !isFloating() value otherwise it will fail when using a rule with an end date
         DateTime recurringStartDate = new DateTime(TimeZone.getTimeZone("UTC"), Integer.parseInt(recurringStartYear), Integer.parseInt(recurringStartMonth) - 1, Integer.parseInt(recurringStartDay), Integer.parseInt(recurringStartHour), Integer.parseInt(recurringStartMinute), 00);
@@ -288,17 +287,23 @@ public class AvailabilityService {
 
         // Arbitrary limit for recurring events that never end.
         boolean limitReached = false;
-        boolean alreadyExists = false;
 
         while (it.hasNext() && !limitReached) {
+          boolean alreadyExists = false;
           LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
           LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
+          log.info("recurrence: {}", rra.getRecurrence());
+          log.info("recurring start date: {}", recurringStartDate);
+          log.info("current event start: {}", currentEventStart);
+          log.info("current event end: {}", currentEventEnd);
           //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
           if(currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
             limitReached = true;
           } else {
 //            check if the appointment trying to be created already exists.
-            ResourceAppointment appt = rra.getAppointments().stream().filter(a -> a.getStartTime().toString().equals(currentEventStart.toString()) && a.getEndTime().toString().equals(currentEventEnd.toString())).findFirst().orElse(null);
+            //i am sick of working on this!!  the startTimeString and endTimeString will both have :00 as the seconds, the currentEventStart and End fields do not
+            //i could reformat the dates, do a substring or do contains.  contains seems easier so i am doing that for now
+            ResourceAppointment appt = rra.getAppointments().stream().filter(a -> a.getStartTimeString().contains(currentEventStart.toString()) && a.getEndTimeString().contains(currentEventEnd.toString())).findFirst().orElse(null);
             if(null != appt) {
               alreadyExists = true;
             }
@@ -311,7 +316,7 @@ public class AvailabilityService {
             params2.put("description", rra.getDescription());
             params2.put("allDay", rra.getAllDay() != null && rra.getAllDay());
             params2.put("companyId", rra.getCompanyId());
-            params2.put("createdById", 2350555);
+            params2.put("createdById", SystemSettings.USER.getId());
             params2.put("orgId", rra.getOrgId());
             params2.put("userId", rra.getUserId());
             params2.put("recurrence", rra.getRecurrence());
@@ -366,6 +371,10 @@ public class AvailabilityService {
       while (it.hasNext() && !limitReached) {
         LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
         LocalDateTime currentEventEnd = currentEventStart.plusMinutes(duration);
+        log.info("NEW recurrence: {}", ra.getRecurrence());
+        log.info("NEW recurring start date: {}", recurringStartDate);
+        log.info("NEW current event start: {}", currentEventStart);
+        log.info("NEW current event end: {}", currentEventEnd);
         //if the recurring event start time is greater than 1 year from now, stop adding appointments
         if(currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
           limitReached = true;

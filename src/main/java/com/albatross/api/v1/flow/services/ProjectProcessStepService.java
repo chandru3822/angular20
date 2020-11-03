@@ -192,7 +192,11 @@ public class ProjectProcessStepService {
     params.put("userId", user.getId());
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
+    Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
+
+    this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+
+    return ppsId;
   }
 
   @Transactional

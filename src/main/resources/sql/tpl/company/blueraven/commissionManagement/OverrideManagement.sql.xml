@@ -666,7 +666,7 @@ FROM (SELECT op.id,
              ops.status_type                                                           AS status,
              op.position_id                                                             AS "positionId",
              (SELECT row_to_json(u)
-              FROM (SELECT u.id, concat(u.first_name, ' ', u.last_name) AS name,
+              FROM (SELECT u.id, concat(u.first_name, ' ', u.last_name) AS name
                     FROM flow."user" u
                     WHERE u.id = op.created_by) u)                                      AS "createdBy",
              op.created,

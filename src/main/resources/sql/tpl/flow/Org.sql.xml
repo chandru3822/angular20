@@ -193,6 +193,8 @@
          inner join flow.org_filter of on of.org_level_id = ol.id
     where o.company_id = :companyId
       and ot.org_level_id = :orgLevelId
+      and o.archived is not true
+      and o.active_flag is true
     order by o.org_name;
   ]]></org.getOrgsForLevel>
 

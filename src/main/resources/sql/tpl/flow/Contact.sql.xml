@@ -83,8 +83,8 @@
       inner join flow.project p on p.contact_id = c.id
       left outer join flow.company_state cs on cs.id = c.company_state_id
       left outer join flow.state s on s.id = cs.state_id
-      inner join flow.company_country cc on cc.id = c.company_country_id
-      inner join flow.country ct on ct.id = cc.country_id
+      left join flow.company_country cc on cc.id = c.company_country_id
+      left join flow.country ct on ct.id = cc.country_id
     where p.id = :projectId
        and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
