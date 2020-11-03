@@ -17,7 +17,6 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      closer                                      TEXT,
                      closer_is_terminated                        BOOLEAN,
                      source_name                                 VARCHAR,
-                     stage_name                                  VARCHAR,
                      cancelled_date                              DATE,
                      installation_agreement_signed_date          DATE,
                      final_design_signed_date                    DATE,
@@ -102,7 +101,6 @@ BEGIN
                         u.first_name||' '||u.last_name                                  AS closer,
                         (ust.user_status_type = 'Terminated')                           AS closer_is_terminated,
                         lov_source.name as source_name,
-                        lov_stage.name as stage_name,
                         pd.cancelled_date as cancelled_date,
                         pd.installation_agreement_signed_date as installation_agreement_signed_date,
                         pd.final_design_signed_date as final_design_signed_date,
@@ -204,8 +202,8 @@ BEGIN
                          FROM flow.project p2
                                   inner join brs.project_commission pc on pc.project_id = p2.id
                                   inner join brs.commission_plan cp on pc.commission_plan_id = cp.id
-                                  left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.milestone_id = 2
-                         where p2.id = p.id and  cpsa.source_id = pd.source) AS total_commissions,
+                                  left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.milestone_id = 2 and  cpsa.source_id = pd.source
+                         where p2.id = p.id) AS total_commissions,
                         coalesce(
                                 (select pd.system_size::numeric * op2.total
                                  from brs.override_plan op2
@@ -286,14 +284,13 @@ BEGIN
                             AS overrides_paid_to_date
                  FROM flow.project p
                           inner join brs.project_details pd on pd.project_id = p.id
-                          inner join flow.project_process_step pps on pps.project_id = p.id and process_step_id = 175 and pps.process_step_complete_date is not null
+                          inner join flow.project_process_step pps on pps.project_id = p.id and process_step_id = 175 and pps.process_step_complete_date is not null and main is true
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.closer_user_id
                           inner join flow.company_user_status cus  on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                           left join brs.exclude_commission ec on ec.project_id = p.id
                           left join flow.list_of_value lov_source on lov_source.id = pd.source
-                          left join flow.list_of_value lov_stage on lov_stage.id = pd.stage
                           left join flow.list_of_value lov_financier on lov_financier.id = pd.primary_financier
                           left join flow.list_of_value lov_proof_of_home  on lov_proof_of_home.id = pd.proof_of_homeowners_insurance_required
                  WHERE  (ec.project_id is null) and

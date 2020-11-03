@@ -17,6 +17,8 @@ INSERT INTO flow."user" (id, first_name, last_name, email, password, phone_numbe
     (select 99999991,'Michael', 'Meyers', 'michael.meyers@xomly.com', '$2a$10$MVMAyDXJyX4G.AAL5C.mFetbuZtDhcduV/FIzVnp03AGYmjN9Woma', null, null, now(), null, now(), 3, 'michael.meyers@xomly.com', false where not exists (select id from flow."user" where username = 'michael.meyers@xomly.com'));
 INSERT INTO flow."user" (id, first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
     (select 99999990,'Randa', 'Nunn', 'randa@randa.com', '$2a$10$MVMAyDXJyX4G.AAL5C.mFetbuZtDhcduV/FIzVnp03AGYmjN9Woma', null, null, now(), null, now(), 3, 'randa@randa.com', false where not exists (select id from flow."user" where username = 'randa@randa.com'));
+INSERT INTO flow."user" (id, first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+  (select 69696969,'SYSTEM', 'SYSTEM', 'system@7oaksgroup.com', null, null, null, now(), null, now(), null, 'system@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'system@7oaksgroup.com'));
 
 -- ADD 7 OAKS DEVS TO ALBATROSS COMPANY
 -- insert into flow.user_company(company_id, is_default, user_id)
