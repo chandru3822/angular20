@@ -4,6 +4,7 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -315,7 +316,7 @@ public class AvailabilityService {
             params2.put("description", rra.getDescription());
             params2.put("allDay", rra.getAllDay() != null && rra.getAllDay());
             params2.put("companyId", rra.getCompanyId());
-            params2.put("createdById", 2350555);
+            params2.put("createdById", SystemSettings.USER.getId());
             params2.put("orgId", rra.getOrgId());
             params2.put("userId", rra.getUserId());
             params2.put("recurrence", rra.getRecurrence());
