@@ -505,7 +505,7 @@
 
               <template #expanded-item="{ headers, item }">
                 <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
-                  <v-card flat class="text-left pt-3" color="transparent">
+                  <v-card flat class="text-left pt-3 px-3" color="transparent">
                     <v-text-field v-model="item.actionName"
                                   placeholder="Enter a name"
                                   :readonly="!userCanEdit"
@@ -538,13 +538,13 @@
                       label="Trigger Automatically"
                     />
                     <v-checkbox
-                      class="pl-3 pt-0"
+                      class="pl-3 pt-0 pb-3"
                       dense
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       v-if="item.triggerAutomatically"
                       hide-details
-                      v-model="newAction.timeBasedTrigger"
+                      v-model="item.timeBasedTrigger"
                       label="Time Based"
                     />
 
