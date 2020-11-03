@@ -1,5 +1,11 @@
 <sql>
   <user.searchUsers><![CDATA[
+      with beat_off as (
+          SELECT (value->'orgId')::integer as org_id,vw.position_id,user_id, hierarchy
+          FROM flow.user_position_hierarchy_vw vw
+                   left join lateral jsonb_array_elements(vw.hierarchy) dr1
+                             on true
+      )
       select distinct upv.user_id as id,
                 upv.first_name,
                 upv.last_name,
@@ -18,9 +24,7 @@
                 upv.has_access,
                 uphv.hierarchy
       from flow.user_positions_vw upv
-            inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
-                                                     and uphv.position_id = upv.position_id
-                                                     and uphv.org_id = upv.org_id
+            inner join beat_off uphv on uphv.user_id = upv.user_id and uphv.position_id = upv.position_id and uphv.org_id = upv.org_id
             inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
       where upv.company_id = :companyId
         and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
