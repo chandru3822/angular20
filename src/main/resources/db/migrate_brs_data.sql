@@ -2677,7 +2677,13 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
-
+INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT o.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            o.birdeye_business_id,
+            2350555 as created_by_id
+     FROM blueraven.org o
+     WHERE birdeye_business_id IS NOT NULL);
 
 -- insert into brs.sales_area_type(id, sales_area_type)
 --     (select id, sales_area_type
@@ -8941,27 +8947,7 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
 
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
-refresh materialized view blueraven.commission_plan_vw;
-refresh materialized view blueraven.override_plan_vw;
-insert into brs.project_commission(project_id, commission_plan_id)
-    (select d.id,cpv.commission_plan_id
-     from blueraven.deal d
-              inner join flow.project p on p.id = d.id
-              inner join blueraven.commission_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
-              inner join brs.commission_plan cp on cp.id = cpv.commission_plan_id);
 
-insert into brs.project_override(project_id, override_plan_id)
-    (select d.id,cpv.override_plan_id
-     from blueraven.deal d
-              inner join flow.project p on p.id = d.id
-              inner join blueraven.override_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
-              inner join brs.override_plan op on op.id = cpv.override_plan_id);
-
-insert into brs.exclude_commission(project_id)
-    (select d.id
-     from blueraven.deal d
-     where d.exclude_commission is true
-        and d.id in (select id from flow.project));
 
 -- change the flow.project id sequence so the imported ids don't cause problems
 SELECT setval('flow.project_id_seq',
@@ -10107,9 +10093,9 @@ insert into brs.commission_plan_source_allocation(id, commission_plan_id, milest
 (select cpsa.id, commission_plan_id, milestone_id, fee_amount, fee_type_id, (select lov.id
                                                                         from flow.custom_field cf
                                                                         inner join flow.list_of_value lov on lov.parent_id = cf.list_of_value_id
-                                                                        where cf.id = 5
+                                                                        where cf.id = 573
                                                                         and lov.name = s.source_name
-                                                                        and lov.parent_id = 5)
+                                                                        and lov.parent_id = 520)
     from  blueraven.commission_plan_source_allocation cpsa
             inner join blueraven.source s on s.id =cpsa.source_id);
 
@@ -10206,6 +10192,28 @@ from blueraven.deal_commission_snapshot;
 insert into brs.project_override_commission_snapshot(id, project_commission_snapshot_id, user_id, milestone_type_id, total)
 select id, deal_commission_snapshot_id, user_id, milestone_type_id, total
 from blueraven.deal_override_commission_snapshot;
+
+refresh materialized view blueraven.commission_plan_vw;
+refresh materialized view blueraven.override_plan_vw;
+insert into brs.project_commission(project_id, commission_plan_id)
+    (select d.id,cpv.commission_plan_id
+     from blueraven.deal d
+              inner join flow.project p on p.id = d.id
+              inner join blueraven.commission_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
+              inner join brs.commission_plan cp on cp.id = cpv.commission_plan_id);
+
+insert into brs.project_override(project_id, override_plan_id)
+    (select d.id,cpv.override_plan_id
+     from blueraven.deal d
+              inner join flow.project p on p.id = d.id
+              inner join blueraven.override_plan_vw cpv on cpv.deal_id = d.id and milestone_id = 1
+              inner join brs.override_plan op on op.id = cpv.override_plan_id);
+
+insert into brs.exclude_commission(project_id)
+    (select d.id
+     from blueraven.deal d
+     where d.exclude_commission is true
+       and d.id in (select id from flow.project));
 
 
 SELECT setval('brs.project_override_commission_snapshot_id_seq',

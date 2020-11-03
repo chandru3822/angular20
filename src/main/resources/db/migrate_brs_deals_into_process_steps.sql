@@ -36,6 +36,7 @@ create index appointment_dates_resource_id_idx
     on appointment_dates(resource_id);
 drop trigger if exists update_project_details_trg on flow.project_process_step_custom_field_value;
 drop  trigger if exists project_process_step_audit_trg on flow.project_process_step_custom_field_value;
+drop trigger if exists update_project_process_step_custom_value_trg on flow.project_process_step;
 /*SCHEDULE CLOSER APPOINTMENT*/
 with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
@@ -10967,7 +10968,8 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and regen_requested_date is not null and regen_ready_to_send_date is null) returning *),
+         where originator_id = 1 and regen_requested_date is not null and regen_ready_to_send_date is null
+            and installation_agreement_signed_date is null) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -14413,7 +14415,9 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and regen_requested_date is not null and regen_ready_to_send_date is null) returning *),
+         where originator_id = 1 and
+               regen_requested_date is not null and regen_ready_to_send_date is null
+            and installation_agreement_signed_date is not null) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -19716,6 +19720,12 @@ CREATE TRIGGER update_project_details_project_trg
     ON flow.project_custom_field_value
     FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_details_project();
+
+CREATE TRIGGER update_project_process_step_custom_value_trg
+    after INSERT or update
+    ON flow.project_process_step
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.update_project_process_step_custom_value();
 
 
 
