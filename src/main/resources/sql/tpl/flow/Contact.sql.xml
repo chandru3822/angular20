@@ -124,8 +124,8 @@
   <contact.updateContact><![CDATA[
     update flow.contact set
            contact_type_id = :contactTypeId,
-           first_name = :firstName,
-           last_name = :lastName,
+           first_name = trim(:firstName),
+           last_name = trim(:lastName),
            street1 = :street1,
            city = :city,
            company_state_id = :companyStateId,
@@ -142,7 +142,7 @@
 
   <contact.insertContact><![CDATA[
     insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
-    values (:contactTypeId, :firstName, :lastName, :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
   ]]></contact.insertContact>
 
   <contact.getOwners><![CDATA[
