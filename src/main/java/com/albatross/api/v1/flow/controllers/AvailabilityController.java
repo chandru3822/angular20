@@ -27,11 +27,6 @@ public class AvailabilityController {
 
   private final AvailabilityService availabilityService;
 
-  @GetMapping(value = "/temp", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void tempCallScheduledProcess() {
-    availabilityService.processFutureRecurringEvents();
-  }
-
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ResourceSchedule> getResourceAvailability(@RequestParam(required = false) Long userId,
                                                         @RequestParam(required = false) Long orgId) {

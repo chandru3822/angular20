@@ -78,11 +78,45 @@
               />
             </td>
             <td class="text-left">
-                <v-checkbox
+              <v-dialog
+                v-model="projectProcessStep.changeActiveConfirm"
+                width="500">
+                <template #activator="{ on }">
+                  <v-checkbox
+                    v-on="on"
                     v-model="projectProcessStep.main"
                     :disabled="projectProcessStep.main"
-                    @change="updateMain(projectProcessStep.projectProcessStepId)"
-                />
+                  />
+                </template>
+                <v-card>
+                  <v-card-title
+                    class="headline grey lighten-2"
+                    primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    Modifying the primary flag will cancel the current active process step. It will also run any automatic actions that have not yet been run where the criteria is met using values from the new active process step.
+                    Are you sure you want to set <strong>{{projectProcessStep.processStepName}} - {{projectProcessStep.projectProcessStepId}}</strong> to Primary?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="[projectProcessStep.changeActiveConfirm = false, projectProcessStep.main = false]">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="updateMain(projectProcessStep.projectProcessStepId)">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </td>
 <!--            <td class="text-right">-->
 <!--              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>-->

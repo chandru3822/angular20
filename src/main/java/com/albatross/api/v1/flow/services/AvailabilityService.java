@@ -242,7 +242,7 @@ public class AvailabilityService {
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.updateAppointment", params);
     } else {
-      if(!ra.getRepeat()) {
+      if(null == ra.getRepeat() || !ra.getRepeat()) {
         params.put("createdById", user.getId());
         params.put("recurringEventId", null);
         id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();

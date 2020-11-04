@@ -119,8 +119,9 @@ public class ProjectProcessStepService {
     return attachmentService.findById(storageBucket, attachmentId);
   }
 
-  public void setStatus(ProjectProcessStep pps, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
+  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
+    ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
 
     if (pps == null) {
         throw new RuntimeException("The given process step does not exist");
@@ -140,6 +141,10 @@ public class ProjectProcessStepService {
     params.put("main", pps.getMain());
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
+    //check for un-run automatic actions if the new status type is active
+    if(processStepStatusTypeId == 1) {
+      performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+    }
   }
 
   public ResponseEntity updateOwner(Long projectProcessStepId, Owner owner, Boolean blockOverride) {
@@ -297,7 +302,7 @@ public class ProjectProcessStepService {
 
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
     }
 
     Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;

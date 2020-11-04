@@ -63,7 +63,51 @@
 
   <v-col cols="12" class="py-0 process-step-header" >
     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-      <v-toolbar-title class="px-5 process-step-name">{{ processStep.processStepName }}</v-toolbar-title>
+      <v-toolbar-title class="px-5 process-step-name">{{ processStep.processStepName }}
+      <v-dialog
+        v-model="processStep.changeActiveConfirm"
+        width="500">
+        <template #activator="{ on }">
+          <v-checkbox
+            class=""
+            v-on="on"
+            dense
+            v-model="processStep.main"
+            :disabled="processStep.main || !userCanEdit || projectHasActiveProcessStep(processStep)"
+            label="Primary"
+            @change="updateMain(processStep.projectProcessStepId)"
+          />
+        </template>
+        <v-card>
+          <v-card-title
+            class="headline grey lighten-2"
+            primary-title>
+            Confirm
+          </v-card-title>
+
+          <v-card-text class="pt-4">
+            Modifying the primary flag will cancel the current active process step. It will also run any automatic actions that have not yet been run where the criteria is met using values from the new active process step.
+            Are you sure you want to set this process step to Primary?
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              @click="[processStep.changeActiveConfirm = false, processStep.main = false]">
+              No
+            </v-btn>
+            <v-btn
+              color="primaryCustom"
+              text
+              @click="updateMain(processStep.projectProcessStepId)">
+              Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      </v-toolbar-title>
       <v-spacer></v-spacer>
       <div>
         <v-btn
@@ -307,6 +351,9 @@ export default {
     this.getAvailableOwners()
   },
   methods: {
+    projectHasActiveProcessStep(ps) {
+      console.log('project', this.project)
+    },
     anyGroupNonUnique () {
       let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
       return null != nonUniqueGroups
@@ -577,6 +624,7 @@ export default {
 .process-step-name {
   font-weight: bold;
   font-size: 22px;
+  padding-top: 10px;
 }
 
 ::v-deep {
