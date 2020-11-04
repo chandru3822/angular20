@@ -33,7 +33,6 @@
                                     psacp.archived,
                                     psacp.process_step_action_id as "processStepActionId",
                                     psacp.process_step_id as "processStepId",
-                                    psacp.trigger_automatically as "triggerAutomatically",
                                     psacp.display_order as "displayOrder",
                                     psacp.created_by_id as "createdById",
                                     psacp.modified_by_id as "modifiedById",
@@ -187,15 +186,14 @@
   ]]></processStepAction.getChildProcessStepsForAction>
 
   <processStepAction.addChildStepToAction><![CDATA[
-    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, trigger_automatically, display_order, created_by_id)
-    values (:processStepActionId, :processStepId, :triggerAutomatically, :displayOrder, :createdById)
+    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, display_order, created_by_id)
+    values (:processStepActionId, :processStepId, :displayOrder, :createdById)
   ]]></processStepAction.addChildStepToAction>
 
   <processStepAction.getActionChildStep><![CDATA[
     select cp.id,
        cp.process_step_action_id,
        cp.process_step_id,
-       cp.trigger_automatically,
        cp.display_order,
        cp.archived,
        cp.date_created,
@@ -218,8 +216,7 @@
 
   <processStepAction.updateActionChildStep><![CDATA[
     update flow.process_step_action_child_process
-      set trigger_automatically = :triggerAutomatically,
-          display_order = :displayOrder,
+      set display_order = :displayOrder,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id

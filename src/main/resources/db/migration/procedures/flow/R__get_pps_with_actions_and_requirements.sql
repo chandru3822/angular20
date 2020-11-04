@@ -145,7 +145,6 @@ FROM (
                                                  psacp.archived,
                                                  psacp.process_step_action_id as "processStepActionId",
                                                  psacp.process_step_id as "processStepId",
-                                                 psacp.trigger_automatically as "triggerAutomatically",
                                                  psacp.display_order as "displayOrder",
                                                  psacp.created_by_id as "createdById",
                                                  psacp.modified_by_id as "modifiedById",
