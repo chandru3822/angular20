@@ -187,7 +187,7 @@ public class ProjectProcessStepService {
     }
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, boolean performAutoTrigger) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -199,7 +199,9 @@ public class ProjectProcessStepService {
 
     Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
 
-    this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+    if (performAutoTrigger) {
+      this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+    }
 
     return ppsId;
   }
@@ -252,10 +254,12 @@ public class ProjectProcessStepService {
   }
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
+  public void performTimeBasedAutoTriggers() {
+
+  }
 
   @Transactional
-  @Async
-  public Future<Void> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
+  public boolean performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
       // Set the security context so we have user details in the async downline
       securityService.setCurrentUserDetails(userDetails);
 
@@ -283,7 +287,7 @@ public class ProjectProcessStepService {
               }
           });
       }
-      return new AsyncResult<>(null);
+      return true;
   }
 
   @Transactional
@@ -307,10 +311,10 @@ public class ProjectProcessStepService {
 
     Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
 
-    asyncRunChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getProcessStepId());
+    asyncRunChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getProcessStepId(), securityService.getCurrentUserDetails());
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId);
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, false);
         log.info("insert query: pps");
       if (childStep.getAutoTriggerActionCount() > 0) {
           log.info("going recursive");
@@ -731,7 +735,7 @@ public class ProjectProcessStepService {
   }
 
     @Async
-    public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long projectId, Long processStepId) {
+    public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long projectId, Long processStepId, UserAccountDetails details) {
         List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, projectProcessStepId);
         childFunctions.forEach(childFunction -> {
             try {
@@ -744,6 +748,10 @@ public class ProjectProcessStepService {
                 e.printStackTrace();
             }
         });
+
+        if (!childFunctions.isEmpty()) {
+//          this.performAutoTriggerActions()
+        }
     }
 
   public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId) throws Exception {

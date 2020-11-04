@@ -74,12 +74,12 @@ public class CustomFieldValueController {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
           for (Long ppsId : ppsIds) {
               Instant start = Instant.now();
-              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-              try {
-                  future.get();
-              } catch (Exception e) {
-                  log.error(e.getMessage());
-              }
+              boolean autoTriggersRan = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+//              try {
+//                  future.get();
+//              } catch (Exception e) {
+//                  log.error(e.getMessage());
+//              }
               Instant end = Instant.now();
               log.info("");
               log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
@@ -116,12 +116,12 @@ public class CustomFieldValueController {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
           for (Long ppsId : ppsIds) {
               Instant start = Instant.now();
-              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-              try {
-                  future.get();
-              } catch (Exception e) {
-                  log.error(e.getMessage());
-              }
+              boolean autoTriggersRan = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+//              try {
+//                  future.get();
+//              } catch (Exception e) {
+//                  log.error(e.getMessage());
+//              }
               Instant end = Instant.now();
               log.info("");
               log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
@@ -140,12 +140,12 @@ public class CustomFieldValueController {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
     Instant start = Instant.now();
-    Future<Void> future = projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
-    try {
-        future.get();
-    } catch (Exception e) {
-        log.error(e.getMessage());
-    }
+    boolean autoTriggersRan = projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+//    try {
+//        future.get();
+//    } catch (Exception e) {
+//        log.error(e.getMessage());
+//    }
     Instant end = Instant.now();
     log.info("");
     log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
@@ -163,12 +163,12 @@ public class CustomFieldValueController {
 //            Don't re-check the ppsId we just previously did
             if (!ppsId.equals(projectProcessStepId)) {
                 start = Instant.now();
-                future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-                try {
-                    future.get();
-                } catch (Exception e) {
-                    log.error(e.getMessage());
-                }
+                autoTriggersRan = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+//                try {
+//                    future.get();
+//                } catch (Exception e) {
+//                    log.error(e.getMessage());
+//                }
                 end = Instant.now();
                 log.info("");
                 log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
