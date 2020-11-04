@@ -2677,7 +2677,7 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
-INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, date_value, created_by_id)
+INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT o.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             o.birdeye_business_id,
@@ -8571,7 +8571,7 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
               inner join flow.contact c on c.id = c1.id
      WHERE referred_by IS NOT NULL);
 
-INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT c.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Lead Created Date' and cf.company_id = c.company_id) as custom_field_id,
             lead_created_date,
