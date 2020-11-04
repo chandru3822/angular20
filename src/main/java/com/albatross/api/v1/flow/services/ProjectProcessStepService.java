@@ -311,7 +311,7 @@ public class ProjectProcessStepService {
 
     Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
 
-    asyncRunChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getProcessStepId(), securityService.getCurrentUserDetails());
+    performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
       Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, false);
@@ -734,12 +734,11 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-    @Async
-    public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long projectId, Long processStepId, UserAccountDetails details) {
-        List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, projectProcessStepId);
+    public void performChildFunctions(Long actionId, Long ppsId, Long processStepId) {
+        List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
         childFunctions.forEach(childFunction -> {
             try {
-                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, projectProcessStepId));
+                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
                 log.info(String.format("Successfully executed child action function. CFA ID: %s, action ID: %s",childFunction.getId(), actionId));
@@ -750,7 +749,9 @@ public class ProjectProcessStepService {
         });
 
         if (!childFunctions.isEmpty()) {
-//          this.performAutoTriggerActions()
+          // I have a suspicion that there is a potential bug here. If this function was auto triggered, this will potentially double run auto triggers on some
+          // PPS actions. Not sure if that will cause an issue, or only run unnecessary logic
+          this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
         }
     }
 
