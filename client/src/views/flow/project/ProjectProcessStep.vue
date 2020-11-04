@@ -207,7 +207,7 @@
               :type="'timestamp'"
               :readonly="true"
               :format="'MMMM DD, YYYY, h:mm A'"
-              label="Start Time"
+              label="Closer Appointment Start Time"
             />
             <DatetimePickerInput
               v-model="closerAppointmentDetails.appointmentEndTime"
@@ -215,12 +215,12 @@
               :type="'timestamp'"
               :readonly="true"
               :format="'MMMM DD, YYYY, h:mm A'"
-              label="End Time"
+              label="Closer Appointment End Time"
             />
             <v-text-field color="primaryCustom"
                           v-model="closerAppointmentDetails.userFullName"
                           readonly
-                          label="Resource"></v-text-field>
+                          label="Closer"></v-text-field>
           </div>
         </v-card-text>
         <v-card-text class="pt-0" v-else-if="!schedulerLoading && userIsScheduler && !schedulerCanEdit">
