@@ -1,9 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.RicochetLead;
-//import com.albatross.api.v1.flow.services.RicochetWebhookService;
+import com.albatross.api.v1.flow.services.RicochetWebhookService;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -19,8 +19,8 @@ public class RicochetWebhookController {
     @Value(value = "${ricochet.apiKey}")
     private String apiKey;
 
-//    @Autowired
-//    private RicochetWebhookService ricochetWebhookService;
+    @Autowired
+    private RicochetWebhookService ricochetWebhookService;
 
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/lead")
@@ -60,8 +60,6 @@ public class RicochetWebhookController {
                 lead.getHubspotId() != null ? lead.getHubspotId() : "null"
         );
 
-//        ricochetWebhookService.saveLead(lead);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Just testing connection to Ricochet.");
+        return ricochetWebhookService.saveLead(lead);
     }
 }
