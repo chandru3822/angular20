@@ -178,7 +178,7 @@
                     <v-radio label="Reference Field: from Process Step"
                              value="ancillary"></v-radio>
                   </v-radio-group>
-                  <v-autocomplete v-if="newFieldType === 'native' || isProject"
+                  <v-autocomplete v-if="newFieldType === 'native' || !isProject"
                                   v-model="newField"
                                   :items="availableCustomFields"
                                   label="New Custom Field"
