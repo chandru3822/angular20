@@ -31,50 +31,6 @@
               <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
               <span v-else>Reset Filters</span>
             </v-btn>
-<!--            <v-btn text v-if="totalUsers <= 100000" @click="exportUsers">Export</v-btn>-->
-<!--            <v-dialog-->
-<!--                v-model="dialog"-->
-<!--                width="500"-->
-<!--                v-else-->
-<!--            >-->
-<!--              <template v-slot:activator="{ on }">-->
-<!--                <v-btn text v-on="on">-->
-<!--                  Export-->
-<!--                </v-btn>-->
-<!--              </template>-->
-
-<!--              <v-card>-->
-<!--                <v-card-title>-->
-<!--                  Export-->
-<!--                </v-card-title>-->
-
-<!--                <v-card-text>-->
-<!--                  You are attempting to export {{totalUsers | currency('', 0)}} results.-->
-<!--                  This can take 1-2 minutes.-->
-<!--                  We recommend that you cancel and filter the result set before exporting.-->
-<!--                </v-card-text>-->
-
-<!--                <v-divider></v-divider>-->
-
-<!--                <v-card-actions>-->
-<!--                  <div class="flex-grow-1"></div>-->
-<!--                  <v-btn-->
-<!--                      color="grey"-->
-<!--                      text-->
-<!--                      @click="dialog = false"-->
-<!--                  >-->
-<!--                    Cancel-->
-<!--                  </v-btn>-->
-<!--                  <v-btn-->
-<!--                      color="primaryCustom"-->
-<!--                      text-->
-<!--                      @click="exportUsers"-->
-<!--                  >-->
-<!--                    Continue Anyway-->
-<!--                  </v-btn>-->
-<!--                </v-card-actions>-->
-<!--              </v-card>-->
-<!--            </v-dialog>-->
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -506,31 +462,6 @@
           this.users = []
         }
       },
-      // async exportUsers () {
-      //   this.dialog = false
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     const params = {
-      //       search: this.filters.search,
-      //       firstName: this.filters.firstName,
-      //       lastName: this.filters.lastName,
-      //       email: this.filters.email,
-      //       phone: this.filters.phone,
-      //       statuses: this.filters.statuses,
-      //       positions: this.filters.positions,
-      //     }
-      //     const {data} = await postRequest(`/user/exportUsers`, params)
-      //     let blob = new Blob([data], {
-      //       type: 'text/csv;charset=utf-8'
-      //     });
-      //     saveAs(blob, "users.csv");
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Exporting Users')
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
       async getOrgFilters (initialLoad) {
         // filter out any org filters that were left empty like {"4": []}
         Object.keys(this.filters.orgs).forEach(key => {

@@ -110,34 +110,6 @@
       from t1
   ]]></user.searchUserCount>
 
-  <user.exportUsers><![CDATA[
-      select
-        u.id,
-        u.first_name,
-        u.last_name,
-        concat(u.first_name, ' ', u.last_name) AS full_name,
-        u.email,
-        u.phone_number,
-        ust.id as user_status_type_id,
-        ust.user_status_type,
-        p.position
-    from flow.user u
-      inner join flow.user_company uc on uc.user_id = u.id
-      inner join flow.user_status_type ust on ust.company_id = uc.company_id
-      inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
-      left join flow.user_position up on up.user_id = u.id
-      left join flow.position p on p.id = up.position_id
-    where uc.company_id = :companyId
-       and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
-       and u.first_name ILIKE '%' || :firstName || '%'
-       and u.last_name ILIKE '%' || :lastName || '%'
-       and u.email ILIKE '%' || :email || '%'
-       and u.phone_number ILIKE '%' || :phone || '%'
-       and ust.id in (:statuses)
-       and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[p.id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
-    order by u.last_name, u.first_name, up.start_date desc
-  ]]></user.exportUsers>
-
   <user.updateUser>
     <![CDATA[
       update flow."user"
@@ -419,6 +391,23 @@
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
 
+  <user.upsertUserStatus><![CDATA[
+    WITH do_upsert AS (
+      update flow.company_user_status cus
+      set user_status_type_id = :userStatusTypeId,
+          date_modified = now(),
+          modified_by_id = :currentUserId
+          from flow.user_status_type ust
+      where ust.id = cus.user_status_type_id
+          and cus.user_id = :userId
+          and ust.company_id = :companyId
+      returning *
+    )
+    INSERT INTO flow.company_user_status (user_status_type_id, user_id)
+    SELECT :userStatusTypeId, :userId
+    WHERE NOT EXISTS (SELECT * FROM do_upsert)
+  ]]></user.upsertUserStatus>
+
   <user.updateUserStatus><![CDATA[
     update flow.company_user_status cus
       set user_status_type_id = :userStatusTypeId,
@@ -456,12 +445,12 @@
       values (:companyId, :id, :isDefault)
   ]]></user.insertUserCompany>
 
-  <user.archiveUserCompanies><![CDATA[
+  <user.deleteUserCompany><![CDATA[
       update flow.user_company
         set archived = true
       where user_id = :userId
-        and company_id not in (:companyIds)
-  ]]></user.archiveUserCompanies>
+        and company_id = :companyId
+  ]]></user.deleteUserCompany>
 
   <user.upsertUserCompany><![CDATA[
     insert into flow.user_company(company_id, user_id)
@@ -469,6 +458,20 @@
     ON CONFLICT (company_id, user_id)
         DO UPDATE SET archived = false;
   ]]></user.upsertUserCompany>
+
+  <user.getUserCompanies><![CDATA[
+    select c.id,
+          c.company_name as "companyName",
+          c.parent_company_id as "parentCompanyId",
+          c.aws_bucket as "awsBucket",
+          c.abbreviation
+    from flow.user_company uc
+            inner join flow.company c on c.id = uc.company_id
+    where uc.user_id = :userId
+     and uc.archived is not true
+     and c.archived is not true
+     order by c.company_name
+  ]]></user.getUserCompanies>
 
   <user.checkEmailExists><![CDATA[
       select id,
