@@ -455,7 +455,7 @@
           try {
             let params = {
               eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
-              processStepStatusTypeId: this.selectedProcessStepStatusType.id,
+              processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
               companyStateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime
