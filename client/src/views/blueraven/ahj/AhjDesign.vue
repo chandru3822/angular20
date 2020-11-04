@@ -312,7 +312,7 @@
       </v-card>
     </v-dialog>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-row>
 </template>
 
@@ -320,7 +320,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import AhjDocumentsButton from './components/AhjDocumentsButton'
   import AhjRequirement from './components/AhjRequirements'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -329,7 +329,6 @@
     components: {
       AhjDocumentsButton,
       AhjRequirement,
-      Snackbar
     },
     computed: {
       userCanEdit() {

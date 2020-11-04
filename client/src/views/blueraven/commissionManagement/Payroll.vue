@@ -13,18 +13,16 @@
         <router-view></router-view>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
-  import Snackbar from '@/components/Snackbar.vue'
+
 
   export default {
     name: 'PayrollReview',
-    components: {
-      Snackbar
-    },
+
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)

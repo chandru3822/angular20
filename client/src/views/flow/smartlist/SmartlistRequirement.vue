@@ -304,7 +304,6 @@
       </tr>
     </template>
   </v-data-table>
-  <Snackbar :snackbar="snackbar" />
 </v-col>
 </template>
 
@@ -312,7 +311,7 @@
 
 import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar'
+
 
 const newRequirementStructure = {
   selectedField: null,
@@ -331,9 +330,7 @@ const newRequirementStructure = {
 
 export default {
   name: "SmartlistRequirement",
-  components: {
-    Snackbar
-  },
+
   props: {
     requirements: {
       type: Array,
@@ -434,6 +431,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getOperators (dataTypeId) {
@@ -443,6 +441,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching operators for selected field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getDataTypeRequirements (dataTypeId) {
@@ -452,6 +451,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching data type requirements for selected field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getProcessStepFieldData () {
@@ -462,6 +462,7 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process step data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
     },

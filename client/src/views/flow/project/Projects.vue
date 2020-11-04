@@ -92,7 +92,6 @@
         @confirm="[showConfirmDialog = false, generateReport()]"
     />
 
-    <Snackbar :snackbar="snackbar" />
 </v-container>
 </template>
 
@@ -105,14 +104,13 @@ import debounce from 'lodash.debounce'
 import saveAs from 'file-saver'
 import SmartlistTable from '@/components/SmartlistTable'
 import ExportDialog from '@/components/ExportDialog'
-import Snackbar from '@/components/Snackbar'
+
 
 export default {
     name: 'Projects',
     components: {
         SmartlistTable,
         ExportDialog,
-        Snackbar
     },
     data() {
         return {
@@ -207,6 +205,7 @@ export default {
 
         if (projectId === null) {
           this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Project ID" column')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {
           this.$router.push({name: 'projectDetails', params: {projectId: projectId}})
         }

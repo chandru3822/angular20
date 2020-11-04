@@ -98,13 +98,13 @@
         />
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import {
   getRequest,
   deleteRequest,
@@ -122,7 +122,7 @@ import SmartlistTable from '@/components/SmartlistTable'
 export default {
   name: 'Contacts',
   components: {
-    Snackbar,
+
     SmartlistTable
   },
   data () {
@@ -201,6 +201,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contacts')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -219,6 +220,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Exporting Contacts')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -234,6 +236,7 @@ export default {
 
       if (id === null) {
         this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Contact ID" column')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
         this.$router.push({name: 'contact', params: {id}})
       }

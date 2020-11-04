@@ -129,7 +129,7 @@
         </v-container>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
@@ -140,7 +140,7 @@
   import orderBy from 'lodash.orderby'
   import cloneDeep from 'lodash.clonedeep'
   import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
@@ -148,9 +148,7 @@
   export default {
     name: 'WorkQueueTypes',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     mounted() {
       let table = document.querySelector('tbody')
       const _self = this
@@ -215,6 +213,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -229,6 +228,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -240,10 +240,12 @@
         try {
           await deleteRequest(`/workQueueType/type/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -253,6 +255,7 @@
           const {data} = await postRequest(`/workQueueType/type`, this.newType)
 
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // add it to the master list too
           this.masterWorkQueueTypes.push(data)
@@ -266,6 +269,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -278,10 +282,12 @@
           wt.workQueueCategory = data.workQueueCategory
           wt.workQueueType = data.workQueueType
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -294,10 +300,12 @@
           try {
             await putRequest(`/workQueueType/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }

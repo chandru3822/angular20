@@ -29,15 +29,13 @@
       Create
     </v-btn>
   </v-card>
-
-  <Snackbar :snackbar="snackbar" />
 </v-menu>
 </template>
 
 <script>
 import {getRequest, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 export default {
   name: 'AddProcessStep',
@@ -53,9 +51,7 @@ export default {
       type: Number
     }
   },
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},
@@ -82,6 +78,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.fetchingSteps = false
       }
@@ -101,6 +98,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding new process step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

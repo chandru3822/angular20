@@ -182,6 +182,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     }
   }

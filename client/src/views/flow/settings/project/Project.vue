@@ -24,22 +24,20 @@
         </v-toolbar>
         <router-view/>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
 
 <script>
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import constants from '@/helpers/constants'
 
   export default {
     name: 'ProcessStep',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -69,6 +67,7 @@
       //   } catch (e) {
       //     console.error('*** ERROR ***', e)
       //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+      //    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       //     this.$store.commit(AppMutations.SET_LOADING, false)
       //   }
       // },

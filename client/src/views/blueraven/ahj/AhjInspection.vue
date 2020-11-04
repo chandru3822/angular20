@@ -537,7 +537,7 @@
       </v-card>
     </v-dialog>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-row>
 </template>
 
@@ -550,7 +550,7 @@
   import AhjNoteTemplate from './components/AhjNoteTemplates'
   import AhjRequirement from './components/AhjRequirements'
   import AhjServicingFot from './components/AhjServicingFots'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
@@ -564,7 +564,6 @@
       AhjNoteTemplate,
       AhjRequirement,
       AhjServicingFot,
-      Snackbar
     },
     computed: {
       userCanEdit() {

@@ -314,7 +314,6 @@
 <!--      </v-btn>-->
 <!--    </v-col>-->
   </v-row>
-  <Snackbar :snackbar="snackbar" />
 </v-container>
 </template>
 
@@ -323,7 +322,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar'
+
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
 import { saveAs } from 'file-saver'
@@ -331,7 +330,7 @@ import { saveAs } from 'file-saver'
 export default {
   name: 'Smartlist',
   components: {
-    Snackbar,
+
     draggable,
     SmartlistRequirement
   },
@@ -390,6 +389,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getAssignedFields () {
@@ -399,6 +399,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching assigned fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getCompanyObjectTypes () {
@@ -408,6 +409,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getRequirements () {
@@ -417,6 +419,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching requirements')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getLogic () {
@@ -427,6 +430,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist logic')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getAvailableFields () {
@@ -443,6 +447,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getOperations () {
@@ -452,6 +457,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     calculateAvailableFields () {
@@ -469,6 +475,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -487,6 +494,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -506,6 +514,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding requirement to smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -517,6 +526,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -530,6 +540,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist logic')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -542,6 +553,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -557,6 +569,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -575,6 +588,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating field order')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -591,6 +605,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting requirement')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -609,6 +624,7 @@ export default {
         saveAs(blob, "smartlist.csv");
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', e.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)

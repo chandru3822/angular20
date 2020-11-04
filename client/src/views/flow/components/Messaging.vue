@@ -34,13 +34,13 @@
         </template>
     </v-row>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 export default {
   name: 'Messaging',
@@ -50,9 +50,7 @@ export default {
       this.fetchContact()
       this.fetchSmsData()
     },
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},
@@ -134,6 +132,7 @@ export default {
           } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error sending message')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },
       openChat () {
@@ -159,6 +158,7 @@ export default {
           } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error fetching SMS users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },
       async fetchSmsData() {
@@ -203,6 +203,7 @@ export default {
           } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error fetching messages')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       }
   }

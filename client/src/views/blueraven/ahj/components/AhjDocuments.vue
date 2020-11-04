@@ -30,7 +30,7 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No documents uploaded
     </div>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-card>
 </template>
 
@@ -38,7 +38,7 @@
   import { deleteRequest, getSnackbar } from '@/helpers/helpers'
   import { Actions } from '@/store'
   import { AppMutations } from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
 
   export default {
     name: "AhjDocuments",
@@ -67,9 +67,7 @@
         default: false
       }
     },
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {}
@@ -88,11 +86,13 @@
             callback: async (document) => {
               this.documents.push(document)
               this.snackbar = getSnackbar('SUCCESS', 'Successfully uploaded document')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             }
           })
         } catch(e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error uploading document')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -103,10 +103,12 @@
           let deletedDocumentIndex = this.documents.findIndex(i => i.id === documentId)
           this.documents.splice([deletedDocumentIndex], 1)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully deleted document')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch(e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting document')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

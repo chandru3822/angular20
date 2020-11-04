@@ -298,14 +298,14 @@
         </div>
       </v-card>
     </v-dialog>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import { Actions } from '@/store'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
@@ -316,9 +316,7 @@
 
   export default {
     name: 'Users',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         delay: 500,
@@ -455,6 +453,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
@@ -504,6 +503,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -537,6 +537,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -548,6 +549,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -641,10 +643,12 @@
                   await postRequest(`/communication/sendTexts`, params)
               }
               this.snackbar = getSnackbar('SUCCESS', 'Message sent')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           }  catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error sending message')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           }
           return;
@@ -675,6 +679,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getEmailSenders() {
@@ -684,6 +689,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
     }

@@ -319,20 +319,18 @@
         </v-col>
       </v-row>
     </v-container>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
 
   export default {
     name: 'RebateDetails',
-    components: {
-      Snackbar
-    },
+
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
@@ -401,6 +399,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving rebate details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -450,10 +449,12 @@
         try {
           const {data} = await putRequest(`/contact/updateMailingAddress`, contact)
           this.snackbar = getSnackbar('SUCCESS', 'Mailing address saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.editMailing = false;
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving mailing address')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       cancelMailingEdit () {
@@ -484,10 +485,12 @@
         try {
           const {data} = await postRequest(`/rebate/updateTotalPromotionAmount`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Total Promotion Amount saved!')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.editMailing = false;
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving Total Promotion Amount')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       addNewRow() {
@@ -512,6 +515,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error deleting payment')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         } else {
           this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== item.payment_nbr)
@@ -540,6 +544,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error saving payments')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         }
 
@@ -565,6 +570,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving payment note')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
 
         this.notesDialog = false
@@ -580,6 +586,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error voiding payment')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
 
         this.voidDialog = false;

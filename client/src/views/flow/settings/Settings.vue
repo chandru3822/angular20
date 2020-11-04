@@ -81,13 +81,12 @@
         </v-sheet>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import Vue2Filters from 'vue2-filters'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -96,9 +95,7 @@ const { VUE_APP_ENV } = process.env
 export default {
   name: 'Settings',
   mixins: [Vue2Filters.mixin],
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},
@@ -215,6 +212,7 @@ export default {
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

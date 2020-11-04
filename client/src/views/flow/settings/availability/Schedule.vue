@@ -300,13 +300,13 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -316,7 +316,7 @@
   export default {
     name: 'Schedule',
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     props: {
@@ -379,6 +379,7 @@
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Schedules')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         }
       },
@@ -392,6 +393,7 @@
           console.error('*** ERROR ***', e)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Work Days')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async saveSchedule(sched, isNew) {
@@ -492,6 +494,7 @@
                 console.error('*** ERROR ***', e)
                 this.$store.commit(AppMutations.SET_LOADING, false)
                 this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               }
             }
           }
@@ -533,10 +536,12 @@
           //remove it from the schedules list so they can recreate one with the same dates
           this.schedules = this.schedules.filter(s => { return s.id !== item.id })
           this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting schedule')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

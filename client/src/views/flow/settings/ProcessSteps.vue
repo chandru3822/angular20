@@ -137,7 +137,7 @@
           </v-card>
         </v-container>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -145,16 +145,14 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import { getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
 
   export default {
     name: 'ProcessSteps',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -203,6 +201,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -215,16 +214,19 @@
             processStep.deleteConfirm = false
             this.fieldsInUse = data
             this.snackbar = getSnackbar('ERROR', 'Process Step Cannot Be Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             this.fieldsInUse = []
             processStep.archived = true
             this.snackbar = getSnackbar('SUCCESS', 'Process Step Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Process Step')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -234,10 +236,12 @@
           const {data} = await postRequest(`/processStep`, this.newStep)
           this.$router.push({path: `/settings/processStep/${data.id}/components`})
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Process Step')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

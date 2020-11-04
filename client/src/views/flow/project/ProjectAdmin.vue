@@ -93,14 +93,13 @@
     </v-col>
   </v-col>
 
-  <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
-import Snackbar from '@/components/Snackbar.vue'
+
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
@@ -133,7 +132,7 @@ export default {
     }
   },
   components: {
-    Snackbar,
+
     AddProcessStep
   },
   async created () {
@@ -152,6 +151,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching project')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     getProjectProcessSteps: async function () {
@@ -165,6 +165,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.isProjectProcessStepsLoading = false
       }
@@ -179,6 +180,7 @@ export default {
         this.process = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
       }
     },
@@ -198,6 +200,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getAvailableStatuses () {
@@ -206,6 +209,7 @@ export default {
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
       }
     },
@@ -218,6 +222,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -231,6 +236,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
         const previousStatus = this.availableProcessStepStatuses.find(status => status.id ===  selectedStep.companyProcessStepStatusTypeId)
 
@@ -260,6 +266,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -272,6 +279,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting process step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -284,6 +292,7 @@ export default {
         } catch (e) {
             logError(e)
             this.snackbar = getSnackbar('ERROR', 'Unable to update the primary process step')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             const selectedStep = this.projectProcessSteps.find(s => s.projectProcessStepId === projectProcessStepId)
             if (selectedStep) {
                 selectedStep.main = false

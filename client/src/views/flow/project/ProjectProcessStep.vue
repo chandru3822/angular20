@@ -241,7 +241,7 @@
     </v-row>
   </v-col>
 
-  <Snackbar :snackbar="snackbar"></Snackbar>
+
 </v-row>
 </template>
 
@@ -250,7 +250,7 @@
 import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
 import ActionButton from './ActionButton'
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import Attachments from '@/views/flow/components/Attachments'
 // import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -262,7 +262,7 @@ export default {
   name: 'ProjectProcessStep',
   components: {
     ActionButton,
-    Snackbar,
+
     Attachments,
     // NotesAndActivity,
     CustomValueInput,
@@ -317,6 +317,7 @@ export default {
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
       }
     },
@@ -340,6 +341,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -375,6 +377,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -391,6 +394,7 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } finally {
           this.schedulerLoading = false
         }
@@ -404,6 +408,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -423,6 +428,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -442,10 +448,12 @@ export default {
         this.processStep.owner = {}
         await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
         this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -458,6 +466,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -468,6 +477,7 @@ export default {
           } catch (e) {
               logError(e)
               this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.processStep.main = false
           } finally {
               this.$store.commit(AppMutations.SET_LOADING, false)
@@ -482,6 +492,7 @@ export default {
     handleOnCompleteError (actionId) {
       logError(`Failed to complete action with actionId: ${actionId}`)
       this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
     },
     async getAvailableTimeSlots () {
       try {
@@ -500,6 +511,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async saveCloserAppointment() {
@@ -523,6 +535,7 @@ export default {
         logError(e)
         let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
         this.snackbar = getSnackbar('ERROR', msg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

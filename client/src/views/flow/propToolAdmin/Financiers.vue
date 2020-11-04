@@ -111,21 +111,19 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {
     name: 'Financiers',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         delay: 500,
@@ -156,6 +154,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Financiers')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -164,11 +163,13 @@
         try {
           await deleteRequest(`/propTool/financier/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Financier Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Financier')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -188,6 +189,7 @@
           this.financiers = orderBy(this.financiers, [f => f.name.toLowerCase()])
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Financier Saved' : 'Financier Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // reset the new fields
           this.addNew = false
@@ -197,6 +199,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', item.id ? 'Error Updating Financier' : 'Error Adding Financier')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
