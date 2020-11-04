@@ -65,7 +65,7 @@
                 </v-col>
 
                 <v-col cols="12" md="6">
-                  <v-select
+                  <v-autocomplete
                     v-model="smartlist.viewObjectTypeId"
                     :items="viewObjectTypes"
                     item-text="objectType"
@@ -81,7 +81,7 @@
 
               <v-row>
                 <v-col cols="12" md="6">
-                  <v-select
+                  <v-autocomplete
                     v-model="smartlist.companyObjectTypeId"
                     :items="companyObjectTypes"
                     item-text="objectType"
@@ -140,7 +140,7 @@
 
       <v-card v-if="showNewFieldForm" class="elevation-1">
         <v-col class="text-left">
-          <v-select
+          <v-autocomplete
             v-model="newField.objectTypeId"
             label="Object Type"
             :items="companyObjectTypes"
@@ -149,7 +149,7 @@
             @input="getAvailableFields"
           />
 
-          <v-select
+          <v-autocomplete
             v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
             v-model="newField.processStepId"
             label="Process Step"
@@ -159,7 +159,7 @@
             @input="calculateAvailableFields"
           />
 
-          <v-select
+          <v-autocomplete
             v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId !== 4 && newField.objectTypeId != null)"
             v-model="newField.selectedField"
             label="Field"
