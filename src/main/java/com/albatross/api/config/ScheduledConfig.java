@@ -72,9 +72,11 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Scheduled(cron = "0 0 2 * * ?")
     public void autoTriggers() {
+      log.info("*** CRON: start autoTriggers ***");
       if (autoTriggers) {
         projectProcessStepService.performTimeBasedAutoTriggers();
       }
+      log.info("*** CRON: end autoTriggers ***");
     }
 
     @Bean(destroyMethod = "shutdown")
