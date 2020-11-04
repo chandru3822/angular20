@@ -15,14 +15,14 @@
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
           <h3>Add State to Company</h3>
           <div class="mb-3">
-            <v-select
+            <v-autocomplete
                 v-model="selectedState"
                 :items="states"
                 label="Select a state to use"
                 item-text="state"
                 item-value="id"
                 return-object
-            ></v-select>
+            ></v-autocomplete>
           </div>
           <v-btn :disabled="!selectedState"
                  color="primaryCustom" class="white--text mr-2"
@@ -172,7 +172,12 @@
       async saveCompanyState(ol, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/state/saveCompanyState`, ol)
+          let params = {
+            ...ol
+          }
+          params.stateId = ol.id
+          params.id = isNew ? null : params.id
+          const {data} = await putRequest(`/state/saveCompanyState`, params)
           if(isNew){
             this.companyStates.push(data)
             this.addNew = false
@@ -192,7 +197,7 @@
       async getCompanyStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/state/allForCompany`)
+          const {data} = await getRequest(`/state/company`)
           this.companyStates = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
