@@ -4361,10 +4361,7 @@ with process_step1 as (
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
             where
-                ((scheduled_installation_date is not null and installation_date :: DATE < (now() AT TIME ZONE 'US/Mountain') :: DATE AND
-                  scheduled_installation_date :: DATE >
-                  greatest(redesign_ready_to_send_date,regen_ready_to_send_date,permit_pack_complete,permit_pack_revision_complete_date,
-                           permit_revision_b_complete_date,permit_revision_c_complete_date,bom_created_date) :: DATE))
+                scheduled_installation_date::date is not null or installation_date :: DATE is not null
               and originator_id = 1
             union all
             select deal_id,dce.updated as complete_date
@@ -4383,10 +4380,7 @@ with process_step1 as (
                              INNER JOIN blueraven.deal d
                                         ON project.id = d.id
                     where
-                        ((scheduled_installation_date is not null and installation_date :: DATE < (now() AT TIME ZONE 'US/Mountain') :: DATE AND
-                          scheduled_installation_date :: DATE >
-                          greatest(redesign_ready_to_send_date,regen_ready_to_send_date,permit_pack_complete,permit_pack_revision_complete_date,
-                                   permit_revision_b_complete_date,permit_revision_c_complete_date,bom_created_date) :: DATE))
+                        scheduled_installation_date::date is not null or installation_date :: DATE is not null
                       and originator_id = 1))
             SELECT project.id,
                 33,
@@ -18605,7 +18599,8 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and installation_date is not null and substantial_completion_date is null
+         where originator_id = 1 and installation_date is not null and
+               substantial_completion_date is null
            and installation_date >= (now() at time zone 'US/Mountain')::date
         ) returning *),
      p as (

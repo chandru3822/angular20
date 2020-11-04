@@ -8549,6 +8549,9 @@ with leads as (
          from flow.list_of_value lov
                   inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                  inner join flow.object_type ot on ot.id = cot.object_type_id and object_type_id = 2
                   inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
          where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
@@ -8880,7 +8883,14 @@ update flow.project set contact_id = (select id from flow.contact where first_na
 where id =179198;
 
 
-with leads as (
+with no_dups as (
+    select max(d.id) as deal_id,c.id as contact_id
+    from blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+    group by c.id
+),
+leads as (
     SELECT c.id as contact_id,
            company_id,
            s.source_name,
@@ -8889,6 +8899,7 @@ with leads as (
              inner join flow.project p on p.id = d.id
              inner join flow.contact c on c.id = p.contact_id
              inner join blueraven.source s on s.id = d.source_id
+             inner join no_dups nd on nd.deal_id = p.id and nd.contact_id = c.id
     WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
 ),
      list_of_values as (
@@ -8896,6 +8907,9 @@ with leads as (
          from flow.list_of_value lov
                   inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                  inner join flow.object_type ot on ot.id = cot.object_type_id and object_type_id = 2
                   inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
          where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
@@ -8906,7 +8920,14 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
-with leads as (
+with no_dups as (
+    select max(d.id) as deal_id,c.id as contact_id
+    from blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+    group by c.id
+),
+     leads as (
     SELECT c.id as contact_id,
            company_id,
            lead_source_detail,
@@ -8914,6 +8935,7 @@ with leads as (
     FROM blueraven.deal d
              inner join flow.project p on p.id = d.id
              inner join flow.contact c on c.id = p.contact_id
+             inner join no_dups nd on nd.deal_id = p.id and nd.contact_id = c.id
     WHERE d.lead_source_detail IS NOT NULL and c.contact_type_id = 1
 ),
      list_of_values as (
@@ -8930,6 +8952,35 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
             2350555 as created_by_id
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.lead_source_detail);
+
+with leads as (
+         SELECT p.id as project_id,
+                company_id,
+                s.source_name,
+                2350555 as created_by_id
+         FROM blueraven.deal d
+                  inner join flow.project p on p.id = d.id
+                  inner join flow.contact c on c.id = p.contact_id
+                  inner join blueraven.source s on s.id = d.source_id
+         WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
+     ),
+     list_of_values as (
+         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
+         from flow.list_of_value lov
+                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
+                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                  inner join flow.object_type ot on ot.id = cot.object_type_id and object_type_id = 1
+                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+         where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id,int_value , created_by_id)
+    (SELECT l.project_id,
+            lov.custom_field_group_assignemnt_id,
+            lov.list_of_value_id,
+            2350555 as created_by_id
+     from leads l
+              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
 
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
