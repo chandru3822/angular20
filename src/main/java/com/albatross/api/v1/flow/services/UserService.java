@@ -231,6 +231,9 @@ public class UserService {
     params.put("modifiedById", user.getId());
     sqlCache.update("user.deleteUserCompany", params);
 
+    //per judson request also remove the user_status for that company and user
+    sqlCache.update("user.archiveUserStatus", params);
+
     List<Company> results = sqlCache.query("user.getUserCompanies", params, Company.class);
     return results;
   }

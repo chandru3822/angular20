@@ -391,6 +391,17 @@
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
 
+  <user.archiveUserStatus><![CDATA[
+    update flow.company_user_status cus
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+          from flow.user_status_type ust
+      where ust.id = cus.user_status_type_id
+          and cus.user_id = :userId
+          and ust.company_id = :companyId
+  ]]></user.archiveUserStatus>
+
   <user.upsertUserStatus><![CDATA[
     WITH do_upsert AS (
       update flow.company_user_status cus

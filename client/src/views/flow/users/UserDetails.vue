@@ -79,7 +79,7 @@
                 </v-card>
                 <v-divider v-if="addUserCompany" class="mb-2"></v-divider>
 
-                <div v-for="uc in user.companies" class="clickable" @click="removeUserCompany(uc)">
+                <div v-for="uc in user.companies">
                     {{uc.companyName}}
                   <v-dialog
                     v-if="userIsAdmin"
