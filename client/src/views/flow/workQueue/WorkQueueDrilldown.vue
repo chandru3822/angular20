@@ -33,6 +33,7 @@
               <td class="text-left underline" @click="clickRow(item)">{{item.projectName}}</td>
               <td class="text-left">{{item.processStepName}}</td>
               <td class="text-left">{{item.daysInQueue}}</td>
+              <td class="text-left">{{item.stateAbbreviation}}</td>
               <td class="text-left">
                 <div v-if="item.owner">{{item.owner}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
@@ -133,6 +134,7 @@
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
           { text: 'Days In Queue', value: 'daysInQueue', show: true },
+          { text: 'State', value: 'stateAbbreviation', show: true },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
           { text: 'Notes', value: 'notes', show: true },
