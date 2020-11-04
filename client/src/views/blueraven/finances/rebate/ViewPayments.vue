@@ -212,7 +212,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
 
@@ -227,71 +227,71 @@
 
   export default {
     name: 'Payments',
-
-    data: () => ({
-      snackbar: {},
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 500],
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-      },
-      payments: [],
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
-      headers: [
-        { text: 'Project Name', value: 'projectName', show: true },
-        { text: 'Project ID', value: 'projectId', show: true },
-        { text: 'Substantial Completion', value: 'sc', show: true },
-        { text: 'Financier', value: 'financier', show: true },
-        { text: 'Product', value: 'product', show: true },
-        { text: 'Total Promotion Amount', value: 'totalPromotionAmount', show: true },
-        { text: '# Of Payments', value: 'numberOfPromotionPayments', show: false },
-        { text: 'Payment Amount', value: 'paymentAmount', show: false },
-        { text: 'Total Paid', value: 'totalPaid', show: false },
-        { text: 'Last Payment Date', value: 'lastPaymentDate', show: false },
-        { text: 'Balance Owed', value: 'balanceOwed', show: false },
-        { text: 'Entered Into Payment System', value: 'enteredIntoPaymentSystemDate', show: true }
-      ],
-      statuses: [
-        {
-          text: 'New Pending',
-          value: 'pending'
-        },
-        {
-          text: 'Needs Approval',
-          value: 'approval'
-        },
-        {
-          text: 'Invalid',
-          value: 'invalid'
+    data() {
+        return {
+            snackbar: {},
+            footerProps: {
+                'items-per-page-options': [25, 50, 100, 500],
+                'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+            },
+            payments: [],
+            userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
+            headers: [
+                {text: 'Project Name', value: 'projectName', show: true},
+                {text: 'Project ID', value: 'projectId', show: true},
+                {text: 'Substantial Completion', value: 'sc', show: true},
+                {text: 'Financier', value: 'financier', show: true},
+                {text: 'Product', value: 'product', show: true},
+                {text: 'Total Promotion Amount', value: 'totalPromotionAmount', show: true},
+                {text: '# Of Payments', value: 'numberOfPromotionPayments', show: false},
+                {text: 'Payment Amount', value: 'paymentAmount', show: false},
+                {text: 'Total Paid', value: 'totalPaid', show: false},
+                {text: 'Last Payment Date', value: 'lastPaymentDate', show: false},
+                {text: 'Balance Owed', value: 'balanceOwed', show: false},
+                {text: 'Entered Into Payment System', value: 'enteredIntoPaymentSystemDate', show: true}
+            ],
+            statuses: [
+                {
+                    text: 'New Pending',
+                    value: 'pending'
+                },
+                {
+                    text: 'Needs Approval',
+                    value: 'approval'
+                },
+                {
+                    text: 'Invalid',
+                    value: 'invalid'
+                }
+            ],
+            status: 'approval',
+            newPayItem: {
+                projectName: '',
+                projectId: 0,
+                sc: '',
+                financier: '',
+                product: '',
+                totalPromotionAmount: 0,
+                numberOfPromotionPayments: 0,
+                paymentAmount: 0,
+                verifiedBy: '',
+                createdByUserId: '',
+                paymentStartDate: '',
+                selected: false,
+            },
+            paymentsSearch: '',
+            pagination: {},
+            selectAll: false,
+            showSelect: false,
+            userName: '',
+            approveDialog: false,
+            passwordDialog: false,
+            newPayDialog: false,
+            passwordInput: '',
+            searchQuery: '',
+            filteredPayments: []
         }
-      ],
-      status: 'approval',
-      newPayItem: {
-        projectName: '',
-        projectId: 0,
-        sc: '',
-        financier: '',
-        product: '',
-        totalPromotionAmount: 0,
-        numberOfPromotionPayments: 0,
-        paymentAmount: 0,
-        verifiedBy: '',
-        createdByUserId: '',
-        paymentStartDate: '',
-        selected: false,
-      },
-      paymentsSearch: '',
-      pagination: {},
-      selectAll: false,
-      showSelect: false,
-      userName: '',
-      approveDialog: false,
-      passwordDialog: false,
-      newPayDialog: false,
-      passwordInput: '',
-      searchQuery: '',
-      filteredPayments: []
-    }),
+    },
     computed: {
       visibleHeaders () {
         return this.headers.filter(header => header.show === true)
@@ -322,7 +322,6 @@
     },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-
       Promise.all([
         this.fetchPayments(this.status)
       ]).then(() => this.$store.commit(AppMutations.SET_LOADING, false))
@@ -333,7 +332,6 @@
         try {
           if ('approval' === type) {
             const {data} = await getRequest('/rebate/needsApproval', 'blueraven')
-
             this.showSelect = true;
             // # Of Payments
             this.headers[6].show = true;
@@ -343,8 +341,6 @@
             this.headers[8].show = true;
             // Last Payment Date
             this.headers[9].show = true;
-            // Balance Owed
-            this.headers[10].show = true;
             // Balance Owed
             this.headers[10].show = true;
 
@@ -515,7 +511,6 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Failed to approve payment')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.passwordDialog = false;
           this.approveDialog = false;
           this.$store.commit(AppMutations.SET_LOADING, false)

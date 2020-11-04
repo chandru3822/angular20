@@ -179,7 +179,7 @@
            mailing_street1 = :street1,
            mailing_street2 = :street2,
            mailing_city = :city,
-           mailing_state = :state,
+           mailing_company_state_id = :stateId,
            mailing_postal_code = :postalCode,
            modified_by_id = :modifiedById,
            date_modified = now()
