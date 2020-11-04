@@ -64,10 +64,10 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 })" :key="o.id"
-                         :to="{ path: `/settings/customFieldGroup/${o.id}`}"
+            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 || cot.flowTypeId === 3 })" :key="o.id"
+                         :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` : `/settings/customFieldGroup/${o.id}`}"
                          @click="setTitle"
-                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
+                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
               <v-list-item-content>
                 <v-list-item-title>{{o.objectType}}</v-list-item-title>
               </v-list-item-content>
@@ -192,11 +192,12 @@ export default {
       }, {
         header: 'Objects',
         show: this.hasSettingsAccess
-      }, {
-        path: '/settings/project/customFieldGroups',
-        title: 'Project',
-        show: this.hasSettingsAccess
       }
+      // , {
+      //   path: '/settings/project/customFieldGroups?=${c.id}',
+      //   title: 'Project',
+      //   show: this.hasSettingsAccess
+      // }
     ]
   }
   },

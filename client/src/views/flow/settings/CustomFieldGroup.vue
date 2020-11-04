@@ -65,7 +65,7 @@
               :sort-desc="[false]"
               :expanded.sync="expanded"
               hide-default-footer
-              :hide-default-header="typeId !== 1"
+              :hide-default-header="!isProject"
               class="elevation-1 fix-column-width-bug mb-5"
           >
             <template #no-data>
@@ -91,7 +91,7 @@
                   <span v-else>{{item.groupName}}</span>
                 </td>
                 <td class="text-left">
-                  <v-select v-if="item.edit && typeId === 1"
+                  <v-select v-if="item.edit && isProject"
                             v-model="item.companyObjectTypeTabId"
                             :items="objectTypeTabs"
                             label="Tab"
@@ -99,7 +99,7 @@
                             item-value="id"
                             autocomplete="new-password">
                   </v-select>
-                  <span v-if="!item.edit && typeId === 1">
+                  <span v-if="!item.edit && isProject">
                     {{item.tabName || 'n/a'}}
                   </span>
                 </td>
@@ -172,13 +172,13 @@
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
                 <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
-                  <v-radio-group v-if="$route.params.id === '1'" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
+                  <v-radio-group v-if="isProject" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
                     <v-radio label="Project Custom Field"
                              value="native"></v-radio>
                     <v-radio label="Reference Field: from Process Step"
                              value="ancillary"></v-radio>
                   </v-radio-group>
-                  <v-autocomplete v-if="newFieldType === 'native' || $route.params.id !== '1'"
+                  <v-autocomplete v-if="newFieldType === 'native' || isProject"
                                   v-model="newField"
                                   :items="availableCustomFields"
                                   label="New Custom Field"
@@ -191,7 +191,7 @@
                       {{ item.fieldName }}
                     </template>
                   </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="parent"
                                   :items="parentObjects"
                                   label="Parent Object"
@@ -204,7 +204,7 @@
                       {{ item.processStepName }}
                     </template>
                   </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
                                   label="Custom Field"
@@ -290,7 +290,7 @@
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                           </div>
-                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
+                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && !isProject">
                             <input type="checkbox" v-model="cf.showOnInsert" :readonly="!userCanEdit"
                                    :disabled="!userCanEdit" @change="updateShowOnInsert(cf)">
                             Show On Insert
@@ -384,6 +384,9 @@ export default {
   components: {
     draggable,
   },
+  props: {
+    isProject: Boolean
+  },
   data () {
     return {
       snackbar: {},
@@ -405,7 +408,7 @@ export default {
         groupName: null
       },
       //ugh! is this a good idea? projects is a custom view that calls this but orgs/users/contacts do too and i dont want to add a view for each of those
-      typeId: this.$route.params.id ?? 1,
+      typeId: this.$route.params.id ?? this.$route.query.companyObjectTypeId,
       addField: false,
       newField: {},
       customFieldGroups: [],
@@ -447,6 +450,8 @@ export default {
     // whenever objectTypeId changes, this function will run
     '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
       // reset the selected group when the object type changes
+      console.log('route changed', this.$route.params.id)
+      this.typeId = this.$route.params.id ?? this.$route.query.companyObjectTypeid
       this.availableCustomFields = []
       this.getCustomFieldGroups()
     }
@@ -531,7 +536,7 @@ export default {
     async addCustomFieldGroup () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.newGroup.companyObjectTypeId = this.$route.params.id
+        this.newGroup.companyObjectTypeId = this.$route.params.id ?? this.$route.query.companyObjectTypeId
         const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
         this.newGroup = {}
         this.addNew = false
