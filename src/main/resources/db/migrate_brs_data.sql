@@ -10646,3 +10646,24 @@ where o.company_state_id is not null;
 
 alter table flow.state drop column if exists time_zone_abbreviation;
 
+insert into  flow.user_org_access(org_id, user_id, date_created,
+                                  created_by_id
+)
+    (select distinct  unnest(calendar_org_ids) as org_id,id as user_id,
+                      now(),2350555
+     from blueraven.user
+     where calendar_org_ids is not null);
+
+grant connect on database blueraven_uat to brs_users;
+grant usage on schema public to brs_users;
+grant usage on schema base_mysql to brs_users;
+grant usage on schema blueraven to brs_users;
+grant usage on schema brs to brs_users;
+grant usage on schema flow to brs_users;
+grant usage on schema props to brs_users;
+grant select on all tables in schema public to brs_users;
+grant select on all tables in schema base_mysql to brs_users;
+grant select on all tables in schema blueraven to brs_users;
+grant select on all tables in schema brs to brs_users;
+grant select on all tables in schema flow to brs_users;
+grant select on all tables in schema props to brs_users;
