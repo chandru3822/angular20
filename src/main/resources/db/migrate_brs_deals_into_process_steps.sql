@@ -39,13 +39,14 @@ drop  trigger if exists project_process_step_audit_trg on flow.project_process_s
 drop trigger if exists update_project_process_step_custom_value_trg on flow.project_process_step;
 /*SCHEDULE CLOSER APPOINTMENT*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             1,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -122,13 +123,16 @@ drop table if exists appointment_dates;
 
 /*CLOSER APPOINTMENT*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             2,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -212,13 +216,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*CREATE PROPOSAL*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             3,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -317,13 +324,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*BOOKING*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             4,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -476,13 +486,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SCHEDULE SITE SURVEY*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             5,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where   originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
@@ -586,13 +599,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SITE SURVEY*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             60,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -657,13 +673,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*CREATE FINAL DESIGN*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             7,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]'))
@@ -785,13 +804,16 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*QA FINAL DESIGN*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             61,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
@@ -875,13 +897,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SEND FINAL DESIGN TO CUSTOMER*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             8,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                   and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and
@@ -1015,13 +1038,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending FINAL DESIGN Approval*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             9,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -1100,13 +1124,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*CREATE PLAN SET*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             62,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1  and  current_stage_id NOT IN(1) and  (retrofit IS NULL or retrofit = FALSE) AND
@@ -1215,13 +1240,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*QA PLAN SET*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             63,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1  and (plan_set_created_date is not null AND plan_set_qa_date is null))returning *),
@@ -1300,7 +1326,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 -- /*CREATE PERMIT PACK*/
 -- with active_step as (
--- INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+-- INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
 --     (SELECT project.id,
 --             10,
 --             (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
@@ -1308,7 +1334,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                                                      process_step_status_type = 'Cancelled' end
 --                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --             2350555 as created_by_id,
---             (now() + interval '1 day')
+--             (now() + interval '1 day'),
+(now() + interval '1 day')
 --      FROM flow.project
 --               INNER JOIN blueraven.deal d
 --                          ON project.id = d.id
@@ -1496,13 +1523,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*STRUCTURAL ANALYSIS*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             64,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where  originator_id = 1 AND
@@ -1579,13 +1607,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*STRUCTURAL Engineering Stamp*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             12,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -1656,13 +1685,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Electrical Engineering Stamp*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             65,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -1733,13 +1763,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SCHEDULE PERMIT PACK SUBMISSION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             13,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and ((
@@ -1826,7 +1857,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_packet_ready_to_submit_date as complete_date
             FROM flow.project
@@ -1860,7 +1891,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                d1.complete_date
+                d1.complete_date,
+                   9
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -1906,7 +1938,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,d.permit_pack_revision_submittal_scheduled_date as complete_date
             FROM flow.project
@@ -1940,7 +1972,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                   d1.complete_date
+                   d1.complete_date,
+                   16
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -1986,7 +2019,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,d.permit_revision_b_submittal_scheduled_date as complete_date
             FROM flow.project
@@ -2020,7 +2053,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                d1.complete_date
+                d1.complete_date,
+                   18
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -2069,7 +2103,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_revision_c_submittal_scheduled_date as complete_date
             FROM flow.project
@@ -2103,7 +2137,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                   19
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -2153,13 +2188,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*VERIFY PERMIT PACK SUBMISSION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             67,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -2371,12 +2407,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*VERIFY PERMIT APPROVAL*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             15,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
+(now() + interval '1 day'),
 (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
@@ -2648,13 +2685,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*UTILITY BILL VERIFICATION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             68,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where (originator_id = 1 and
@@ -2737,13 +2775,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*READY TO SEND OR SIGN INTERCONNECTION APPLICATION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             69,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -2870,13 +2909,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*READY FOR INTERCONNECTION APPLICATION SUBMISSION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             19,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -2963,13 +3003,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*VERIFY INTERCONNECTION APPLICATION APPROVAL*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             20,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (interconnection_application_rejected is null
@@ -3038,13 +3079,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*REJECTED INTERCONNECTION APPLICATIONS*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             70,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (interconnection_application_rejected is not null and nem_approved_by_utility_date is null))returning *),
@@ -3111,13 +3153,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*DETERMINE HOA*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             21,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (final_design_signed_date is not null and hoa_approval_needed ='Yes' and
@@ -3191,13 +3234,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SUBMIT HOA APPLICATION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             22,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -3272,13 +3316,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*VERIFY HOA APPLICATION APPROVAL*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             23,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and ((hoa_approval_needed is null or hoa_approval_needed = 'Yes') and hoa_request_for_approval_submitted_date is not null and hoa_approval_received_date is null))returning *),
@@ -3343,13 +3388,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*CREATE IN-HOUSE MPU PERMIT PACK*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             24,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -3424,13 +3470,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SCHEDULE IN-HOUSE MPU PERMIT SUBMISSION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             25,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -3537,13 +3584,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*VERIFY IN-HOUSE MPU SUBMISSION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             26,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -3613,13 +3661,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify In-house MPU Permit Approval*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             27,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -3711,13 +3760,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 /*Schedule Permit Pickup and Delivery*/
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             16,
             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -3737,7 +3787,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,d.permit_pick_up_scheduled as complete_date
             FROM flow.project
@@ -3771,7 +3821,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                   8
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3806,7 +3857,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_pack_revision_pickup_scheduled as complete_date
             FROM flow.project
@@ -3840,7 +3891,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                 17
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3875,7 +3927,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_revision_b_pickup_scheduled_date as complete_date
             FROM flow.project
@@ -3909,7 +3961,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                   20
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3947,7 +4000,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_revision_c_pickup_scheduled as complete_date
             FROM flow.project
@@ -3981,7 +4034,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                   21
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -4021,14 +4075,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Permit Application Signature*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             66,
             (SELECT id FROM flow.company_process_step_status_type
             WHERE process_step_status_type = 'Active'
             and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
       where originator_id = 1 and (
@@ -4129,14 +4184,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*verify Permit Application Signature*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             71,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -4204,14 +4260,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Permit Approved, Not Ready to Schedule Installation*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             32,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -4279,14 +4336,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Installation*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             33,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -4427,14 +4485,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SUBSTANTIAL COMPLETION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             35,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (installation_date is not null and substantial_completion_date is null and
@@ -4509,14 +4568,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Installation Closeout Work*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             72,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (installation_closeout_required_date is not null and installation_closeout_date is null))returning *),
@@ -4614,14 +4674,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Order Materials*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             37,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and ( ((scheduled_installation_date IS NOT NULL AND materials_ordered_date IS NULL) OR
@@ -4688,14 +4749,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Create Placard*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             38,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -4816,14 +4878,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Placard Delivery*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             39,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -4931,14 +4994,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Substantial Completion Approval*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             73,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5005,14 +5069,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*SCHEDULE AHJ INSPECTION*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             40,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -5124,14 +5189,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Not ready to schedule inspection*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             74,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and  (
@@ -5198,14 +5264,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Needs AHJ Inspection Verification*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             46,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.stage sd on d.current_stage_id = sd.id
@@ -5388,14 +5455,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Submit AHJ Inspection Approval to Utility*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             47,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -5470,14 +5538,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Order Utility Meter*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             48,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -5544,14 +5613,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Obtain PTO*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             50,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -5622,14 +5692,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*schedule work order*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             54,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and ( work_order_required is not null and system_service_scheduled_date is null))returning *),
@@ -5731,14 +5802,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Work Order*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             55,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and ( system_service_date is not null and work_order_verified_date is null and
@@ -5808,7 +5880,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Utility Re-inspection*/
 --with active_step as (
--- INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+-- INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
 --     (SELECT project.id,
 --             42,
 --             (SELECT id FROM flow.company_process_step_status_type
@@ -5867,14 +5939,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Structural Engineering Review*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             75,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -6079,14 +6152,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Electrical Engineering Review*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             76,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -6289,14 +6363,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Low production inquiry review*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             80,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (
@@ -6410,14 +6485,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Low production inquiry resolution*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             79,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -6485,14 +6561,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Create Structural Post-Install Engineering Letter*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             77,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -6564,14 +6641,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Create Electrical Post-Install Engineering Letter*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             78,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -6642,14 +6720,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*In-house MPU Prep Work*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             81,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -6720,14 +6799,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Send/Sign Utility Rebate Application*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             82,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and d.current_stage_id != 1 and
@@ -6800,14 +6880,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Utility Rebate Application Approval*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             83,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and final_design_signed_date is not null AND
@@ -6887,14 +6968,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*verify permit/pickup delivery*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             17,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -7119,14 +7201,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule in-house MPU*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             28,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -7247,14 +7330,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify In-house MPU Completion*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             29,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and current_stage_id NOT IN(2,3) and (
@@ -7324,14 +7408,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Non-standard Installation Work*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             30,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and ( non_standard_installation_work_scheduled_date IS NULL and
@@ -7444,14 +7529,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verified Non-standard Installation Work*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             31,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and ( non_standard_installation_work_date is not null and
@@ -7522,14 +7608,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Utility Re-inspection*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             84,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -7600,14 +7687,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule AHJ Inspection Work*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             44,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and ( ahj_inspection_work_required is not null and
@@ -7706,14 +7794,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Energize System*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             51,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and utility_meter_set_date IS NOT NULL AND energized_date IS NULL and energization_visit_requested_date is null
@@ -7786,14 +7875,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Energization*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             85,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -7901,14 +7991,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Submit Final Completion*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             52,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -7980,14 +8071,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Final Completion Approval*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             53,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -8058,14 +8150,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Send first cash invoice to customer*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             56,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and ((first_cash_payment_amount > 0 or total_cash_down_payment > 0 ) AND
@@ -8137,14 +8230,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify First Cash Invoice Paid*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             57,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -8214,14 +8308,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Send Second Cash Invoice to Customer*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             86,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and ((second_cash_payment_amount > 0 or total_cash_down_payment > 0 ) AND
@@ -8293,14 +8388,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Second Cash Invoice Paid*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             87,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and ((d.financier = '["Cash"]' or secondary_financier = 'Cash') AND
@@ -8374,14 +8470,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*send redesign to customer*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             88,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -8452,14 +8549,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*needs a redesign*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             89,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -8563,7 +8661,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                 process_step_status_type = 'Cancelled' end
 --                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --             2350555 as created_by_id,
---             (now() + interval '1 day')
+--             (now() + interval '1 day'),
+(now() + interval '1 day')
 --      from flow.project p
 --               inner join blueraven.deal d on d.id = p.id
 --               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -8777,14 +8876,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*sign utility rebate application*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             92,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and d.current_stage_id != 1 and
@@ -8854,14 +8954,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*create predesign*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             93,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -8946,14 +9047,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Permit Pack Submission*/ --TODO as judson about this
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             94,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -9137,14 +9239,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Installation Closeout Work*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             95,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -9212,14 +9315,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending energization*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT project.id,
             96,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -9283,14 +9387,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*verify energization*/
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             97,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and energization_visit_date is not null and
@@ -9362,14 +9467,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*schedule resurvey*/--TODO as Judson
 with active_step as (
-INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
     (SELECT p.id,
             98,
             (SELECT id FROM flow.company_process_step_status_type
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-            (now() + interval '1 day')
+            (now() + interval '1 day'),
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id =1 and (
@@ -9411,7 +9517,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,resurvey_scheduled_date as complete_date
             FROM flow.project
@@ -9445,7 +9551,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                   11
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -9489,7 +9596,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         ( with deals as (
                 SELECT d.id,resurvey_b_scheduled_date as complete_date
                 FROM flow.project
@@ -9523,7 +9630,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                   28
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -9566,7 +9674,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,resurvey_c_scheduled_date as complete_date
             FROM flow.project
@@ -9600,7 +9708,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
 now(),
-                d1.complete_date
+                d1.complete_date,
+                   29
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -9644,13 +9753,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Final Design Completion*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 175,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -9721,13 +9831,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Sign Interconnection Application*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 91,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -9853,13 +9964,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Resurvey*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 99,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -9996,13 +10108,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Needs a Permit Revision*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 101,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10238,13 +10351,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Redesign Approval*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 103,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10314,13 +10428,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Work Order*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 104,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10383,13 +10498,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Disposition Work Order*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 105,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10461,13 +10577,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Remote Work Order*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 106,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10574,13 +10691,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Ready for Retention Call: Post Booking*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 108,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10698,13 +10816,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Ready for Retention Call: Post Site Survey*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 109,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10820,13 +10939,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Needs to be Collected*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 110,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10907,13 +11027,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Project On-Hold*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 112,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -10952,13 +11073,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Regenerate Proposal (Pre Install Agreement)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 113,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11155,13 +11277,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Engineering Due Diligence*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 114,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11331,13 +11454,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Order Additional Materials*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 115,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11415,13 +11539,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Setter Lead*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 116,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11498,13 +11623,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending ETO Application Submission*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 122,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11570,13 +11696,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Submit ETO Application*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 123,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11648,13 +11775,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending ETO Inspection Scheduling*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 128,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11721,13 +11849,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule ETO Rebate Inspection*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 129,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11800,13 +11929,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify ETO Rebate Inspection Results*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 131,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11898,13 +12028,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Submit ETO Correction Work*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 132,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11971,13 +12102,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Disposition Non-standard Installation Work*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 133,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12053,13 +12185,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Outsource MPU (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 134,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12165,13 +12298,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Outsource MPU (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 135,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12242,13 +12376,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Schedule In-house MPU (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 136,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12356,13 +12491,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify In-house MPU (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 137,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12434,13 +12570,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Structural Upgrade (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 138,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12547,13 +12684,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Structural Upgrade (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 139,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12624,13 +12762,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Schedule Reroof (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 140,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12737,13 +12876,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Reroof (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 141,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12814,13 +12954,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Schedule Trenching (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 142,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12926,13 +13067,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Verify Trenching (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 143,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13003,13 +13145,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Schedule Tree Trimming (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 144,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13114,13 +13257,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Verify Tree Trimming (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 145,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13191,13 +13335,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Schedule AC Compressor Relocation (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 146,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13303,13 +13448,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Verify AC Compressor Relocation (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 147,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13380,13 +13526,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Schedule Sourcing Deadfront (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 148,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13490,13 +13637,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Verify Sourcing Deadfront (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 149,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13614,13 +13762,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*In-House MPU Holding Step (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 151,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13685,13 +13834,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Pending AHJ Inspection*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 152,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13753,13 +13903,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule AHJ Re-inspection with Customer*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 153,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13800,7 +13951,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,,migrated_work_type_id)
         (with deals as (
             SELECT d.id,ahj_reinspection_scheduled as complete_date
             FROM flow.project
@@ -13834,7 +13985,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                d1.complete_date
+                d1.complete_date,
+                   5
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13877,7 +14029,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,ahj_reinspection_b_scheduled as complete_date
             FROM flow.project
@@ -13911,7 +14063,8 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                d1.complete_date
+                d1.complete_date,
+                   23
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13955,13 +14108,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending AHJ Re-inspection*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 154,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14056,13 +14210,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 -- /*Needs AHJ Re-inspection Verification*/
 -- with active_step as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+--     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
 --         (SELECT project.id,
 --                 155,
 --                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
 --                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --                 2350555 as created_by_id,
---                 (now() + interval '1 day')
+--                 (now() + interval '1 day'),
+(now() + interval '1 day')
 --          FROM flow.project
 --                   INNER JOIN blueraven.deal d
 --                              ON project.id = d.id
@@ -14187,13 +14342,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending AHJ Inspection Work*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 156,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14254,13 +14410,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Verify AHJ Inspection Work*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 157,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14328,13 +14485,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Financial Agreement Approval*/
 -- with active_step as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+--     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
 --         (SELECT project.id,
 --                 159,
 --                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
 --                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --                 2350555 as created_by_id,
---                 (now() + interval '1 day')
+--                 (now() + interval '1 day'),
+(now() + interval '1 day')
 --          FROM flow.project
 --                   INNER JOIN blueraven.deal d
 --                              ON project.id = d.id
@@ -14399,13 +14557,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --     );
 /*Regenerate Proposal (Post Install Agreement)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 160,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14636,13 +14795,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Survey Photos Missing*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 162,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14709,13 +14869,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Set up Monitoring Portal*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 164,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14793,13 +14954,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Mid-Point Inspection with Customer*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 165,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14918,14 +15080,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Mid-Point Inspection*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 166,
                 (SELECT id FROM flow.company_process_step_status_type
                  WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14988,13 +15151,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Mid-Point Inspection Outcome*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 167,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15066,13 +15230,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule AHJ Inspection - Substantially Complete*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 168,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15349,14 +15514,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Additional Inspection Scheduling*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 169,
                 (SELECT id FROM flow.company_process_step_status_type
                  WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15418,13 +15584,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Additional Inspection with Customer*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 170,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15533,13 +15700,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify Additional Inspection Outcome*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 171,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15611,13 +15779,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Schedule In-House MPU Permit Pack Pickup/Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 172,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15721,13 +15890,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify In-House MPU Permit Pack Pickup/Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 173,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15796,13 +15966,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Disposition Inspection Failure*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 174,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15997,13 +16168,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Permit Submission Hold*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 176,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16069,13 +16241,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Create As-Built Plan Set*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 177,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16160,13 +16333,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Send SREC Application to Customer*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 179,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16228,13 +16402,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify SREC Application Signature*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 180,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16297,13 +16472,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Submit SREC Part 1 and Register with GATS*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 181,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16365,13 +16541,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify SREC Part 1 Approval*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 182,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16435,13 +16612,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Submit GATS Application*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 183,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16503,13 +16681,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Verify GATS Approval*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 184,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16571,13 +16750,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Reschedule Material Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 186,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16605,13 +16785,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Structural Engineering Restamp*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 187,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16681,13 +16862,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Electrical Engineering Restamp*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 188,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16755,13 +16937,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*As-Built Structural Stamp*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 190,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16828,13 +17011,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*As-Built Electrical Stamp*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 191,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16902,13 +17086,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule As-Built Permit Pack Submission*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 192,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17026,14 +17211,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending As-Built Permit Pack Submission*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 193,
                 (SELECT id FROM flow.company_process_step_status_type
                  WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17095,13 +17281,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify As-Built Permit Submission*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 194,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17173,13 +17360,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify As-Built Permit Approval*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 195,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17259,13 +17447,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule As-Built Permit Pickup and Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 196,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17368,13 +17557,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify As-Built Permit Pickup and Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 197,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17452,13 +17642,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify As-Built Regen Approval*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 198,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17560,13 +17751,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Send Customer Retention Payment*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 199,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17672,13 +17864,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Determine Post-Collection Action*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 202,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17752,13 +17945,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Inspection with AHJ*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 204,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17820,13 +18014,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Re-inspection with AHJ*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 205,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17923,13 +18118,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule Additional Inspection with AHJ*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 206,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17991,13 +18187,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Additional Inspection*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 207,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18059,13 +18256,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Outsource MPU Holding Step (Non-Standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 208,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18129,13 +18327,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Disposition Failed Additional Inspection*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 209,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18211,13 +18410,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Structural Upgrade Holding Step (Non-Standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 210,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18280,13 +18480,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Reroof Holding Step (Non-Standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 211,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18349,13 +18550,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Trenching Holding Step (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 212,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18419,13 +18621,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Tree Trimming Holding Step (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 213,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18488,13 +18691,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*AC Compressor Relocation Holding Step (Non-standard)*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 214,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18557,13 +18761,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Verify Referral*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 215,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18589,13 +18794,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Installer Closeout*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 219,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18685,14 +18891,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Schedule In-House MPU Inspection*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT p.id,
                 222,
                 (SELECT id FROM flow.company_process_step_status_type
                  WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          from flow.project p
                   inner join blueraven.deal d on d.id = p.id
          where originator_id = 1 and in_house_mpu_scheduled_date IS NOT NULL AND in_house_mpu_inspection_scheduled_date IS NULL)returning *),
@@ -18776,13 +18983,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Closer Follow-up*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 224,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18810,13 +19018,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Waiting to Submit SREC Part 1*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 225,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18880,13 +19089,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Send Tax Documents*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 226,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -18951,13 +19161,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Permit Application Signature*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 228,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19019,13 +19230,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 /*Submit SREC Part 2*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 231,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19089,13 +19301,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Verify SREC Part 2 Approval*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 232,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19161,13 +19374,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending Permit Pick-up/Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 233,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19332,13 +19546,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending As-Built Permit Pick-up/Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 234,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19400,13 +19615,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending In-House MPU Permit Pack Submission*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 235,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19468,13 +19684,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending In-House MPU Permit Pick-up/Delivery*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 236,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19536,13 +19753,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Pending In-House MPU*/
 with active_step as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,migrated_created_date)
         (SELECT project.id,
                 239,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                (now() + interval '1 day')
+                (now() + interval '1 day'),
+(now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -19629,7 +19847,7 @@ declare
            group by project_id, process_step_id
            having count(1) >1),
                      max_day as (
-                         select max(date_created)as date_created,pp2.project_id,pp2.process_step_id
+                         select max(migrated_created_date)as date_created,pp2.project_id,pp2.process_step_id
                          from flow.project_process_step pp2
                                   inner join update_main um2 on um2.project_id = pp2.project_id and um2.process_step_id = pp2.process_step_id
                          group by pp2.project_id,pp2.process_step_id
