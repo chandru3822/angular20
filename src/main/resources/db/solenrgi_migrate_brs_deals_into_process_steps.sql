@@ -1299,7 +1299,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                                     and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
 --             2350555 as created_by_id,
 --             (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --      FROM flow.project
 --               INNER JOIN blueraven.deal d
 --                          ON project.id = d.id
@@ -8644,7 +8644,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
 --             2350555 as created_by_id,
 --             (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --      from flow.project p
 --               inner join blueraven.deal d on d.id = p.id
 --               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -9750,7 +9750,7 @@ with active_step as (
              d.final_design_signed_date is not null and
              d.final_design_complete_date is null and
              (d.agreement_signed_date is null OR
-              (d.financier = 'Cash' AND d.first_cash_payment_paid_date is null) OR
+              (d.financier = '["Cash"]' AND d.first_cash_payment_paid_date is null) OR
               (d.proof_of_howmeowners_insurance_required = 'Yes' AND
                d.proof_of_homeowners_insurance_obtained_date IS NULL) OR
               d.utility_bill_verified_date IS NULL)
@@ -10662,7 +10662,7 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10421 then (( work_order_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10421 then (( cancelled_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -14195,7 +14195,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
 --                 2350555 as created_by_id,
 --                 (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --          FROM flow.project
 --                   INNER JOIN blueraven.deal d
 --                              ON project.id = d.id
@@ -14470,7 +14470,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
 --                 2350555 as created_by_id,
 --                 (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --          FROM flow.project
 --                   INNER JOIN blueraven.deal d
 --                              ON project.id = d.id
