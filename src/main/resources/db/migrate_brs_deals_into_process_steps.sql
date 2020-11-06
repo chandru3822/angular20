@@ -8,6 +8,8 @@ insert into flow.resource_appointment(company_id, user_id, start_time, end_time,
      where ac.id is null
        and a.local_deleted = 0
        and u.id != 2355131);
+drop trigger if exists process_proposal_log_history on brs.proposal_log;
+
 INSERT INTO brs.proposal_log (id, proposal_date, source, proposal, project_id, proposal_nbr)
     (SELECT pl.id, pl.proposal_date, pl.source, pl.proposal, d.id, pl.proposal_nbr
      FROM blueraven.proposal_log pl
@@ -16,6 +18,129 @@ SELECT setval('brs.proposal_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.p
 insert into brs.design_log_bom(id,project_id, reference_nbr, bom, note, created_by, time_submitted, delivery_time, email_sent)
     (select dlb.id ,dlb.deal_id,coalesce(dlb.reference_nbr,1001), bom, note, created_by, time_submitted, delivery_time, email_sent
      from blueraven.design_log_bom dlb);
+insert into brs.proposal_log_history(id, filename, project_id, fullname, address, city, state, zip, phone,
+                                     email, loan_type, loan_term, interest_rate, optional_down_payment,
+                                     number_of_leds, number_of_ecobees, cost_per_kwh_before_solar,
+                                     cost_per_kwh_after_solar, bp_plus_promotion, velocity_marketing,
+                                     military_discount, show_graph, year_1_kwh_output, panel_number, panel_wattage,
+                                     system_size, panel, number_of_inverters, inverter_mfg, inverter_default_model,
+                                     inverter_custom_getting, number_of_monitors, monitor, utility_name,
+                                     rate_structure, total_yearly_usage_pre_solar, tile_roof_adder, hidden_conduit_adder,
+                                     flat_roof_adder, upsize_inverter, extra_adder, option_3_adder, extra_promotion_cost,
+                                     plane_1_number_of_panels, plane_1_tsrf, plane_2_number_of_panels, plane_2_tsrf,
+                                     plane_3_number_of_panels, plane_3_tsrf, plane_4_number_of_panels, plane_4_tsrf,
+                                     plane_5_number_of_panels, plane_5_tsrf, plane_6_number_of_panels, plane_6_tsrf,
+                                     plane_7_number_of_panels, plane_7_tsrf, automatic_adder, automatic_adder_cost,
+                                     tile_roof_adder_cost, three_kw_adder, three_kw_adder_cost, four_kw_adder,
+                                     four_kw_adder_cost, upsize_inverter_adder_cost, panel_adder, panel_adder_cost,
+                                     flat_roof_adder_cost, hidden_conduit_adder_cost, total_adder_costs, ee_cost_per_watt,
+                                     funding_amount, loan_fundingw, loan_cost_to_customer, total_cost_to_customer,
+                                     offset_percent, dealer_fee, utility_escalator, solar_degradation, home_appreciationw,
+                                     funding_cap, production_factor, south_production, south_production_dollarw,
+                                     eastwest_production, eastwest_production_dollarw, total_cost,
+                                     down_payment_above_line_incentive, referral_promotion, loan_funding_amount, loan_amount,
+                                     itc, state_tax_credit, customer_oop_itc_only_applied, customer_oop_all_rebates_applied,
+                                     average_monthly_usage_before_solar, average_monthly_power_costs_before_solar,
+                                     average_monthly_usage_after_solar, average_monthly_solar_production,
+                                     monthly_solar_costs, average_monthly_leftover_utility_power_kwh,
+                                     average_leftover_utility_rate, average_monthly_utility_cost_after_solar,
+                                     average_monthly_power_cost_after_solar, total_monthly_savings,
+                                     current_monthly_consumption, consumption_after_ee, kwh_savings_from_ee,
+                                     percent_saving_from_ee, current_yearly_consumption, yearly_consumption_after_ee,
+                                     total_added_home_value_estimate, twenty_five_year_cost_of_power_before_solar,
+                                     twenty_five_energy_cost, lifetime_savings, twenty_five_year_remaining_utility_bill,
+                                     twenty_five_year_production, thirty_five_year_production, thirty_five_year_solar_cost,
+                                     thirty_five_year_solar_cost_per_kwh, thirty_five_year_utility_usage,
+                                     thirty_five_year_cost_before_solar, thirty_five_year_cost_per_kw_before_solar,
+                                     current_utility_oet_rebate_per_watt, current_max_oet_rebate, current_oet_rebate,
+                                     max_or_tax_credit, current_or_tax_credit, choice_pf, choice_payment,
+                                     month_eighteen_payment, eighteen_plus_payment, month_eighteen_payment_itc_only,
+                                     eighteen_plus_payment_itc_only, month_eighteen_payment_all_incentives,
+                                     eighteen_plus_payments_all_incentives, date_created, promotion_eighteen_months_free,
+                                     secondary_loan_amount, salal_primary_loan_monthly_payment, salal_prmiary_loan_total_payment,
+                                     salal_primary_loan_finance_charge, salal_primary_loan_total_sales_price,
+                                     salal_secondary_loan_monthly_payment, salal_secondary_loan_total_payments,
+                                     salal_secondary_loan_finance_charge, lead_source, non_standard_work, proposal_date,
+                                     proposal_nbr, source, proposal_log_id, non_standard_work_2, zip_code_zone,
+                                     proposal_owner,
+                                     non_standard_work_1, non_standard_work_1_cost, non_standard_work_2_cost,
+                                     non_standard_work_3, non_standard_work_3_cost, extra_adders_dollar_per_watt,
+                                     bp_plus_amount,
+                                     project_owner,
+                                     cost_per_watt_adder, eto_eligible_kw,
+                                     nv_energy_system_size_for_rebate, above_line_item_type, state_incentive_type,
+                                     gallons_of_gasoline, home_electricity_use_for_one_year, trees_growing_for_ten_years,
+                                     tons_of_waste_sent_to_landfill, is_epc, epc_price, aurora_design_id, five_year_payoff,
+                                     six_year_payoff, seven_year_payoff, eight_year_payoff, nine_year_payoff, ten_year_payoff,
+                                     eleven_year_payoff, twelve_year_payoff, thirteen_year_payoff, fourteen_year_payoff,
+                                     fifteen_year_payoff, twenty_year_payoff)
+    (select
+         plh.id, filename, p.id, fullname, address, plh.city, state, zip, phone,
+         email, loan_type, plh.loan_term, plh.interest_rate, optional_down_payment,
+         number_of_leds, number_of_ecobees, cost_per_kwh_before_solar,
+         cost_per_kwh_after_solar, bp_plus_promotion, velocity_marketing,
+         military_discount, show_graph, year_1_kwh_output, panel_number, panel_wattage,
+         plh.system_size, panel, number_of_inverters, inverter_mfg, inverter_default_model,
+         inverter_custom_getting, number_of_monitors, monitor, utility_name,
+         rate_structure, total_yearly_usage_pre_solar, tile_roof_adder, hidden_conduit_adder,
+         flat_roof_adder, upsize_inverter, extra_adder, option_3_adder, extra_promotion_cost,
+         plane_1_number_of_panels, plane_1_tsrf, plane_2_number_of_panels, plane_2_tsrf,
+         plane_3_number_of_panels, plane_3_tsrf, plane_4_number_of_panels, plane_4_tsrf,
+         plane_5_number_of_panels, plane_5_tsrf, plane_6_number_of_panels, plane_6_tsrf,
+         plane_7_number_of_panels, plane_7_tsrf, automatic_adder, automatic_adder_cost,
+         tile_roof_adder_cost, three_kw_adder, three_kw_adder_cost, four_kw_adder,
+         four_kw_adder_cost, upsize_inverter_adder_cost, panel_adder, panel_adder_cost,
+         flat_roof_adder_cost, hidden_conduit_adder_cost, total_adder_costs, ee_cost_per_watt,
+         funding_amount, loan_fundingw, loan_cost_to_customer, total_cost_to_customer,
+         offset_percent, dealer_fee, utility_escalator, solar_degradation, home_appreciationw,
+         funding_cap, production_factor, south_production, south_production_dollarw,
+         eastwest_production, eastwest_production_dollarw, total_cost,
+         down_payment_above_line_incentive, referral_promotion, loan_funding_amount, plh.loan_amount,
+         itc, state_tax_credit, customer_oop_itc_only_applied, customer_oop_all_rebates_applied,
+         average_monthly_usage_before_solar, average_monthly_power_costs_before_solar,
+         average_monthly_usage_after_solar, average_monthly_solar_production,
+         monthly_solar_costs, average_monthly_leftover_utility_power_kwh,
+         average_leftover_utility_rate, average_monthly_utility_cost_after_solar,
+         average_monthly_power_cost_after_solar, total_monthly_savings,
+         current_monthly_consumption, consumption_after_ee, kwh_savings_from_ee,
+         percent_saving_from_ee, current_yearly_consumption, yearly_consumption_after_ee,
+         total_added_home_value_estimate, twenty_five_year_cost_of_power_before_solar,
+         twenty_five_energy_cost, lifetime_savings, twenty_five_year_remaining_utility_bill,
+         twenty_five_year_production, thirty_five_year_production, thirty_five_year_solar_cost,
+         thirty_five_year_solar_cost_per_kwh, thirty_five_year_utility_usage,
+         thirty_five_year_cost_before_solar, thirty_five_year_cost_per_kw_before_solar,
+         current_utility_oet_rebate_per_watt, current_max_oet_rebate, current_oet_rebate,
+         max_or_tax_credit, current_or_tax_credit, choice_pf, choice_payment,
+         month_eighteen_payment, eighteen_plus_payment, month_eighteen_payment_itc_only,
+         eighteen_plus_payment_itc_only, month_eighteen_payment_all_incentives,
+         eighteen_plus_payments_all_incentives, plh.date_created, promotion_eighteen_months_free,
+         secondary_loan_amount, salal_primary_loan_monthly_payment, salal_prmiary_loan_total_payment,
+         salal_primary_loan_finance_charge, salal_primary_loan_total_sales_price,
+         salal_secondary_loan_monthly_payment, salal_secondary_loan_total_payments,
+         salal_secondary_loan_finance_charge, lead_source, non_standard_work, proposal_date,
+         plh.proposal_nbr, source, proposal_log_id, non_standard_work_2, zip_code_zone,
+         plh.proposal_owner,
+         non_standard_work_1, non_standard_work_1_cost, non_standard_work_2_cost,
+         non_standard_work_3, non_standard_work_3_cost, extra_adders_dollar_per_watt,
+         bp_plus_amount,deal_owner,
+         cost_per_watt_adder, eto_eligible_kw,
+         nv_energy_system_size_for_rebate, above_line_item_type, state_incentive_type,
+         gallons_of_gasoline, home_electricity_use_for_one_year, trees_growing_for_ten_years,
+         tons_of_waste_sent_to_landfill, is_epc, epc_price, aurora_design_id, five_year_payoff,
+         six_year_payoff, seven_year_payoff, eight_year_payoff, nine_year_payoff, ten_year_payoff,
+         eleven_year_payoff, twelve_year_payoff, thirteen_year_payoff, fourteen_year_payoff,
+         fifteen_year_payoff, twenty_year_payoff
+     from blueraven.proposal_log_history plh
+              inner join blueraven.deal d on d.deal_base_oid = plh.deal_base_oid::integer
+              inner join flow.project p on p.id = d.id
+    );
+
+create trigger process_proposal_log_history
+    after insert
+    on brs.proposal_log
+    for each row
+execute procedure brs.process_proposal_log_history();
+
 SELECT setval('brs.design_log_bom_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.design_log_bom), 1), false);
 INSERT INTO brs.design_log (id, design_date, design, source, project_id, design_nbr,bom)
     (SELECT dl.id, dl.design_date, dl.design,dl.source, d.id, dl.design_nbr,dl.bom
@@ -130,8 +255,6 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day'),
 (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
@@ -223,9 +346,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day')
+                (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -331,9 +452,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day')
+                (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -493,9 +612,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day')
+                (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where   originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
@@ -606,9 +723,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day')
+                (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -680,9 +795,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day')
+                (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]'))
@@ -811,9 +924,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
             (now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day'),
-(now() + interval '1 day')
+                (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
@@ -1335,7 +1446,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --             2350555 as created_by_id,
 --             (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --      FROM flow.project
 --               INNER JOIN blueraven.deal d
 --                          ON project.id = d.id
@@ -8662,7 +8773,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --             2350555 as created_by_id,
 --             (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --      from flow.project p
 --               inner join blueraven.deal d on d.id = p.id
 --               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -9768,7 +9879,7 @@ with active_step as (
              d.final_design_signed_date is not null and
              d.final_design_complete_date is null and
              (d.agreement_signed_date is null OR
-              (d.financier = 'Cash' AND d.first_cash_payment_paid_date is null) OR
+              (d.financier = '["Cash"]' AND d.first_cash_payment_paid_date is null) OR
               (d.proof_of_howmeowners_insurance_required = 'Yes' AND
                d.proof_of_homeowners_insurance_obtained_date IS NULL) OR
               d.utility_bill_verified_date IS NULL)
@@ -10680,7 +10791,7 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1209 then (( work_order_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 1209 then (( cancelled_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -13951,7 +14062,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,ahj_reinspection_scheduled as complete_date
             FROM flow.project
@@ -14217,7 +14328,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --                 2350555 as created_by_id,
 --                 (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --          FROM flow.project
 --                   INNER JOIN blueraven.deal d
 --                              ON project.id = d.id
@@ -14492,7 +14603,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
 --                 2350555 as created_by_id,
 --                 (now() + interval '1 day'),
-(now() + interval '1 day')
+--(now() + interval '1 day')
 --          FROM flow.project
 --                   INNER JOIN blueraven.deal d
 --                              ON project.id = d.id

@@ -3,11 +3,10 @@
     <![CDATA[
       select text_value
         from flow.organization_custom_field_value ocfv
-        inner join flow.custom_field_group_assignment cfga on cfga.id = ocfv.custom_field_group_assignment_id
-        inner join flow.custom_field cf on  cfga.custom_field_id = cf.id
-        where field_name = 'Birdeye Business ID'
-        and company_id = (select company_id from brs.project_details where project_id = :projectId)
-        and org_id = (select installation_resource from brs.project_details where project_id = :projectId);
+        where ocfv.custom_field_group_assignment_id =
+              (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+                 WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select company_id from brs.project_details where project_id = :projectId))
+        and ocfv.org_id = (select installation_resource from brs.project_details where project_id = :projectId)
     ]]>
   </birdeye.getBusinessId>
   <birdeye.getEmail>

@@ -78,9 +78,17 @@ public class SecurityService implements UserDetailsService {
                 user = (User) p;
             } else if (p instanceof UserAccountDetails) {
                 UserAccountDetails details = (UserAccountDetails) p;
-                user = userService.findUserById(details.getId());
-                List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
-                user.setFeatureAccess(results);
+
+                // This is a special system user used for crons
+                if (details.getId() == 69696969) {
+                  user = new User();
+                  user.setCompanyId(details.getCompanyId());
+                  user.setId(details.getId());
+                } else {
+                  user = userService.findUserById(details.getId());
+                  List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
+                  user.setFeatureAccess(results);
+                }
 
             } else {
 //                    throw new IllegalStateException("Unhandled Security Principal type: " + p);
