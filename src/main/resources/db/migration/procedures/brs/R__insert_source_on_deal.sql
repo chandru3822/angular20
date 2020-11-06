@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.insert_source_on_deal(p_project_id integer)
+CREATE OR REPLACE FUNCTION brs.insert_source_on_deal(p_project_id integer, p_current_user_id integer)
     RETURNS void
     LANGUAGE plpgsql
 AS
@@ -69,7 +69,7 @@ BEGIN
                                                             int_value,
                                                             date_created,
                                                             created_by_id)
-                values (p_project_id, v_custom_field_group_assignment_id, v_int_value_id, now(), 2350555);
+                values (p_project_id, v_custom_field_group_assignment_id, v_int_value_id, now(), p_current_user_id);
             end if;
         else
             select cf.id
@@ -81,7 +81,7 @@ BEGIN
             insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
                                                date_created, created_by_id)
             values (v_company_feature_id, 'Unable to assign Lead Source to Project ' || p_project_id || '.', 1, now(),
-                    2350555);
+                    p_current_user_id);
         end if;
     else
         select cf.id
@@ -93,7 +93,7 @@ BEGIN
         insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
                                            date_created, created_by_id)
         values (v_company_feature_id, 'Unable to assign Lead Source to Project ' || p_project_id || '.', 1, now(),
-                2350555);
+                p_current_user_id);
 
     end if;
 
