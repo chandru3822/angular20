@@ -35,6 +35,7 @@
       p.street2,
       p.city,
       s.state,
+      s.abbreviation as state_abbreviation,
       p.postal_code as "postalCode",
       cp.status_type_id,
       st.status_type,
