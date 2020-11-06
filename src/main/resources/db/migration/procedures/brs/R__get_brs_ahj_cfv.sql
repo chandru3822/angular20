@@ -21,11 +21,19 @@ BEGIN
                       from flow.project_custom_field_value pcfv
                                inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
                                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                      where cf.id = 392 -- this is the id of the ahj custom field in flow
+                      where cf.id = (select cf.id
+                                     from flow.custom_field cf
+                                     where cf.field_name = 'AHJ'
+                                       and cf.company_id = (
+                                         select cp.company_id
+                                         from flow.project p
+                                                  inner join flow.company_process cp on p.company_process_id = cp.id
+                                         where p.id = p_project_id
+                                     )) -- this is the id of the ahj custom field in flow
                         and pcfv.project_id = p_project_id ) -- this is the project id
           and bcf.id = p_brs_ahj_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
 
-        when lower(trim(p_brs_ahj_table)) = 'permit' then
+    when lower(trim(p_brs_ahj_table)) = 'permit' then
             -- gets the selected value for the ahj custom field
             return (select coalesce( ( select lov.name = p_expected_value
                                        from brs.ahj a
@@ -38,10 +46,18 @@ BEGIN
                                                      from flow.project_custom_field_value pcfv
                                                               inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
                                                               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                                     where cf.id = 392 -- this is the id of the ahj custom field in flow
+                                                     where cf.id = (select cf.id
+                                                                    from flow.custom_field cf
+                                                                    where cf.field_name = 'AHJ'
+                                                                      and cf.company_id = (
+                                                                        select cp.company_id
+                                                                        from flow.project p
+                                                                                 inner join flow.company_process cp on p.company_process_id = cp.id
+                                                                        where p.id = p_project_id
+                                                                    )) -- this is the id of the ahj custom field in flow
                                                        and pcfv.project_id = p_project_id ) -- this is the project id
                                          and bcf.id = p_brs_ahj_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
-        when lower(trim(p_brs_ahj_table)) = 'inspection' then
+    when lower(trim(p_brs_ahj_table)) = 'inspection' then
             -- gets the selected value for the ahj custom field
             return (select coalesce( ( select lov.name = p_expected_value
                                        from brs.ahj a
@@ -54,7 +70,15 @@ BEGIN
                                                      from flow.project_custom_field_value pcfv
                                                               inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
                                                               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                                     where cf.id = 392 -- this is the id of the ahj custom field in flow
+                                                     where cf.id = (select cf.id
+                                                                    from flow.custom_field cf
+                                                                    where cf.field_name = 'AHJ'
+                                                                      and cf.company_id = (
+                                                                        select cp.company_id
+                                                                        from flow.project p
+                                                                                 inner join flow.company_process cp on p.company_process_id = cp.id
+                                                                        where p.id = p_project_id
+                                                                    )) -- this is the id of the ahj custom field in flow
                                                        and pcfv.project_id = p_project_id ) -- this is the project id
                                          and bcf.id = p_brs_ahj_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
         when lower(trim(p_brs_ahj_table)) = 'utility' then
@@ -69,7 +93,15 @@ BEGIN
                                                         from flow.project_custom_field_value pcfv
                                                                  inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
                                                                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                                        where cf.id = 592 -- this is the id of the ahj UTILITY custom field in flow
+                                                        where cf.id = (select cf.id
+                                                                       from flow.custom_field cf
+                                                                       where cf.field_name = 'Utility Company'
+                                                                         and cf.company_id = (
+                                                                           select cp.company_id
+                                                                           from flow.project p
+                                                                                    inner join flow.company_process cp on p.company_process_id = cp.id
+                                                                           where p.id = p_project_id
+                                                                       )) -- this is the id of the ahj UTILITY custom field in flow
                                                           and pcfv.project_id = p_project_id ) -- this is the project id
                                              and bcf.id = p_brs_ahj_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
         else return null;
