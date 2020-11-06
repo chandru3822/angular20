@@ -101,7 +101,7 @@
             <v-btn
               color="primaryCustom"
               text
-              @click="updateMain(processStep.projectProcessStepId)">
+              @click="[processStep.changeActiveConfirm = false, updateMain(processStep.projectProcessStepId)]">
               Yes
             </v-btn>
           </v-card-actions>
