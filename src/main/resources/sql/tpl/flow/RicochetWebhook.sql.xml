@@ -1,15 +1,51 @@
 <sql>
-  <ricochetWebhook.getContactIdByLeadId><![CDATA[
-    select contact_id
-    from flow.contact_custom_field_value
-    where text_value = :ricochetLeadId
-  ]]></ricochetWebhook.getContactIdByLeadId>
+  <ricochetWebhook.getContactIdByRicochetLeadId><![CDATA[
+    with existing_contact as (
+      select contact_id id
+      from flow.contact_custom_field_value
+      where text_value = :ricochetLeadId
+        and archived is false
+      limit 1
+    )
+    select (case when (select id from existing_contact) is not null then (select id::text from existing_contact)
+             else 'null'
+             end) as id
+  ]]></ricochetWebhook.getContactIdByRicochetLeadId>
+
+  <ricochetWebhook.getContactIdByContactInfo><![CDATA[
+    with existing_contact as (
+      with company_state as (
+        select (case when :stateAbbreviation is not null then cs.id else null::integer end) id
+        from flow.company_state cs
+          inner join flow.state s on s.id = cs.state_id
+        where s.abbreviation = :stateAbbreviation
+          and cs.company_id = 3
+      )
+      select id
+      from flow.contact
+      where first_name = :firstName
+        and last_name = :lastName
+        and mobile = :mobile
+        and email = :email
+        and street1 = :street1
+        and city = :city
+        and postal_code = :postalCode
+        and company_state_id = (select id from company_state)
+        and archived is false
+      limit 1
+    )
+    select (case when (select id from existing_contact) is not null then (select id::text from existing_contact)
+             else 'null'
+             end) as id
+  ]]></ricochetWebhook.getContactIdByContactInfo>
 
   <ricochetWebhook.insertLead><![CDATA[
-    with state as (
-      select (case when :stateAbbreviation is not null then s.id else null::integer end) id
-      from flow.state s
+    with company_state as (
+      select (case when :stateAbbreviation is not null then cs.id else null::integer end) id
+      from flow.company_state cs
+        inner join flow.state s on s.id = cs.state_id
       where s.abbreviation = :stateAbbreviation
+        and cs.company_id = 3
     ), company_country as (
       select cc.id id
       from flow.company_country cc
@@ -26,16 +62,18 @@
       where u.email = :leadOwnerEmail
         and up.primary_flag is true
     )
-    insert into flow.contact (contact_type_id, first_name, last_name, mobile, email, street1, city, postal_code, state_id, created_by_id, company_id, owner_user_position_id, company_country_id)
-    (select 2, :firstName, :lastName, :mobile, :email, :street1, :city, :postalCode, (select id from state), (select user_id from owner), 3, (select user_position_id from owner), (select company_country.id from company_country))
+    insert into flow.contact (contact_type_id, first_name, last_name, mobile, email, street1, city, postal_code, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id)
+    (select 2, :firstName, :lastName, :mobile, :email, :street1, :city, :postalCode, (select user_id from owner), 3, (select user_position_id from owner), (select id from company_state), (select id from company_country))
     returning id
   ]]></ricochetWebhook.insertLead>
 
   <ricochetWebhook.updateLead><![CDATA[
-    with state as (
-      select (case when :stateAbbreviation is not null then s.id else null::integer end) id
-      from flow.state s
+    with company_state as (
+      select (case when :stateAbbreviation is not null then cs.id else null::integer end) id
+      from flow.company_state cs
+        inner join flow.state s on s.id = cs.state_id
       where s.abbreviation = :stateAbbreviation
+        and cs.company_id = 3
     ), company_country as (
       select cc.id id
       from flow.company_country cc
@@ -60,8 +98,9 @@
         street1 = :street1,
         city = :city,
         postal_code = :postalCode,
-        state_id = (select id from state),
-        created_by_id = (select user_id from owner),
+        company_state_id = (select id from company_state),
+        date_modified = now(),
+        modified_by_id = (select user_id from owner),
         owner_user_position_id = (select user_position_id from owner),
         company_country_id = (select company_country.id from company_country)
     where id = :contactId
@@ -69,10 +108,15 @@
   ]]></ricochetWebhook.updateLead>
 
   <ricochetWebhook.checkIfCustomFieldDropdownValueExists><![CDATA[
-    select id
-    from flow.list_of_value
-    where parent_id = :listOfValueId
-      and name = :customFieldDropdownValue
+    with existing_value as (
+      select id
+      from flow.list_of_value lov
+      where lov.parent_id = :listOfValueId
+        and lov.name = :customFieldDropdownValue
+    )
+    select (case when (select id from existing_value) is not null then (select id::text from existing_value)
+             else 'null'
+             end) as id
   ]]></ricochetWebhook.checkIfCustomFieldDropdownValueExists>
 
   <ricochetWebhook.insertCustomFieldDropdownValue><![CDATA[
@@ -93,4 +137,50 @@
     (select :customFieldDropdownValue, :listOfValueId, ((select value from display_order) + 1), (select user_id from owner))
     returning id
   ]]></ricochetWebhook.insertCustomFieldDropdownValue>
+
+  <ricochetWebhook.checkForExistingCustomFieldValue><![CDATA[
+    with existing_row as (
+      select ccfv.id
+      from flow.contact_custom_field_value ccfv
+      where ccfv.contact_id = :contactId
+        and ccfv.custom_field_group_assignment_id = :customFieldGroupAssignmentId
+        and ccfv.archived is false
+    )
+    select (case when (select id from existing_row) is not null then (select id::text from existing_row)
+              else 'null'
+              end) as id
+  ]]></ricochetWebhook.checkForExistingCustomFieldValue>
+
+  <ricochetWebhook.insertCustomFieldValue><![CDATA[
+    with owner as (
+      select (case when :leadOwnerEmail is not null then up.user_id
+                else 2371412 --Sales Dev Lead's user ID
+                end) user_id
+      from flow.user_position up
+        inner join flow.user u on u.id = up.user_id
+      where u.email = :leadOwnerEmail
+        and up.primary_flag is true
+    )
+    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, int_value, created_by_id)
+    values (:contactId, :customFieldGroupAssignmentId, :textValue, :intValue, (select user_id from owner))
+  ]]></ricochetWebhook.insertCustomFieldValue>
+
+  <ricochetWebhook.updateCustomFieldValue><![CDATA[
+    with owner as (
+      select (case when :leadOwnerEmail is not null then up.user_id
+                else 2371412 --Sales Dev Lead's user ID
+                end) user_id
+      from flow.user_position up
+        inner join flow.user u on u.id = up.user_id
+      where u.email = :leadOwnerEmail
+        and up.primary_flag is true
+    )
+    update flow.contact_custom_field_value
+    set custom_field_group_assignment_id = :customFieldGroupAssignmentId,
+        text_value = :textValue,
+        int_value = :intValue,
+        modified_by_id = (select user_id from owner),
+        date_modified = now()
+    where id = :id
+  ]]></ricochetWebhook.updateCustomFieldValue>
 </sql>

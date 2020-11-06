@@ -10,9 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -20,11 +18,69 @@ import java.util.List;
 public class RicochetWebhookService {
     private final SqlCache sqlCache;
 
-    private final CustomFieldValueService customFieldValueService;
+    private String mapLeadStatus(String leadStatus) {
+        /* TODO: Find out which groups these new(er) lead statuses should go in: "Aged Database (Temp.)", "Email Preferred", "Re-engaged - CNC", *
+         * "Re-engaged - CNI", "Referrals - Energized", "Referrals - Energized 3 mo. Follow up", "Referrals - Energized 6 mo. Follow up",        *
+         * "Referrals - Installed"                                                                                                               */
+
+        switch (leadStatus) {
+            case "Attempted Contact":
+                return "Attempted Contact";
+            case "Cold - Never Contacted":
+            case "Cold - Not Interested":
+                return "Cold";
+            case "Re-Contact":
+                return "Re-Contact";
+            case "":
+            case "Low Income/Low Credit Check-in":
+            case "New":
+            case "New Home/Moving 3 month check-in":
+            case "Not statused yet":
+            case "Re-targeted Setter Gen 1st Try":
+            case "Re-targeted Setter Gen 2nd Try":
+            case "Renting/Non - Homeowner Check-in":
+            case "Scheduled":
+                return "New";
+            case "Unqualified - Already Has Solar":
+            case "Unqualified - Bad Contact Info":
+            case "Unqualified - DNC":
+            case "Unqualified - Duplicate":
+            case "Unqualified - Low Credit":
+            case "Unqualified - Low Income":
+            case "Unqualified - Low Power Bill":
+            case "Unqualified - New Home/Moving":
+            case "Unqualified - Non-English":
+            case "Unqualified - Out of Service Area":
+            case "Unqualified - Property Type Not Eligible":
+            case "Unqualified - Renting/Non-Homeowner":
+            case "Unqualified - Roof Type":
+            case "Unqualified - Shading":
+            case "Unqualified - Utility Provider Not Eligible":
+                return "Unqualified";
+            default:
+                return "Lead Status of '" + leadStatus + "' not recognized";
+        }
+    }
+
+    private String getContactIdByRicochetLeadId(String ricochetLeadId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("ricochetLeadId", ricochetLeadId);
+
+        return sqlCache.queryForObject("ricochetWebhook.getContactIdByRicochetLeadId", params, String.class);
+    }
 
     public ResponseEntity saveLead(RicochetLead lead) throws Exception {
         try {
-            Long contactId = getContactIdByRicochetLeadId(lead.getUniqueIdentifier().toString());
+            if (lead.getStatus() == null) lead.setStatus("New");
+            String mappedLeadStatus = mapLeadStatus(lead.getStatus());
+
+            // unrecognized lead statuses are not saved to the database
+            if (mappedLeadStatus.contains("not recognized")) {
+                log.error(mappedLeadStatus);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + mappedLeadStatus);
+            } else {
+                lead.setStatus(mappedLeadStatus);
+            }
 
             HashMap<String, Object> params = new HashMap<>();
             params.put("leadOwnerEmail", lead.getLeadOwner());
@@ -37,15 +93,24 @@ public class RicochetWebhookService {
             params.put("postalCode", lead.getCustomer().getAddress().getZip());
             params.put("stateAbbreviation", lead.getCustomer().getAddress().getState());
 
-            if (contactId == null) {
-                contactId = sqlCache.updateReturningId("ricochetWebhook.insertLead", params, "id").longValue();
+            // tries to get a contact ID using the Ricochet Lead ID
+            String contactId = getContactIdByRicochetLeadId(lead.getUniqueIdentifier().toString());
+
+            if (contactId.equalsIgnoreCase("null")) {
+                // tries to get a contact ID using the provided contact info, if the previous attempt failed
+                contactId = sqlCache.queryForObject("ricochetWebhook.getContactIdByContactInfo", params, String.class);
+                // if no contact ID was found in either check, creates a new lead/contact
+                if (contactId.equalsIgnoreCase("null")) {
+                    contactId = sqlCache.updateReturningId("ricochetWebhook.insertLead", params, "id").toString();
+                }
             } else {
-                contactId = sqlCache.updateReturningId("ricochetWebhook.updateLead", params, "id").longValue();
+                params.put("contactId", Long.parseLong(contactId));
+                contactId = sqlCache.updateReturningId("ricochetWebhook.updateLead", params, "id").toString();
             }
 
-            processCustomFieldValues(lead, contactId);
+            processCustomFieldValues(lead, Long.parseLong(contactId));
 
-            String msg = "Ricochet lead info has been successfully saved for contact_id " + contactId + ".";
+            String msg = "Ricochet lead info has been successfully saved for Contact ID " + contactId + " / Ricochet Lead ID " + lead.getUniqueIdentifier() + ".";
             log.info(msg);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(msg);
         } catch (Exception e) {
@@ -55,82 +120,98 @@ public class RicochetWebhookService {
         }
     }
 
-    private Long getContactIdByRicochetLeadId(String ricochetLeadId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("ricochetLeadId", ricochetLeadId);
-
-        return sqlCache.queryForObject("ricochetWebhook.getContactIdByRicochetLeadId", params, Long.class);
-    }
-
-    private void processCustomFieldValues(RicochetLead lead, Long contactId) {
-        // checks to see if the custom field dropdown values already exist in the database
-        Integer leadStatusId = checkIfCustomFieldDropdownValueExists(696, lead.getStatus(), lead.getLeadOwner());
-        Integer leadSourceId = checkIfCustomFieldDropdownValueExists(520, lead.getLead_source(), lead.getLeadOwner());
-        Integer leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, lead.getLead_source_detail(), lead.getLeadOwner());
-
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("leadOwnerEmail", lead.getLeadOwner());
-
-        /* If the custom field dropdown values don't already exist in the database, then they are inserted below. This
-         * allows us to obtain an ID for each custom field dropdown value, whether or not it existed beforehand. */
-        if (leadStatusId == null) {
-            params.put("listOfValueId", 696);
-            params.put("customFieldDropdownValue", lead.getStatus());
-
-            leadStatusId = sqlCache.updateReturningId("ricochetWebhook.insertCustomFieldDropdownValue", params, "id").intValue();
-        }
-
-        if (leadSourceId == null) {
-            params.put("listOfValueId", 520);
-            params.put("customFieldDropdownValue", lead.getLead_source());
-
-            leadSourceId = sqlCache.updateReturningId("ricochetWebhook.insertCustomFieldDropdownValue", params, "id").intValue();
-        }
-
-        if (leadSourceDetailId == null) {
-            params.put("listOfValueId", 543);
-            params.put("customFieldDropdownValue", lead.getLead_source_detail());
-
-            leadSourceDetailId = sqlCache.updateReturningId("ricochetWebhook.insertCustomFieldDropdownValue", params, "id").intValue();
-        }
-
-        // prepares the custom field value objects
-        CustomFieldValue leadStatus = new CustomFieldValue();
-        leadStatus.setIntValue(leadStatusId.longValue());
-
-        CustomFieldValue leadSource = new CustomFieldValue();
-        leadSource.setIntValue(leadSourceId.longValue());
-
-        CustomFieldValue leadSourceDetail = new CustomFieldValue();
-        leadSourceDetail.setIntValue(leadSourceDetailId.longValue());
-
-        CustomFieldValue ricochetLeadId = new CustomFieldValue();
-        ricochetLeadId.setTextValue(lead.getUniqueIdentifier().toString());
-
-        CustomFieldValue hubspotId = new CustomFieldValue();
-        hubspotId.setTextValue(lead.getHubspotId().toString());
-
-        // adds all of the custom field value objects to a list
-        List<CustomFieldValue> customFieldValues = new ArrayList<>();
-        customFieldValues.add(leadStatus);
-        customFieldValues.add(leadSource);
-        customFieldValues.add(leadSourceDetail);
-        customFieldValues.add(ricochetLeadId);
-        customFieldValues.add(hubspotId);
-
-        // sets the customFieldGroupAssignmentId to 103 for all of the custom field value objects
-        customFieldValues.forEach(customFieldValue -> customFieldValue.setCustomFieldGroupAssignmentId(103L));
-
-        // processes the custom field value updates
-        customFieldValueService.updateCustomFieldValues(customFieldValues, contactId, "contact");
-    }
-
-    private Integer checkIfCustomFieldDropdownValueExists(Integer listOfValueId, String customFieldDropdownValue, String leadOwnerEmail) {
+    private String checkIfCustomFieldDropdownValueExists(Integer listOfValueId, String customFieldDropdownValue) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("listOfValueId", listOfValueId);
         params.put("customFieldDropdownValue", customFieldDropdownValue);
+
+        return sqlCache.queryForObject("ricochetWebhook.checkIfCustomFieldDropdownValueExists", params, String.class);
+    }
+
+    private void processCustomFieldValues(RicochetLead lead, Long contactId) {
+        String leadOwnerEmail = lead.getLeadOwner();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("leadOwnerEmail", leadOwnerEmail);
+        params.put("contactId", contactId);
+
+        // if "null" is returned for leadStatusId, then we don't want to save it, b/c that means it's not one of the 5 options available
+        String leadStatusId = checkIfCustomFieldDropdownValueExists(696, lead.getStatus());
+
+        // handles saving 'Lead Status' custom field
+        if (!leadStatusId.equalsIgnoreCase("null")) {
+            CustomFieldValue leadStatus = new CustomFieldValue();
+            leadStatus.setCustomFieldGroupAssignmentId(399L);
+            leadStatus.setIntValue(Long.parseLong(leadStatusId));
+            saveCustomFieldValue(leadStatus, contactId, leadOwnerEmail);
+        }
+
+        // handles saving 'Lead Source' custom field
+        if (!lead.getLead_source().isBlank()) {
+            String leadSourceId = checkIfCustomFieldDropdownValueExists(520, lead.getLead_source());
+            CustomFieldValue leadSource = new CustomFieldValue();
+
+            if (leadSourceId.equalsIgnoreCase("null")) {
+                params.put("listOfValueId", 520);
+                params.put("customFieldDropdownValue", lead.getLead_source());
+                leadSourceId = sqlCache.updateReturningId("ricochetWebhook.insertCustomFieldDropdownValue", params, "id").toString();
+            }
+
+            leadSource.setCustomFieldGroupAssignmentId(395L);
+            leadSource.setIntValue(Long.parseLong(leadSourceId));
+            saveCustomFieldValue(leadSource, contactId, leadOwnerEmail);
+        }
+
+        // handles saving 'Lead Source Detail' custom field
+        if (!lead.getLead_source_detail().isBlank()) {
+            String leadSourceDetailId = checkIfCustomFieldDropdownValueExists(543, lead.getLead_source_detail());
+            CustomFieldValue leadSourceDetail = new CustomFieldValue();
+
+            if (leadSourceDetailId.equalsIgnoreCase("null")) {
+                params.put("listOfValueId", 543);
+                params.put("customFieldDropdownValue", lead.getLead_source_detail());
+                leadSourceDetailId = sqlCache.updateReturningId("ricochetWebhook.insertCustomFieldDropdownValue", params, "id").toString();
+            }
+
+            leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
+            leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
+            saveCustomFieldValue(leadSourceDetail, contactId, leadOwnerEmail);
+        }
+
+        // handles saving 'Ricochet Lead ID' custom field
+        CustomFieldValue ricochetLeadId = new CustomFieldValue();
+        ricochetLeadId.setCustomFieldGroupAssignmentId(398L);
+        ricochetLeadId.setTextValue(lead.getUniqueIdentifier().toString());
+        saveCustomFieldValue(ricochetLeadId, contactId, leadOwnerEmail);
+
+        // handles saving 'Hubspot ID' custom field
+        CustomFieldValue hubspotId = new CustomFieldValue();
+        hubspotId.setCustomFieldGroupAssignmentId(397L);
+
+        if (lead.getHubspotId() != null) {
+            hubspotId.setTextValue(lead.getHubspotId().toString());
+        } else {
+            hubspotId.setTextValue(null);
+        }
+
+        saveCustomFieldValue(hubspotId, contactId, leadOwnerEmail);
+    }
+
+    public void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, String leadOwnerEmail) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("contactId", contactId);
+        params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+        params.put("textValue", cfv.getTextValue());
+        params.put("intValue", cfv.getIntValue());
         params.put("leadOwnerEmail", leadOwnerEmail);
 
-        return sqlCache.queryForObject("ricochetWebhook.checkIfCustomFieldDropdownValueExists", params, Integer.class);
+        String existingRowId = sqlCache.queryForObject("ricochetWebhook.checkForExistingCustomFieldValue", params, String.class);
+
+        if (existingRowId.equalsIgnoreCase("null")) {
+            sqlCache.update("ricochetWebhook.insertCustomFieldValue", params);
+        } else {
+            params.put("id", Long.parseLong(existingRowId));
+            sqlCache.update("ricochetWebhook.updateCustomFieldValue", params);
+        }
     }
 }

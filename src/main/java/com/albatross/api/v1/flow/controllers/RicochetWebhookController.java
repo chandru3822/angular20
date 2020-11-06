@@ -25,8 +25,25 @@ public class RicochetWebhookController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/lead")
     public ResponseEntity saveLead(@RequestBody RicochetLead lead, @RequestHeader("Authorization") String authHeader) throws Exception {
-        if (!StringUtils.equals(authHeader, (apiKey)))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authorization configured");
+        String msg;
+
+        if (!StringUtils.equals(authHeader, (apiKey))) {
+            msg = "Invalid authorization configured";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + msg);
+        }
+
+        if (lead.getUniqueIdentifier() == null) {
+            msg = "Ricochet Lead ID is missing";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
+
+        if (lead.getCustomer().getLastName().isBlank()) {
+            msg = "Last name cannot be blank";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
 
         log.info(
             "Received new contact information from Ricochet. " +
