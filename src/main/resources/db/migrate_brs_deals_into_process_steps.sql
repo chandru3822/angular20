@@ -20584,3 +20584,284 @@ INSERT INTO flow."project_note" (project_id,note_id)
 
 alter table flow.note
     drop column if exists migrated_deal_id;
+
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 1
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (33,373,374) and main is true
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 2
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (72,711,712) and main is true
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 3
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (40,1790,1971) and main is true
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 4
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (44,412,413) and main is true
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 5
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (153,2323,23224) and main is true
+    and pps.migrated_work_type_id = 5
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 6
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (54,1257,1258) and main is true
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 7
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (5,256,257) and main is true
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 8
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (16,308,309) and main is true
+    and pps.migrated_work_type_id = 8
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 9
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (13,282,283) and main is true
+    and pps.migrated_work_type_id = 9
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 11
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (98,2362,2363) and main is true
+    and pps.migrated_work_type_id = 11
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 12
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (85,919,920) and main is true
+    --and pps.migrated_work_type_id = 11
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 13
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (30,360,361) and main is true
+    --and pps.migrated_work_type_id = 11
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 14
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (192,2193,2194) and main is true
+    --and pps.migrated_work_type_id = 11
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 15
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (196,2232,2233) and main is true
+    --and pps.migrated_work_type_id = 11
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 16
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (13,282,283) and main is true
+    and pps.migrated_work_type_id = 16
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 17
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (16,309,308) and main is true
+    and pps.migrated_work_type_id = 17
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 18
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (13,282,283) and main is true
+    and pps.migrated_work_type_id = 18
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 19
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (13,282,283) and main is true
+    and pps.migrated_work_type_id = 19
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 20
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (16,309,308) and main is true
+    and pps.migrated_work_type_id = 20
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 21
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (16,309,308) and main is true
+    and pps.migrated_work_type_id = 21
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 22
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (170,2375,2376) and main is true
+    --and pps.migrated_work_type_id = 21
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 23
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (153,2323,2324) and main is true
+    and pps.migrated_work_type_id = 23
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 24
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (165,1972,1973) and main is true
+    --and pps.migrated_work_type_id = 23
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 25
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (25,646,647) and main is true
+    --and pps.migrated_work_type_id = 23
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 26
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (172,1829,1830) and main is true
+    --and pps.migrated_work_type_id = 23
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 27
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (28,867,868) and main is true
+    --and pps.migrated_work_type_id = 23
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 28
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (98,2362,2363) and main is true
+    and pps.migrated_work_type_id = 28
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 29
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (98,2362,2363) and main is true
+    and pps.migrated_work_type_id = 29
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
+
+insert into flow.project_process_step_attachment(attachment_id, project_process_step_id,
+                                                 date_created,created_by_id)
+select a.id,pps.id,now(),a.created_by_id
+from blueraven.deal_calendar_event_attachment dcea
+         inner join blueraven.deal_calendar_event dce on dce.id = dcea.deal_calendar_event_id and dce.work_type_id = 30
+         inner join flow.project_process_step pps on pps.project_id = dce.deal_id and pps.process_step_id in (66,568,569) and main is true
+    --and pps.migrated_work_type_id = 29
+         inner join flow.attachment a on a.migrated_deal_resource_id = dcea.deal_resource_oid and
+                                         a.migrated_deal_id = dce.deal_id;
