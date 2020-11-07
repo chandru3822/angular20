@@ -8,6 +8,7 @@ declare
     v_contact_phone  character varying(50);
     v_state_id integer;
     v_state_abbrev character varying (2);
+    v_contact_name character varying(150);
 BEGIN
     select company_id
     into v_company_id
@@ -15,8 +16,8 @@ BEGIN
     where process_id = new.company_process_id
     limit 1;
 
-    select email, phone,mobile
-    into v_contact_email,v_contact_phone,v_contact_mobile_phone
+    select email, phone,mobile,first_name||' '||last_name
+    into v_contact_email,v_contact_phone,v_contact_mobile_phone,v_contact_name
         from flow.contact
     where  id = new.contact_id;
 
@@ -30,9 +31,9 @@ BEGIN
         insert into brs.project_details(project_id, company_id,contact_email,
                                         contact_phone,contact_mobile_phone,
                                         project_street1,project_city,project_postal_code,
-                                        project_time_zone,project_state_id,project_state_abbreviation)
+                                        project_time_zone,project_state_id,project_state_abbreviation,contact_name)
         values (new.id, v_company_id,v_contact_email,v_contact_phone,v_contact_mobile_phone,
-                new.street1,new.city,new.postal_code,new.time_zone,v_state_id,v_state_abbrev);
+                new.street1,new.city,new.postal_code,new.time_zone,v_state_id,v_state_abbrev,v_contact_name);
     elsif (TG_OP = 'UPDATE') THEN
         update brs.project_details
             set contact_email = v_contact_email,
@@ -43,7 +44,8 @@ BEGIN
                 project_postal_code = new.postal_code,
                 project_time_zone = new.time_zone,
                 project_state_id = v_state_id,
-                project_state_abbreviation = v_state_abbrev
+                project_state_abbreviation = v_state_abbrev,
+                contact_name = v_contact_name
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
@@ -286,6 +288,7 @@ declare
 v_record record;
 v_sql text;
 v_found bigint;
+v_count  integer = 0;
 BEGIN
 
     select count(1)
@@ -309,15 +312,18 @@ BEGIN
         where cfg.process_step_id = new.process_step_id
           and cf.archived is false and cfg.archived is false and cfga.archived is false
         loop
+                v_count = v_count + 1;
                 v_sql = v_sql || v_record.field_to_update || ' = null';
                 case when v_record.is_last_row is false then
                     v_sql = v_sql || ' , ';
                 else null;
                 end case;
         end loop;
-
         v_sql = v_sql || ' where project_id = ' || new.project_id||';';
-        execute  v_sql;
+        if v_count > 0 then
+            execute  v_sql;
+        end if;
+
     end if;
 
     update flow.project_process_step_custom_field_value

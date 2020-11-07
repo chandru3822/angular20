@@ -14,7 +14,6 @@ create index appointment_dates_resource_id_idx
 drop trigger if exists update_project_details_trg on flow.project_process_step_custom_field_value;
 drop  trigger if exists project_process_step_audit_trg on flow.project_process_step_custom_field_value;
 drop trigger if exists update_project_process_step_custom_value_trg on flow.project_process_step;
-
 /*SCHEDULE CLOSER APPOINTMENT*/
 with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
@@ -58,7 +57,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2271,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -66,7 +65,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 added_on
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where appointment_date is not null
@@ -143,7 +143,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2596,
                 (SELECT id FROM flow.company_process_step_status_type WHERE case when d.appointment_outcome not in ('Cancelled','Missed') then
@@ -153,7 +153,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 appointment_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where appointment_date is not null
@@ -247,7 +248,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 243,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -255,7 +256,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 proposal_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where proposal_complete_date is not null
@@ -377,7 +379,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1062,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -385,7 +387,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 installation_agreement_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -495,7 +498,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,site_survey_scheduled_date as complete_date
             FROM flow.project
@@ -530,7 +533,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id =d.id)returning *),
@@ -606,7 +610,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 477,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -614,7 +618,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 site_survey_uploaded_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -712,7 +717,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 269,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -720,7 +725,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 final_design_created_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -815,7 +821,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 490,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -823,7 +829,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 final_design_qa_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -932,7 +939,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 633,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -940,7 +947,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 final_design_sent_to_customer_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -1046,7 +1054,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1101,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1054,7 +1062,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 greatest(final_design_signed_date,agreement_signed_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -1149,7 +1158,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 503,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1157,7 +1166,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 plan_set_created_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -1245,7 +1255,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 516,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1253,7 +1263,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 plan_set_qa_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -1288,202 +1299,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 
--- /*CREATE PERMIT PACK*/
--- with active_step as (
--- INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
---     (SELECT project.id,
---             10,
---             (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
---                                                                                      process_step_status_type = 'Active' else
---                                                                                      process_step_status_type = 'Cancelled' end
---                                                                     and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---             2350555 as created_by_id,
---             (now() + interval '1 day'),
---(now() + interval '1 day')
---      FROM flow.project
---               INNER JOIN blueraven.deal d
---                          ON project.id = d.id
---               inner join blueraven.stage sd on sd.id = d.current_stage_id
---      where sd.id not in (1,2,3) AND originator_id = 2 and (d.financier is null or d.financier != '["One Roof Energy"]' ) and
---          (d.on_hold IS NULL OR d.on_hold = FALSE) and
---          site_survey_verified_date IS NOT NULL AND ((plan_set_qa_date is not null and permit_pack_complete is null) OR
---                                                     ((permit_pack_revision_requested_date IS NOT NULL
---                                                         AND permit_pack_revision_complete_date IS NULL) OR
---                                                      (permit_revision_b_requested_date IS NOT NULL AND
---                                                       permit_revision_b_complete_date IS NULL) OR (permit_revision_c_requested_date IS NOT NULL AND permit_revision_c_complete_date IS NULL) OR
---                                                      (as_built_permit_required_date is not null and as_built_permit_packet_complete_date is null) OR
---                                                      (redesign_signed_date is not null AND redesign_signed_date :: DATE >= '2019-06-11' AND
---                                                       greatest(permit_pack_complete,permit_pack_revision_complete_date,permit_revision_b_complete_date,permit_revision_c_complete_date):: DATE < redesign_signed_date :: DATE)
---                                                         )))returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 10
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 67 then ((greatest(permit_pack_complete,permit_pack_revision_complete_date,permit_revision_b_complete_date,permit_revision_c_complete_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join active_step p1 on p1.project_id = d2.id
---               cross join p
---     );
---
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 10,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
--- now(),
---                 permit_pack_complete
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              permit_pack_complete is not null
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 10
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 67 then ((permit_pack_complete  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 10,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
--- now(),
---                 permit_pack_revision_complete_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              permit_pack_revision_complete_date is not null
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 10
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 67 then ((permit_pack_revision_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 10,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
--- now(),
---                 permit_revision_b_complete_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              permit_revision_b_complete_date is not null
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 10
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 67 then ((permit_revision_b_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 10,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
--- now(),
---                 permit_revision_c_complete_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              permit_revision_c_complete_date is not null
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 10
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 67 then ((permit_revision_c_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
 
 /*STRUCTURAL ANALYSIS*/
 with active_step as (
@@ -1528,7 +1343,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 529,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1536,7 +1351,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 structural_analysis_complete::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -1610,7 +1426,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 542,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1618,7 +1434,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 engineering_stamp_received_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -1688,7 +1505,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 555,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1696,7 +1513,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 electrical_engineering_stamp_received_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -1821,7 +1639,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_packet_ready_to_submit_date as complete_date
             FROM flow.project
@@ -1856,6 +1674,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 9
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -1902,7 +1721,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,d.permit_pack_revision_submittal_scheduled_date as complete_date
             FROM flow.project
@@ -1937,6 +1756,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 16
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -1987,7 +1807,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,d.permit_revision_b_submittal_scheduled_date as complete_date
             FROM flow.project
@@ -2022,6 +1842,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 18
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -2071,7 +1892,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_revision_c_submittal_scheduled_date as complete_date
             FROM flow.project
@@ -2106,6 +1927,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 19
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -2214,7 +2036,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 581,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2222,7 +2044,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_pack_submittal_verified
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2254,7 +2077,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 581,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2262,7 +2085,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_pack_revision_submittal_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2294,7 +2118,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 581,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2302,7 +2126,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_b_submitted_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2334,7 +2159,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 581,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2342,7 +2167,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_c_submitted_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2444,7 +2270,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 295,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2452,7 +2278,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2496,7 +2323,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 295,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2504,7 +2331,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_pack_revision_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2548,7 +2376,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 295,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2556,7 +2384,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_b_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2600,7 +2429,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 295,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2608,7 +2437,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_c_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2698,7 +2528,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 594,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2706,7 +2536,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 utility_bill_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2839,7 +2670,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1166,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2847,7 +2678,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 nem_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -2929,7 +2761,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 607,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -2937,7 +2769,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 nem_submitted_to_utility_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3008,7 +2841,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 321,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3016,7 +2849,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 nem_approved_by_utility_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3082,7 +2916,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 620,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3090,7 +2924,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 nem_approved_by_utility_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3160,7 +2995,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1153,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3168,7 +3003,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 hoa_request_for_approval_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3245,7 +3081,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 334,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3253,7 +3089,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 hoa_request_for_approval_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3318,7 +3155,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 347,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3326,7 +3163,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 hoa_approval_received_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3400,7 +3238,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1088,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3408,7 +3246,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 in_house_mpu_permit_pack_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3476,7 +3315,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,in_house_mpu_permit_submittal_scheduled_date complete_date
             FROM flow.project
@@ -3511,7 +3350,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -3595,7 +3435,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 659,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3603,7 +3443,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 in_house_mpu_permit_submittal_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3683,7 +3524,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 672,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3691,7 +3532,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 in_house_mpu_permit_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -3759,7 +3601,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,d.permit_pick_up_scheduled as complete_date
             FROM flow.project
@@ -3794,6 +3636,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 8
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -3832,7 +3675,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_pack_revision_pickup_scheduled as complete_date
             FROM flow.project
@@ -3867,6 +3710,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 17
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -3905,7 +3749,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_revision_b_pickup_scheduled_date as complete_date
             FROM flow.project
@@ -3940,6 +3784,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 20
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -3978,7 +3823,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,permit_revision_c_pickup_scheduled as complete_date
             FROM flow.project
@@ -4013,6 +3858,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 21
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -4089,7 +3935,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,fl_noc_application_signature_scheduled as complete_date
             FROM flow.project
@@ -4124,7 +3970,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -4200,7 +4047,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 698,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4208,7 +4055,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 fl_noc_application_signature_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -4276,7 +4124,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 685,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4284,7 +4132,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 installation_ready_to_schedule_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -4390,14 +4239,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,scheduled_installation_date as complete_date
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
             where
-                scheduled_installation_date::date is not null or installation_date :: DATE is not null
+                (scheduled_installation_date::date is not null or installation_date :: DATE is not null)
               and originator_id = 2
             union all
             select deal_id,dce.updated as complete_date
@@ -4416,7 +4265,7 @@ with process_step1 as (
                              INNER JOIN blueraven.deal d
                                         ON project.id = d.id
                     where
-                        scheduled_installation_date::date is not null or installation_date :: DATE is not null
+                        (scheduled_installation_date::date is not null or installation_date :: DATE is not null)
                       and originator_id = 2))
          SELECT project.id,
                 373,
@@ -4425,7 +4274,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -4507,7 +4357,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 386,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4515,7 +4365,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 substantial_completion_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -4584,7 +4435,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,installation_closeout_scheduled_date as complete_date
             FROM flow.project
@@ -4619,7 +4470,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -4692,7 +4544,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 399,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4700,7 +4552,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 materials_ordered_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -4784,7 +4637,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1140,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4792,7 +4645,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 placard_ordered_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -4821,7 +4675,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1140,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4829,7 +4683,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 additional_placard_ordered_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -4898,7 +4753,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 724,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4906,7 +4761,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 placard_shipped_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -4936,7 +4792,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 724,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4944,7 +4800,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 additional_placard_shipped_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5012,7 +4869,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 737,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5020,7 +4877,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 substantial_completion_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5092,7 +4950,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,ahj_inspection_scheduled_date as complete_date
             FROM flow.project
@@ -5127,7 +4985,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -5207,7 +5066,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 750,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5215,7 +5074,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 ahj_inspection_ready_to_schedule_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5312,7 +5172,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 763,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5320,7 +5180,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 ahj_inspection_passed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5353,7 +5214,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 763,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5361,7 +5222,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 ahj_inspection_passed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5394,7 +5256,7 @@ now(),
           );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 763,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5402,7 +5264,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 ahj_inspection_passed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5479,7 +5342,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 425,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5487,7 +5350,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 greatest(verified_inspection_approval_received_by_utility_date,ahj_inspection_approval_submitted_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5556,7 +5420,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 438,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5564,7 +5428,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 utility_meter_ordered_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5633,7 +5498,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1023,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5641,7 +5506,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 greatest(permission_to_operate_date,utility_meter_set_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5709,7 +5575,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,system_service_scheduled_date as complete_date
             FROM flow.project
@@ -5744,7 +5610,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -5821,7 +5688,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 776,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5829,7 +5696,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 work_order_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -5859,64 +5727,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 
-/*Schedule Utility Re-inspection*/
---with active_step as (
--- INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
---     (SELECT project.id,
---             42,
---             (SELECT id FROM flow.company_process_step_status_type
---              WHERE case when d.cancelled_date is null then
---                                 process_step_status_type = 'Active' else
---                                 process_step_status_type = 'Cancelled' end
---                and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---             2350555 as created_by_id,
---now()
---      from flow.project p
---               inner join blueraven.deal d on d.id = p.id
---               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
---               inner join blueraven.card c on c.id = 213
---      where deal_id is not null
---        and 213 = any(work_queue_deal_ids) and
---          ((exclude_card_ids IS NULL)
---              OR (exclude_card_ids IS NOT NULL AND
---                  NOT work_queue_deal_ids && c.exclude_card_ids)));
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 42,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
---                 utility_reinspection_requested_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              utility_reinspection_requested_date is not null
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 42
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 163 then ((utility_reinspection_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
 
 /*Structural Engineering Review*/
 with active_step as (
@@ -5983,7 +5793,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1114,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5991,7 +5801,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 structural_engineering_review_complete_date::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6033,7 +5844,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1114,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6041,7 +5852,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 structural_engineering_review_b_complete_date::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6082,7 +5894,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1114,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6090,7 +5902,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 structural_engineering_review_c_complete_date::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6194,7 +6007,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1036,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6202,7 +6015,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 engineering_review_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6244,7 +6058,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1036,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6252,7 +6066,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 electrical_engineering_review_b_complete_date::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6293,7 +6108,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1036,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6301,7 +6116,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 electrical_engineering_review_c_complete_date::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6404,7 +6220,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1127,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6412,7 +6228,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 low_production_inquiry_reviewed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6503,7 +6320,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 828,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6511,7 +6328,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 low_production_inquiry_resolved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6583,7 +6401,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 802,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6591,7 +6409,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 structural_post_install_engineering_letter_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6662,7 +6481,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 815,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6670,7 +6489,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 electrical_post_install_letter_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6740,7 +6560,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 841,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6748,7 +6568,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 in_house_mpu_materials_ordered_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6821,7 +6642,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1075,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6829,7 +6650,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 greatest(utility_rebate_application_sent_to_homeowner_date, utility_rebate_application_signed_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -6907,7 +6729,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1010,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -6915,7 +6737,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 utility_rebate_application_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7013,7 +6836,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 854,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7021,7 +6844,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_pickup_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7055,7 +6879,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 854,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7063,7 +6887,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_pickup_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7097,7 +6922,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 854,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7105,7 +6930,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_b_pickup_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7139,7 +6965,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 854,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7147,7 +6973,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_c_pickup_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7238,7 +7065,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,in_house_mpu_scheduled_date as complete_date
             FROM flow.project
@@ -7273,7 +7100,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -7350,7 +7178,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 880,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7358,7 +7186,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 in_house_mpu_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7429,7 +7258,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -7474,7 +7303,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -7551,7 +7381,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 893,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7559,7 +7389,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7629,7 +7460,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 789,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7637,7 +7468,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 utility_reinspection_requested_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7705,7 +7537,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,ahj_inspection_work_scheduled_date as complete_date
             FROM flow.project
@@ -7740,7 +7572,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -7816,7 +7649,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 906,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7824,7 +7657,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 least(energized_date,energization_visit_requested_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -7898,7 +7732,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,energization_visit_scheduled_date as complete_date
             FROM flow.project
@@ -7933,7 +7767,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -8014,7 +7849,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 451,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8022,7 +7857,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 final_completion_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8093,7 +7929,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 464,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8101,7 +7937,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 final_completion_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8171,7 +8008,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 932,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8179,7 +8016,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 first_cash_payment_invoiced_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8250,7 +8088,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 945,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8258,7 +8096,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 first_cash_payment_paid_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8329,7 +8168,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 958,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8337,7 +8176,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 second_cash_payment_invoiced_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8410,7 +8250,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 971,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8418,7 +8258,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 second_cash_payment_paid_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8490,7 +8331,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 984,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8498,7 +8339,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 redesign_sent_to_homeowner_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8585,7 +8427,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1049,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8593,7 +8435,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 redesign_ready_to_send_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8632,229 +8475,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 
--- /*create revise plan set*/  --TODO ask judson about this one
--- with active_step as (
--- INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
---     (SELECT p.id,
---             90,
---             (SELECT id FROM flow.company_process_step_status_type
---              WHERE case when d.cancelled_date is null then
---                                 process_step_status_type = 'Active' else
---                                 process_step_status_type = 'Cancelled' end
---                and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---             2350555 as created_by_id,
---             (now() + interval '1 day'),
---(now() + interval '1 day')
---      from flow.project p
---               inner join blueraven.deal d on d.id = p.id
---               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
---               inner join blueraven.card c on c.id = 43
---      where deal_id is not null
---        and 43 = any(work_queue_deal_ids) and
---          ((exclude_card_ids IS NULL)
---              OR (exclude_card_ids IS NOT NULL AND
---                  NOT work_queue_deal_ids && c.exclude_card_ids)))returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 90
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          timestamp_value,int_value,numeric_value,text_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 413 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             case when p.custom_field_group_assignment_id = 422 then (select id from flow.list_of_value where parent_id = 289
---                                                                                                          and name = d2.price_change)
---                  when p.custom_field_group_assignment_id = 421 then (select id from flow.list_of_value where parent_id = 151
---                                                                                                          and name = d2.kwh_change)
---                  when   p.custom_field_group_assignment_id = 414 then (select id from blueraven.user where (first_name||' '||last_name) = d2.final_design_completed_by)
---                  when p.custom_field_group_assignment_id = 419 then  d2.panel_quantity
---                  when p.custom_field_group_assignment_id = 418 then  (select id from flow.list_of_value where parent_id = 238
---                                                                                                           and name = d2.panel_brand)
---                  when p.custom_field_group_assignment_id = 423 then  (select id from flow.list_of_value where parent_id = 143
---                                                                                                           and name = d2.inverter_brand)
---                  when p.custom_field_group_assignment_id = 420 then  d2.panel_watts
---                  when p.custom_field_group_assignment_id = 417 then  d2.first_year_production_estimate
---                  when p.custom_field_group_assignment_id = 415 then  (select id from flow.list_of_value where parent_id = 331
---                                                                                                           and name = d2.secondary_financier)
---                  else null end,
---             case when p.custom_field_group_assignment_id = 416 then d2.system_size else null end,
---             case when p.custom_field_group_assignment_id = 424 then d2.inverter_rating else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join active_step p1 on p1.project_id = d2.id
---               cross join p
---     );
---
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 90,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
--- now(),
---                 permit_pack_revision_complete_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              (permit_pack_revision_complete_date IS NOT NULL)
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 90
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          timestamp_value,int_value,numeric_value,text_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 413 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             case when p.custom_field_group_assignment_id = 422 then (select id from flow.list_of_value where parent_id = 289
---                                                                                                          and name = d2.price_change)
---                  when p.custom_field_group_assignment_id = 421 then (select id from flow.list_of_value where parent_id = 151
---                                                                                                          and name = d2.kwh_change)
---                  when   p.custom_field_group_assignment_id = 414 then (select id from blueraven.user where (first_name||' '||last_name) = d2.final_design_completed_by)
---                  when p.custom_field_group_assignment_id = 419 then  d2.panel_quantity
---                  when p.custom_field_group_assignment_id = 418 then  (select id from flow.list_of_value where parent_id = 238
---                                                                                                           and name = d2.panel_brand)
---                  when p.custom_field_group_assignment_id = 423 then  (select id from flow.list_of_value where parent_id = 143
---                                                                                                           and name = d2.inverter_brand)
---                  when p.custom_field_group_assignment_id = 420 then  d2.panel_watts
---                  when p.custom_field_group_assignment_id = 417 then  d2.first_year_production_estimate
---                  when p.custom_field_group_assignment_id = 415 then  (select id from flow.list_of_value where parent_id = 331
---                                                                                                           and name = d2.secondary_financier)
---                  else null end,
---             case when p.custom_field_group_assignment_id = 416 then d2.system_size else null end,
---             case when p.custom_field_group_assignment_id = 424 then d2.inverter_rating else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 90,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
--- now(),
---                 permit_revision_b_complete_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              (permit_revision_b_complete_date IS NOT NULL)
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 90
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          timestamp_value,int_value,numeric_value,text_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 413 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             case when p.custom_field_group_assignment_id = 422 then (select id from flow.list_of_value where parent_id = 289
---                                                                                                          and name = d2.price_change)
---                  when p.custom_field_group_assignment_id = 421 then (select id from flow.list_of_value where parent_id = 151
---                                                                                                          and name = d2.kwh_change)
---                  when   p.custom_field_group_assignment_id = 414 then (select id from blueraven.user where (first_name||' '||last_name) = d2.final_design_completed_by)
---                  when p.custom_field_group_assignment_id = 419 then  d2.panel_quantity
---                  when p.custom_field_group_assignment_id = 418 then  (select id from flow.list_of_value where parent_id = 238
---                                                                                                           and name = d2.panel_brand)
---                  when p.custom_field_group_assignment_id = 423 then  (select id from flow.list_of_value where parent_id = 143
---                                                                                                           and name = d2.inverter_brand)
---                  when p.custom_field_group_assignment_id = 420 then  d2.panel_watts
---                  when p.custom_field_group_assignment_id = 417 then  d2.first_year_production_estimate
---                  when p.custom_field_group_assignment_id = 415 then  (select id from flow.list_of_value where parent_id = 331
---                                                                                                           and name = d2.secondary_financier)
---                  else null end,
---             case when p.custom_field_group_assignment_id = 416 then d2.system_size else null end,
---             case when p.custom_field_group_assignment_id = 424 then d2.inverter_rating else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 90,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
--- now(),
---                 permit_revision_c_complete_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where
---              (permit_revision_c_complete_date IS NOT NULL)
---            and originator_id = 2)
---         returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 90
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          timestamp_value,int_value,numeric_value,text_value,
---                                                          date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 413 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
---             case when p.custom_field_group_assignment_id = 422 then (select id from flow.list_of_value where parent_id = 289
---                                                                                                          and name = d2.price_change)
---                  when p.custom_field_group_assignment_id = 421 then (select id from flow.list_of_value where parent_id = 151
---                                                                                                          and name = d2.kwh_change)
---                  when   p.custom_field_group_assignment_id = 414 then (select id from blueraven.user where (first_name||' '||last_name) = d2.final_design_completed_by)
---                  when p.custom_field_group_assignment_id = 419 then  d2.panel_quantity
---                  when p.custom_field_group_assignment_id = 418 then  (select id from flow.list_of_value where parent_id = 238
---                                                                                                           and name = d2.panel_brand)
---                  when p.custom_field_group_assignment_id = 423 then  (select id from flow.list_of_value where parent_id = 143
---                                                                                                           and name = d2.inverter_brand)
---                  when p.custom_field_group_assignment_id = 420 then  d2.panel_watts
---                  when p.custom_field_group_assignment_id = 417 then  d2.first_year_production_estimate
---                  when p.custom_field_group_assignment_id = 415 then  (select id from flow.list_of_value where parent_id = 331
---                                                                                                           and name = d2.secondary_financier)
---                  else null end,
---             case when p.custom_field_group_assignment_id = 416 then d2.system_size else null end,
---             case when p.custom_field_group_assignment_id = 424 then d2.inverter_rating else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
---
 
 /*sign utility rebate application*/
 with active_step as (
@@ -8897,7 +8517,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1426,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8905,7 +8525,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 utility_rebate_application_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -8982,7 +8603,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1179,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -8990,7 +8611,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 pre_design_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9076,7 +8698,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1192,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9084,7 +8706,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_packet_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9112,7 +8735,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1192,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9120,7 +8743,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_pack_revision_submittal_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9148,7 +8772,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1192,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9156,7 +8780,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_b_submittal_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9184,7 +8809,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1192,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9192,7 +8817,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 permit_revision_c_submittal_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9259,7 +8885,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1205,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9267,7 +8893,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 installation_closeout_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9333,7 +8960,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1218,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9341,7 +8968,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 energization_visit_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9408,7 +9036,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1231,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9416,7 +9044,8 @@ with process_step1 as (
                 2350555 as created_by_id,
 now(),
                 energized_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -9499,7 +9128,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,resurvey_scheduled_date as complete_date
             FROM flow.project
@@ -9534,6 +9163,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 11
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -9578,7 +9208,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         ( with deals as (
             SELECT d.id,resurvey_b_scheduled_date as complete_date
             FROM flow.project
@@ -9613,6 +9243,7 @@ with process_step1 as (
                  2350555 as created_by_id,
                  now(),
                  d1.complete_date,
+                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                  28
           FROM flow.project
                    INNER JOIN blueraven.deal d
@@ -9656,7 +9287,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,resurvey_c_scheduled_date as complete_date
             FROM flow.project
@@ -9691,6 +9322,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 29
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -9777,7 +9409,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2011,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9785,7 +9417,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 final_design_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where final_design_complete_date is not null
@@ -9910,7 +9543,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 997,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9918,7 +9551,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 nem_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where nem_signed_date is not null
@@ -9981,7 +9615,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1959,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9989,7 +9623,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 resurvey_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where resurvey_date < (now () AT TIME ZONE ('US/Mountain')) :: DATE
@@ -10017,7 +9652,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1959,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10025,7 +9660,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 resurvey_b_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where resurvey_b_date < (now () AT TIME ZONE ('US/Mountain')) :: DATE
@@ -10053,7 +9689,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1959,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10061,7 +9697,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 resurvey_c_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where resurvey_c_date < (now () AT TIME ZONE ('US/Mountain')) :: DATE
@@ -10155,7 +9792,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1855,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10163,7 +9800,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_pack_revision_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_pack_revision_complete_date is not null
@@ -10214,7 +9852,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1855,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10222,7 +9860,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_revision_b_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_revision_b_complete_date is not null
@@ -10273,7 +9912,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1855,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10281,7 +9920,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_revision_c_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_revision_c_complete_date is not null
@@ -10371,7 +10011,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1244,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10379,7 +10019,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 redesign_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where redesign_signed_date is not null
@@ -10444,7 +10085,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1270,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10452,7 +10093,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 system_service_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where system_service_date < (now () AT TIME ZONE ('US/Mountain')) :: DATE
@@ -10518,7 +10160,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1283,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10526,7 +10168,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 greatest(remote_work_required_date,work_order_required)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where system_service_requested_date is not null and
@@ -10596,7 +10239,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1296,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10604,7 +10247,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 remote_work_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where remote_work_complete_date is not null
@@ -10635,7 +10279,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 -- /*Cancel Project  NOT FINISHED*/
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1894,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10643,7 +10287,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 cancelled_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where cancelled_date is not null
@@ -10734,7 +10379,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1309,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10742,7 +10387,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 greatest(retention_saved_date,retention_cold_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where cancellation_request_date is not null and
@@ -10858,7 +10504,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1322,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10866,7 +10512,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 greatest(retention_saved_date,retention_cold_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where cancellation_request_date is not null and
@@ -10964,7 +10611,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1335,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -10972,7 +10619,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 greatest(termination_fee_sent_to_ecrs_date,termination_fee_collected_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where (termination_fee_sent_to_ecrs_date is not null or termination_fee_collected_date is not null)
@@ -11103,7 +10751,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1712,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11111,7 +10759,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_a_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where regen_a_complete_date is not null
@@ -11154,7 +10803,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1712,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11162,7 +10811,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_b_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where regen_b_complete_date is not null
@@ -11204,7 +10854,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1712,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11212,7 +10862,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_c_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where regen_c_complete_date is not null
@@ -11306,7 +10957,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1907,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11314,7 +10965,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 engineering_due_diligence_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where engineering_due_diligence_complete_date is not null
@@ -11348,7 +11000,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1907,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11356,7 +11008,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 engineering_due_diligence_b_complete_date::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where engineering_due_diligence_b_complete_date is not null
@@ -11389,7 +11042,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1907,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11397,7 +11050,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 engineering_due_diligence_c_complete_date::timestamp
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where engineering_due_diligence_c_complete_date is not null
@@ -11476,7 +11130,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1920,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11484,7 +11138,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 additional_materials_ordered
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where additional_materials_ordered is not null
@@ -11559,7 +11214,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1361,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11567,7 +11222,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 additional_materials_ordered
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where additional_materials_ordered is not null
@@ -11638,7 +11294,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1387,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11646,7 +11302,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 utility_rebate_application_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where utility_rebate_application_submitted_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -11716,7 +11373,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1400,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11724,7 +11381,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 utility_rebate_application_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where d.state_id = 37 and utility_rebate_application_submitted_date is not null
@@ -11791,7 +11449,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1413,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11799,7 +11457,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 energized_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where d.state_id = 37 and (does_not_qualify_for_eto is null or does_not_qualify_for_eto is false) and
@@ -11867,7 +11526,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1439,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11875,7 +11534,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 eto_inspection_requested_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where d.state_id = 37 and
@@ -11953,7 +11613,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1452,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11967,7 +11627,8 @@ with process_step1 as (
                 THEN eto_inspection_corrections_required_date
                 ELSE greatest(eto_inspection_passed_date, eto_inspection_corrections_required_date, eto_inspection_requested_date)
                 END
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where d.state_id = 37 and
@@ -12046,7 +11707,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2037,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12054,7 +11715,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 eto_inspection_passed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where eto_inspection_passed_date is not null
@@ -12129,7 +11791,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1465,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12137,7 +11799,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_ready_to_schedule_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work_ready_to_schedule_date is not null
@@ -12201,7 +11864,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -12241,7 +11904,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -12316,7 +11980,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1491,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12324,7 +11988,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','Main Panel Upgrade'])
@@ -12394,7 +12059,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,in_house_mpu_scheduled_date as complete_date
             FROM flow.project
@@ -12434,7 +12099,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -12509,7 +12175,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1517,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12517,7 +12183,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_scheduled_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Main Panel Upgrade - In House%'])
@@ -12587,7 +12254,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -12627,7 +12294,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -12702,7 +12370,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1543,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12710,7 +12378,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Structural Upgrade%'])
@@ -12779,7 +12448,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -12819,7 +12488,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -12894,7 +12564,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1569,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12902,7 +12572,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Reroof%'])
@@ -12971,7 +12642,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -13010,7 +12681,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -13084,7 +12756,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1595,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13092,7 +12764,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Trenching%'])
@@ -13160,7 +12833,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -13200,7 +12873,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -13274,7 +12948,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1621,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13282,7 +12956,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Tree Trimming%'])
@@ -13351,7 +13026,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -13391,7 +13066,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -13465,7 +13141,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1647,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13473,7 +13149,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
@@ -13540,7 +13217,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
             FROM flow.project
@@ -13580,7 +13257,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -13654,7 +13332,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1673,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13662,7 +13340,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Source Deadfront%'])
@@ -13694,7 +13373,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Request a Work Order*/
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1868,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13702,7 +13381,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 system_service_requested_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where system_service_requested_date is not null
@@ -13777,7 +13457,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1348,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13785,7 +13465,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 in_house_mpu_permit_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where (non_standard_installation_work like any (array['%Main Panel Upgrade - In House%']) or in_house_mpu_required_date is not null)
@@ -13846,7 +13527,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1374,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13854,7 +13535,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_inspection_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_inspection_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE)
@@ -13929,7 +13611,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,ahj_reinspection_scheduled as complete_date
             FROM flow.project
@@ -13964,6 +13646,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 5
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -14007,7 +13690,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
             SELECT d.id,ahj_reinspection_b_scheduled as complete_date
             FROM flow.project
@@ -14042,6 +13725,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date,
+                date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 23
          FROM flow.project
                   INNER JOIN blueraven.deal d
@@ -14120,7 +13804,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1933,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14128,7 +13812,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_reinspection_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_reinspection_date <  ((now() AT TIME ZONE 'US/Mountain') :: DATE)
@@ -14153,7 +13838,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1933,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14161,7 +13846,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_reinspection_b_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_reinspection_b_date <  ((now() AT TIME ZONE 'US/Mountain') :: DATE)
@@ -14186,137 +13872,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 
--- /*Needs AHJ Re-inspection Verification*/
--- with active_step as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
---         (SELECT project.id,
---                 155,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
---                 (now() + interval '1 day'),
---(now() + interval '1 day')
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where originator_id = 2 and ahj_reinspection_date < ((now() AT TIME ZONE 'US/Mountain') :: DATE) and
--- (ahj_reinspection_outcome is null OR
--- (ahj_reinspection_outcome = 'Pass' and ahj_inspection_passed_date is null) OR (ahj_reinspection_outcome = 'Fail' and ahj_reinspection_fail_reason is null))) returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 155
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 583 then ((ahj_final_inspection_verified AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  when p.custom_field_group_assignment_id = 999 then ((ahj_inspection_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  else null end,
---             case when p.custom_field_group_assignment_id = 584 then (select id from flow.list_of_value where parent_id = 45
---                                                                                                          and name = d2.ahj_inspection_outcome)
---                  when p.custom_field_group_assignment_id = 585 then (select id from flow.list_of_value where parent_id = 9
---                                                                                                          and name = d2.ahj_inspection_fail_reason)
---
---                 else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---
---               inner join active_step p1 on p1.project_id = d2.id
---               cross join p
---     );
---
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 155,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
---                 now(),
---                 ahj_reinspection_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where ahj_reinspection_outcome is not null
---            and originator_id = 2)returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 155
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 583 then ((ahj_final_inspection_verified AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  when p.custom_field_group_assignment_id = 999 then ((ahj_inspection_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  else null end,
---             case when p.custom_field_group_assignment_id = 584 then (select id from flow.list_of_value where parent_id = 45
---                                                                                                          and name = d2.ahj_inspection_outcome)
---                  when p.custom_field_group_assignment_id = 585 then (select id from flow.list_of_value where parent_id = 9
---                                                                                                          and name = d2.ahj_inspection_fail_reason)
---
---                  else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 155,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
---                 now(),
---                 ahj_reinspection_b_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where ahj_reinspection_b_outcome is not null
---            and originator_id = 2)returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 155
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 583 then ((ahj_final_inspection_verified AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  when p.custom_field_group_assignment_id = 999 then ((ahj_inspection_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  else null end,
---             case when p.custom_field_group_assignment_id = 584 then (select id from flow.list_of_value where parent_id = 45
---                                                                                                          and name = d2.ahj_reinspection_b_outcome)
---                  when p.custom_field_group_assignment_id = 585 then (select id from flow.list_of_value where parent_id = 9
---                                                                                                          and name = d2.ahj_inspection_fail_reason)
---
---                  else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
 
 /*Pending AHJ Inspection Work*/
 with active_step as (
@@ -14354,7 +13909,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1686,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14362,7 +13917,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_inspection_work_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_inspection_work_date <  ((now() AT TIME ZONE 'US/Mountain') :: DATE)
@@ -14425,7 +13981,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1699,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14433,7 +13989,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_inspection_work_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_inspection_work_verified_date is not null
@@ -14461,78 +14018,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 
-/*Pending Financial Agreement Approval*/
--- with active_step as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
---         (SELECT project.id,
---                 159,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
---                 (now() + interval '1 day'),
---(now() + interval '1 day')
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where originator_id = 2 and financial_agreement_sent_date is not null and agreement_signed_date is null) returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 159
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 661 then ((agreement_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---
---               inner join active_step p1 on p1.project_id = d2.id
---               cross join p
---     );
---
---
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 159,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
---                 now(),
---                 agreement_signed_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where agreement_signed_date is not null
---            and originator_id = 2)returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 159
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 661 then ((agreement_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
---                  else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
 /*Regenerate Proposal (Post Install Agreement)*/
 with active_step as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
@@ -14585,7 +14070,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1725,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14593,7 +14078,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_a_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where regen_a_complete_date is not null
@@ -14635,7 +14121,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1725,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14643,7 +14129,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_b_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where regen_b_complete_date is not null
@@ -14685,7 +14172,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1725,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14693,7 +14180,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_c_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where regen_c_complete_date is not null
@@ -14736,7 +14224,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Request a Regen*/
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1881,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14744,7 +14232,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_requested_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where regen_requested_date is not null
@@ -14808,7 +14297,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1738,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14816,7 +14305,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 site_survey_uploaded_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where site_survey_photos_missing_date is not null and site_survey_uploaded_date is not null
@@ -14888,7 +14378,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1751,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14896,7 +14386,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 production_monitoring_activated_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where production_monitoring_activated_date is not null
@@ -14976,7 +14467,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,ahj_mid_point_inspection_scheduled_with_ahj_date as complete_date
             FROM flow.project
@@ -15011,7 +14502,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -15091,7 +14583,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1764,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15099,7 +14591,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_mid_point_inspection_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -15166,7 +14659,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1777,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15174,7 +14667,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_mid_point_inspection_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_mid_point_inspection_verified_date is not null
@@ -15250,7 +14744,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,ahj_inspection_scheduled_date as complete_date
             FROM flow.project
@@ -15286,7 +14780,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -15330,7 +14825,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,ahj_reinspection_scheduled as complete_date
             FROM flow.project
@@ -15365,7 +14860,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -15409,7 +14905,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,ahj_reinspection_b_scheduled as complete_date
             FROM flow.project
@@ -15444,7 +14940,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -15524,7 +15021,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1816,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15532,7 +15029,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_inspection_passed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -15600,7 +15098,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,additional_ahj_inspection_scheduled_date as complete_date
             FROM flow.project
@@ -15635,7 +15133,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -15716,7 +15215,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1946,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15724,7 +15223,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 greatest(additional_ahj_inspection_date, additional_ahj_inspection_verified_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where additional_ahj_inspection_date <= (now() AT TIME ZONE 'US/Mountain') :: DATE and additional_ahj_inspection_outcome is null
@@ -15791,7 +15291,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,in_house_mpu_permit_pickup_scheduled_date as complete_date
             FROM flow.project
@@ -15826,7 +15326,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -15904,7 +15405,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1985,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15912,7 +15413,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 in_house_mpu_permit_pickup_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where in_house_mpu_permit_pickup_verified_date is not null
@@ -15988,7 +15490,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1998,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15996,7 +15498,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_inspection_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_inspection_outcome = 'Fail' and ahj_inspection_fail_reason is not null
@@ -16027,14 +15530,15 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1998,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
                 2350555 as created_by_id,
                 now(),
-                ahj_reinspection_date
+                ahj_reinspection_date,
+                now()
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16066,7 +15570,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 1998,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16074,7 +15578,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_reinspection_b_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_reinspection_b_outcome = 'Fail' and ahj_reinspection_b_fail_reason is not null
@@ -16103,44 +15608,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
--- with process_step1 as (
---     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
---         (SELECT project.id,
---                 174,
---                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
---                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
---                 2350555 as created_by_id,
---                 now(),
---                 ahj_reinspection_c_date
---          FROM flow.project
---                   INNER JOIN blueraven.deal d
---                              ON project.id = d.id
---          where ahj_reinspection_c_outcome = 'Fail' and ahj_reinspection_b_fail_reason is not null
---            and originator_id = 2)returning *),
---      p as (
---          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
---          from flow.custom_field_group_assignment cfga
---                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
---                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id
---                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
---                   inner join flow.data_type dt on dt.id = cdt.data_type_id
---          where cfg.process_step_id = 174
---            and cf.archived is false and cfg.archived is false and cfga.archived is false
---      )
--- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
---                                                          text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
---     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 1011 then ahj_reinspection_c_fail_feedback
---                  else null end,
---             case when p.custom_field_group_assignment_id = 755 then (select id from flow.list_of_value where parent_id = 9
---                                                                                                          and name = d2.ahj_reinspection_c_fail_reason)
---                  else null end,
---             now(),now(),2350555,2350555
---      from blueraven.deal d2
---
---               inner join process_step1 p1 on p1.project_id = d2.id
---               cross join p
---     );
 
 /*Permit Submission Hold*/
 with active_step as (
@@ -16180,7 +15647,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2024,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16188,7 +15655,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_submission_hold_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_submission_hold_complete_date is not null
@@ -16263,7 +15731,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2349,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16271,7 +15739,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 as_built_permit_packet_complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where as_built_permit_packet_complete_date is not null
@@ -16343,7 +15812,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2050,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16351,7 +15820,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 utility_rebate_application_sent_to_homeowner_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where utility_rebate_application_sent_to_homeowner_date is not null
@@ -16413,7 +15883,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2063,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16421,7 +15891,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 utility_rebate_application_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where d.state_id = 13 and utility_rebate_application_sent_to_homeowner_date is not null and
@@ -16482,7 +15953,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2076,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16490,7 +15961,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 utility_rebate_application_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where utility_rebate_application_submitted_date is not null
@@ -16552,7 +16024,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2089,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16560,7 +16032,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 utility_rebate_application_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where utility_rebate_application_approved_date is not null
@@ -16623,7 +16096,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2713,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16631,7 +16104,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 srec_part_2_rebate_application_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permission_to_operate_date is not null and srec_part_2_rebate_application_submitted_date is not null
@@ -16692,7 +16166,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2726,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16700,7 +16174,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 srec_part_2_rebate_application_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permission_to_operate_Date is not null and srec_part_2_rebate_application_approved_date is not null
@@ -16800,7 +16275,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2128,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16808,7 +16283,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 engineering_restamp_received_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where engineering_restamp_received_date is not null and as_built_permit_required_date is null
@@ -16876,7 +16352,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2141,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16884,7 +16360,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 electrical_engineering_restamp_received_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where electrical_engineering_restamp_received_date is not null and as_built_permit_required_date is null
@@ -16950,7 +16427,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2154,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16958,7 +16435,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 engineering_restamp_received_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where engineering_restamp_received_date IS NOT NULL and as_built_permit_required_date is not null and as_built_permit_required_date :: DATE <= engineering_restamp_received_date :: DATE
@@ -17024,7 +16502,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2167,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17032,7 +16510,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 electrical_engineering_restamp_received_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where electrical_engineering_restamp_received_date IS NOT NULL and as_built_permit_required_date is not null and as_built_permit_required_date :: DATE <= electrical_engineering_restamp_received_date :: DATE
@@ -17105,7 +16584,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,asbuilt_permit_pack_submittal_schedule_date as complete_date
             FROM flow.project
@@ -17140,7 +16619,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -17221,7 +16701,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2180,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17229,7 +16709,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 asbuilt_permit_pack_submittal_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
@@ -17296,7 +16777,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2206,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17304,7 +16785,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 as_built_permit_pack_submittal_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where as_built_permit_pack_submittal_verified_date is not null
@@ -17379,7 +16861,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2219,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17387,7 +16869,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 asbuilt_permit_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where asbuilt_permit_approved_date is not null
@@ -17458,7 +16941,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,as_built_permit_pickup_scheduled_date as complete_date
             FROM flow.project
@@ -17493,7 +16976,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -17577,7 +17061,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2245,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17585,7 +17069,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 as_built_permit_pickup_verified_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where as_built_permit_pickup_verified_date is not null
@@ -17656,7 +17141,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2817,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17664,7 +17149,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 regen_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where (as_built_permit_required_date is not null and regen_sent_to_homeowner_date is not null and regen_signed_date is not null and regen_sent_to_homeowner_date >= as_built_permit_required_date)
@@ -17691,7 +17177,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2817,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17699,7 +17185,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 redesign_signed_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where (as_built_permit_required_date is not null and redesign_sent_to_homeowner_date is not null and redesign_signed_date is not null and redesign_sent_to_homeowner_date >= as_built_permit_required_date)
@@ -17765,7 +17252,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2258,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17773,7 +17260,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 retention_customer_concession_date_sent
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where retention_customer_concession_date_sent is not null
@@ -17803,7 +17291,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 /*Offer Retention Payment*/
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2284,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17811,7 +17299,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 retention_customer_concession_date_sent
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where retention_customer_concession_date_sent is not null
@@ -17881,7 +17370,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2297,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17889,7 +17378,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 greatest(termination_fee_collected_date, termination_fee_collection_failed_date)
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where termination_fee_sent_to_ecrs_date is not null and termination_fee_sent_to_ecrs_date < greatest(termination_fee_collected_date,termination_fee_collection_failed_date)  - 21 and
@@ -17955,7 +17445,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2310,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -17963,7 +17453,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 inspection_scheduled_with_ahj_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where inspection_scheduled_with_ahj_date is not null
@@ -18025,7 +17516,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2336,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18033,7 +17524,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 reinspection_scheduled_with_ahj
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where reinspection_scheduled_with_ahj is not null
@@ -18059,7 +17551,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2336,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18067,7 +17559,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 ahj_reinspection_b_scheduled_with_ahj
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where ahj_reinspection_b_scheduled_with_ahj is not null
@@ -18128,7 +17621,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2388,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18136,7 +17629,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 additional_inspection_scheduled_with_ahj_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where additional_inspection_scheduled_with_ahj_date is not null
@@ -18197,7 +17691,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2401,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18205,7 +17699,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 additional_ahj_inspection_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where additional_ahj_inspection_date IS NOT NULL AND additional_ahj_inspection_date < (now() at time zone 'US/Mountain')::date
@@ -18267,7 +17762,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2440,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18275,7 +17770,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','%Main Panel Upgrade'])
@@ -18344,7 +17840,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2427,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18352,7 +17848,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 additional_ahj_inspection_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where (additional_ahj_inspection_fail_reason is not null OR additional_ahj_inspection_fail_feedback is not null)
@@ -18421,7 +17918,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2453,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18429,7 +17926,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Structural Upgrade%'])
@@ -18491,7 +17989,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2466,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18499,7 +17997,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Reroof%'])
@@ -18561,7 +18060,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2505,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18569,7 +18068,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Trenching%'])
@@ -18632,7 +18132,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2479,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18640,7 +18140,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%Tree Trimming%'])
@@ -18702,7 +18203,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2518,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18710,7 +18211,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 non_standard_installation_work_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
@@ -18818,7 +18320,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2609,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18826,7 +18328,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 substantial_completion_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where substantial_completion_date is not null
@@ -18901,7 +18404,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
             SELECT d.id,in_house_mpu_inspection_scheduled_date as complete_date
             FROM flow.project
@@ -18917,7 +18420,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
                   inner join deals d1 on d1.id = d.id)returning *),
@@ -19027,7 +18531,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2622,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19035,7 +18539,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 plan_set_qa_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where d.state_id = 13 AND utility_rebate_application_signed_date IS NOT NULL
@@ -19099,7 +18604,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2661,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19107,7 +18612,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 final_documents_sent_to_homeowner_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where final_documents_sent_to_homeowner_date is not null
@@ -19170,7 +18676,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2708,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19178,7 +18684,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 fl_noc_application_signature_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where fl_noc_application_signature_date IS NOT NULL AND fl_noc_application_signature_date :: DATE < (now() at time zone 'US/Mountain') :: DATE
@@ -19239,7 +18746,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2648,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19247,7 +18754,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 srec_part_2_rebate_application_submitted_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where srec_part_2_rebate_application_submitted_date IS NOT NULL
@@ -19311,7 +18819,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2739,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19319,7 +18827,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 srec_part_2_rebate_application_approved_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where srec_part_2_rebate_application_approved_date is not null
@@ -19385,7 +18894,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2752,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19393,7 +18902,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_pick_up_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_pick_up_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -19419,7 +18929,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2752,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19427,7 +18937,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_pack_revision_pickup_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_pack_revision_pickup_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -19452,7 +18963,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2752,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19460,7 +18971,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_revision_b_pickup_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_revision_b_pickup_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -19485,7 +18997,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2752,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19493,7 +19005,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 permit_revision_c_pickup_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where permit_revision_c_pickup_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -19554,7 +19067,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2765,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19562,7 +19075,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 in_house_mpu_permit_pickup_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where in_house_mpu_permit_pickup_date::date < (now() at time zone 'US/Mountain')::date
@@ -19623,7 +19137,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2778,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19631,7 +19145,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 in_house_mpu_permit_submittal_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where in_house_mpu_permit_submittal_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -19692,7 +19207,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2791,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19700,7 +19215,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 in_house_mpu_permit_pickup_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where in_house_mpu_permit_pickup_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -19761,7 +19277,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (SELECT project.id,
                 2804,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -19769,7 +19285,8 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 in_house_mpu_date
-         FROM flow.project
+         ,now()
+FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where in_house_mpu_date < (now() AT TIME ZONE 'US/Mountain') :: DATE
@@ -19829,7 +19346,7 @@ declare
                      id_to_update as(
                          select id
                          from flow.project_process_step pp3
-                                  inner join max_day md on md.date_created = pp3.date_created and md.project_id = pp3.project_id and md.process_step_id = pp3.process_step_id
+                                  inner join max_day md on md.date_created = pp3.migrated_created_date and md.project_id = pp3.project_id and md.process_step_id = pp3.process_step_id
                      )select * from id_to_update
             LOOP
                update flow.project_process_step pps

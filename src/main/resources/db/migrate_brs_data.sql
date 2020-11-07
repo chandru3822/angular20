@@ -10667,3 +10667,30 @@ grant select on all tables in schema blueraven to brs_users;
 grant select on all tables in schema brs to brs_users;
 grant select on all tables in schema flow to brs_users;
 grant select on all tables in schema props to brs_users;
+
+
+insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key,
+                            size,date_created, date_modified, created_by_id,migrated_deal_id,migrated_deal_resource_id)
+    (select (select id from flow.attachment_type at
+             where attachment_type = 'Migrated Documents'
+               and at.company_id = c.company_id),c.company_id,filename,content_type,s3_key,size,
+            created,updated,coalesce(u.id,2350555),d.id,dba.deal_resource_oid
+     from blueraven.deal_base_document dba
+              inner join blueraven.deal d on d.deal_base_oid = dba.deal_base_oid
+              inner join flow.project p on p.id=d.id
+              inner join flow.contact c on c.id = p.contact_id
+              left join blueraven."user" u on (dba.created_by_id = u.user_base_oid or dba.created_by_id = u.user_base_setter_oid));
+
+
+with project_documents as (
+    select a.migrated_deal_resource_id
+    from flow.attachment a
+        except
+    select deal_resource_oid
+    from blueraven.deal_calendar_event_attachment)
+insert into flow.project_attachment(attachment_id, project_id, date_created,
+                                    created_by_id)
+    (select a.id,p.id,now(),a.created_by_id
+     from flow.project p
+              inner join flow.attachment a on a.migrated_deal_id = p.id
+              inner join project_documents pd on pd.migrated_deal_resource_id = a.migrated_deal_resource_id);
