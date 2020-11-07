@@ -23,7 +23,7 @@
         and street1 = :street1
         and city = :city
         and postal_code = :postalCode
-        and company_state_id = :companyStateId
+        and company_state_id = :companyStateId::integer
         and archived is false
       limit 1
     )
@@ -37,6 +37,7 @@
       select id
       from flow.user
       where lower(email) = lower(:leadOwnerEmail)
+      limit 1
     )
     select (case when (select id from owner) is not null then (select id from owner)
               else 2371412
@@ -48,11 +49,22 @@
       select id
       from flow.user_position
       where user_id = :leadOwnerUserId
+        and primary_flag is true
+      limit 1
     )
     select (case when (select id from owner_user_position) is not null then (select id from owner_user_position)
               else 9016
               end) user_position_id
   ]]></ricochetWebhook.getUserPositionIdByUserId>
+
+    <ricochetWebhook.getStateAbbreviationByStateName><![CDATA[
+    with state_abbreviation as (
+      select (case when :stateName is not null then abbreviation else null::text end) as value
+      from flow.state
+      where state = :stateName
+    )
+    select (case when (select value from state_abbreviation) is not null then (select value from state_abbreviation) else null::text end) abbreviation
+  ]]></ricochetWebhook.getStateAbbreviationByStateName>
 
   <ricochetWebhook.getCompanyStateIdByStateAbbreviation><![CDATA[
     with company_state as (
@@ -76,7 +88,7 @@
 
   <ricochetWebhook.insertLead><![CDATA[
     insert into flow.contact (contact_type_id, first_name, last_name, mobile, email, street1, city, postal_code, created_by_id, company_id, owner_user_position_id, company_state_id, company_country_id)
-    values (2, :firstName, :lastName, :mobile, :email, :street1, :city, :postalCode, :leadOwnerUserId, 3, :leadOwnerUserPositionId, :companyStateId, :companyCountryId)
+    values (2, :firstName, :lastName, :mobile, :email, :street1, :city, :postalCode, :leadOwnerUserId, 3, :leadOwnerUserPositionId, :companyStateId::integer, :companyCountryId::integer)
     returning id;
   ]]></ricochetWebhook.insertLead>
 
@@ -89,11 +101,11 @@
         street1 = :street1,
         city = :city,
         postal_code = :postalCode,
-        company_state_id = :companyStateId,
+        company_state_id = :companyStateId::integer,
         date_modified = now(),
         modified_by_id = :leadOwnerUserId,
         owner_user_position_id = :leadOwnerUserPositionId,
-        company_country_id = :companyCountryId
+        company_country_id = :companyCountryId::integer
     where id = :contactId
     returning id
   ]]></ricochetWebhook.updateLead>

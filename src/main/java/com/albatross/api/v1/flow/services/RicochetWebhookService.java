@@ -84,6 +84,13 @@ public class RicochetWebhookService {
         return sqlCache.queryForObject("ricochetWebhook.getUserPositionIdByUserId", params, Long.class);
     }
 
+    private String getStateAbbreviationByStateName(String stateName) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("stateName", stateName);
+
+        return sqlCache.queryForObject("ricochetWebhook.getStateAbbreviationByStateName", params, String.class);
+    }
+
     private Integer getCompanyStateIdByStateAbbreviation(String stateAbbreviation) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("stateAbbreviation", stateAbbreviation);
@@ -112,7 +119,6 @@ public class RicochetWebhookService {
             params.put("street1", lead.getCustomer().getAddress().getAddress1());
             params.put("city", lead.getCustomer().getAddress().getCity());
             params.put("postalCode", lead.getCustomer().getAddress().getZip());
-            params.put("stateAbbreviation", lead.getCustomer().getAddress().getState());
 
             // tries to get a user ID using the lead owner's email. If it fails, returns 2371412 (Sales Dev Lead's user ID)
             Long leadOwnerUserId = getUserIdByLeadOwnerEmail(lead.getLeadOwner());
@@ -122,13 +128,19 @@ public class RicochetWebhookService {
             Long leadOwnerUserPositionId = getUserPositionIdByUserId(leadOwnerUserId);
             params.put("leadOwnerUserPositionId", leadOwnerUserPositionId);
 
+            if (!lead.getCustomer().getAddress().getState().isBlank() && lead.getCustomer().getAddress().getState().length() > 2) {
+                // tries to get the state abbreviation using the state name
+                String stateAbbreviation = getStateAbbreviationByStateName(lead.getCustomer().getAddress().getState());
+                lead.getCustomer().getAddress().setState(stateAbbreviation);
+            }
+
             // tries to get a company state ID using the state abbreviation
             Integer companyStateId = getCompanyStateIdByStateAbbreviation(lead.getCustomer().getAddress().getState());
-            params.put("companyStateId", Objects.requireNonNullElse(companyStateId, ""));
+            params.put("companyStateId", companyStateId);
 
             // tries to get a company country ID using the company ID
             Integer companyCountryId = sqlCache.queryForObject("ricochetWebhook.getCompanyCountryIdByCompanyId", null, Integer.class);
-            params.put("companyCountryId", Objects.requireNonNullElse(companyCountryId, ""));
+            params.put("companyCountryId", companyCountryId);
 
             // tries to get a contact ID using the Ricochet Lead ID
             String contactId = getContactIdByRicochetLeadId(lead.getUniqueIdentifier().toString());
