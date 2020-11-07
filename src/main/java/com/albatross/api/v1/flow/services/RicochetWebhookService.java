@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -69,6 +70,27 @@ public class RicochetWebhookService {
         return sqlCache.queryForObject("ricochetWebhook.getContactIdByRicochetLeadId", params, String.class);
     }
 
+    private Long getUserIdByLeadOwnerEmail(String leadOwnerEmail) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("leadOwnerEmail", leadOwnerEmail);
+
+        return sqlCache.queryForObject("ricochetWebhook.getUserIdByLeadOwnerEmail", params, Long.class);
+    }
+
+    private Long getUserPositionIdByUserId(Long leadOwnerUserId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("leadOwnerUserId", leadOwnerUserId);
+
+        return sqlCache.queryForObject("ricochetWebhook.getUserPositionIdByUserId", params, Long.class);
+    }
+
+    private Integer getCompanyStateIdByStateAbbreviation(String stateAbbreviation) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("stateAbbreviation", stateAbbreviation);
+
+        return sqlCache.queryForObject("ricochetWebhook.getCompanyStateIdByStateAbbreviation", params, Integer.class);
+    }
+
     public ResponseEntity saveLead(RicochetLead lead) throws Exception {
         try {
             if (lead.getStatus() == null) lead.setStatus("New");
@@ -83,7 +105,6 @@ public class RicochetWebhookService {
             }
 
             HashMap<String, Object> params = new HashMap<>();
-            params.put("leadOwnerEmail", lead.getLeadOwner());
             params.put("firstName", lead.getCustomer().getFirstName());
             params.put("lastName", lead.getCustomer().getLastName());
             params.put("mobile", lead.getCustomer().getPhone1());
@@ -92,6 +113,22 @@ public class RicochetWebhookService {
             params.put("city", lead.getCustomer().getAddress().getCity());
             params.put("postalCode", lead.getCustomer().getAddress().getZip());
             params.put("stateAbbreviation", lead.getCustomer().getAddress().getState());
+
+            // tries to get a user ID using the lead owner's email. If it fails, returns 2371412 (Sales Dev Lead's user ID)
+            Long leadOwnerUserId = getUserIdByLeadOwnerEmail(lead.getLeadOwner());
+            params.put("leadOwnerUserId", leadOwnerUserId);
+
+            // tries to get a user position ID using the lead owner's user ID. If it fails, returns 9016 (Sales Dev Lead's user position ID)
+            Long leadOwnerUserPositionId = getUserPositionIdByUserId(leadOwnerUserId);
+            params.put("leadOwnerUserPositionId", leadOwnerUserPositionId);
+
+            // tries to get a company state ID using the state abbreviation
+            Integer companyStateId = getCompanyStateIdByStateAbbreviation(lead.getCustomer().getAddress().getState());
+            params.put("companyStateId", Objects.requireNonNullElse(companyStateId, ""));
+
+            // tries to get a company country ID using the company ID
+            Integer companyCountryId = sqlCache.queryForObject("ricochetWebhook.getCompanyCountryIdByCompanyId", null, Integer.class);
+            params.put("companyCountryId", Objects.requireNonNullElse(companyCountryId, ""));
 
             // tries to get a contact ID using the Ricochet Lead ID
             String contactId = getContactIdByRicochetLeadId(lead.getUniqueIdentifier().toString());
@@ -108,7 +145,7 @@ public class RicochetWebhookService {
                 contactId = sqlCache.updateReturningId("ricochetWebhook.updateLead", params, "id").toString();
             }
 
-            processCustomFieldValues(lead, Long.parseLong(contactId));
+            processCustomFieldValues(lead, Long.parseLong(contactId), leadOwnerUserId);
 
             String msg = "Ricochet lead info has been successfully saved for Contact ID " + contactId + " / Ricochet Lead ID " + lead.getUniqueIdentifier() + ".";
             log.info(msg);
@@ -128,12 +165,10 @@ public class RicochetWebhookService {
         return sqlCache.queryForObject("ricochetWebhook.checkIfCustomFieldDropdownValueExists", params, String.class);
     }
 
-    private void processCustomFieldValues(RicochetLead lead, Long contactId) {
-        String leadOwnerEmail = lead.getLeadOwner();
-
+    private void processCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("leadOwnerEmail", leadOwnerEmail);
         params.put("contactId", contactId);
+        params.put("leadOwnerUserId", leadOwnerUserId);
 
         // if "null" is returned for leadStatusId, then we don't want to save it, b/c that means it's not one of the 5 options available
         String leadStatusId = checkIfCustomFieldDropdownValueExists(696, lead.getStatus());
@@ -143,7 +178,7 @@ public class RicochetWebhookService {
             CustomFieldValue leadStatus = new CustomFieldValue();
             leadStatus.setCustomFieldGroupAssignmentId(399L);
             leadStatus.setIntValue(Long.parseLong(leadStatusId));
-            saveCustomFieldValue(leadStatus, contactId, leadOwnerEmail);
+            saveCustomFieldValue(leadStatus, contactId, leadOwnerUserId);
         }
 
         // handles saving 'Lead Source' custom field
@@ -159,7 +194,7 @@ public class RicochetWebhookService {
 
             leadSource.setCustomFieldGroupAssignmentId(395L);
             leadSource.setIntValue(Long.parseLong(leadSourceId));
-            saveCustomFieldValue(leadSource, contactId, leadOwnerEmail);
+            saveCustomFieldValue(leadSource, contactId, leadOwnerUserId);
         }
 
         // handles saving 'Lead Source Detail' custom field
@@ -175,14 +210,14 @@ public class RicochetWebhookService {
 
             leadSourceDetail.setCustomFieldGroupAssignmentId(396L);
             leadSourceDetail.setIntValue(Long.parseLong(leadSourceDetailId));
-            saveCustomFieldValue(leadSourceDetail, contactId, leadOwnerEmail);
+            saveCustomFieldValue(leadSourceDetail, contactId, leadOwnerUserId);
         }
 
         // handles saving 'Ricochet Lead ID' custom field
         CustomFieldValue ricochetLeadId = new CustomFieldValue();
         ricochetLeadId.setCustomFieldGroupAssignmentId(398L);
         ricochetLeadId.setTextValue(lead.getUniqueIdentifier().toString());
-        saveCustomFieldValue(ricochetLeadId, contactId, leadOwnerEmail);
+        saveCustomFieldValue(ricochetLeadId, contactId, leadOwnerUserId);
 
         // handles saving 'Hubspot ID' custom field
         CustomFieldValue hubspotId = new CustomFieldValue();
@@ -194,16 +229,16 @@ public class RicochetWebhookService {
             hubspotId.setTextValue(null);
         }
 
-        saveCustomFieldValue(hubspotId, contactId, leadOwnerEmail);
+        saveCustomFieldValue(hubspotId, contactId, leadOwnerUserId);
     }
 
-    public void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, String leadOwnerEmail) {
+    public void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, Long leadOwnerUserId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("contactId", contactId);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("textValue", cfv.getTextValue());
         params.put("intValue", cfv.getIntValue());
-        params.put("leadOwnerEmail", leadOwnerEmail);
+        params.put("leadOwnerUserId", leadOwnerUserId);
 
         String existingRowId = sqlCache.queryForObject("ricochetWebhook.checkForExistingCustomFieldValue", params, String.class);
 
