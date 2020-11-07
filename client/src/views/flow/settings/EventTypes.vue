@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Scheduling Tool Event Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]">
+            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -27,12 +27,13 @@
                 </v-text-field>
                 <div v-else>{{st.eventType}}</div>
               </v-list-item-content>
-              <v-list-item-action class="clickable">
+              <v-list-item-action class="clickable" v-if="userCanEdit">
                 <v-icon v-if="selectedEventTypeId === st.id" @click="saveType(st)">save</v-icon>
                 <v-icon v-else @click="selectedEventTypeId = st.id">edit</v-icon>
               </v-list-item-action>
               <v-dialog
                   v-model="st.deleteConfirm"
+                  v-if="userCanDelete"
                   width="500">
                 <template v-slot:activator="{ on }">
                   <v-list-item-action class="clickable" v-on="on">
@@ -100,7 +101,11 @@
         newType: {},
         selectedEventTypeId: null,
         userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+
       }
     },
     computed: {},

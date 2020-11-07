@@ -119,7 +119,7 @@
         dataLoading: true,
         search: '',
         headers: [
-          {text: 'Position Name', value: 'positionName', show: true},
+          {text: 'Position Name', value: 'position', show: true},
           {text: 'Org Type', value: 'orgType', show: true},
           {text: '', value: 'icons', show: false, width: '100px'},
         ]
@@ -161,7 +161,7 @@
         }
       },
       filterPositions () {
-        return orderBy(this.positions.filter(p => { return !p.archived}), [p => p.position.toLowerCase()])
+        return this.positions.filter(p => { return !p.archived})
       },
     }
   }

@@ -124,17 +124,20 @@
                     </v-btn>
                   </td>
                   <td class="text-left">
-                    <v-text-field text
-                                  v-if="item.edit"
-                                  v-model="item.groupName">
-                      <template slot="append-outer">
-                        <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
-                        <v-icon @click="item.edit = false">clear</v-icon>
-                      </template>
-                    </v-text-field>
-                    <a style="text-decoration: underline;" v-else @click="item.edit = true">
-                      {{item.groupName}}
-                    </a>
+                    <div v-if="userCanEdit">
+                      <v-text-field text
+                                    v-if="item.edit"
+                                    v-model="item.groupName">
+                        <template slot="append-outer">
+                          <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
+                          <v-icon @click="item.edit = false">clear</v-icon>
+                        </template>
+                      </v-text-field>
+                      <a style="text-decoration: underline;" v-else @click="item.edit = true">
+                        {{item.groupName}}
+                      </a>
+                    </div>
+                    <span v-else>{{item.groupName}}</span>
                   </td>
                   <td><div class="item-icons">
                     <v-btn v-if="!item.eventTypeId && userCanAdd" small text @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">

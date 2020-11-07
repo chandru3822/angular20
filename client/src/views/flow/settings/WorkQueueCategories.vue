@@ -5,7 +5,7 @@
         <v-toolbar flat class="app-toolbar">
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]">
+            <v-btn text @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -54,7 +54,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': workQueueCategories.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text icon small class="handle">
+                  <v-btn text icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -75,12 +75,13 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text>
+                    <v-btn class="clickable" small text  v-if="userCanEdit">
                       <v-icon v-if="selectedWorkQueueCategoryId === item.id" @click="saveCategory(item)">save</v-icon>
                       <v-icon v-else @click="selectedWorkQueueCategoryId = item.id">edit</v-icon>
                     </v-btn>
                     <v-dialog
                         v-model="item.deleteConfirm"
+                        v-if="userCanDelete"
                         width="500">
                       <template v-slot:activator="{ on }">
                         <v-btn small text class="clickable" v-on="on">
@@ -189,6 +190,9 @@
         selectedWorkQueueCategoryId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
         expanded: [],
         headers: [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
