@@ -1,6 +1,5 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
-#
 
 name: Albatross Build
 
@@ -9,7 +8,7 @@ on:
         paths-ignore:
             - "client/**"
         branches:
-            - "stage"
+            - "dev"
 
 jobs:
     build:
@@ -53,7 +52,7 @@ jobs:
                 id: build-image
                 env:
                     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-                    ECR_REPOSITORY: br-stage-repo
+                    ECR_REPOSITORY: albatross-dev-repo
                     IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
                 run: |
                     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -64,16 +63,16 @@ jobs:
                 id: task-def
                 uses: aws-actions/amazon-ecs-render-task-definition@v1
                 with:
-                    task-definition: .aws/task-definition.json
-                    container-name: br-stage
+                    task-definition: .aws/dev-definition.json
+                    container-name: albatross-dev-container
                     image: ${{ steps.build-image.outputs.image }}
 
             -   name: Deploy Amazon ECS task definition
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
                     task-definition: ${{ steps.task-def.outputs.task-definition }}
-                    service: br-stage-service
-                    cluster: br-stage-cluster
+                    service: albatross-dev-service
+                    cluster: albatross-dev-cluster
                     wait-for-service-stability: true
 
     frontend-build:
@@ -86,6 +85,6 @@ jobs:
       - name: Deploy Site
         env:
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_SITE_ID: ${{ secrets.DEV_NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
