@@ -1,5 +1,4 @@
 # blueraven-albatross
-#
 
 ## Project setup
 ```
