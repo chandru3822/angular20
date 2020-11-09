@@ -107,7 +107,7 @@ public class FeatureService {
     return results;
   }
 
-  public void saveUserCompanyFeatures(Long userId, List<CompanyFeature> features) {
+  public List<CompanyFeature> saveUserCompanyFeatures(Long userId, List<CompanyFeature> features) {
     HashMap<String, Object> params = new HashMap<>();
 
     for(CompanyFeature cf : features) {
@@ -123,6 +123,7 @@ public class FeatureService {
         }
       }
     }
+    return getFeaturesForUser(userId);
   }
 
   public CompanyFeature getOneCompanyFeature(Long id) {

@@ -51,6 +51,7 @@
           <v-divider class="my-2"></v-divider>
           <h3>Access Control</h3>
           <AccessControl v-if="positionLoaded"
+                         :key="accessControlKey"
                          :user-can-edit="userCanEditAccessControl"
                          :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
         </v-card>
@@ -96,6 +97,7 @@
           { text: 'Feature', value: 'featureName', show: true },
 
         ],
+        accessControlKey: 0
       }
     },
     created () {
@@ -124,8 +126,12 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if(this.positionId) {
+            // console.log('randaLogger', this.position.companyFeatures[0])
             const {data} = await putRequest(`/position/`, this.position)
-            this.$router.push({name: 'position', params: {id: this.positionId}})
+            this.position = data
+            this.accessControlKey++
+            // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
+            // this.$router.push({name: 'position', params: {id: this.positionId}})
           } else {
             const {data} = await postRequest(`/position/`, this.position)
             this.positionId = data.id

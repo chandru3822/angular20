@@ -14,6 +14,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <AccessControl v-if="userAccessLoaded"
+                       :key="accessControlKey"
                        :user-can-edit="userCanEdit"
                        :companyFeatures="userCompanyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
       </v-col>
@@ -154,6 +155,7 @@
           { text: 'Calendar', value: 'calendar', show: true },
           { text: '', value: 'icons', show: true },
         ],
+        accessControlKey: 0
       }
     },
     created () {
@@ -241,6 +243,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/feature/user/${this.userId}`, this.userCompanyFeatures)
+          this.userCompanyFeatures = data
+          this.accessControlKey++
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
