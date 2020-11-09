@@ -86,7 +86,7 @@
                        then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
                    else ps.company_id = :companyId end
       and ps.archived is not true
-      and cpsst.process_step_status_type != 3 --include active and complete, not cancelled
+      and cpsst.process_step_status_type_id != 3 --include active and complete, not cancelled
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
