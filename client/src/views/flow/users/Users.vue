@@ -21,6 +21,13 @@
               v-model="filters.search"
               @input="debounceGetUsers"
           ></v-text-field>
+          <v-checkbox
+              class="pt-5 ml-3"
+              dense
+              v-model="primaryPositionsOnly"
+              label="Primary Only"
+              @change="handleOrgFilterChange(false)"
+          />
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn :disabled="!this.usersSelected" text @click="msgDialog = true">
@@ -373,7 +380,8 @@
         emailAttachments: [],
         textMediaUrls: [],
         emailFile: null,
-        textFile: null
+        textFile: null,
+        primaryPositionsOnly: true
       }
     },
     computed: {
@@ -442,7 +450,7 @@
               positions: this.filters.positions,
               orgs: this.getOrgIdsForMax(),
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
-              primaryFlag: true
+              primaryFlag: this.primaryPositionsOnly
             }
 
             const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
@@ -592,6 +600,14 @@
         if(reset) {
           this.filters.orgs = {}
           this.orgFilters = cloneDeep(this.masterOrgFilterList)
+          this.filters.positions = []
+          this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
+          this.filters.search = ''
+          this.filters.firstName = ''
+          this.filters.lastName = ''
+          this.filters.email = ''
+          this.filters.phone = ''
+
         } else {
           Object.keys(this.filters.orgs).forEach(k => {
             if(k > this.selectedLevel) {
