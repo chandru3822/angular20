@@ -172,11 +172,12 @@
             />
             <div class="text-right" v-if="availabilityDateField.dateValue">
               <v-btn color="primaryCustom" dark class="white--text"
+                     :loading="searchLoading"
                 @click="getAvailableTimeSlots">
                 Search
               </v-btn>
             </div>
-            <v-select v-if="timeSlots.length > 0"
+            <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
               v-model="selectedTimeSlot"
               :items="timeSlots"
               :readonly="!userCanEdit"
@@ -191,9 +192,9 @@
                 {{ data.item.scheduledStartTime | formatDate('timestamp')}}
               </template>
             </v-select>
-            <div v-else-if="searchedTimeSlots">No Times Available for the Selected Date</div>
-            <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime">
-              <v-btn color="primaryCustom" dark class="white--text"
+            <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the Selected Date</div>
+            <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
+              <v-btn color="primaryCustom" class="white--text"
                      @click="saveCloserAppointment">
                 Save Appointment
               </v-btn>
@@ -338,7 +339,8 @@ export default {
       project: {},
       displayChangeOwner: false,
       availableOwners: [],
-      availableProcessStepStatuses: []
+      availableProcessStepStatuses: [],
+      searchLoading: false
     }
   },
   async created () {
@@ -487,6 +489,11 @@ export default {
         if (!match) {
           this.dirtyCfvs.push(field)
         }
+      } else {
+        //this should only get hit when the "Select a Date" field value gets changed
+        this.selectedTimeSlot = {}
+        this.timeSlots = []
+        this.searchedTimeSlots = false
       }
     },
     async removeOwner() {
@@ -543,6 +550,8 @@ export default {
     },
     async getAvailableTimeSlots () {
       try {
+        this.searchLoading = true
+        this.selectedTimeSlot = {}
         this.searchedTimeSlots = false
 
         let params = {
@@ -554,9 +563,10 @@ export default {
         const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
         this.searchedTimeSlots = true
         this.timeSlots = data
-
+        this.searchLoading = false
       } catch (e) {
         logError(e)
+        this.searchLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
