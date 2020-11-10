@@ -120,42 +120,63 @@ INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_fi
 INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, archived, date_created, date_modified, created_by_id, modified_by_id, schedule_field_type_id) VALUES ((select id from flow.custom_field_group where group_name = 'Kory Test Project Group DONT DELETE PLEASE'), 562, null, 0, false, '2020-05-04 20:57:12.401288', null, 2350555, null, null);
 INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, archived, date_created, date_modified, created_by_id, modified_by_id, schedule_field_type_id) VALUES ((select id from flow.custom_field_group where group_name = 'Kory Test Project Group DONT DELETE PLEASE'), 564, null, 0, false, '2020-05-04 20:57:15.347502', null, 2350555, null, null);
 
-INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-268.plist', 'application/octet-stream', null, null, false, '2020-10-27 15:34:38.356619', '2020-10-28 15:30:21.106224', true, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-268.plist');
-INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-269.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-27 16:02:15.587778', '2020-10-28 15:30:24.009405', true, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-269.apk');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-271.plist', 'application/octet-stream', null, null, false, '2020-10-28 17:51:33.280250', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-271.plist');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-272.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-28 18:19:06.830545', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-272.apk');
-INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-283.plist', 'application/octet-stream', null, null, false, '2020-10-29 20:29:59.218821', '2020-10-29 22:31:04.437186', true, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-283.plist');
-INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-284.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-29 20:59:18.644638', '2020-10-29 22:31:06.650629', true, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-284.apk');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-286.plist', 'application/octet-stream', null, null, false, '2020-10-29 23:54:13.604773', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-286.plist');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-287.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-30 00:19:19.357726', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-287.apk');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-289.plist', 'application/octet-stream', null, null, false, '2020-10-30 16:18:31.867717', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-289.plist');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-290.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-30 16:44:36.945107', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-290.apk');
-INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-292.plist', 'application/octet-stream', null, null, false, '2020-10-30 17:10:22.153681', '2020-10-30 17:15:06.397545', true, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-292.plist');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-293.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-30 17:36:23.415590', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-293.apk');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-295.plist', 'application/octet-stream', null, null, false, '2020-10-30 22:11:49.586112', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-295.plist');
 INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-296.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-30 22:36:27.377921', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-296.apk');
-INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-298.plist', 'application/octet-stream', null, null, false, '2020-10-31 00:08:17.468855', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-298.plist');
-INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-299.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-31 00:31:40.280072', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-299.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-292.plist', 'application/octet-stream', null, null, false, '2020-10-30 17:10:22.153681', '2020-11-03 16:21:07.114015', false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-292.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-284.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-29 20:59:18.644638', '2020-11-03 16:21:10.333835', false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-284.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-269.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-27 16:02:15.587778', '2020-11-03 16:21:13.863606', false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-269.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-268.plist', 'application/octet-stream', null, null, false, '2020-10-27 15:34:38.356619', '2020-11-03 16:21:16.179792', false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-268.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-301.plist', 'application/octet-stream', null, null, false, '2020-11-03 01:16:33.836490', '2020-11-04 16:35:48.064642', false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-301.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-283.plist', 'application/octet-stream', null, null, false, '2020-10-29 20:29:59.218821', '2020-11-04 16:35:51.154475', false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-283.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-299.apk', 'application/vnd.android.package-archive', null, null, false, '2020-10-31 00:31:40.280072', '2020-11-04 16:35:59.649233', false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-299.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-304.plist', 'application/octet-stream', null, null, false, '2020-11-04 00:43:49.784199', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-304.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-302.apk', 'application/vnd.android.package-archive', null, null, false, '2020-11-03 01:40:46.953284', '2020-11-04 16:35:57.104109', false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-302.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-305.apk', 'application/vnd.android.package-archive', null, null, false, '2020-11-04 01:08:11.885008', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-305.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-298.plist', 'application/octet-stream', null, null, false, '2020-10-31 00:08:17.468855', '2020-11-04 16:35:45.617046', false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-298.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-311.apk', 'application/vnd.android.package-archive', null, null, false, '2020-11-05 01:33:51.250785', '2020-11-05 15:25:43.894818', true, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-311.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-307.plist', 'application/octet-stream', null, null, false, '2020-11-04 01:32:49.030868', '2020-11-05 15:25:47.228317', false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-307.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-310.plist', 'application/octet-stream', null, null, false, '2020-11-05 01:06:42.562797', '2020-11-05 15:31:17.575768', true, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-310.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-308.apk', 'application/vnd.android.package-archive', null, null, false, '2020-11-04 01:56:43.099873', '2020-11-05 15:31:20.296179', false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-308.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-313.plist', 'application/octet-stream', null, null, false, '2020-11-05 19:32:14.706147', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-313.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-314.apk', 'application/vnd.android.package-archive', null, null, false, '2020-11-05 19:56:08.745378', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-314.apk');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-316.plist', 'application/octet-stream', null, null, false, '2020-11-06 21:38:44.199775', null, false, 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-316.plist');
+INSERT INTO blueraven.attachment ( filename, content_type, old_s3_key, size, deleted, created, updated, show, s3_key) VALUES ( 'Albatross@uat-0.1.0-317.apk', 'application/vnd.android.package-archive', null, null, false, '2020-11-06 22:03:47.385373', null, false, 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-317.apk');
 
-
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176344, 2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176345, 4, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176346, 2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176347, 4, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176348, 2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176349, 4, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176350, 2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES ( 176351,4, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES ( 176352,2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES ( 176353,4, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES ( 176354,2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176355, 4, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176356, 2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176357, 4, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176358, 2, 8);
-INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (176359, 4, 8);
-
-
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179845, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179846, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179847, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179848, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179849, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179850, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179851, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179852, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179853, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179854, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179855, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179856, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179857, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179858, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179859, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179860, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179861, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179862, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179863, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179864, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179865, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179866, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179867, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179868, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179869, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179870, 4, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179871, 2, 8);
+INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_source_type_id) VALUES (179872, 4, 8);
 
 
 --
@@ -167,3 +188,19 @@ INSERT INTO blueraven.attachment_source (attachment_id, source_id, attachment_so
 --                       2410143,
 --                       2350555
 --     );
+
+
+-- select * from blueraven.attachment
+-- where filename like '%.plist%' or  filename like '%.apk%'
+--     and deleted is false;
+--
+-- select * from  blueraven.attachment
+-- where (filename like '%.plist%' or  filename like '%.apk%')
+--   and deleted is false
+--   and filename like '%Albatross%';
+--
+-- select attachment_id,source_id,attachment_source_type_id from blueraven.attachment_source
+-- where attachment_id in (select id from  blueraven.attachment
+--                         where (filename like '%.plist%' or  filename like '%.apk%')
+--                           and deleted is false
+--                           and filename like '%Albatross%');

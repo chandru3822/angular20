@@ -120,21 +120,19 @@
       </v-card>
     </v-dialog>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 
 <script>
   import moment from 'moment'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjRequirementHistory",
-    components: {
-      Snackbar
-    },
+
     props: {
       itemType: {
         type: String
@@ -196,6 +194,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving requirement history')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.closeHistoryDialog()
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -209,10 +208,12 @@
         try {
           await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Challenge submitted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.originalRequirement.hasOpenChallenge = true
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.closeHistoryDialog()
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -242,9 +243,11 @@
           }
 
           this.snackbar = getSnackbar('SUCCESS', 'Challenge status updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error updating challenge status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.closeHistoryDialog()

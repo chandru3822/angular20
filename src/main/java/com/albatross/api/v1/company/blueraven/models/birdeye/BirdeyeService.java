@@ -184,9 +184,7 @@ public class BirdeyeService {
             invitation.setBirdeyeBusinessId(businessId.get());
         }
         else {
-            // TODO: comment out testing Business ID and throw error
-            //throw new RuntimeException("No Birdeye Business ID found for this project.");
-            invitation.setBirdeyeBusinessId("154083821523512");
+            throw new RuntimeException("No Birdeye Business ID found for this project.");
         }
 
         Optional<String> email = sqlCache.get("birdeye.getEmail",

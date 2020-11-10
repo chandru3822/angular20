@@ -39,7 +39,6 @@
         </v-app-bar>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </div>
 </template>
 
@@ -50,7 +49,7 @@ import { getRequest, getSnackbar } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 const { VUE_APP_ENV } = process.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -58,7 +57,7 @@ const { VUE_APP_ENV } = process.env
 export default {
   name: 'appNav',
   components: {
-    Snackbar,
+
     Spinner,
     AccountMenu,
     CompanyTools,

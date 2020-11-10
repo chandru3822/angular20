@@ -225,13 +225,13 @@
         </div>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
@@ -246,7 +246,7 @@
   export default {
     name: 'Schedule',
     components: {
-      Snackbar,
+
       Map,
       Calendar,
       DatetimePickerInput
@@ -361,9 +361,11 @@
           this.$refs.calendar.getEvents(false, true)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Scheduling Project')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -390,6 +392,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -406,6 +409,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -419,6 +423,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -437,6 +442,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -455,7 +461,7 @@
           try {
             let params = {
               eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
-              processStepStatusTypeId: this.selectedProcessStepStatusType.id,
+              processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
               companyStateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime
@@ -470,6 +476,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.listLoading = false
           }
         } else {
@@ -486,6 +493,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Searching Projects')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getProjectsSearchedFor(search) {
@@ -524,6 +532,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.listLoading = false
         }
       },

@@ -82,6 +82,11 @@
       and r.int_value is not null
       and case when :startTime::timestamp is not null then st.timestamp_value >= :startTime::timestamp else 1=1 end
         and case when :endTime::timestamp is not null then et.timestamp_value <= :endTime::timestamp else 1=1 end
+      and case when :isParent
+                       then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                   else ps.company_id = :companyId end
+      and ps.archived is not true
+      and cpsst.process_step_status_type_id != 3 --include active and complete, not cancelled
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
@@ -207,6 +212,9 @@
      select cfg.group_name,
            pps.process_step_id,
            pps.project_id,
+            ps.company_id,
+           sl.id as system_list_id,
+           array_to_json(resource_cf.system_list_option_ids) as system_list_option_ids,
            pps.id as project_process_step_id,
            sl.system_list_type_id,
            start_cfv.timestamp_value as start,

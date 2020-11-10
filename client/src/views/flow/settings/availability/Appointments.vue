@@ -200,13 +200,13 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import RRule from '@/components/RRule.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
@@ -219,7 +219,7 @@
   export default {
     name: 'Appointments',
     components: {
-      Snackbar,
+
       RRule,
       DatetimePickerInput
     },
@@ -313,6 +313,7 @@
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Appointments')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         }
       },
@@ -351,6 +352,7 @@
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Appointment')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         }
       },
@@ -370,10 +372,12 @@
             await this.getAppointments()
           }
           this.snackbar = getSnackbar('SUCCESS', 'Appointment Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting appointment')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -384,10 +388,12 @@
           await deleteRequest(`/availability/appointment/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Appointment Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting appointment')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

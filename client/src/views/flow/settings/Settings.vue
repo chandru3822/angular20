@@ -64,10 +64,10 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 })" :key="o.id"
-                         :to="{ path: `/settings/customFieldGroup/${o.id}`}"
+            <v-list-item dense v-for="o in filterBy(companyObjectTypes, (cot) => { return cot.flowTypeId === 1 || cot.flowTypeId === 3 })" :key="o.id"
+                         :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` : `/settings/customFieldGroup/${o.id}`}"
                          @click="setTitle"
-                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
+                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}` || $route.path.includes(`?companyObjectTypeId=${o.id}`)}">
               <v-list-item-content>
                 <v-list-item-title>{{o.objectType}}</v-list-item-title>
               </v-list-item-content>
@@ -81,13 +81,12 @@
         </v-sheet>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import Vue2Filters from 'vue2-filters'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -96,9 +95,7 @@ const { VUE_APP_ENV } = process.env
 export default {
   name: 'Settings',
   mixins: [Vue2Filters.mixin],
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},
@@ -195,11 +192,12 @@ export default {
       }, {
         header: 'Objects',
         show: this.hasSettingsAccess
-      }, {
-        path: '/settings/project/customFieldGroups',
-        title: 'Project',
-        show: this.hasSettingsAccess
       }
+      // , {
+      //   path: '/settings/project/customFieldGroups?=${c.id}',
+      //   title: 'Project',
+      //   show: this.hasSettingsAccess
+      // }
     ]
   }
   },
@@ -215,6 +213,7 @@ export default {
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

@@ -269,17 +269,16 @@
         </v-card>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import cloneDeep from 'lodash.clonedeep'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../../helpers/helpers";
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import Vue2Filters from "vue2-filters";
   import constants from "@/helpers/constants";
   import debounce from "lodash.debounce";
@@ -288,7 +287,7 @@
     name: 'Accounting',
     mixins: [Vue2Filters.mixin],
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     created() {
@@ -409,15 +408,18 @@
         }
         if(this.payrollStatus.showSelect && (!selectedIds || selectedIds.length === 0)) {
           this.snackbar = getSnackbar('WARNING', 'You must select at least one project.')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             await postRequest(`/payroll/${this.currentPayroll.id}/${action}`, params, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             await this.getCurrentPayroll()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Updating')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -432,6 +434,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Adjustment History')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -448,10 +451,12 @@
           }
           await postRequest(`/payroll/${this.currentPayroll.id}/adjustments`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Adjustment Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           await this.getCurrentPayroll()
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Adjustment')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -465,6 +470,7 @@
         try {
           const {data} = await postRequest(`/payroll/${this.currentPayroll.id}`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.currentPayroll = data
           this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
           this.getStatusColor()
@@ -473,6 +479,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -530,6 +537,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -556,6 +564,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Accounting Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -578,6 +587,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customers')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },
       debounceSearch () {
@@ -607,6 +617,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sales Reps')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
     }

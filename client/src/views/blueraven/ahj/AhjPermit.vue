@@ -547,7 +547,7 @@
       </v-card>
     </v-dialog>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-row>
 </template>
 
@@ -560,7 +560,7 @@
   import AhjDocument from './components/AhjDocuments'
   import AhjLink from './components/AhjLinks'
   import AhjServicingFot from './components/AhjServicingFots'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -572,7 +572,6 @@
       AhjDocument,
       AhjLink,
       AhjServicingFot,
-      Snackbar
     },
     computed: {
       userCanEdit() {

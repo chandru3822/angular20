@@ -15,20 +15,18 @@
         <router-view></router-view>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Commissions',
-    components: {
-      Snackbar
-    },
+
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)

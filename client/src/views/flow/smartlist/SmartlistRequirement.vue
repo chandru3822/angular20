@@ -26,7 +26,7 @@
 
   <v-card v-if="showNewRequirementForm" class="elevation-1">
     <v-col class="text-left">
-      <v-select
+      <v-autocomplete
           v-model="newRequirement.objectTypeId"
           label="Object Type"
           :items="companyObjectTypes"
@@ -35,7 +35,7 @@
           @input="[resetNewObjectType(), getAvailableFields()]"
       />
 
-      <v-select
+      <v-autocomplete
           v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 4"
           v-model="newRequirement.processStepId"
           label="Process Step"
@@ -45,7 +45,7 @@
           @input="[resetNewProcessStep(), calculateAvailableFields()]"
       />
 
-      <v-select
+      <v-autocomplete
           v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId !== 4 && newRequirement.objectTypeId != null)"
           v-model="newRequirement.selectedField"
           label="Field"
@@ -61,7 +61,7 @@
           ]"
       />
 
-      <v-select
+      <v-autocomplete
         v-if="newRequirement.selectedField"
         v-model="newRequirement.operatorTypeId"
         label="Operator"
@@ -81,7 +81,7 @@
       />
 
 <!--      if field is a single-select item -->
-      <v-select
+      <v-autocomplete
         v-if="newRequirement.operatorTypeId !== null && newRequirement.isCustomValue && isListField && !newRequirement.selectedField.allowMultiple"
         v-model="newRequirement.listOfValueId"
         :items="newRequirement.selectedField.listOfValues"
@@ -91,7 +91,7 @@
       />
 
 <!--      if field is a multi-select list -->
-      <v-select
+      <v-autocomplete
         v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue && newRequirement.selectedField.listOfValueId !== null && newRequirement.selectedField.allowMultiple"
         v-model="newRequirement.listOfValueIds"
         :items="newRequirement.selectedField.listOfValues"
@@ -102,7 +102,7 @@
       />
 
 <!--      if field doesn't have any custom values, display the data type requirements -->
-      <v-select
+      <v-autocomplete
         v-else-if="newRequirement.operatorTypeId !== null && !newRequirement.isCustomValue"
         v-model="newRequirement.dataTypeRequirementId"
         label="Available Values"
@@ -202,7 +202,7 @@
     <template #expanded-item="{headers}">
       <tr>
         <td :colspan="headers.length" class="text-left expanded-row">
-          <v-select
+          <v-autocomplete
             v-model="expandedRequirement"
             :items="[expandedRequirement]"
             label="Object Type"
@@ -210,7 +210,7 @@
             disabled
           />
 
-          <v-select
+          <v-autocomplete
             v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 4"
             v-model="expandedRequirement"
             :items="[expandedRequirement]"
@@ -219,7 +219,7 @@
             disabled
           />
 
-          <v-select
+          <v-autocomplete
             v-model="expandedRequirement"
             :items="[expandedRequirement]"
             label="Field"
@@ -227,7 +227,7 @@
             disabled
           />
 
-          <v-select
+          <v-autocomplete
             v-model="expandedRequirement.operatorTypeId"
             label="Operator"
             :items="operators"
@@ -246,7 +246,7 @@
           />
 
           <!--      if field is a single-select item -->
-          <v-select
+          <v-autocomplete
               v-if="expandedRequirement.operatorTypeId !== null && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.listOfValueId"
               v-model="expandedRequirement.listOfValueId"
               :items="expandedRequirement.availableListOfValues"
@@ -256,7 +256,7 @@
           />
 
           <!--      if field is a multi-select list -->
-          <v-select
+          <v-autocomplete
               v-else-if="expandedRequirement.operatorTypeId && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.listOfValueIds"
               v-model="expandedRequirement.listOfValueIds"
               :items="expandedRequirement.availableListOfValues"
@@ -267,7 +267,7 @@
           />
 
           <!--      if field doesn't have any custom values, display the data type requirements -->
-          <v-select
+          <v-autocomplete
               v-else-if="expandedRequirement.operatorTypeId !== null && !expandedRequirement.isCustomValue"
               v-model="expandedRequirement.dataTypeRequirementId"
               label="Available Values"
@@ -304,7 +304,6 @@
       </tr>
     </template>
   </v-data-table>
-  <Snackbar :snackbar="snackbar" />
 </v-col>
 </template>
 
@@ -312,7 +311,7 @@
 
 import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar'
+
 
 const newRequirementStructure = {
   selectedField: null,
@@ -331,9 +330,7 @@ const newRequirementStructure = {
 
 export default {
   name: "SmartlistRequirement",
-  components: {
-    Snackbar
-  },
+
   props: {
     requirements: {
       type: Array,
@@ -434,6 +431,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getOperators (dataTypeId) {
@@ -443,6 +441,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching operators for selected field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getDataTypeRequirements (dataTypeId) {
@@ -452,6 +451,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching data type requirements for selected field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getProcessStepFieldData () {
@@ -462,6 +462,7 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process step data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
     },

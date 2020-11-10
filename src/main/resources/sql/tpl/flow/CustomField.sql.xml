@@ -293,6 +293,7 @@
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
              inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where cot.object_type_id = :id
+      and cot.company_id = :companyId
       and cfga.ancillary_custom_field_group_assignment_id is null
       and cfg.archived is not true
       and cfga.archived is not true

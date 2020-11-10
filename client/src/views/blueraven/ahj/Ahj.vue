@@ -136,13 +136,13 @@
         </v-card>
       </v-dialog>
     </v-col>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
@@ -155,9 +155,7 @@
 
   export default {
     name: 'ahjs',
-    components: {
-      Snackbar
-    },
+
     data: () => ({
       snackbar: {},
       constants,
@@ -247,6 +245,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -266,6 +265,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -301,20 +301,24 @@
           try {
             await postRequest('/ahj', this.editedItem, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'AHJ created')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error creating AHJ')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
           try {
             await putRequest(`/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'AHJ updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating AHJ')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }

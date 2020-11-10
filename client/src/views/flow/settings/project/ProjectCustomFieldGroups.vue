@@ -1,6 +1,6 @@
 <template>
   <v-container class="custom-field-group-container pa-0">
-    <CustomFieldGroup></CustomFieldGroup>
+    <CustomFieldGroup :is-project="true"></CustomFieldGroup>
   </v-container>
 </template>
 

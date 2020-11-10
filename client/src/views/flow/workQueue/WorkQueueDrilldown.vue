@@ -33,6 +33,7 @@
               <td class="text-left underline" @click="clickRow(item)">{{item.projectName}}</td>
               <td class="text-left">{{item.processStepName}}</td>
               <td class="text-left">{{item.daysInQueue}}</td>
+              <td class="text-left">{{item.stateAbbreviation}}</td>
               <td class="text-left">
                 <div v-if="item.owner">{{item.owner}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
@@ -91,14 +92,14 @@
 
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
   import constants from '@/helpers/constants'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
@@ -106,7 +107,7 @@
   export default {
     name: 'WorkQueueDrilldown',
     components: {
-      Snackbar,
+
       NotesAndActivity
     },
     data() {
@@ -133,6 +134,7 @@
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
           { text: 'Days In Queue', value: 'daysInQueue', show: true },
+          { text: 'State', value: 'stateAbbreviation', show: true },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
           { text: 'Notes', value: 'notes', show: true },
@@ -168,6 +170,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -176,12 +179,14 @@
           let userPosition = this.userPositions.find(up => up.canAssign)
           await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
           this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           item.owner = this.$store.state.user.details.fullName
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let msg = e.data.includes('already assigned') ? e.data : 'Error Saving Owner'
           this.snackbar = getSnackbar('ERROR', msg)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

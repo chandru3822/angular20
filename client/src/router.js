@@ -416,6 +416,7 @@ export default new Router({
               component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepComponents.vue'),
             }, {
               path: 'customFieldGroups',
+              props: true,
               meta: { title: 'Albatross - Settings'},
               component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepCFG.vue'),
             }, {

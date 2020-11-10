@@ -50,20 +50,18 @@
         <router-view v-bind="resourceProps"></router-view>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Availability',
-    components: {
-      Snackbar
-    },
+
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
@@ -114,6 +112,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Organizations')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getUsers() {
@@ -127,6 +126,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async saveApptLength() {
@@ -138,9 +138,11 @@
           }
           await postRequest(`/availability/appointments/length`, params)
           this.snackbar = getSnackbar('SUCCESS', 'Appointment Length Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Appointment Length')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getApptLength() {
@@ -157,6 +159,7 @@
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Default Appointment Length')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         }
       },

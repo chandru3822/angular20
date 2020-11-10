@@ -13,13 +13,13 @@
                   :date-callback="this.dateCallback"></Calendar>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import Map from './components/Map'
   import Calendar from './components/Calendar'
@@ -27,7 +27,7 @@
   export default {
     name: 'CloserAvailability',
     components: {
-      Snackbar,
+
       Map,
       Calendar
     },

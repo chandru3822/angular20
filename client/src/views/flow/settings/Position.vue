@@ -51,19 +51,20 @@
           <v-divider class="my-2"></v-divider>
           <h3>Access Control</h3>
           <AccessControl v-if="positionLoaded"
+                         :key="accessControlKey"
                          :user-can-edit="userCanEditAccessControl"
                          :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
         </v-card>
 
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
@@ -71,7 +72,7 @@
   export default {
     name: 'Position',
     components: {
-      Snackbar,
+
       AccessControl
     },
     watch: {
@@ -96,6 +97,7 @@
           { text: 'Feature', value: 'featureName', show: true },
 
         ],
+        accessControlKey: 0
       }
     },
     created () {
@@ -116,6 +118,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -123,8 +126,12 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if(this.positionId) {
+            // console.log('randaLogger', this.position.companyFeatures[0])
             const {data} = await putRequest(`/position/`, this.position)
-            this.$router.push({name: 'position', params: {id: this.positionId}})
+            this.position = data
+            this.accessControlKey++
+            // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
+            // this.$router.push({name: 'position', params: {id: this.positionId}})
           } else {
             const {data} = await postRequest(`/position/`, this.position)
             this.positionId = data.id
@@ -134,6 +141,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Position')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
@@ -148,6 +156,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Position')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

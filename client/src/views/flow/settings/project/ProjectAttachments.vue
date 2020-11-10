@@ -76,14 +76,11 @@
 import {AppMutations} from "@/stores/AppStore";
 import {deleteRequest, getRequest, getSnackbar, postRequest} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters";
-import Snackbar from "@/components/Snackbar";
 
 export default {
   name: 'ProjectAttachments',
   mixins: [Vue2Filters.mixin],
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       addNewType: false,
@@ -107,6 +104,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -123,6 +121,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -136,10 +135,12 @@ export default {
         this.addNewType = false
         this.newType = {}
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -150,10 +151,12 @@ export default {
         await deleteRequest(`/attachmentType/projectType/${id}`)
         // this.availableAttachmentTypes = data
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

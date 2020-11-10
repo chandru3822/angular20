@@ -10,13 +10,13 @@
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs>
-              <v-tab :to="`/settings/project/customFieldGroups`">
+              <v-tab :to="`/settings/project/customFieldGroups?companyObjectTypeId=${companyObjectTypeId}`">
                 Custom Field Groups
               </v-tab>
-              <v-tab :to="`/settings/project/tabs`">
+              <v-tab :to="`/settings/project/tabs?companyObjectTypeId=${companyObjectTypeId}`">
                 Tabs
               </v-tab>
-              <v-tab :to="`/settings/project/attachments`">
+              <v-tab :to="`/settings/project/attachments?companyObjectTypeId=${companyObjectTypeId}`">
                 Attachment Types
               </v-tab>
             </v-tabs>
@@ -24,28 +24,27 @@
         </v-toolbar>
         <router-view/>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
 
 <script>
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import constants from '@/helpers/constants'
 
   export default {
     name: 'ProcessStep',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
         constants,
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
+        companyObjectTypeId: this.$route.query.companyObjectTypeId,
         breadcrumbs: [
           {
             text: 'Back',
@@ -58,22 +57,10 @@
     },
     computed: {
     },
-    async created () {},
-    methods: {
-      // async getProcessStepDetails () {
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     const {data} = await getRequest(`/processStep/${this.processStepId}`)
-      //     this.processStep = data
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
-
-    }
+    async created () {
+      console.log('this.$route.query.companyObjectTypeId', this.$route.query.companyObjectTypeId)
+    },
+    methods: {}
 
   }
 </script>

@@ -138,7 +138,7 @@ BEGIN
                                                0)  total,
                                        1 as milestone_id
                                 FROM flow.project p1
-                                         inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 175 and
+                                         inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 175 and main is true and
                                                                                      pps.process_step_complete_date is not null
                                          inner join brs.project_override po on po.project_id = p1.id
                                          INNER JOIN brs.override_plan_receiving_user opru
@@ -155,7 +155,7 @@ BEGIN
                                                0)  total,
                                        2 as milestone_id
                                 FROM flow.project p1
-                                         inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 35 and
+                                         inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 35 and  main is true and
                                                                                      pps.process_step_complete_date is not null
                                          inner join brs.project_override po on po.project_id = p1.id
                                          INNER JOIN brs.override_plan_receiving_user opru
@@ -219,7 +219,7 @@ BEGIN
                                                                                                                          else 0 end,2),
                                                            0) end total
                                  FROM flow.project p1
-                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id  =175  and pps.process_step_complete_date is not null
+                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id  =175  and pps.process_step_complete_date is not null and main is true
                                           inner join brs.project_commission pc on pc.project_id = p1.id
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
@@ -233,7 +233,7 @@ BEGIN
                                                                                                                         else 0 end,2),
                                                            0) end total
                                  FROM flow.project p1
-                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 35 and pps.process_step_complete_date is not null
+                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 35 and pps.process_step_complete_date is not null and main is true
                                           inner join brs.project_commission pc on pc.project_id = p1.id
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 2
@@ -246,7 +246,7 @@ BEGIN
                                                                                                      from brs.override_plan_receiving_user opru
                                                                                                      where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
-                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 175 and pps.process_step_complete_date is not null
+                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 175 and pps.process_step_complete_date is not null and main is true
                                           inner join brs.project_override po on po.project_id = p1.id
                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                  WHERE p1.id = p.id),0) + coalesce(
@@ -256,7 +256,7 @@ BEGIN
                                                                                                        from brs.override_plan_receiving_user opru
                                                                                                        where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
-                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 35 and pps.process_step_complete_date is not null
+                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 35 and pps.process_step_complete_date is not null and main is true
                                           inner join brs.project_override po on po.project_id = p1.id
                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                  WHERE p1.id = p.id),0) AS override_earned,
@@ -284,7 +284,9 @@ BEGIN
                             AS overrides_paid_to_date
                  FROM flow.project p
                           inner join brs.project_details pd on pd.project_id = p.id
-                          inner join flow.project_process_step pps on pps.project_id = p.id and process_step_id = 175 and pps.process_step_complete_date is not null and main is true
+                          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
+                          inner join flow.project_status_type pps2  on pps2.id = cpst.project_status_type_id and pps2.id = 1
+                          inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 175 and pps.process_step_complete_date is not null and main is true
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.closer_user_id
                           inner join flow.company_user_status cus  on cus.user_id = u.id

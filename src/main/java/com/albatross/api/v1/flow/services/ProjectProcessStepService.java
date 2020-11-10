@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -21,9 +22,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -119,12 +119,14 @@ public class ProjectProcessStepService {
     return attachmentService.findById(storageBucket, attachmentId);
   }
 
-  public void setStatus(ProjectProcessStep pps, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
+  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
+    ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
 
     if (pps == null) {
         throw new RuntimeException("The given process step does not exist");
     }
+
 
     if (pps.getProcessStepStatusTypeId().equals(processStepStatusTypeId)) {
         return;
@@ -140,6 +142,10 @@ public class ProjectProcessStepService {
     params.put("main", pps.getMain());
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
+    //check for un-run automatic actions if the new status type is active
+    if(processStepStatusTypeId == 1) {
+      performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+    }
   }
 
   public ResponseEntity updateOwner(Long projectProcessStepId, Owner owner, Boolean blockOverride) {
@@ -182,7 +188,7 @@ public class ProjectProcessStepService {
     }
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, boolean performAutoTrigger) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -194,7 +200,9 @@ public class ProjectProcessStepService {
 
     Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
 
-    this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+    if (performAutoTrigger) {
+      this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+    }
 
     return ppsId;
   }
@@ -247,10 +255,21 @@ public class ProjectProcessStepService {
   }
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
+  public void performTimeBasedAutoTriggers() {
+
+    User cronUser = new User();
+    cronUser.setId(SystemSettings.USER.getId());
+
+    final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getTimeBasedAutoTriggerPps", null, new ColumnMapRowMapper());
+
+    for(Map<String, Object> result: results) {
+      cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
+      performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
+    }
+  }
 
   @Transactional
-  @Async
-  public Future<Void> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
+  public boolean performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
       // Set the security context so we have user details in the async downline
       securityService.setCurrentUserDetails(userDetails);
 
@@ -278,7 +297,7 @@ public class ProjectProcessStepService {
               }
           });
       }
-      return new AsyncResult<>(null);
+      return true;
   }
 
   @Transactional
@@ -297,15 +316,15 @@ public class ProjectProcessStepService {
 
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
     }
 
     Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
 
-    asyncRunChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getProcessStepId());
+    performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId);
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, false);
         log.info("insert query: pps");
       if (childStep.getAutoTriggerActionCount() > 0) {
           log.info("going recursive");
@@ -725,12 +744,11 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-    @Async
-    public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long projectId, Long processStepId) {
-        List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, projectProcessStepId);
+    public void performChildFunctions(Long actionId, Long ppsId, Long processStepId) {
+        List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
         childFunctions.forEach(childFunction -> {
             try {
-                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, projectProcessStepId));
+                String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
                 log.info(String.format("Successfully executed child action function. CFA ID: %s, action ID: %s",childFunction.getId(), actionId));
@@ -739,6 +757,12 @@ public class ProjectProcessStepService {
                 e.printStackTrace();
             }
         });
+
+        if (!childFunctions.isEmpty()) {
+          // I have a suspicion that there is a potential bug here. If this function was auto triggered, this will potentially double run auto triggers on some
+          // PPS actions. Not sure if that will cause an issue, or only run unnecessary logic
+          this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+        }
     }
 
   public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId) throws Exception {

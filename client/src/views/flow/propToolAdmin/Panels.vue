@@ -205,22 +205,20 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getCompanyStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {
     name: 'Panels',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         delay: 500,
@@ -258,6 +256,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Panels')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -266,11 +265,12 @@
         try {
           await deleteRequest(`/propTool/panel/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Panel Deleted')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Panel')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -288,6 +288,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -302,6 +303,7 @@
           this.panels = orderBy(this.panels, [p => p.panelName.toLowerCase()])
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Panel Saved' : 'Panel Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // reset the new fields
           this.addNew = false
@@ -311,6 +313,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', item.id ? 'Error Updating Panel' : 'Error Adding Panel')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

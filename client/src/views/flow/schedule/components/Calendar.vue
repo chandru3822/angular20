@@ -226,7 +226,7 @@
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
       />
     </div>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 
@@ -240,7 +240,7 @@
   import {getSchedulingOrgTypes} from '@/services/orgService'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
@@ -248,7 +248,6 @@
     name: 'ScheduleCalendar',
     components: {
       FullCalendar,
-      Snackbar
     },
     props: {
       mapResources: {type: Array},
@@ -540,6 +539,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -553,6 +553,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -566,6 +567,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -593,6 +595,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -614,6 +617,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -673,6 +677,7 @@
             } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.calendarLoading = false
             } finally {
               this.orgValuesChanged = false

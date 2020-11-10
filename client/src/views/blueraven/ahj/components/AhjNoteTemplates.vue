@@ -54,21 +54,19 @@
       No note templates found
     </div>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-card>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjNoteTemplates",
-    components: {
-      Snackbar
-    },
+
     props: {
       inspectionId: {
         type: Number
@@ -125,9 +123,11 @@
             const {data} = await postRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates`, this.noteTemplate, 'blueraven')
             this.noteTemplatesCopy.push(cloneDeep(data))
             this.snackbar = getSnackbar('SUCCESS', 'Note template added')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding note template')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.addMode = false
         } else {
@@ -137,9 +137,11 @@
             this.noteTemplatesCopy[updatedNoteTemplateIndex].title = data.title
             this.noteTemplatesCopy[updatedNoteTemplateIndex].note = data.note
             this.snackbar = getSnackbar('SUCCESS', 'Note template updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating note template')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.editMode = false
         }
@@ -153,9 +155,11 @@
           let deletedNoteTemplateIndex = this.noteTemplatesCopy.findIndex(i => i.id === this.noteTemplate.id)
           this.noteTemplatesCopy.splice(deletedNoteTemplateIndex, 1)
           this.snackbar = getSnackbar('SUCCESS', 'Note template deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting note template')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.editMode = false
         this.$store.commit(AppMutations.SET_LOADING, false)

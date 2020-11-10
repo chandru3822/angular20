@@ -253,13 +253,13 @@
 
 
     </v-card>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import Snackbar from '@/components/Snackbar.vue'
+
 import Vue2Filters from "vue2-filters";
 
 export default {
@@ -274,9 +274,7 @@ export default {
     notes: Array,
     type: String
   },
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},
@@ -304,9 +302,11 @@ export default {
         await deleteRequest(`/note/${n.id}`)
         n.archived = true
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Note')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async saveNote(n) {
@@ -333,9 +333,11 @@ export default {
           this.note = {}
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Note')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     filterNotes() {

@@ -168,9 +168,6 @@
     </v-col>
   </v-col>
 
-
-
-  <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
 
@@ -182,7 +179,7 @@ import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectP
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
-import Snackbar from '@/components/Snackbar.vue'
+
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
@@ -194,7 +191,7 @@ export default {
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
     Attachments,
-    Snackbar,
+
     CustomValueInput,
     AddProcessStep
   },
@@ -291,6 +288,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -306,6 +304,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Project Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

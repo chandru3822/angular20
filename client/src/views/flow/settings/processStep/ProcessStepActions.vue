@@ -505,7 +505,7 @@
 
               <template #expanded-item="{ headers, item }">
                 <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
-                  <v-card flat class="text-left pt-3" color="transparent">
+                  <v-card flat class="text-left pt-3 px-3" color="transparent">
                     <v-text-field v-model="item.actionName"
                                   placeholder="Enter a name"
                                   :readonly="!userCanEdit"
@@ -538,13 +538,13 @@
                       label="Trigger Automatically"
                     />
                     <v-checkbox
-                      class="pl-3 pt-0"
+                      class="pl-3 pt-0 pb-3"
                       dense
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
                       v-if="item.triggerAutomatically"
                       hide-details
-                      v-model="newAction.timeBasedTrigger"
+                      v-model="item.timeBasedTrigger"
                       label="Time Based"
                     />
 
@@ -1009,7 +1009,7 @@
           </v-card>
         </v-col>
       </v-row>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -1018,7 +1018,7 @@
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
   import Sortable from "sortablejs";
@@ -1026,9 +1026,7 @@
   export default {
     name: 'ProcessStepActions',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     mounted() {
       let table = document.querySelector('.action-table tbody')
       const _self = this
@@ -1148,6 +1146,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1167,6 +1166,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -1191,6 +1191,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1203,6 +1204,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1215,6 +1217,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1227,6 +1230,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1239,6 +1243,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1255,6 +1260,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1267,6 +1273,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1279,6 +1286,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1418,10 +1426,12 @@
           // this forces the list to update the operator displayed ... using requirement = data did not work
           requirement.operatorType = data.operatorType
           this.snackbar = getSnackbar('SUCCESS', 'Requirement Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Requirement')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1434,15 +1444,18 @@
             item.deleteConfirm = false
             this.actionsUsingLogic = data
             this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             item.archived = true
             this.requirements = this.requirements.filter(r => !r.archived)
             this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1456,6 +1469,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1477,10 +1491,12 @@
           this.addNewAction = false
           this.newAction = {}
           this.snackbar = getSnackbar('SUCCESS', 'Action Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1519,10 +1535,12 @@
           }
 
           this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1535,6 +1553,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1547,6 +1566,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1556,10 +1576,12 @@
           await deleteRequest(`/processStep/${this.processStepId}/action/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Action Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1579,10 +1601,12 @@
           this.selectedProcessStep = {}
           this.addChildProcess = false
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Added To Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Child Process Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1591,10 +1615,12 @@
         try {
           await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Deleted From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Process From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1603,10 +1629,12 @@
       //   try {
       //     await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
       //     this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+      // this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       //     this.$store.commit(AppMutations.SET_LOADING, false)
       //   } catch (e) {
       //     console.error('*** ERROR ***', e)
       //     this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+      // this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       //     this.$store.commit(AppMutations.SET_LOADING, false)
       //   }
       // },
@@ -1623,10 +1651,12 @@
           this.selectedChildRequirementParamDynamicValues = []
           this.addChildFunction = false
           this.snackbar = getSnackbar('SUCCESS', 'Child Function Added To Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Child Function Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1635,10 +1665,12 @@
         try {
           await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Child Function Deleted From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1647,10 +1679,12 @@
         try {
           await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildFunction`, childFunction)
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1664,6 +1698,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1677,10 +1712,12 @@
           this.selectedLink = {}
           this.addChildLink = false
           this.snackbar = getSnackbar('SUCCESS', 'Link Added to Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Link to Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1689,10 +1726,12 @@
         try {
           await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link From Action')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1708,10 +1747,12 @@
           try {
             const {data} = await putRequest(`/processStep/${this.processStepId}/action/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }

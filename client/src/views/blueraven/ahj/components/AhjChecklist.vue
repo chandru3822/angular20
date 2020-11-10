@@ -57,14 +57,14 @@
       This checklist doesn't have any items
     </div>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-card>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
   import draggable from 'vuedraggable'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -72,7 +72,6 @@
     name: "AhjChecklist",
     components: {
       draggable,
-      Snackbar
     },
     props: {
       title: {
@@ -155,9 +154,11 @@
             }
             this.checklistItemsCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Checklist item added')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding checklist item')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.addMode = false
         } else {
@@ -171,9 +172,11 @@
             let updatedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === res.data.id)
             this.checklistItemsCopy[updatedItemIndex].description = res.data.description
             this.snackbar = getSnackbar('SUCCESS', 'Checklist item updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating checklist item')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.editMode = false
         }
@@ -191,9 +194,11 @@
           let deletedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === this.checklistItem.id)
           this.checklistItemsCopy.splice(deletedItemIndex, 1)
           this.snackbar = getSnackbar('SUCCESS', 'Checklist item deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting checklist item')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.editMode = false
         this.$store.commit(AppMutations.SET_LOADING, false)

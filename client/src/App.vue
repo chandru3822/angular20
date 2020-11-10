@@ -14,17 +14,21 @@
         <router-view class="router-view" />
       </v-container>
     </v-content>
+    <Snackbar></Snackbar>
   </v-app>
+
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import AppNav from '@/components/AppNav.vue'
+  import Snackbar from '@/components/Snackbar'
 
   export default {
     name: 'App',
     components: {
-      AppNav
+      AppNav,
+      Snackbar
     },
     data() {
       return {}

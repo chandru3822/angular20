@@ -166,7 +166,6 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", child.getProcessStepId());
     params.put("processStepActionId", actionId);
-    params.put("triggerAutomatically", child.getTriggerAutomatically() != null && child.getTriggerAutomatically());
     params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.getId());
 
@@ -198,7 +197,6 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
-    params.put("triggerAutomatically", child.getTriggerAutomatically() != null && child.getTriggerAutomatically());
     sqlCache.update("processStepAction.updateActionChildStep", params);
   }
 

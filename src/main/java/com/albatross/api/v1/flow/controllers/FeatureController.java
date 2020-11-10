@@ -69,8 +69,8 @@ public class FeatureController {
   }
 
   @PutMapping(value = "/user/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveUserCompanyFeatures(@PathVariable Long userId, @RequestBody List<CompanyFeature> companyFeatures) {
-    featureService.saveUserCompanyFeatures(userId, companyFeatures);
+  public List<CompanyFeature> saveUserCompanyFeatures(@PathVariable Long userId, @RequestBody List<CompanyFeature> companyFeatures) {
+    return featureService.saveUserCompanyFeatures(userId, companyFeatures);
   }
 
 }

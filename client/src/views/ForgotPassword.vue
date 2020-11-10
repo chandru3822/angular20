@@ -30,7 +30,7 @@
           </v-card>
         </v-col>
       </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-container>
   </v-content>
 </template>
@@ -38,14 +38,12 @@
 <script>
   import constants from '@/helpers/constants'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
     name: 'ForgotPassword',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -65,11 +63,13 @@
               this.email = null
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('SUCCESS', 'An email has been sent.')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$router.push('/login')
             } catch (e) {
               console.error('*** ERROR ***', e)
               let msg = e?.data?.message ?? 'Error Retrieving Account Details'
               this.snackbar = getSnackbar('ERROR', msg)
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
         }

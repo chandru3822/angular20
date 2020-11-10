@@ -751,25 +751,23 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../../helpers/helpers";
-  import orderBy from "lodash.orderby";
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers';
 
   export default {
     name: 'Commission',
     mixins: [Vue2Filters.mixin],
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     created() {
@@ -882,6 +880,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -982,6 +981,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Commission Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -990,11 +990,13 @@
         try {
           const {data} = await postRequest(`/commissionManagement/${this.planId}/approve`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Approved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.commission = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Approving Commission Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1003,10 +1005,12 @@
         try {
           await postRequest(`/commissionManagement/${this.planId}/inactivate`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Inactivated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$router.push({name: 'commissions'})
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Inactivating Commission Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1015,10 +1019,12 @@
         try {
           await deleteRequest(`/commissionManagement/${this.planId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$router.push({name: 'commissions'})
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1037,6 +1043,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Cloning Commission')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1047,10 +1054,12 @@
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1075,6 +1084,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Commission Plan Users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -1091,12 +1101,14 @@
           const {data} = await postRequest(`/commissionManagement/${this.planId}/users`, params, 'blueraven')
           this.commission.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.addUser = false
           this.newUser = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Commission Plan User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1105,11 +1117,13 @@
         try {
           await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           commissionPlanUser.archived = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1124,6 +1138,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -1136,6 +1151,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1153,6 +1169,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Milestone')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1161,6 +1178,7 @@
         try {
           await deleteRequest(`/commissionManagement/${this.planId}/milestone/${commissionPlanAllocationId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Milestone Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.commission.milestones = this.commission.milestones.filter(m => {
             return m.commissionPlanAllocationId !== commissionPlanAllocationId
           })
@@ -1169,6 +1187,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Milestone')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1191,6 +1210,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sources')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -1205,6 +1225,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1226,6 +1247,7 @@
           this.errorLoadingUserHistory = true
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1244,6 +1266,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Source')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1252,6 +1275,7 @@
         try {
           await deleteRequest(`/commissionManagement/${this.planId}/source/${id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Source Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.commission.sources = this.commission.sources.filter(s => {
             return s.id !== id
           })
@@ -1259,6 +1283,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Source')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

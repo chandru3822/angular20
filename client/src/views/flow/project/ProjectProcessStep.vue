@@ -63,7 +63,51 @@
 
   <v-col cols="12" class="py-0 process-step-header" >
     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-      <v-toolbar-title class="px-5 process-step-name">{{ processStep.processStepName }}</v-toolbar-title>
+      <v-toolbar-title class="px-5 process-step-name">{{ processStep.processStepName }}
+      <v-dialog
+        v-model="processStep.changeActiveConfirm"
+        width="500">
+        <template #activator="{ on }">
+          <v-checkbox
+            class=""
+            v-on="on"
+            dense
+            v-model="processStep.main"
+            :disabled="processStep.main || !userCanEdit || projectHasActiveProcessStep(processStep)"
+            label="Primary"
+            @change="updateMain(processStep.projectProcessStepId)"
+          />
+        </template>
+        <v-card>
+          <v-card-title
+            class="headline grey lighten-2"
+            primary-title>
+            Confirm
+          </v-card-title>
+
+          <v-card-text class="pt-4">
+            Modifying the primary flag will cancel the current active process step. It will also run any automatic actions that have not yet been run where the criteria is met using values from the new active process step.
+            Are you sure you want to set this process step to Primary?
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              @click="[processStep.changeActiveConfirm = false, processStep.main = false]">
+              No
+            </v-btn>
+            <v-btn
+              color="primaryCustom"
+              text
+              @click="[processStep.changeActiveConfirm = false, updateMain(processStep.projectProcessStepId)]">
+              Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      </v-toolbar-title>
       <v-spacer></v-spacer>
       <div>
         <v-btn
@@ -128,11 +172,12 @@
             />
             <div class="text-right" v-if="availabilityDateField.dateValue">
               <v-btn color="primaryCustom" dark class="white--text"
+                     :loading="searchLoading"
                 @click="getAvailableTimeSlots">
                 Search
               </v-btn>
             </div>
-            <v-select v-if="timeSlots.length > 0"
+            <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue"
               v-model="selectedTimeSlot"
               :items="timeSlots"
               :readonly="!userCanEdit"
@@ -147,9 +192,9 @@
                 {{ data.item.scheduledStartTime | formatDate('timestamp')}}
               </template>
             </v-select>
-            <div v-else-if="searchedTimeSlots">No Times Available for the Selected Date</div>
-            <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime">
-              <v-btn color="primaryCustom" dark class="white--text"
+            <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue">No Times Available for the Selected Date</div>
+            <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
+              <v-btn color="primaryCustom" class="white--text"
                      @click="saveCloserAppointment">
                 Save Appointment
               </v-btn>
@@ -163,7 +208,7 @@
               :type="'timestamp'"
               :readonly="true"
               :format="'MMMM DD, YYYY, h:mm A'"
-              label="Start Time"
+              label="Closer Appointment Start Time"
             />
             <DatetimePickerInput
               v-model="closerAppointmentDetails.appointmentEndTime"
@@ -171,12 +216,12 @@
               :type="'timestamp'"
               :readonly="true"
               :format="'MMMM DD, YYYY, h:mm A'"
-              label="End Time"
+              label="Closer Appointment End Time"
             />
             <v-text-field color="primaryCustom"
                           v-model="closerAppointmentDetails.userFullName"
                           readonly
-                          label="Resource"></v-text-field>
+                          label="Closer"></v-text-field>
           </div>
         </v-card-text>
         <v-card-text class="pt-0" v-else-if="!schedulerLoading && userIsScheduler && !schedulerCanEdit">
@@ -241,7 +286,7 @@
     </v-row>
   </v-col>
 
-  <Snackbar :snackbar="snackbar"></Snackbar>
+
 </v-row>
 </template>
 
@@ -250,7 +295,7 @@
 import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
 import ActionButton from './ActionButton'
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import Attachments from '@/views/flow/components/Attachments'
 // import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -262,7 +307,7 @@ export default {
   name: 'ProjectProcessStep',
   components: {
     ActionButton,
-    Snackbar,
+
     Attachments,
     // NotesAndActivity,
     CustomValueInput,
@@ -294,7 +339,8 @@ export default {
       project: {},
       displayChangeOwner: false,
       availableOwners: [],
-      availableProcessStepStatuses: []
+      availableProcessStepStatuses: [],
+      searchLoading: false
     }
   },
   async created () {
@@ -307,6 +353,9 @@ export default {
     this.getAvailableOwners()
   },
   methods: {
+    projectHasActiveProcessStep(ps) {
+      console.log('project', this.project)
+    },
     anyGroupNonUnique () {
       let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
       return null != nonUniqueGroups
@@ -317,6 +366,7 @@ export default {
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
       }
     },
@@ -340,6 +390,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -375,6 +426,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -391,6 +443,7 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Checking Scheduler Round Robin')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } finally {
           this.schedulerLoading = false
         }
@@ -404,6 +457,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -423,6 +477,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -434,6 +489,11 @@ export default {
         if (!match) {
           this.dirtyCfvs.push(field)
         }
+      } else {
+        //this should only get hit when the "Select a Date" field value gets changed
+        this.selectedTimeSlot = {}
+        this.timeSlots = []
+        this.searchedTimeSlots = false
       }
     },
     async removeOwner() {
@@ -442,10 +502,12 @@ export default {
         this.processStep.owner = {}
         await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
         this.snackbar = getSnackbar('SUCCESS', 'Owner Removed')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Removing Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -458,6 +520,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -468,6 +531,7 @@ export default {
           } catch (e) {
               logError(e)
               this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.processStep.main = false
           } finally {
               this.$store.commit(AppMutations.SET_LOADING, false)
@@ -482,9 +546,12 @@ export default {
     handleOnCompleteError (actionId) {
       logError(`Failed to complete action with actionId: ${actionId}`)
       this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
     },
     async getAvailableTimeSlots () {
       try {
+        this.searchLoading = true
+        this.selectedTimeSlot = {}
         this.searchedTimeSlots = false
 
         let params = {
@@ -496,10 +563,12 @@ export default {
         const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
         this.searchedTimeSlots = true
         this.timeSlots = data
-
+        this.searchLoading = false
       } catch (e) {
         logError(e)
+        this.searchLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async saveCloserAppointment() {
@@ -523,6 +592,7 @@ export default {
         logError(e)
         let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
         this.snackbar = getSnackbar('ERROR', msg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -564,6 +634,7 @@ export default {
 .process-step-name {
   font-weight: bold;
   font-size: 22px;
+  padding-top: 10px;
 }
 
 ::v-deep {

@@ -13,7 +13,7 @@
           ></v-select>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]">
+            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -58,7 +58,7 @@
 
               <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn v-if="selectedWorkQueueCategoryId !== -1" text icon small class="handle">
+                  <v-btn v-if="userCanEdit && selectedWorkQueueCategoryId !== -1" text icon small class="handle">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -79,12 +79,13 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text>
+                    <v-btn class="clickable" small text v-if="userCanEdit">
                       <v-icon v-if="selectedWorkQueueTypeId === item.id" @click="saveType(item)">save</v-icon>
                       <v-icon v-else @click="selectedWorkQueueTypeId = item.id">edit</v-icon>
                     </v-btn>
                     <v-dialog
                         v-model="item.deleteConfirm"
+                        v-if="userCanDelete"
                         width="500">
                       <template v-slot:activator="{ on }">
                         <v-btn small text class="clickable" v-on="on">
@@ -129,7 +130,7 @@
         </v-container>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
@@ -140,7 +141,7 @@
   import orderBy from 'lodash.orderby'
   import cloneDeep from 'lodash.clonedeep'
   import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
@@ -148,9 +149,7 @@
   export default {
     name: 'WorkQueueTypes',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     mounted() {
       let table = document.querySelector('tbody')
       const _self = this
@@ -192,6 +191,9 @@
         selectedWorkQueueCategoryId: -1,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
         expanded: [],
         headers: [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
@@ -215,6 +217,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -229,6 +232,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -240,10 +244,12 @@
         try {
           await deleteRequest(`/workQueueType/type/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -253,6 +259,7 @@
           const {data} = await postRequest(`/workQueueType/type`, this.newType)
 
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // add it to the master list too
           this.masterWorkQueueTypes.push(data)
@@ -266,6 +273,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -278,10 +286,12 @@
           wt.workQueueCategory = data.workQueueCategory
           wt.workQueueType = data.workQueueType
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -294,10 +304,12 @@
           try {
             await putRequest(`/workQueueType/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }

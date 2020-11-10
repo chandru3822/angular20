@@ -134,7 +134,7 @@
   <position.updatePositionFeatureAccessControl><![CDATA[
     update flow.position_feature_access_control
     set enabled = :enabled
-    where id = :positionFeatureAccessControlId
+    where id = :id
   ]]></position.updatePositionFeatureAccessControl>
 
 

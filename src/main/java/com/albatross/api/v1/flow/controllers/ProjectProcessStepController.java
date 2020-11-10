@@ -89,7 +89,7 @@ public class ProjectProcessStepController {
 
   @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Long> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
-    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null), HttpStatus.OK);
+    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, true), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -126,8 +126,7 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        ProjectProcessStep currentStep = projectProcessStepService.getProjectProcessStep(projectProcessStepId);
-        projectProcessStepService.setStatus(currentStep, status.getProcessStepStatusTypeId(), status.getId());
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), new RuntimeException());

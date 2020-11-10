@@ -1,6 +1,7 @@
 package com.albatross.api.config;
 
 import com.albatross.api.v1.flow.services.AvailabilityService;
+import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.SMSService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +35,12 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
     private Boolean processFutureAppointments;
 
+    @Value(value = "${app.cron.autoTriggers.enabled:false}")
+    private boolean autoTriggers;
+
     private final SMSService smsService;
     private final AvailabilityService availabilityService;
+    private final ProjectProcessStepService projectProcessStepService;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -63,6 +68,15 @@ public class ScheduledConfig implements SchedulingConfigurer {
         if(processFutureAppointments) {
             availabilityService.processFutureRecurringEvents();
         }
+    }
+
+    @Scheduled(cron = "0 0 2 * * ?")
+    public void autoTriggers() {
+      log.info("*** CRON: start autoTriggers ***");
+      if (autoTriggers) {
+        projectProcessStepService.performTimeBasedAutoTriggers();
+      }
+      log.info("*** CRON: end autoTriggers ***");
     }
 
     @Bean(destroyMethod = "shutdown")

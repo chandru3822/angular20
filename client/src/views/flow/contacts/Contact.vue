@@ -188,7 +188,7 @@
         ></NotesAndActivity>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
   <v-row align="center" justify="center" v-else-if="!contactLoading">
     <v-col cols="12" sm="8">
@@ -209,7 +209,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
@@ -220,7 +220,7 @@ import {getCustomFieldReadOnly} from '@/services/customFieldService'
 export default {
   name: 'Contact',
   components: {
-    Snackbar,
+
     CustomValueInput,
     NotesAndActivity,
     DatetimePickerInput
@@ -268,6 +268,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -286,6 +287,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -301,6 +303,7 @@ export default {
         console.error('*** ERROR ***', e)
         this.contactLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -314,6 +317,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -328,6 +332,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -341,6 +346,7 @@ export default {
         this.contact.owner = {}
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -354,6 +360,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -362,11 +369,13 @@ export default {
       try {
         const {data} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$router.push({name: 'projectDetails', params: {projectId: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Converting Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -379,6 +388,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

@@ -49,7 +49,7 @@
                                 dfp.data_type_id as "dataTypeId",
                                 dfp.parameter_type_id as "parameterTypeId"
                          from flow.db_function_param dfp
-                          left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
+                          left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true and cfp.company_function_id = cf.id
                           left join flow.system_value sv on sv.id = cfp.system_value_id
                           left join flow.custom_field_group_assignment cfga on cfga.id = cfp.custom_field_group_assignment_id
                           left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id

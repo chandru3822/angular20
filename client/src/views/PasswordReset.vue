@@ -55,7 +55,7 @@
           </v-card>
         </v-col>
       </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-container>
   </v-content>
 </template>
@@ -63,14 +63,12 @@
 <script>
   import constants from '@/helpers/constants'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
     name: 'PasswordReset',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -100,6 +98,7 @@
           this.requestValid = false
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Validating This Request')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -117,11 +116,13 @@
               await postRequest(`/user/forgotPassword/change/password`, params)
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('SUCCESS', 'Your password has been changed.')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$router.push('/login')
             } catch (e) {
               console.error('*** ERROR ***', e)
               let msg = e?.data?.message ?? 'Error Retrieving Account Details'
               this.snackbar = getSnackbar('ERROR', msg)
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           } else {

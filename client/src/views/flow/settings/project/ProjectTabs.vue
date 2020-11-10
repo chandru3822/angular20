@@ -103,7 +103,7 @@
         </v-container>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
@@ -111,7 +111,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import orderBy from 'lodash.orderby'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
@@ -121,9 +121,7 @@
   export default {
     name: 'ProjectTabs',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     mounted() {
       let table = document.querySelector('tbody')
       const _self = this
@@ -181,6 +179,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Tabs')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -189,10 +188,12 @@
         try {
           await deleteRequest(`/objectTypeTab/${tabId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Tab')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Tab')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -201,6 +202,7 @@
         try {
           const {data} = await postRequest(`/objectTypeTab/project`, tab)
           this.snackbar = getSnackbar('SUCCESS', 'Tab Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           if(!tab.id) {
             // add it to the records already on the screen
             this.tabs.push(data)
@@ -214,6 +216,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Tab')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -223,10 +226,12 @@
           try {
             const {data} = await putRequest(`/objectTypeTab/order`, rows)
             this.snackbar = getSnackbar('SUCCESS', 'Tab Order Saved')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Tab Order')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }

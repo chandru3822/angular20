@@ -109,7 +109,7 @@
         No requirements found
       </div>
 
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </div>
 
     <v-card v-if="!transparent">
@@ -177,7 +177,7 @@
         No requirements found
       </div>
 
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-card>
   </div>
 </template>
@@ -188,7 +188,7 @@
   import orderBy from 'lodash.orderby'
   import AhjDocumentsButton from './AhjDocumentsButton'
   import AhjRequirementHistory from './AhjRequirementHistory'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -197,7 +197,6 @@
     components: {
       AhjDocumentsButton,
       AhjRequirementHistory,
-      Snackbar
     },
     props: {
       title: {
@@ -293,9 +292,11 @@
             }
 
             this.snackbar = getSnackbar('SUCCESS', 'Requirement completion status updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating requirement completion status')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
 
         // runs when user clicks Add button
@@ -307,9 +308,11 @@
             this.requirementsCopy[addedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
 
             this.snackbar = getSnackbar('SUCCESS', 'Requirement added')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding requirement')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.addMode = false
 
@@ -329,9 +332,11 @@
             }
 
             this.snackbar = getSnackbar('SUCCESS', 'Requirement updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.editMode = false
         }
@@ -348,9 +353,11 @@
           this.requirementsCopy.splice(archivedRequirementIndex, 1)
 
           this.snackbar = getSnackbar('SUCCESS', 'Requirement archived')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error archiving requirement')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
 
         this.editMode = false

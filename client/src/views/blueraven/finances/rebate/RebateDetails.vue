@@ -12,6 +12,7 @@
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>
+        <br/>
       <dd>
         {{rebateDetails.street1}} {{rebateDetails.street2}}
       </dd>
@@ -20,9 +21,10 @@
         {{rebateDetails.city}}, {{rebateDetails.state}} {{rebateDetails.postal_code}}
       </dd>
       <dt class="left-align">Mailing Address:</dt>
+      <br/>
       <!-- if all mailing address fields are null then show the add button -->
       <dd v-if="!editMailing && rebateDetails.mailing_street1 == null && rebateDetails.mailing_city == null && rebateDetails.mailing_state == null && rebateDetails.mailing_postal_code == null">
-        <v-btn text v-if="userCanEdit"  @click="editMailing = true"><!-- :disabled="!hasPermission('HR_ADMIN','REBATE_ADMIN')"-->
+        <v-btn text v-if="userCanEdit"  @click="editMailing = true">
           <v-icon>add</v-icon>
           Add
         </v-btn>
@@ -30,14 +32,14 @@
 
       <!-- if edit mode enabled then show inputs -->
       <dd v-if="editMailing" class="edit-mail-div">
-        <v-text-field text
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      type="text"
-                      label="Street 1:"
-                      v-model="rebateDetails.mailing_street1">
-        </v-text-field>
         <div class="addr-inputs">
+          <v-text-field text
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        type="text"
+                        label="Street 1:"
+                        v-model="rebateDetails.mailing_street1">
+          </v-text-field>
           <v-text-field text
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
@@ -52,14 +54,14 @@
                         label="City:"
                         v-model="rebateDetails.mailing_city">
           </v-text-field>
-          <v-text-field text
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        type="text"
-                        label="State:"
-                        maxlength="2"
-                        v-model="rebateDetails.mailing_state">
-          </v-text-field>
+          <v-select v-model="rebateDetails.mailing_state_id"
+                    :readonly="!userCanEdit"
+                    :disabled="!userCanEdit"
+                    :items="states"
+                    label="State"
+                    item-text="state"
+                    item-value="id"
+          ></v-select>
           <v-text-field text
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
@@ -69,7 +71,7 @@
           </v-text-field>
           <v-btn class="ma-2" @click="saveMailingAddress(false)"
                  v-if="userCanEdit"
-                  :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state || !rebateDetails.mailing_postal_code">
+                  :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state_id || !rebateDetails.mailing_postal_code">
             Save
           </v-btn>
           <v-btn class="ma-2" @click="saveMailingAddress(true)"
@@ -88,16 +90,12 @@
         </dd>
         <dt class="left-align">&nbsp;</dt>
         <dd>
-          {{rebateDetails.mailing_city}}, {{rebateDetails.mailing_state}} {{rebateDetails.mailing_postal_code}}<br/>
-        </dd>
-        <dt class="left-align">&nbsp;</dt>
-        <dd>
-          {{rebateDetails.city}}, {{rebateDetails.state}} {{rebateDetails.postal_code}}
+          {{rebateDetails.mailing_city}}, {{mailingDetails.mailingStateAbbr}} {{rebateDetails.mailing_postal_code}}<br/>
         </dd>
 
         <dt class="left-align">&nbsp;</dt>
         <dd>
-          <a @click="editMailing = true">click to edit</a> <!-- :disabled="!hasPermission('HR_ADMIN','REBATE_ADMIN')"-->
+          <a v-if="userCanEdit" @click="editMailing = true">click to edit</a>
         </dd>
 
       </div>
@@ -319,20 +317,17 @@
         </v-col>
       </v-row>
     </v-container>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
+  import {getCompanyStates} from '@/services/stateService'
 
   export default {
     name: 'RebateDetails',
-    components: {
-      Snackbar
-    },
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
@@ -355,7 +350,15 @@
         rebateDetails: {},
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
-        mailingDetails: {},
+        mailingDetails: {
+            mailingStreet1: null,
+            mailingStreet2: null,
+            mailingCity: null,
+            mailingStateAbbr: null,
+            mailingStateId: null,
+            mailingPostalCode: null
+        },
+        states: [],
         editMailing: false,
         notesDialog: false,
         voidDialog: false,
@@ -375,6 +378,7 @@
       async fetchPayments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          await this.getStates();
           const {data} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
           this.rebateDetails = data[0];
           this.rebateDetails.sc = moment(this.rebateDetails.sc).format('MM/DD/YYYY')
@@ -386,21 +390,22 @@
           }
           this.rebateDetails.payment_amount = payment_amount;
           this.mailingDetails = {
-            mailingStreet1: this.rebateDetails.mailing_street1,
-            mailingStreet2: this.rebateDetails.mailing_street2,
-            mailingCity: this.rebateDetails.mailing_city,
-            mailingState: this.rebateDetails.mailing_state,
-            mailingPostalCode: this.rebateDetails.mailing_postal_code
+              mailingStreet1: this.rebateDetails.mailing_street1,
+              mailingStreet2: this.rebateDetails.mailing_street2,
+              mailingCity: this.rebateDetails.mailing_city,
+              mailingStateAbbr: this.rebateDetails.mailing_state_abbr,
+              mailingStateId: this.rebateDetails.mailing_state_id,
+              mailingPostalCode: this.rebateDetails.mailing_postal_code
           }
 
           this.maxPayment = this.rebateDetails.payment_history.reduce((a,b) => Number(a.payment_nbr) > Number(b.payment_nbr) ? a : b)
           this.maxPaymentNumber = this.maxPayment && this.maxPayment.payment_nbr ? this.maxPayment.payment_nbr + 1 : 1
           this.getTotals();
           this.$store.commit(AppMutations.SET_LOADING, false)
-
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving rebate details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -419,13 +424,15 @@
           this.rebateDetails.mailing_street1 = null
           this.rebateDetails.mailing_street2 = null
           this.rebateDetails.mailing_city = null
-          this.rebateDetails.mailing_state = null
+          this.rebateDetails.mailing_state_id = null
+          this.rebateDetails.mailing_state_abbr = null
           this.rebateDetails.mailing_postal_code = null
           this.mailingDetails = {
             mailingStreet1: null,
             mailingStreet2: null,
             mailingCity: null,
-            mailingState: null,
+            mailingStateAbbr: null,
+            mailingStateId: null,
             mailingPostalCode: null
           }
         }
@@ -435,7 +442,7 @@
           mailingStreet1: this.rebateDetails.mailing_street1,
           mailingStreet2: this.rebateDetails.mailing_street2,
           mailingCity: this.rebateDetails.mailing_city,
-          state: this.rebateDetails.mailing_state,
+          companyStateId: this.rebateDetails.mailing_state_id,
           mailingPostalCode: this.rebateDetails.mailing_postal_code,
         }
 
@@ -443,17 +450,20 @@
           mailingStreet1: this.rebateDetails.mailing_street1,
           mailingStreet2: this.rebateDetails.mailing_street2,
           mailingCity: this.rebateDetails.mailing_city,
-          mailingState: this.rebateDetails.mailing_state,
+          mailingStateAbbr: this.states.filter(state => state.id === this.rebateDetails.mailing_state_id)[0].abbreviation,
+          mailingStateId: this.rebateDetails.mailing_state_id,
           mailingPostalCode: this.rebateDetails.mailing_postal_code
         }
 
         try {
           const {data} = await putRequest(`/contact/updateMailingAddress`, contact)
           this.snackbar = getSnackbar('SUCCESS', 'Mailing address saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.editMailing = false;
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving mailing address')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       cancelMailingEdit () {
@@ -461,7 +471,8 @@
         this.rebateDetails.mailing_street1= this.mailingDetails.mailingStreet1
         this.rebateDetails.mailing_street2 = this.mailingDetails.mailingStreet2
         this.rebateDetails.mailing_city = this.mailingDetails.mailingCity
-        this.rebateDetails.mailing_state = this.mailingDetails.mailingState
+        this.rebateDetails.mailing_state_abbr = this.mailingDetails.mailingStateAbbr
+        this.rebateDetails.mailing_state_id = this.mailingDetails.mailingStateId
         this.rebateDetails.mailing_postal_code = this.mailingDetails.mailingPostalCode
         this.editMailing = false;
       },
@@ -484,10 +495,12 @@
         try {
           const {data} = await postRequest(`/rebate/updateTotalPromotionAmount`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Total Promotion Amount saved!')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.editMailing = false;
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving Total Promotion Amount')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       addNewRow() {
@@ -512,6 +525,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error deleting payment')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         } else {
           this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== item.payment_nbr)
@@ -540,6 +554,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error saving payments')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         }
 
@@ -565,6 +580,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving payment note')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
 
         this.notesDialog = false
@@ -580,9 +596,21 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error voiding payment')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
 
         this.voidDialog = false;
+      },
+      async getStates () {
+          try {
+            const {data} = await getCompanyStates()
+            this.states = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          }
       }
     }
   }

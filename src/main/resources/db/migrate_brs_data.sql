@@ -2677,7 +2677,7 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
-INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, date_value, created_by_id)
+INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT o.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             o.birdeye_business_id,
@@ -8549,6 +8549,9 @@ with leads as (
          from flow.list_of_value lov
                   inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                  inner join flow.object_type ot on ot.id = cot.object_type_id and object_type_id = 2
                   inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
          where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
@@ -8568,7 +8571,7 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
               inner join flow.contact c on c.id = c1.id
      WHERE referred_by IS NOT NULL);
 
-INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT c.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Lead Created Date' and cf.company_id = c.company_id) as custom_field_id,
             lead_created_date,
@@ -8880,7 +8883,14 @@ update flow.project set contact_id = (select id from flow.contact where first_na
 where id =179198;
 
 
-with leads as (
+with no_dups as (
+    select max(d.id) as deal_id,c.id as contact_id
+    from blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+    group by c.id
+),
+leads as (
     SELECT c.id as contact_id,
            company_id,
            s.source_name,
@@ -8889,6 +8899,7 @@ with leads as (
              inner join flow.project p on p.id = d.id
              inner join flow.contact c on c.id = p.contact_id
              inner join blueraven.source s on s.id = d.source_id
+             inner join no_dups nd on nd.deal_id = p.id and nd.contact_id = c.id
     WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
 ),
      list_of_values as (
@@ -8896,6 +8907,9 @@ with leads as (
          from flow.list_of_value lov
                   inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                  inner join flow.object_type ot on ot.id = cot.object_type_id and object_type_id = 2
                   inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
          where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id,int_value , created_by_id)
@@ -8906,7 +8920,14 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
-with leads as (
+with no_dups as (
+    select max(d.id) as deal_id,c.id as contact_id
+    from blueraven.deal d
+             inner join flow.project p on p.id = d.id
+             inner join flow.contact c on c.id = p.contact_id
+    group by c.id
+),
+     leads as (
     SELECT c.id as contact_id,
            company_id,
            lead_source_detail,
@@ -8914,6 +8935,7 @@ with leads as (
     FROM blueraven.deal d
              inner join flow.project p on p.id = d.id
              inner join flow.contact c on c.id = p.contact_id
+             inner join no_dups nd on nd.deal_id = p.id and nd.contact_id = c.id
     WHERE d.lead_source_detail IS NOT NULL and c.contact_type_id = 1
 ),
      list_of_values as (
@@ -8930,6 +8952,35 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
             2350555 as created_by_id
      from leads l
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.lead_source_detail);
+
+with leads as (
+         SELECT p.id as project_id,
+                company_id,
+                s.source_name,
+                2350555 as created_by_id
+         FROM blueraven.deal d
+                  inner join flow.project p on p.id = d.id
+                  inner join flow.contact c on c.id = p.contact_id
+                  inner join blueraven.source s on s.id = d.source_id
+         WHERE d.source_id IS NOT NULL and c.contact_type_id = 1
+     ),
+     list_of_values as (
+         select lov2.id as list_of_value_id,lov2.name,cf2.company_id,cfga.id as custom_field_group_assignemnt_id
+         from flow.list_of_value lov
+                  inner join flow.custom_field cf2 on lov.id = cf2.list_of_value_id
+                  inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf2.id
+                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+                  inner join flow.object_type ot on ot.id = cot.object_type_id and object_type_id = 1
+                  inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
+         where cf2.field_name = 'Lead Source' and lov.name = 'Lead Source' and lov.parent_id is null)
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id,int_value , created_by_id)
+    (SELECT l.project_id,
+            lov.custom_field_group_assignemnt_id,
+            lov.list_of_value_id,
+            2350555 as created_by_id
+     from leads l
+              inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
 
 INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
@@ -10595,3 +10646,148 @@ where o.company_state_id is not null;
 
 alter table flow.state drop column if exists time_zone_abbreviation;
 
+insert into  flow.user_org_access(org_id, user_id, date_created,
+                                  created_by_id
+)
+    (select distinct  unnest(calendar_org_ids) as org_id,id as user_id,
+                      now(),2350555
+     from blueraven.user
+     where calendar_org_ids is not null);
+
+grant connect on database blueraven_uat to brs_users;
+grant usage on schema public to brs_users;
+grant usage on schema base_mysql to brs_users;
+grant usage on schema blueraven to brs_users;
+grant usage on schema brs to brs_users;
+grant usage on schema flow to brs_users;
+grant usage on schema props to brs_users;
+grant select on all tables in schema public to brs_users;
+grant select on all tables in schema base_mysql to brs_users;
+grant select on all tables in schema blueraven to brs_users;
+grant select on all tables in schema brs to brs_users;
+grant select on all tables in schema flow to brs_users;
+grant select on all tables in schema props to brs_users;
+
+
+insert into flow.attachment(attachment_type_id, company_id, filename, content_type, s3_key,
+                            size,date_created, date_modified, created_by_id,migrated_deal_id,migrated_deal_resource_id)
+    (select (select id from flow.attachment_type at
+             where attachment_type = 'Migrated Documents'
+               and at.company_id = c.company_id),c.company_id,filename,content_type,s3_key,size,
+            created,updated,coalesce(u.id,2350555),d.id,dba.deal_resource_oid
+     from blueraven.deal_base_document dba
+              inner join blueraven.deal d on d.deal_base_oid = dba.deal_base_oid
+              inner join flow.project p on p.id=d.id
+              inner join flow.contact c on c.id = p.contact_id
+              left join blueraven."user" u on (dba.created_by_id = u.user_base_oid or dba.created_by_id = u.user_base_setter_oid));
+
+
+with project_documents as (
+    select a.migrated_deal_resource_id
+    from flow.attachment a
+        except
+    select deal_resource_oid
+    from blueraven.deal_calendar_event_attachment)
+insert into flow.project_attachment(attachment_id, project_id, date_created,
+                                    created_by_id)
+    (select a.id,p.id,now(),a.created_by_id
+     from flow.project p
+              inner join flow.attachment a on a.migrated_deal_id = p.id
+              inner join project_documents pd on pd.migrated_deal_resource_id = a.migrated_deal_resource_id);
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 49),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Installation Scheduling Coordinator', 'Install Scheduling Closeout Coordinator',
+                              'Installation Analyst', 'Install Scheduling Coordinator', 'Graphic Designer',
+                              'Project Coordinator', 'Design Specialist', 'Accounts Payable Clerk', 'Retentions Specialist',
+                              'Customer Insights Specialist', 'Human Resources Onboarding Coordinator', 'Operations Logistics',
+                              'Customer Operations Trainer', 'Marketing and Media Specialist', 'Design Developer', 'Operations Coordinator',
+                              'Event Coordinator', 'Rafter Upgrade Specialist', 'Human Resources Generalist', 'Compliance Specialist',
+                              'Supply Chain Coordinator', 'EPC Partner', 'Placard Operator', 'Bureau Operations Coordinator',
+                              'Site Survey Coordinator', 'Inspections Coordinator', 'Structural and Design Engineer',
+                              'Engineer, Content Marketing Specialist', 'Digital Marketing Specialist', 'Permitting Coordinator',
+                              'Reviews Coordinator', 'Marketing Strategy Intern', 'Outreach Marketing Specialist', 'Scheduling Coordinator',
+                              'Customer Experience Specialist', 'Retentions Coordinator', 'Payroll Specialist', 'Inspection Quality Coordinator',
+                              'Support Coordinator', 'Inspections Scheduler', 'Licensing Coordinator', 'Partners Coordinator',
+                              'Utilities Coordinator', 'Onboarding Coordinator', 'Onboarding Coordinator', 'Engineering Specialist',
+                              'Licensing Coordinator', 'Customer Experience Coordinator' ))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 162),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Field Service Manager', 'Field Operations Director', 'Field Service Technician Manager', 'Field HR Manager',
+                              'Installation Director', 'Installation Director', 'National Installation Manager', 'Regional Installation Manager',
+                              'Installation Quality and Safety Manager', 'Installer Manager', 'Installation Scheduling Lead',
+                              'Pre-Installation Director', 'Installation Director', 'Installation Scheduling Manager', 'Design Lead, Design Manager',
+                              'Executive', 'Marketing Manager', 'EPC Lead', 'Operations Logistics Manager', 'Human Resources Manager',
+                              'Operations Director', 'Management Trainee', 'Customer Experience Manager', 'General Operations Lead',
+                              'Software Development', 'Controller', 'Quality Assurance Lead', 'Director of Human Resources', 'Marketing Senior Manager',
+                              'Operations Manager', 'System Production Manager', 'EPC Operations Manager', 'Support Lead', 'Support Manager',
+                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager', 'Technicians Manager',
+                              'Inspections Manager', 'Inspections Lead', 'General Counsel', 'Supply Chain Manager', 'Operations Lead',
+                              'Product Manager', 'Business Development Manager', 'Customer Insights Lead', 'Permitting Manager', 'EPC Regional',
+                              'Marketing Director', 'Service Technician Manager', 'Reviews Lead', 'Mountain Project Manager',
+                              'Engineering Manager', 'Project Manager', 'Scheduling Manager', 'Auditor', 'HR Business Partner',
+                              'Rep Success Manager', 'Business Intelligence Senior Manager', 'Regional Director', 'Recruiting Budget Manager',
+                              'Retentions Manager', 'Automation, Payroll Manager', 'Supply Chain Director', 'Leader Development Senior Manager',
+                              'Partners Manager', 'Partners Lead', 'Service Operations Manager', 'Utilities Lead', 'Utilities Manager',
+                              'Office Manager & Executive Assistant', 'Permitting Lead', 'Engineering Lead', 'Market Manager',
+                              'Marketing and Business Development Manager', 'Customer Experience Manager', 'Customer Experience Lead',
+                              'Business Development Senior Manager', 'Compliance Manager', 'Licensing Manager', 'BI Analyst, Director of Operations',
+                              'VP of Operations', 'Systems Director'))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 49),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where u.id not in (2354975,2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Field Service Technician', 'Field Operations Technician', 'Field Operations Recruiter',
+                              'Field Operations Recruiter', 'Field Operations Project Manager', 'Field Operations Technician Lead',
+                              'Field Service Technican Lead', 'Field Recruiter', 'Field Service Coordinator', 'Field Service Lead',
+                              'Site Surveyor', 'Installer', 'Installation Trainer', 'Installation Lead', 'Installation Trainer',
+                              'Installation Coordinator', 'Installation Foreman', 'Supervising Electrician', 'Engineering EIT',
+                              'Crew Lead', 'Electrician, Electrician - Crew', 'Crew Lead + Electrician'))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 19),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Accounting Manager'))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
