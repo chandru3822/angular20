@@ -12306,7 +12306,7 @@ with process_step1 as (
               and non_standard_installation_work_date is not null
               and originator_id = 7
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 7 and work_type_id = 13 and deleted is false
@@ -12484,7 +12484,7 @@ with process_step1 as (
               and non_standard_installation_work_date is not null
               and originator_id = 7
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 7 and work_type_id = 13 and deleted is false
@@ -13225,7 +13225,7 @@ with process_step1 as (
                 ahj_reinspection_date is not null
               and originator_id = 7
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 7 and work_type_id = 5 and deleted is false
@@ -14468,7 +14468,7 @@ with process_step1 as (
                 ahj_reinspection_b_date is not null
               and originator_id = 7
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 7 and work_type_id = 23 and deleted is false
@@ -14834,7 +14834,7 @@ with process_step1 as (
                 in_house_mpu_permit_pickup_date is not null
               and originator_id = 7
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 7 and work_type_id = 26 and deleted is false
