@@ -17884,7 +17884,7 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,now(),
+         ,date_trunc('second', coalesce(migrated_created_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 d1.org_id,
                 d1.start_time,
                 d1.end_time
