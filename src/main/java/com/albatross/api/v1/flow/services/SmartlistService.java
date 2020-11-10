@@ -635,8 +635,11 @@ public class SmartlistService {
 
                           referenceLocation = "\"" + customSqlUuid + "\".id";
                       } else {
-                          additionalJoins.append(String.format("\nleft join %s \"%s\"", getReferenceTable(r.getObjectTypeId()), valueUuid));
-                          referenceLocation = "\"" + valueUuid + "\"." + referenceColumn;
+                        final String joinField = (r.getObjectTypeId() == 1) ? "project_id" : "contact_id";
+                        final String joinedField = (r.getObjectTypeId() == 1) ? "id" : "contact_id";
+
+                        query.append(String.format("\nleft join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, joinField, joinedField, valueUuid, r.getCustomFieldGroupAssignmentId()));
+                        referenceLocation = "\"" + valueUuid + "\"." + referenceColumn;
                       }
                   }
               }
