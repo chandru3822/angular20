@@ -498,7 +498,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,site_survey_completed_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,site_survey_completed_date) as start_time,
@@ -525,7 +525,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -543,9 +546,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,
                                                          int_value,date_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1490 then p1.start_time
-                 when p.custom_field_group_assignment_id = 1503 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 1516 then p1.org_id
+            case when p.custom_field_group_assignment_id = 1490 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 1503 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 1516 then p1.migrated_org_id
                 -- when p.custom_field_group_assignment_id = 19 then (select id from flow.list_of_value where parent_id = 353
                 --                                                                                        and name = d2.site_survey_type)
                  else null end,
@@ -1621,7 +1624,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
        (with deals as (
             SELECT d.id,permit_packet_submitted_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_packet_submitted_date) as start_time,
@@ -1649,7 +1652,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                9
+                9,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -1670,9 +1676,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2244 then p1.org_id
+            case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1689,7 +1695,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,d.permit_pack_revision_submittal_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_pack_revision_submittal_date) as start_time,
@@ -1717,7 +1723,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                16
+                16,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -1739,9 +1748,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2244 then p1.org_id
+            case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1758,7 +1767,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,d.permit_revision_b_submittal_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_revision_b_submittal_date) as start_time,
@@ -1786,7 +1795,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                18
+                18,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -1807,9 +1819,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2244 then p1.org_id
+            case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1826,7 +1838,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_revision_c_submittal_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_revision_c_submittal_date) as start_time,
@@ -1854,7 +1866,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                19
+                19,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -1875,9 +1890,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2244 then p1.org_time
+            case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -3232,7 +3247,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_permit_submittal_date complete_date,dce2.org_id,
                    coalesce(dce2.start_time,in_house_mpu_permit_submittal_date) as start_time,
@@ -3259,7 +3274,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3279,12 +3297,12 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2426 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2439 then p1.end_time
+            case when p.custom_field_group_assignment_id = 2426 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2439 then p1.migrated_end_time
                  else null end,
             case when p.custom_field_group_assignment_id = 8133 then ((in_house_mpu_permit_submittal_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
-            case when p.custom_field_group_assignment_id = 2452 then p1.org_id
+            case when p.custom_field_group_assignment_id = 2452 then p1.migrated_org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -3501,7 +3519,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,d.permit_pick_up_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_pick_up_date) as start_time,
@@ -3529,7 +3547,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                8
+                8,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3548,9 +3569,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                             timestamp_value, int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2491 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2504 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2517 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 2491 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2504 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2517 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3558,7 +3579,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_pack_revision_pickup_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_pack_revision_pickup_date) as start_time,
@@ -3586,7 +3607,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                17
+                17,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3605,9 +3629,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 128 then p1.start_time
-                 when p.custom_field_group_assignment_id = 129 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 130 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 128 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 129 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 130 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3615,7 +3639,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_revision_b_pickup_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_revision_b_pickup_date) as start_time,
@@ -3643,7 +3667,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                20
+                20,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3662,9 +3689,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2491 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2504 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2517 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 2491 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2504 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2517 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3672,7 +3699,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_revision_c_pickup_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,permit_revision_c_pickup_date) as start_time,
@@ -3700,7 +3727,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                21
+                21,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3719,9 +3749,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2491 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2504 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2517 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 2491 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2504 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2517 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3767,7 +3797,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,fl_noc_application_signature_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,fl_noc_application_signature_date) as start_time,
@@ -3794,7 +3824,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -3813,9 +3846,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2530 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2543 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2556 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 2530 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2543 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2556 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4054,7 +4087,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,installation_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,installation_date) as start_time,
@@ -4081,7 +4114,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -4102,9 +4138,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 10408 then ((scheduled_installation_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
-            case when p.custom_field_group_assignment_id = 2582 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2595 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2608 then p1.org_id
+            case when p.custom_field_group_assignment_id = 2582 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2595 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2608 then p1.migrated_org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4233,7 +4269,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,installation_closeout_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,installation_closeout_date) as start_time,
@@ -4260,7 +4296,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -4280,9 +4319,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 13164 then ((installation_closeout_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2621 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2634 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2647 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 2621 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2634 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2647 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4734,7 +4773,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_inspection_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_inspection_date) as start_time,
@@ -4762,7 +4801,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -4782,9 +4824,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14698  then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2751 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2764 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2777 then p1.org_id
+            case when p.custom_field_group_assignment_id = 2751 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2764 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2777 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 11929 then (select id from flow.list_of_value where parent_id = 2432
                                                                                                          and name::boolean = d2.additional_ahj_inspection_required)
                  else null end,
@@ -5343,7 +5385,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,system_service_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,system_service_date) as start_time,
@@ -5370,7 +5412,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -5390,9 +5435,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 9576 then ((system_service_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2855 then p1.start_time
-                 when p.custom_field_group_assignment_id = 2868 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 2881 then p1.org_time else null end,
+            case when p.custom_field_group_assignment_id = 2855 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 2868 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 2881 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -6816,7 +6861,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,in_house_mpu_date) as start_time,
@@ -6843,7 +6888,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -6863,10 +6911,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 11500 then ((in_house_mpu_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 3323 then p1.start_time
-                 when p.custom_field_group_assignment_id = 3336 then p1.end_time
+            case when p.custom_field_group_assignment_id = 3323 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 3336 then p1.migrated_end_time
                  else null end,
-            case when  p.custom_field_group_assignment_id = 3349 then p1.org_id
+            case when  p.custom_field_group_assignment_id = 3349 then p1.migrated_org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6995,7 +7043,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -7028,7 +7076,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -7047,10 +7098,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3375 then p1.start_time
-                 when p.custom_field_group_assignment_id = 4532 then p1.end_time
+            case when p.custom_field_group_assignment_id = 3375 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 4532 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 3388 then p1.org_id
+            case when p.custom_field_group_assignment_id = 3388 then p1.migrated_org_id
          else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7256,7 +7307,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_inspection_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_inspection_work_date) as start_time,
@@ -7283,7 +7334,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -7302,10 +7356,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3440 then p1.start_time
-                 when p.custom_field_group_assignment_id = 3453 then p1.end_time
+            case when p.custom_field_group_assignment_id = 3440 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 3453 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 3466 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 3466 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -7437,7 +7491,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,energization_visit_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,energization_visit_date) as start_time,
@@ -7464,7 +7518,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -7484,10 +7541,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 10798 then d2.energization_visit_scheduled_date else null end,
-            case when p.custom_field_group_assignment_id = 3310 then p1.start_time
-                 when  p.custom_field_group_assignment_id = 8250 then p1.end_time
+            case when p.custom_field_group_assignment_id = 3310 then P1.migrated_start_time
+                 when  p.custom_field_group_assignment_id = 8250 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8263 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 8263 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -8816,7 +8873,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,resurvey_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,resurvey_date) as start_time,
@@ -8844,7 +8901,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                11
+                11,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -8864,9 +8924,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 6287 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6300 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 6313 then p1.org_id
+            case when p.custom_field_group_assignment_id = 6287 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6300 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 6313 then p1.migrated_org_id
                   when    p.custom_field_group_assignment_id = 3024 then (select id from flow.list_of_value where parent_id = 2523
                                                                                                              and name = d2.resurvey_a_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
@@ -8879,7 +8939,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         ( with deals as (
             SELECT d.id,resurvey_b_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,resurvey_b_date) as start_time,
@@ -8907,7 +8967,10 @@ with process_step1 as (
                  now(),
                  d1.complete_date,
                  date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                 28
+                 28,
+                 d1.org_id,
+                 d1.start_time,
+                 d1.end_time
           FROM flow.project
                    INNER JOIN blueraven.deal d
                               ON project.id = d.id
@@ -8927,9 +8990,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 6287 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6300 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 6313 then p1.org_id
+            case when p.custom_field_group_assignment_id = 6287 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6300 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 6313 then p1.migrated_org_id
                  when    p.custom_field_group_assignment_id = 3024 then (select id from flow.list_of_value where parent_id = 2523
                                                                                                              and name = d2.resurvey_b_reason) else null end,
             case when p.custom_field_group_assignment_id = 8757 then d2.resurvey_requested_by
@@ -8941,7 +9004,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,resurvey_c_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,resurvey_c_date) as start_time,
@@ -8969,7 +9032,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                29
+                29,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -8989,9 +9055,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 6287 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6300 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 6313 then p1.org_id
+            case when p.custom_field_group_assignment_id = 6287 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6300 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 6313 then p1.migrated_org_id
                 when    p.custom_field_group_assignment_id = 3024 then (select id from flow.list_of_value where parent_id = 2523
                                                                                                              and name = d2.resurvey_c_reason) else null end,
             case when p.custom_field_group_assignment_id = 8757 then d2.resurvey_requested_by
@@ -11501,7 +11567,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -11530,7 +11596,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11548,10 +11617,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6755 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6768 then p1.end_time
+            case when p.custom_field_group_assignment_id = 6755 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6768 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6781 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 6781 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -11679,7 +11748,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,in_house_mpu_date) as start_time,
@@ -11708,7 +11777,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11726,10 +11798,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6820 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6833 then p1.end_time
+            case when p.custom_field_group_assignment_id = 6820 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6833 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6846 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 6846 then p1.migrated_org_id else null end,
          now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -11857,7 +11929,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -11886,7 +11958,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -11904,10 +11979,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6859 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6872 then p1.end_time
+            case when p.custom_field_group_assignment_id = 6859 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6872 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6885 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 6885 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12034,7 +12109,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -12063,7 +12138,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12081,10 +12159,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6898 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6911 then p1.end_time
+            case when p.custom_field_group_assignment_id = 6898 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6911 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6924 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 6924 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12211,7 +12289,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -12240,7 +12318,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12258,10 +12339,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6937 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6950 then p1.end_time
+            case when p.custom_field_group_assignment_id = 6937 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6950 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6963 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 6963 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12386,7 +12467,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -12415,7 +12496,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12433,10 +12517,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6976 then p1.start_time
-                 when p.custom_field_group_assignment_id = 6989 then p1.end_time
+            case when p.custom_field_group_assignment_id = 6976 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 6989 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 7002 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 7002 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12562,7 +12646,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -12591,7 +12675,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12609,10 +12696,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7015 then p1.start_time
-                 when p.custom_field_group_assignment_id = 7028 then p1.end_time
+            case when p.custom_field_group_assignment_id = 7015 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 7028 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 7041 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 7041 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12736,7 +12823,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
@@ -12765,7 +12852,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -12783,10 +12873,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7080 then p1.start_time
-                 when p.custom_field_group_assignment_id = 7093 then p1.end_time
+            case when p.custom_field_group_assignment_id = 7080 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 7093 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 7106 then p1.org_id else null end,
+            case when p.custom_field_group_assignment_id = 7106 then p1.migrated_org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -13113,7 +13203,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_reinspection_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_reinspection_date) as start_time,
@@ -13141,7 +13231,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                5
+                5,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13160,10 +13253,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 8718 then ((ahj_reinspection_scheduled  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date else null end,
-            case when p.custom_field_group_assignment_id = 14451 then p1.start_time
-                 when p.custom_field_group_assignment_id = 14464 then p1.end_time
+            case when p.custom_field_group_assignment_id = 14451 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 14464 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 15543 then p1.org_id
+            case when p.custom_field_group_assignment_id = 15543 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 8731 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  else null end,
@@ -13175,7 +13268,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_reinspection_b_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_reinspection_b_date) as start_time,
@@ -13203,7 +13296,10 @@ with process_step1 as (
                 now(),
                 d1.complete_date,
                 date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
-                23
+                23,
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13222,10 +13318,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 8718 then ((ahj_reinspection_b_scheduled  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date else null end,
-            case when p.custom_field_group_assignment_id = 14451 then p1.start_time
-                 when p.custom_field_group_assignment_id = 14464 then p1.end_time
+            case when p.custom_field_group_assignment_id = 14451 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 14464 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 15543 then p1.org_id
+            case when p.custom_field_group_assignment_id = 15543 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 8731 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  else null end,
@@ -13935,7 +14031,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_mid_point_inspection_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_mid_point_inspection_date) as start_time,
@@ -13962,7 +14058,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -13981,10 +14080,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14776 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 12748 then p1.start_time
-                 when p.custom_field_group_assignment_id = 12761 then p1.end_time
+            case when p.custom_field_group_assignment_id = 12748 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 12761 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 12774 then p1.org_id
+            case when p.custom_field_group_assignment_id = 12774 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 8354 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 9238 then (select id from flow.list_of_value where parent_id = 1613
@@ -14195,7 +14294,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_inspection_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_inspection_date) as start_time,
@@ -14223,7 +14322,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14242,10 +14344,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 8068 then p1.start_time
-                 when p.custom_field_group_assignment_id = 8081 then p1.end_time
+            case when p.custom_field_group_assignment_id = 8068 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 8081 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8094 then p1.org_id
+            case when p.custom_field_group_assignment_id = 8094 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 7275 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 11942 then (select id from flow.list_of_value where parent_id = 2432
@@ -14259,7 +14361,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_reinspection_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_reinspection_date) as start_time,
@@ -14286,7 +14388,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14306,10 +14411,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 8068 then p1.start_time
-                 when p.custom_field_group_assignment_id = 8081 then p1.end_time
+            case when p.custom_field_group_assignment_id = 8068 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 8081 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8094 then p1.org_id
+            case when p.custom_field_group_assignment_id = 8094 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 7275 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 11942 then (select id from flow.list_of_value where parent_id = 2432
@@ -14322,7 +14427,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_reinspection_b_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,ahj_reinspection_b_date) as start_time,
@@ -14349,7 +14454,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14369,10 +14477,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 8068 then p1.start_time
-                 when p.custom_field_group_assignment_id = 8081 then p1.end_time
+            case when p.custom_field_group_assignment_id = 8068 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 8081 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8094 then p1.org_id
+            case when p.custom_field_group_assignment_id = 8094 then p1.migrated_org_id
                  when p.custom_field_group_assignment_id = 7275 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 11942 then (select id from flow.list_of_value where parent_id = 2432
@@ -14498,7 +14606,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,additional_ahj_inspection_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,additional_ahj_inspection_date) as start_time,
@@ -14525,7 +14633,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14544,10 +14655,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 2842 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 12163 then p1.start_time
-                 when p.custom_field_group_assignment_id = 12176 then p1.end_time
+            case when p.custom_field_group_assignment_id = 12163 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 12176 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 12189 then p1.org_id
+            case when p.custom_field_group_assignment_id = 12189 then p1.migrated_org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -14674,7 +14785,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_permit_pickup_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,in_house_mpu_permit_pickup_date) as start_time,
@@ -14701,7 +14812,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -14719,10 +14833,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8198 then p1.start_time
-                 when p.custom_field_group_assignment_id = 8211 then p1.end_time
+            case when p.custom_field_group_assignment_id = 8198 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 8211 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8237 then p1.org_id
+            case when p.custom_field_group_assignment_id = 8237 then p1.migrated_org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15950,7 +16064,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,asbuilt_permit_pack_submittal_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,asbuilt_permit_pack_submittal_date) as start_time,
@@ -15977,7 +16091,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -15995,10 +16112,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,boolean_value,numeric_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10603 then p1.start_time
-                 when p.custom_field_group_assignment_id = 10616 then p1.end_time
+            case when p.custom_field_group_assignment_id = 10603 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 10616 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 10629 then p1.org_id
+            case when p.custom_field_group_assignment_id = 10629 then p1.migrated_org_id
                  else null end,
             case when p.custom_field_group_assignment_id = 10876 then d2.permit_fee_paid::boolean else null end,
             case when p.custom_field_group_assignment_id = 10850 then d2.permit_deposit_fee::numeric
@@ -16290,7 +16407,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,as_built_permit_pickup_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,as_built_permit_pickup_date) as start_time,
@@ -16317,7 +16434,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds'
+         ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -16335,10 +16455,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10733 then p1.start_time
-                 when p.custom_field_group_assignment_id = 10746 then p1.end_time
+            case when p.custom_field_group_assignment_id = 10733 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 10746 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 10759 then p1.org_id
+            case when p.custom_field_group_assignment_id = 10759 then p1.migrated_org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -17736,7 +17856,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 
 with process_step1 as (
-    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_inspection_scheduled_date as complete_date,dce2.org_id,
                    coalesce(dce2.start_time,in_house_mpu_inspection_scheduled_date) as start_time,
@@ -17764,7 +17884,10 @@ with process_step1 as (
                 2350555 as created_by_id,
                 now(),
                 d1.complete_date
-         ,now()
+         ,now(),
+                d1.org_id,
+                d1.start_time,
+                d1.end_time
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -17783,9 +17906,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13736 then p1.start_time
-                 when p.custom_field_group_assignment_id = 13749 then p1.end_time else null end,
-            case when p.custom_field_group_assignment_id = 13775 then p1.org_id
+            case when p.custom_field_group_assignment_id = 13736 then P1.migrated_start_time
+                 when p.custom_field_group_assignment_id = 13749 then p1.migrated_end_time else null end,
+            case when p.custom_field_group_assignment_id = 13775 then p1.migrated_org_id
 
                  else null end,
             now(),now(),2350555,2350555
