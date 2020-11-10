@@ -10694,3 +10694,100 @@ insert into flow.project_attachment(attachment_id, project_id, date_created,
      from flow.project p
               inner join flow.attachment a on a.migrated_deal_id = p.id
               inner join project_documents pd on pd.migrated_deal_resource_id = a.migrated_deal_resource_id);
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 49),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where p.position in ('Installation Scheduling Coordinator', 'Install Scheduling Closeout Coordinator',
+                              'Installation Analyst', 'Install Scheduling Coordinator', 'Graphic Designer',
+                              'Project Coordinator', 'Design Specialist', 'Accounts Payable Clerk', 'Retentions Specialist',
+                              'Customer Insights Specialist', 'Human Resources Onboarding Coordinator', 'Operations Logistics',
+                              'Customer Operations Trainer', 'Marketing and Media Specialist', 'Design Developer', 'Operations Coordinator',
+                              'Event Coordinator', 'Rafter Upgrade Specialist', 'Human Resources Generalist', 'Compliance Specialist',
+                              'Supply Chain Coordinator', 'EPC Partner', 'Placard Operator', 'Bureau Operations Coordinator',
+                              'Site Survey Coordinator', 'Inspections Coordinator', 'Structural and Design Engineer',
+                              'Engineer, Content Marketing Specialist', 'Digital Marketing Specialist', 'Permitting Coordinator',
+                              'Reviews Coordinator', 'Marketing Strategy Intern', 'Outreach Marketing Specialist', 'Scheduling Coordinator',
+                              'Customer Experience Specialist', 'Retentions Coordinator', 'Payroll Specialist', 'Inspection Quality Coordinator',
+                              'Support Coordinator', 'Inspections Scheduler', 'Licensing Coordinator', 'Partners Coordinator',
+                              'Utilities Coordinator', 'Onboarding Coordinator', 'Onboarding Coordinator', 'Engineering Specialist',
+                              'Licensing Coordinator', 'Customer Experience Coordinator' ))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 162),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where p.position in ('Field Service Manager', 'Field Operations Director', 'Field Service Technician Manager', 'Field HR Manager',
+                              'Installation Director', 'Installation Director', 'National Installation Manager', 'Regional Installation Manager',
+                              'Installation Quality and Safety Manager', 'Installer Manager', 'Installation Scheduling Lead',
+                              'Pre-Installation Director', 'Installation Director', 'Installation Scheduling Manager', 'Design Lead, Design Manager',
+                              'Executive', 'Marketing Manager', 'EPC Lead', 'Operations Logistics Manager', 'Human Resources Manager',
+                              'Operations Director', 'Management Trainee', 'Customer Experience Manager', 'General Operations Lead',
+                              'Software Development', 'Controller', 'Quality Assurance Lead', 'Director of Human Resources', 'Marketing Senior Manager',
+                              'Operations Manager', 'System Production Manager', 'EPC Operations Manager', 'Support Lead', 'Support Manager',
+                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager', 'Technicians Manager',
+                              'Inspections Manager', 'Inspections Lead', 'General Counsel', 'Supply Chain Manager', 'Operations Lead',
+                              'Product Manager', 'Business Development Manager', 'Customer Insights Lead', 'Permitting Manager', 'EPC Regional',
+                              'Marketing Director', 'Service Technician Manager', 'Reviews Lead', 'Mountain Project Manager',
+                              'Engineering Manager', 'Project Manager', 'Scheduling Manager', 'Auditor', 'HR Business Partner',
+                              'Rep Success Manager', 'Business Intelligence Senior Manager', 'Regional Director', 'Recruiting Budget Manager',
+                              'Retentions Manager', 'Automation, Payroll Manager', 'Supply Chain Director', 'Leader Development Senior Manager',
+                              'Partners Manager', 'Partners Lead', 'Service Operations Manager', 'Utilities Lead', 'Utilities Manager',
+                              'Office Manager & Executive Assistant', 'Permitting Lead', 'Engineering Lead', 'Market Manager',
+                              'Marketing and Business Development Manager', 'Customer Experience Manager', 'Customer Experience Lead',
+                              'Business Development Senior Manager', 'Compliance Manager', 'Licensing Manager', 'BI Analyst, Director of Operations',
+                              'VP of Operations', 'Systems Director'))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 49),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where p.position in ('Field Service Technician', 'Field Operations Technician', 'Field Operations Recruiter',
+                              'Field Operations Recruiter', 'Field Operations Project Manager', 'Field Operations Technician Lead',
+                              'Field Service Technican Lead', 'Field Recruiter', 'Field Service Coordinator', 'Field Service Lead',
+                              'Site Surveyor', 'Installer', 'Installation Trainer', 'Installation Lead', 'Installation Trainer',
+                              'Installation Coordinator', 'Installation Foreman', 'Supervising Electrician', 'Engineering EIT',
+                              'Crew Lead', 'Electrician, Electrician - Crew', 'Crew Lead + Electrician'))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
+
+
+with position_features as (
+    select  company_feature_id,access_control_id,enabled
+    from flow.position_feature_access_control
+    where position_id = 19),
+     positions as (
+         select distinct u.id,company_feature_id,access_control_id,enabled
+         from flow.user u
+                  inner join flow.user_position up on up.user_id =u.id and up.end_date is null
+                  inner join flow.position p on p.id = up.position_id
+                  cross join position_features
+         where p.position in ('Accounting Manager'))
+insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
+    (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
