@@ -127,6 +127,7 @@ public class ProjectProcessStepService {
         throw new RuntimeException("The given process step does not exist");
     }
 
+
     if (pps.getProcessStepStatusTypeId().equals(processStepStatusTypeId)) {
         return;
     }
