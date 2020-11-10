@@ -6,8 +6,6 @@ name: Albatross Build
 
 on:
     push:
-        paths-ignore:
-            - "client/**"
         branches:
             - "stage"
 
@@ -15,7 +13,7 @@ jobs:
     build:
         name: Package & Deploy
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 10
         steps:
             -   uses: actions/checkout@v2
             -   name: Set up JDK 11
@@ -75,6 +73,7 @@ jobs:
                     service: br-stage-service
                     cluster: br-stage-cluster
                     wait-for-service-stability: true
+                    wait-for-minutes: 5
 
     frontend-build:
       needs: build
