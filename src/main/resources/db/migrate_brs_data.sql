@@ -10706,7 +10706,7 @@ with position_features as (
                   inner join flow.user_position up on up.user_id =u.id and up.end_date is null
                   inner join flow.position p on p.id = up.position_id
                   cross join position_features
-         where p.position in ('Installation Scheduling Coordinator', 'Install Scheduling Closeout Coordinator',
+         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Installation Scheduling Coordinator', 'Install Scheduling Closeout Coordinator',
                               'Installation Analyst', 'Install Scheduling Coordinator', 'Graphic Designer',
                               'Project Coordinator', 'Design Specialist', 'Accounts Payable Clerk', 'Retentions Specialist',
                               'Customer Insights Specialist', 'Human Resources Onboarding Coordinator', 'Operations Logistics',
@@ -10734,7 +10734,7 @@ with position_features as (
                   inner join flow.user_position up on up.user_id =u.id and up.end_date is null
                   inner join flow.position p on p.id = up.position_id
                   cross join position_features
-         where p.position in ('Field Service Manager', 'Field Operations Director', 'Field Service Technician Manager', 'Field HR Manager',
+         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Field Service Manager', 'Field Operations Director', 'Field Service Technician Manager', 'Field HR Manager',
                               'Installation Director', 'Installation Director', 'National Installation Manager', 'Regional Installation Manager',
                               'Installation Quality and Safety Manager', 'Installer Manager', 'Installation Scheduling Lead',
                               'Pre-Installation Director', 'Installation Director', 'Installation Scheduling Manager', 'Design Lead, Design Manager',
@@ -10768,7 +10768,7 @@ with position_features as (
                   inner join flow.user_position up on up.user_id =u.id and up.end_date is null
                   inner join flow.position p on p.id = up.position_id
                   cross join position_features
-         where p.position in ('Field Service Technician', 'Field Operations Technician', 'Field Operations Recruiter',
+         where u.id not in (2354975,2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Field Service Technician', 'Field Operations Technician', 'Field Operations Recruiter',
                               'Field Operations Recruiter', 'Field Operations Project Manager', 'Field Operations Technician Lead',
                               'Field Service Technican Lead', 'Field Recruiter', 'Field Service Coordinator', 'Field Service Lead',
                               'Site Surveyor', 'Installer', 'Installation Trainer', 'Installation Lead', 'Installation Trainer',
@@ -10788,6 +10788,6 @@ with position_features as (
                   inner join flow.user_position up on up.user_id =u.id and up.end_date is null
                   inner join flow.position p on p.id = up.position_id
                   cross join position_features
-         where p.position in ('Accounting Manager'))
+         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Accounting Manager'))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );

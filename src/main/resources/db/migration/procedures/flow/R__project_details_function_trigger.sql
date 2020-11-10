@@ -77,23 +77,30 @@ declare
     v_value           character varying;
     v_user_id         integer;
     v_value1          integer;
+    v_cfga_id         integer;
 BEGIN
 
-
-    select pdc.id, field_to_update, data_type_id
-    into v_config_id,v_field_to_update,v_data_type_id
-    from brs.project_details_config pdc
-    where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
-      and case
-              when new.custom_field_group_assignment_id = 7 then
-                  field_to_update = 'closer_user_position_id'
-              else 1 = 1 end;
 
     select pps.project_id
     into v_project_id
     from flow.project_process_step pps
     where pps.id = new.project_process_step_id
       and pps.main is true;
+
+    select cfga.id
+    into v_cfga_id
+    from flow.custom_field_group_assignment cfga
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where cfga.id = new.custom_field_group_assignment_id and cf.field_name = 'Closer Appointment Resource' limit 1;
+
+    select pdc.id, field_to_update, data_type_id
+    into v_config_id,v_field_to_update,v_data_type_id
+    from brs.project_details_config pdc
+    where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
+      and case
+              when v_cfga_id is not null then
+                      field_to_update = 'closer_user_position_id'
+              else 1 = 1 end;
 
     if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6) and v_project_id is not null then
         if v_data_type_id = 1 then
@@ -118,16 +125,13 @@ BEGIN
        -- raise notice 'id =  %',new.id;
         execute v_sql;
 
-        if new.custom_field_group_assignment_id = 7 then
+        if v_cfga_id is not null then
 
             select pdc.id, field_to_update, data_type_id
             into v_config_id,v_field_to_update,v_data_type_id
             from brs.project_details_config pdc
             where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
-              and case
-                      when new.custom_field_group_assignment_id = 7 then
-                          field_to_update = 'closer_user_id'
-                      else 1 = 1 end;
+              and field_to_update = 'closer_user_id';
 
 
             select user_id
