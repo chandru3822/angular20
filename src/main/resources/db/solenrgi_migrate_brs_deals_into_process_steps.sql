@@ -500,32 +500,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,site_survey_scheduled_date as complete_date
+            SELECT d.id,site_survey_completed_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,site_survey_completed_date) as start_time,
+                   coalesce(dce2.end_time,site_survey_completed_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and site_survey_completed_date::date = (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
             where
-                site_survey_scheduled_date is not null and site_survey_completed_date is not null
+                site_survey_completed_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 7 and deleted is false
-              and d.site_survey_completed_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-            inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 7 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        site_survey_scheduled_date is not null and site_survey_completed_date is not null
-                      and originator_id = 2))
+              and (d.site_survey_completed_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.site_survey_completed_date is null))
          SELECT project.id,
                 256,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -551,18 +543,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,
                                                          int_value,date_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1490 then (select dce.start_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 7 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 1503 then (select dce.end_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 7 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 1516 then (select org_id
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.deal_id = d2.id and dce.work_type_id = 7
-                                                                      and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 1490 then p1.start_time
+                 when p.custom_field_group_assignment_id = 1503 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 1516 then p1.org_id
                 -- when p.custom_field_group_assignment_id = 19 then (select id from flow.list_of_value where parent_id = 353
                 --                                                                                        and name = d2.site_survey_type)
                  else null end,
@@ -1299,7 +1282,6 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
               cross join p
     );
 
-
 /*STRUCTURAL ANALYSIS*/
 with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created, migrated_created_date)
@@ -1640,33 +1622,25 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
-        (with deals as (
-            SELECT d.id,permit_packet_ready_to_submit_date as complete_date
+       (with deals as (
+            SELECT d.id,permit_packet_submitted_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_packet_submitted_date) as start_time,
+                   coalesce(dce2.end_time,permit_packet_submitted_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_packet_submitted_date::date
             where
                 permit_packet_submitted_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
-            inner join blueraven.deal d on d.id = dce.deal_id
+                     inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 9 and deleted is false
-              and d.permit_packet_submitted_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-            inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 9 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_packet_submitted_date is not null
-                      and originator_id = 2))
+              and (d.permit_packet_submitted_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_packet_submitted_date::date is null))
          SELECT project.id,
                 282,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1696,15 +1670,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then (select dce.start_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 9 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2231 then (select dce.end_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 9 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2244 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 9 and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.org_id
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1723,32 +1691,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,d.permit_pack_revision_submittal_scheduled_date as complete_date
+            SELECT d.id,d.permit_pack_revision_submittal_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_pack_revision_submittal_date) as start_time,
+                   coalesce(dce2.end_time,permit_pack_revision_submittal_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pack_revision_submittal_date::date
             where
-                permit_pack_revision_submittal_scheduled_date is not null
+                permit_pack_revision_submittal_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 16 and deleted is false
-              and d.permit_pack_revision_submittal_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-            inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 16 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_pack_revision_submittal_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.permit_pack_revision_submittal_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_pack_revision_submittal_date::date is null))
          SELECT project.id,
                 282,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1779,18 +1739,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then (select dce.start_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 16 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2231 then (select dce.end_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 16 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2244 then (select org_id
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.deal_id = d2.id and dce.work_type_id = 16
-                                                                      and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.org_id
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1809,32 +1760,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,d.permit_revision_b_submittal_scheduled_date as complete_date
+            SELECT d.id,d.permit_revision_b_submittal_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_revision_b_submittal_date) as start_time,
+                   coalesce(dce2.end_time,permit_revision_b_submittal_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_b_submittal_date::date
             where
-                permit_revision_b_submittal_scheduled_date is not null
+                permit_revision_b_submittal_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 18 and deleted is false
-              and d.permit_revision_b_submittal_date::date!= dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 18 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_revision_b_submittal_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.permit_revision_b_submittal_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_revision_b_submittal_date::date is null ))
          SELECT project.id,
                 282,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1864,18 +1807,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then (select dce.start_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 18 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2231 then (select dce.end_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 18 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2244 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 18
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.org_id
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -1894,32 +1828,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,permit_revision_c_submittal_scheduled_date as complete_date
+            SELECT d.id,permit_revision_c_submittal_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_revision_c_submittal_date) as start_time,
+                   coalesce(dce2.end_time,permit_revision_c_submittal_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_c_submittal_date::date
             where
-                permit_revision_c_submittal_scheduled_date is not null
+                permit_revision_c_submittal_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 19 and deleted is false
-              and d.permit_revision_c_submittal_date::date!= dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 19 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_revision_c_submittal_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.permit_revision_c_submittal_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_revision_c_submittal_date is null))
          SELECT project.id,
                 282,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -1949,18 +1875,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2218 then (select dce.start_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 19 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2231 then (select dce.end_time
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.work_type_id = 19 and dce.primary_flag is true and dce.deleted is false
-                                                                      and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2244 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 19
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 2218 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2231 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2244 then p1.org_time
                  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                           and name = d2.permit_submission_hold_reason)
                  else null end,
@@ -3317,32 +3234,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,in_house_mpu_permit_submittal_scheduled_date complete_date
+            SELECT d.id,in_house_mpu_permit_submittal_date complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,in_house_mpu_permit_submittal_date) as start_time,
+                   coalesce(dce2.end_time,in_house_mpu_permit_submittal_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_permit_submittal_date::date
             where
-                in_house_mpu_permit_submittal_scheduled_date is not null
+                in_house_mpu_permit_submittal_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 25 and deleted is false
-              and d.in_house_mpu_permit_submittal_date::date!= dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 25 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        in_house_mpu_permit_submittal_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.in_house_mpu_permit_submittal_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.in_house_mpu_permit_submittal_date is null))
          SELECT project.id,
                 646,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3370,21 +3279,12 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2426 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 25 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2439 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 25 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 2426 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2439 then p1.end_time
                  else null end,
             case when p.custom_field_group_assignment_id = 8133 then ((in_house_mpu_permit_submittal_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
-            case when p.custom_field_group_assignment_id = 2452 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 25
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 2452 then p1.org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -3603,32 +3503,24 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,d.permit_pick_up_scheduled as complete_date
+            SELECT d.id,d.permit_pick_up_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_pick_up_date) as start_time,
+                   coalesce(dce2.end_time,permit_pick_up_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pick_up_date::date
             where
-                permit_pick_up_scheduled is not null
+                permit_pick_up_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 8 and deleted is false
-              and d.permit_pick_up_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 8 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_pick_up_scheduled is not null
-                      and originator_id = 2))
+              and (d.permit_pick_up_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_pick_up_date is null))
          SELECT project.id,
                 308,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3656,18 +3548,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                             timestamp_value, int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2491 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 8 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2504 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 8 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2517 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 8
-                                                                        and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 2491 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2504 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2517 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3677,32 +3560,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,permit_pack_revision_pickup_scheduled as complete_date
+            SELECT d.id,permit_pack_revision_pickup_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_pack_revision_pickup_date) as start_time,
+                   coalesce(dce2.end_time,permit_pack_revision_pickup_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pack_revision_pickup_date::date
             where
-                permit_pack_revision_pickup_scheduled is not null
+                permit_pack_revision_pickup_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 17 and deleted is false
-              and d.permit_pack_revision_pickup_date::date!= dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 17 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_pack_revision_pickup_scheduled is not null
-                      and originator_id = 2))
+              and (d.permit_pack_revision_pickup_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_pack_revision_pickup_date is null))
          SELECT project.id,
                 308,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3730,18 +3605,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 128 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 17 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 129 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 17 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 130 then (select org_id
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.deal_id = d2.id and dce.work_type_id = 17
-                                                                       and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 128 then p1.start_time
+                 when p.custom_field_group_assignment_id = 129 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 130 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3751,32 +3617,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,permit_revision_b_pickup_scheduled_date as complete_date
+            SELECT d.id,permit_revision_b_pickup_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_revision_b_pickup_date) as start_time,
+                   coalesce(dce2.end_time,permit_revision_b_pickup_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_b_pickup_date::date
             where
-                permit_revision_b_pickup_scheduled_date is not null
+                permit_revision_b_pickup_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 20 and deleted is false
-              and d.permit_revision_b_pickup_date::date!= dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 20 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_revision_b_pickup_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.permit_revision_b_pickup_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_revision_b_pickup_date is null))
          SELECT project.id,
                 308,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3804,18 +3662,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2491 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 20 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2504 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 20 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2517 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 20
-                                                                        and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 2491 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2504 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2517 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3825,32 +3674,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,permit_revision_c_pickup_scheduled as complete_date
+            SELECT d.id,permit_revision_c_pickup_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,permit_revision_c_pickup_date) as start_time,
+                   coalesce(dce2.end_time,permit_revision_c_pickup_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_c_pickup_date::date
             where
-                permit_revision_c_pickup_scheduled is not null
+                permit_revision_c_pickup_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 21 and deleted is false
-              and d.permit_revision_c_pickup_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 21 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        permit_revision_c_pickup_scheduled is not null
-                      and originator_id = 2))
+              and (d.permit_revision_c_pickup_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.permit_revision_c_pickup_date is null))
          SELECT project.id,
                 308,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3878,18 +3719,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2491 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 21 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2504 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 21 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2517 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 21
-                                                                        and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 2491 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2504 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2517 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3937,32 +3769,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,fl_noc_application_signature_scheduled as complete_date
+            SELECT d.id,fl_noc_application_signature_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,fl_noc_application_signature_date) as start_time,
+                   coalesce(dce2.end_time,fl_noc_application_signature_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = fl_noc_application_signature_date::date
             where
                 fl_noc_application_signature_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 30 and deleted is false
-              and d.fl_noc_application_signature_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 30 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        fl_noc_application_signature_date is not null
-                      and originator_id = 2))
+              and (d.fl_noc_application_signature_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.fl_noc_application_signature_date is null))
          SELECT project.id,
                 568,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -3989,18 +3813,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2530 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 30 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2543 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 30 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2556 then (select org_id
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.deal_id = d2.id and dce.work_type_id = 30
-                                                                         and dce.primary_flag is true and dce.deleted is false)else null end,
+            case when p.custom_field_group_assignment_id = 2530 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2543 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2556 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4241,32 +4056,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,scheduled_installation_date as complete_date
+            SELECT d.id,installation_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,installation_date) as start_time,
+                   coalesce(dce2.end_time,installation_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = installation_date::date
             where
-                (scheduled_installation_date::date is not null or installation_date :: DATE is not null)
+                installation_date :: DATE is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 1 and deleted is false
-              and d.installation_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 1 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        (scheduled_installation_date::date is not null or installation_date :: DATE is not null)
-                      and originator_id = 2))
+              and (d.installation_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.installation_date is null))
          SELECT project.id,
                 373,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4295,18 +4102,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 10408 then ((scheduled_installation_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  else null end,
-            case when p.custom_field_group_assignment_id = 2582 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 1 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2595 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 1 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2608 then (select org_id
-                                                                    from blueraven.deal_calendar_event dce
-                                                                    where dce.deal_id = d2.id and dce.work_type_id = 1
-                                                                      and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 2582 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2595 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2608 then p1.org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4437,32 +4235,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,installation_closeout_scheduled_date as complete_date
+            SELECT d.id,installation_closeout_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,installation_closeout_date) as start_time,
+                   coalesce(dce2.end_time,installation_closeout_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = installation_closeout_date::date
             where
-                installation_closeout_scheduled_date is not null
+                installation_closeout_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 2 and deleted is false
-              and d.installation_closeout_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 2 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        installation_closeout_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.installation_closeout_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.installation_closeout_date is null))
          SELECT project.id,
                 711,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -4490,15 +4280,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 13164 then ((installation_closeout_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2621 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 2 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2634 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 2 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2647 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 2 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 2621 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2634 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2647 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4952,32 +4736,25 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,ahj_inspection_scheduled_date as complete_date
+            SELECT d.id,ahj_inspection_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_inspection_date) as start_time,
+                   coalesce(dce2.end_time,ahj_inspection_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_date::date
             where
                 ahj_inspection_date is not null and ahj_inspection_ready_to_schedule_date < substantial_completion_date
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 3 and deleted is false
-              and d.ahj_inspection_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 3 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_inspection_date is not null and ahj_inspection_ready_to_schedule_date < substantial_completion_date
-                      and originator_id = 2))
+              and (d.ahj_inspection_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.ahj_inspection_date is null)
+              and ahj_inspection_ready_to_schedule_date < substantial_completion_date)
          SELECT project.id,
                 1790,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5005,18 +4782,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14698  then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2751 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2764 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2777 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 3
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 2751 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2764 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2777 then p1.org_id
                  when p.custom_field_group_assignment_id = 11929 then (select id from flow.list_of_value where parent_id = 2432
                                                                                                          and name::boolean = d2.additional_ahj_inspection_required)
                  else null end,
@@ -5577,32 +5345,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,system_service_scheduled_date as complete_date
+            SELECT d.id,system_service_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,system_service_date) as start_time,
+                   coalesce(dce2.end_time,system_service_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = system_service_date::date
             where
-                system_service_scheduled_date is not null
+                system_service_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 6 and deleted is false
-              and d.system_service_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 6 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        system_service_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.system_service_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or d.system_service_date::date is null))
          SELECT project.id,
                 1257,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -5630,18 +5390,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 9576 then ((system_service_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 2855 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 6 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 2868 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 6 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 2881 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 6
-                                                                        and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 2855 then p1.start_time
+                 when p.custom_field_group_assignment_id = 2868 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 2881 then p1.org_time else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -7067,32 +6818,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,in_house_mpu_scheduled_date as complete_date
+            SELECT d.id,in_house_mpu_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,in_house_mpu_date) as start_time,
+                   coalesce(dce2.end_time,in_house_mpu_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_date::date
             where
-                in_house_mpu_scheduled_date is not null
+                in_house_mpu_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 27 and deleted is false
-              and d.in_house_mpu_date::date!= dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 27 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        in_house_mpu_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.in_house_mpu_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or in_house_mpu_date is null))
          SELECT project.id,
                 867,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7120,16 +6863,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 11500 then ((in_house_mpu_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 3323 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 3336 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 3323 then p1.start_time
+                 when p.custom_field_group_assignment_id = 3336 then p1.end_time
                  else null end,
-            case when  p.custom_field_group_assignment_id = 3349 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false)
+            case when  p.custom_field_group_assignment_id = 3349 then p1.org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7260,42 +6997,30 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
-                non_standard_installation_work_scheduled_date is not null
+                non_standard_installation_work_date is not null
               and (NOT (non_standard_installation_work LIKE ANY (ARRAY ['%Structural Upgrade%', '%Trenching%',
                 '%Main Panel Upgrade - Outsource%','Main Panel Upgrade','%Main Panel Upgrade - In House%',
                 '%Reroof%','%Tree Trimming%','%A/C Compressor Relocation%'])))
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or non_standard_installation_work_date is null)
               and (NOT (non_standard_installation_work LIKE ANY (ARRAY ['%Structural Upgrade%', '%Trenching%',
                 '%Main Panel Upgrade - Outsource%','Main Panel Upgrade','%Main Panel Upgrade - In House%',
-                '%Reroof%','%Tree Trimming%','%A/C Compressor Relocation%'])))
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2
-                      and
-                        (NOT (non_standard_installation_work LIKE ANY (ARRAY ['%Structural Upgrade%', '%Trenching%',
-                            '%Main Panel Upgrade - Outsource%','Main Panel Upgrade','%Main Panel Upgrade - In House%',
-                            '%Reroof%','%Tree Trimming%','%A/C Compressor Relocation%'])))))
+                '%Reroof%','%Tree Trimming%','%A/C Compressor Relocation%']))))
          SELECT project.id,
                 360,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7322,17 +7047,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3375 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 4532 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 3375 then p1.start_time
+                 when p.custom_field_group_assignment_id = 4532 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 3388 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false)
-                 else null end,
+            case when p.custom_field_group_assignment_id = 3388 then p1.org_id
+         else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -7539,32 +7258,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,ahj_inspection_work_scheduled_date as complete_date
+            SELECT d.id,ahj_inspection_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_inspection_work_date) as start_time,
+                   coalesce(dce2.end_time,ahj_inspection_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_work_date::date
             where
-                ahj_inspection_work_scheduled_date is not null
+                ahj_inspection_work_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 4 and deleted is false
-              and d.ahj_inspection_work_date::date!= dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 4 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_inspection_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.ahj_inspection_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_inspection_work_date is null))
          SELECT project.id,
                 412,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7591,16 +7302,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3440 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 4 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 3453 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 4 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 3440 then p1.start_time
+                 when p.custom_field_group_assignment_id = 3453 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 3466 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 4 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 3466 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -7734,32 +7439,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,energization_visit_scheduled_date as complete_date
+            SELECT d.id,energization_visit_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,energization_visit_date) as start_time,
+                   coalesce(dce2.end_time,energization_visit_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = energization_visit_date::date
             where
-                energization_visit_scheduled_date is not null
+                energization_visit_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 12 and deleted is false
-              and d.energization_visit_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 12 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        energization_visit_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.energization_visit_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or energization_visit_date is null))
          SELECT project.id,
                 919,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -7787,19 +7484,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 10798 then d2.energization_visit_scheduled_date else null end,
-            case when p.custom_field_group_assignment_id = 3310 then (select dce.start_time
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.work_type_id = 12 and dce.primary_flag is true and dce.deleted is false
-                                                                        and dce.deal_id = d2.id)
-                 when  p.custom_field_group_assignment_id = 8250 then (select dce.end_time
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.work_type_id = 12 and dce.primary_flag is true and dce.deleted is false
-                                                                         and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 3310 then p1.start_time
+                 when  p.custom_field_group_assignment_id = 8250 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8263 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 12
-                                                                        and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 8263 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -9130,32 +8818,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,resurvey_scheduled_date as complete_date
+            SELECT d.id,resurvey_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,resurvey_date) as start_time,
+                   coalesce(dce2.end_time,resurvey_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_date::date
             where
-                resurvey_scheduled_date is not null
+                resurvey_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 11 and deleted is false
-              and d.resurvey_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 11 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        resurvey_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.resurvey_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or resurvey_date is null))
          SELECT project.id,
                 2362,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9184,18 +8864,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 6287 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 11 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6300 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 11 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 6313 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 11
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 6287 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6300 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 6313 then p1.org_id
                   when    p.custom_field_group_assignment_id = 3024 then (select id from flow.list_of_value where parent_id = 2523
                                                                                                              and name = d2.resurvey_a_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
@@ -9210,32 +8881,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         ( with deals as (
-            SELECT d.id,resurvey_b_scheduled_date as complete_date
+            SELECT d.id,resurvey_b_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,resurvey_b_date) as start_time,
+                   coalesce(dce2.end_time,resurvey_b_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_b_date::date
             where
-                resurvey_b_scheduled_date is not null
+                resurvey_b_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 28 and deleted is false
-              and d.resurvey_b_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 28 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        resurvey_b_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.resurvey_b_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or resurvey_b_date is null))
           SELECT project.id,
                  2362,
                  (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9264,18 +8927,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 6287 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 28 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6300 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 28 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 6313 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 28
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 6287 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6300 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 6313 then p1.org_id
                  when    p.custom_field_group_assignment_id = 3024 then (select id from flow.list_of_value where parent_id = 2523
                                                                                                              and name = d2.resurvey_b_reason) else null end,
             case when p.custom_field_group_assignment_id = 8757 then d2.resurvey_requested_by
@@ -9289,32 +8943,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,resurvey_c_scheduled_date as complete_date
+            SELECT d.id,resurvey_c_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,resurvey_c_date) as start_time,
+                   coalesce(dce2.end_time,resurvey_c_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_c_date::date
             where
-                resurvey_c_scheduled_date is not null
+                resurvey_c_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 29 and deleted is false
-              and d.resurvey_c_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 29 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        resurvey_c_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.resurvey_c_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or resurvey_c_date is null))
          SELECT project.id,
                 2362,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -9343,18 +8989,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 6287 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 29 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6300 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 29 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 6313 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 29
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 6287 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6300 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 6313 then p1.org_id
                 when    p.custom_field_group_assignment_id = 3024 then (select id from flow.list_of_value where parent_id = 2523
                                                                                                              and name = d2.resurvey_c_reason) else null end,
             case when p.custom_field_group_assignment_id = 8757 then d2.resurvey_requested_by
@@ -11866,37 +11503,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
                     non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','Main Panel Upgrade'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and non_standard_installation_work_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
-              and non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','Main Panel Upgrade'])
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','Main Panel Upgrade'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or non_standard_installation_work_date is null)
+              and non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','Main Panel Upgrade']))
          SELECT project.id,
                 1478,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -11922,16 +11548,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6755 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6768 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 6755 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6768 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6781 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 6781 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12061,37 +11681,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,in_house_mpu_scheduled_date as complete_date
+            SELECT d.id,in_house_mpu_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,in_house_mpu_date) as start_time,
+                   coalesce(dce2.end_time,in_house_mpu_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_date::date
             where
                     non_standard_installation_work like any (array['%Main Panel Upgrade - In House%'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and in_house_mpu_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 27 and deleted is false
-              and d.in_house_mpu_date::date != dce.start_time::date
-              and  non_standard_installation_work like any (array['%Main Panel Upgrade - In House%'])
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 27 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%Main Panel Upgrade - In House%'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.in_house_mpu_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or in_house_mpu_date is null)
+              and  non_standard_installation_work like any (array['%Main Panel Upgrade - In House%']))
          SELECT project.id,
                 1504,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12117,17 +11726,11 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6820 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6833 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 6820 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6833 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6846 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 27 and dce.primary_flag is true and dce.deleted is false) else null end,
-            now(),now(),2350555,2350555
+            case when p.custom_field_group_assignment_id = 6846 then p1.org_id else null end,
+         now(),now(),2350555,2350555
      from blueraven.deal d2
 
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -12256,37 +11859,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
                     non_standard_installation_work like any (array['%Structural Upgrade%'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and non_standard_installation_work_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
-              and non_standard_installation_work like any (array['%Structural Upgrade%'])
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%Structural Upgrade%'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or non_standard_installation_work_date is null)
+              and non_standard_installation_work like any (array['%Structural Upgrade%']))
          SELECT project.id,
                 1530,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12312,16 +11904,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6859 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6872 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 6859 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6872 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6885 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 6885 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12450,37 +12036,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
                     non_standard_installation_work like any (array['%Reroof%'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and non_standard_installation_work_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
-              and non_standard_installation_work like any (array['%Reroof%'])
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%Reroof%'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or non_standard_installation_work_date is null)
+              and non_standard_installation_work like any (array['%Reroof%']))
          SELECT project.id,
                 1556,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12506,16 +12081,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6898 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6911 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 6898 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6911 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6924 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 6924 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12644,36 +12213,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
                     non_standard_installation_work like any (array['%Trenching%'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and non_standard_installation_work_date is not null
               and originator_id = 2
             union all
             select deal_id,dce.updated as complete_date
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%Trenching%'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or non_standard_installation_work_date is null)
+              and  non_standard_installation_work like any (array['%Trenching%']))
          SELECT project.id,
                 1582,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12699,16 +12258,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6937 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6950 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 6937 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6950 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 6963 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 6963 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -12835,37 +12388,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as emd_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
                     non_standard_installation_work like any (array['%Tree Trimming%'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and non_standard_installation_work_date is not null
               and originator_id = 2
             union all
             select deal_id,dce.updated as complete_date
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
-              and  non_standard_installation_work like any (array['%Tree Trimming%'])
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%Tree Trimming%'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or non_standard_installation_work_date is null)
+              and  non_standard_installation_work like any (array['%Tree Trimming%']))
          SELECT project.id,
                 1608,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -12891,16 +12433,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6976 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 6989 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 6976 then p1.start_time
+                 when p.custom_field_group_assignment_id = 6989 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 7002 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 7002 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -13028,37 +12564,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
                     non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and non_standard_installation_work_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
-              and non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or non_standard_installation_work_date is null)
+              and non_standard_installation_work like any (array['%A/C Compressor Relocation%']))
          SELECT project.id,
                 1634,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13084,16 +12609,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7015 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 7028 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 7015 then p1.start_time
+                 when p.custom_field_group_assignment_id = 7028 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 7041 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 7041 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -13219,37 +12738,26 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,non_standard_installation_work_scheduled_date as complete_date
+            SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
+                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
             where
                     non_standard_installation_work like any (array['%Source Deadfront%'])
-              and non_standard_installation_work_ready_to_schedule_date is not null
-              and non_standard_installation_work_scheduled_date is not null
+              and non_standard_installation_work_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 13 and deleted is false
-              and d.non_standard_installation_work_date::date != dce.start_time::date
-              and non_standard_installation_work like any (array['%Source Deadfront%'])
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 13 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                            non_standard_installation_work like any (array['%Source Deadfront%'])
-                      and non_standard_installation_work_ready_to_schedule_date is not null
-                      and non_standard_installation_work_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.non_standard_installation_work_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date or
+                   non_standard_installation_work_date is null)
+              and non_standard_installation_work like any (array['%Source Deadfront%']))
          SELECT project.id,
                 1660,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13275,16 +12783,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7080 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 7093 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 7080 then p1.start_time
+                 when p.custom_field_group_assignment_id = 7093 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 7106 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 13 and dce.primary_flag is true and dce.deleted is false) else null end,
+            case when p.custom_field_group_assignment_id = 7106 then p1.org_id else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -13613,10 +13115,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,ahj_reinspection_scheduled as complete_date
+            SELECT d.id,ahj_reinspection_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_reinspection_date) as start_time,
+                   coalesce(dce2.end_time,ahj_reinspection_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_date::date
             where
                 ahj_reinspection_date is not null
               and originator_id = 2
@@ -13625,20 +13131,8 @@ with process_step1 as (
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 5 and deleted is false
-              and d.ahj_reinspection_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 5 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_reinspection_date is not null
-                      and originator_id = 2))
+              and (d.ahj_reinspection_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_reinspection_date is null))
          SELECT project.id,
                 2323,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13666,19 +13160,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 8718 then ((ahj_reinspection_scheduled  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date else null end,
-            case when p.custom_field_group_assignment_id = 14451 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 5 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 14464 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 5 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 14451 then p1.start_time
+                 when p.custom_field_group_assignment_id = 14464 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 15543 then (select org_id
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.deal_id = d2.id and dce.work_type_id = 5
-                                                                         and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 15543 then p1.org_id
                  when p.custom_field_group_assignment_id = 8731 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  else null end,
@@ -13692,32 +13177,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id)
         (with deals as (
-            SELECT d.id,ahj_reinspection_b_scheduled as complete_date
+            SELECT d.id,ahj_reinspection_b_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_reinspection_b_date) as start_time,
+                   coalesce(dce2.end_time,ahj_reinspection_b_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_b_date::date
             where
                 ahj_reinspection_b_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 23 and deleted is false
-              and d.ahj_reinspection_b_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 23 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_reinspection_b_date is not null
-                      and originator_id = 2))
+              and (d.ahj_reinspection_b_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_reinspection_b_date is null))
          SELECT project.id,
                 2323,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -13745,19 +13222,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 8718 then ((ahj_reinspection_b_scheduled  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date else null end,
-            case when p.custom_field_group_assignment_id = 14451 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 23 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 14464 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 23 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 14451 then p1.start_time
+                 when p.custom_field_group_assignment_id = 14464 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 15543 then (select org_id
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.deal_id = d2.id and dce.work_type_id = 23
-                                                                         and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 15543 then p1.org_id
                  when p.custom_field_group_assignment_id = 8731 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  else null end,
@@ -14469,32 +13937,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,ahj_mid_point_inspection_scheduled_with_ahj_date as complete_date
+            SELECT d.id,ahj_mid_point_inspection_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_mid_point_inspection_date) as start_time,
+                   coalesce(dce2.end_time,ahj_mid_point_inspection_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_mid_point_inspection_date::date
             where
-                ahj_mid_point_inspection_scheduled_with_ahj_date is not null
+                ahj_mid_point_inspection_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 24 and deleted is false
-              and d.ahj_mid_point_inspection_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 24 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_mid_point_inspection_scheduled_with_ahj_date is not null
-                      and originator_id = 2))
+              and (d.ahj_mid_point_inspection_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_mid_point_inspection_date is null))
          SELECT project.id,
                 1972,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14521,19 +13981,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14776 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 12748 then (select dce.start_time
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.work_type_id = 24 and dce.primary_flag is true and dce.deleted is false
-                                                                        and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 12761 then (select dce.end_time
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.work_type_id = 24 and dce.primary_flag is true and dce.deleted is false
-                                                                        and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 12748 then p1.start_time
+                 when p.custom_field_group_assignment_id = 12761 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 12774 then (select org_id
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.deal_id = d2.id and dce.work_type_id = 24
-                                                                         and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 12774 then p1.org_id
                  when p.custom_field_group_assignment_id = 8354 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 9238 then (select id from flow.list_of_value where parent_id = 1613
@@ -14746,33 +14197,25 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,ahj_inspection_scheduled_date as complete_date
+            SELECT d.id,ahj_inspection_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_inspection_date) as start_time,
+                   coalesce(dce2.end_time,ahj_inspection_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_date::date
             where
-                ahj_inspection_scheduled_date is not null and ahj_inspection_ready_to_schedule_date >= substantial_completion_date
+                ahj_inspection_date is not null and (ahj_inspection_ready_to_schedule_date >= substantial_completion_date or ahj_inspection_ready_to_schedule_date is null)
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 3 and deleted is false
-              and d.ahj_inspection_date::date != dce.start_time::date
-              and dce.updated::date >= substantial_completion_date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 3 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_inspection_scheduled_date is not null and ahj_inspection_ready_to_schedule_date >= substantial_completion_date
-                      and originator_id = 2))
+              and (d.ahj_inspection_date::date !=(start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_inspection_date is null)
+              and (ahj_inspection_ready_to_schedule_date >= substantial_completion_date or ahj_inspection_ready_to_schedule_date is null))
          SELECT project.id,
                 1803,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14799,19 +14242,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 8068 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 8081 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 8068 then p1.start_time
+                 when p.custom_field_group_assignment_id = 8081 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8094 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 3
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 8094 then p1.org_id
                  when p.custom_field_group_assignment_id = 7275 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 11942 then (select id from flow.list_of_value where parent_id = 2432
@@ -14827,32 +14261,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,ahj_reinspection_scheduled as complete_date
+            SELECT d.id,ahj_reinspection_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_reinspection_date) as start_time,
+                   coalesce(dce2.end_time,ahj_reinspection_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_date::date
             where
                 ahj_reinspection_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 5 and deleted is false
-              and d.ahj_reinspection_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 5 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_reinspection_date is not null
-                      and originator_id = 2))
+              and (d.ahj_reinspection_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_reinspection_date is null))
          SELECT project.id,
                 1803,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14880,19 +14306,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 8068 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 5 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 8081 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 5 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 8068 then p1.start_time
+                 when p.custom_field_group_assignment_id = 8081 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8094 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 5
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 8094 then p1.org_id
                  when p.custom_field_group_assignment_id = 7275 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 11942 then (select id from flow.list_of_value where parent_id = 2432
@@ -14907,10 +14324,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,ahj_reinspection_b_scheduled as complete_date
+            SELECT d.id,ahj_reinspection_b_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,ahj_reinspection_b_date) as start_time,
+                   coalesce(dce2.end_time,ahj_reinspection_b_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_b_date::date
             where
                 ahj_reinspection_b_date is not null
               and originator_id = 2
@@ -14919,20 +14340,8 @@ with process_step1 as (
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 23 and deleted is false
-              and d.ahj_reinspection_b_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 23 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        ahj_reinspection_b_date is not null
-                      and originator_id = 2))
+              and (d.ahj_reinspection_b_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_reinspection_b_date is null))
          SELECT project.id,
                 1803,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -14960,19 +14369,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 8068 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 23 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 8081 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 23 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 8068 then p1.start_time
+                 when p.custom_field_group_assignment_id = 8081 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8094 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 23
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 8094 then p1.org_id
                  when p.custom_field_group_assignment_id = 7275 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 11942 then (select id from flow.list_of_value where parent_id = 2432
@@ -15100,32 +14500,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,additional_ahj_inspection_scheduled_date as complete_date
+            SELECT d.id,additional_ahj_inspection_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,additional_ahj_inspection_date) as start_time,
+                   coalesce(dce2.end_time,additional_ahj_inspection_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = additional_ahj_inspection_date::date
             where
-                additional_ahj_inspection_required is TRUE and ahj_inspection_date is not null and ahj_inspection_passed_date is not null and additional_ahj_inspection_scheduled_date is not null
+                additional_ahj_inspection_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 22 and deleted is false
-              and d.additional_ahj_inspection_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 22 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        additional_ahj_inspection_required is TRUE and ahj_inspection_date is not null and ahj_inspection_passed_date is not null and additional_ahj_inspection_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.additional_ahj_inspection_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or additional_ahj_inspection_date is null))
          SELECT project.id,
                 2375,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15152,19 +14544,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 2842 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 12163 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 22 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 12176 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 22 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 12163 then p1.start_time
+                 when p.custom_field_group_assignment_id = 12176 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 12189 then (select org_id
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.deal_id = d2.id and dce.work_type_id = 22
-                                                                         and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 12189 then p1.org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15293,32 +14676,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,in_house_mpu_permit_pickup_scheduled_date as complete_date
+            SELECT d.id,in_house_mpu_permit_pickup_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,in_house_mpu_permit_pickup_date) as start_time,
+                   coalesce(dce2.end_time,in_house_mpu_permit_pickup_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_permit_pickup_date::date
             where
-                in_house_mpu_permit_pickup_scheduled_date is not null
+                in_house_mpu_permit_pickup_date is not null
               and originator_id = 2
             union all
             select deal_id,dce.updated as complete_date
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 26 and deleted is false
-              and d.in_house_mpu_permit_pickup_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 26 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        in_house_mpu_permit_pickup_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.in_house_mpu_permit_pickup_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or in_house_mpu_permit_pickup_date is null))
          SELECT project.id,
                 1829,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -15344,19 +14719,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8198 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 26 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 8211 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 26 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 8198 then p1.start_time
+                 when p.custom_field_group_assignment_id = 8211 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8237 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 26
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 8237 then p1.org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16586,32 +15952,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,asbuilt_permit_pack_submittal_schedule_date as complete_date
+            SELECT d.id,asbuilt_permit_pack_submittal_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,asbuilt_permit_pack_submittal_date) as start_time,
+                   coalesce(dce2.end_time,asbuilt_permit_pack_submittal_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = asbuilt_permit_pack_submittal_date::date
             where
-                asbuilt_permit_pack_submittal_schedule_date is not null
+                asbuilt_permit_pack_submittal_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 14 and deleted is false
-              and d.asbuilt_permit_pack_submittal_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 14 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        asbuilt_permit_pack_submittal_schedule_date is not null
-                      and originator_id = 2))
+              and (d.asbuilt_permit_pack_submittal_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or asbuilt_permit_pack_submittal_date is null))
          SELECT project.id,
                 2193,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16637,19 +15995,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,boolean_value,numeric_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10603 then (select dce.start_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 14 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 10616 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 14 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 10603 then p1.start_time
+                 when p.custom_field_group_assignment_id = 10616 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 10629 then (select org_id
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.deal_id = d2.id and dce.work_type_id = 14
-                                                                         and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 10629 then p1.org_id
                  else null end,
             case when p.custom_field_group_assignment_id = 10876 then d2.permit_fee_paid::boolean else null end,
             case when p.custom_field_group_assignment_id = 10850 then d2.permit_deposit_fee::numeric
@@ -16943,32 +16292,24 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,as_built_permit_pickup_scheduled_date as complete_date
+            SELECT d.id,as_built_permit_pickup_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,as_built_permit_pickup_date) as start_time,
+                   coalesce(dce2.end_time,as_built_permit_pickup_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = as_built_permit_pickup_date::date
             where
-                as_built_permit_pickup_scheduled_date is not null
+                as_built_permit_pickup_date is not null
               and originator_id = 2
             union all
-            select deal_id,dce.updated as complete_date
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
             from blueraven.deal_calendar_event dce
                      inner join blueraven.deal d on d.id = dce.deal_id
             where  originator_id = 2 and work_type_id = 15 and deleted is false
-              and d.as_built_permit_pickup_date::date != dce.start_time::date
-            union all
-            SELECT dce.deal_id,dce.updated as complete_date
-            FROM  blueraven.deal_calendar_event dce
-                      inner join blueraven.deal d69 on d69.id = dce.deal_id and d69.originator_id = 2
-            where  work_type_id = 15 and deleted is false
-              and not exists (
-                    SELECT d.id
-                    FROM flow.project
-                             INNER JOIN blueraven.deal d
-                                        ON project.id = d.id
-                    where
-                        as_built_permit_pickup_scheduled_date is not null
-                      and originator_id = 2))
+              and (d.as_built_permit_pickup_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or as_built_permit_pickup_date is null))
          SELECT project.id,
                 2232,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -16994,19 +16335,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10733 then (select dce.start_time
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.work_type_id = 15 and dce.primary_flag is true and dce.deleted is false
-                                                                         and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 10746 then (select dce.end_time
-                                                                     from blueraven.deal_calendar_event dce
-                                                                     where dce.work_type_id = 15 and dce.primary_flag is true and dce.deleted is false
-                                                                       and dce.deal_id = d2.id)
+            case when p.custom_field_group_assignment_id = 10733 then p1.start_time
+                 when p.custom_field_group_assignment_id = 10746 then p1.end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 10759 then (select org_id
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.deal_id = d2.id and dce.work_type_id = 15
-                                                                        and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 10759 then p1.org_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -18406,13 +17738,25 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date)
         (with deals as (
-            SELECT d.id,in_house_mpu_inspection_scheduled_date as complete_date
+            SELECT d.id,in_house_mpu_inspection_scheduled_date as complete_date,dce2.org_id,
+                   coalesce(dce2.start_time,in_house_mpu_inspection_scheduled_date) as start_time,
+                   coalesce(dce2.end_time,in_house_mpu_inspection_scheduled_date) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
+                     left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
+                and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_inspection_scheduled_date::date
             where
-                in_house_mpu_inspection_scheduled_date is not null
-              and originator_id = 2)
+                in_house_mpu_inspection_scheduled_date is not null and ahj_inspection_date is not null
+              and originator_id = 2
+            union all
+            select deal_id,dce.updated as complete_date,dce.org_id,dce.start_time,dce.end_time
+            from blueraven.deal_calendar_event dce
+                     inner join blueraven.deal d on d.id = dce.deal_id
+            where  originator_id = 2 and work_type_id = 3 and deleted is false
+              and (d.ahj_inspection_date::date != (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                or ahj_inspection_date is null)
+              and in_house_mpu_inspection_scheduled_date is not null)
          SELECT project.id,
                 2557,
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
@@ -18439,18 +17783,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13736 then (select dce.start_time
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
-                                                                        and dce.deal_id = d2.id)
-                 when p.custom_field_group_assignment_id = 13749 then (select dce.end_time
-                                                                      from blueraven.deal_calendar_event dce
-                                                                      where dce.work_type_id = 3 and dce.primary_flag is true and dce.deleted is false
-                                                                        and dce.deal_id = d2.id) else null end,
-            case when p.custom_field_group_assignment_id = 13775 then (select org_id
-                                                                       from blueraven.deal_calendar_event dce
-                                                                       where dce.deal_id = d2.id and dce.work_type_id = 3
-                                                                         and dce.primary_flag is true and dce.deleted is false)
+            case when p.custom_field_group_assignment_id = 13736 then p1.start_time
+                 when p.custom_field_group_assignment_id = 13749 then p1.end_time else null end,
+            case when p.custom_field_group_assignment_id = 13775 then p1.org_id
 
                  else null end,
             now(),now(),2350555,2350555
