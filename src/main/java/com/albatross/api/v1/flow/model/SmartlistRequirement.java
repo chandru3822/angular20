@@ -15,7 +15,7 @@ public class SmartlistRequirement {
 
   private Long id, smartlistId, smartlistFieldId, processStepId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
                dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById, companySystemListId, listOfValueId, systemListOptionId, customSqlOptionId,
-               smartlistSystemListId;
+               smartlistSystemListId, companyId;
 
   private String requirementValue, secondaryRequirementValue, processStepName, objectType, operatorType, name, customFieldSqlKey;
 
