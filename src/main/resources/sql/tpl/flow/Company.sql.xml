@@ -61,7 +61,7 @@
           inner join flow.user_company uc1 on uc1.company_id = c1.id and uc1.user_id = :userId
             where uc1.archived is not true
             and c1.archived is not true
-      limit 1)) where id != 1;
+      limit 1)) where id != 1 order by company_name;
     ]]>
   </company.getCompaniesAvailableForUser>
 

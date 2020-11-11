@@ -19,23 +19,21 @@
         <router-view/>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 
 <script>
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
     name: 'WorkQueueAdmin',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         snackbar: {},

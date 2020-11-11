@@ -97,22 +97,20 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
   import { saveAs } from 'file-saver'
 
   export default {
     name: '${NAME}',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         delay: 500,

@@ -648,7 +648,7 @@
         </v-row>
       </v-row>
     </v-col>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-row>
 </template>
 
@@ -661,7 +661,7 @@
   import AhjDocumentsButton from "../components/AhjDocumentsButton"
   import AhjLink from "../components/AhjLinks"
   import AhjRequirement from "../components/AhjRequirements"
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -674,7 +674,6 @@
       AhjDocumentsButton,
       AhjLink,
       AhjRequirement,
-      Snackbar
     },
     computed: {
       userCanEdit() {
@@ -718,6 +717,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Utility')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -730,6 +730,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving list of financiers')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -742,6 +743,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -778,9 +780,11 @@
           this.ahjUtility = cloneDeep(data)
           this.dataWasChanged = false
           this.snackbar = getSnackbar('SUCCESS', 'AHJ Utility saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Utility')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

@@ -3,12 +3,10 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.flow.model.PasswordResetRequest;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserSearch;
-import com.albatross.api.v1.flow.model.UserStatusType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CommunicationService;
 import com.albatross.api.v1.flow.services.UserService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -42,11 +40,6 @@ public class UserController {
     @PostMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<User>> searchUsers(@RequestBody UserSearch search, Pageable pageable) {
         return new ResponseEntity<>(userService.searchUsers(search, pageable), HttpStatus.OK);
-    }
-
-    @PostMapping(value = "/exportUsers", produces = "text/csv")
-    public ResponseEntity exportUsers(@RequestBody UserSearch search) {
-        return userService.exportUsers(search);
     }
 
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -83,8 +76,25 @@ public class UserController {
     }
 
     @GetMapping(value = "/statuses", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<UserStatusType> getCompanyUserStatuses() {
-        return userService.getCompanyUserStatuses();
+    public List<UserStatusType> getCompanyUserStatuses(@RequestParam(required = false) Long companyId) {
+        //pass in company when the statuses you want back are not from the logged in user
+        return userService.getCompanyUserStatuses(companyId);
+    }
+
+    @Data
+    public static class NewUserCompanyRequest {
+        private Long companyId, companyUserStatusTypeId, userId;
+    }
+
+    @PostMapping(value = "/removeFromCompany", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Company> removeFromCompany(@RequestBody NewUserCompanyRequest req) {
+        return userService.removeFromCompany(req);
+    }
+
+    @PostMapping(value = "/addToCompany", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Company> addToCompany(@RequestBody NewUserCompanyRequest req) {
+        //pass in company when the statuses you want back are not from the logged in user
+        return userService.addToCompany(req);
     }
 
     @PostMapping(value = "/{userId}/status/{userStatusTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)

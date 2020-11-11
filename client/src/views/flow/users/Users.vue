@@ -21,6 +21,13 @@
               v-model="filters.search"
               @input="debounceGetUsers"
           ></v-text-field>
+          <v-checkbox
+              class="pt-5 ml-3"
+              dense
+              v-model="primaryPositionsOnly"
+              label="Primary Only"
+              @change="handleOrgFilterChange(false)"
+          />
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn :disabled="!this.usersSelected" text @click="msgDialog = true">
@@ -31,50 +38,6 @@
               <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
               <span v-else>Reset Filters</span>
             </v-btn>
-<!--            <v-btn text v-if="totalUsers <= 100000" @click="exportUsers">Export</v-btn>-->
-<!--            <v-dialog-->
-<!--                v-model="dialog"-->
-<!--                width="500"-->
-<!--                v-else-->
-<!--            >-->
-<!--              <template v-slot:activator="{ on }">-->
-<!--                <v-btn text v-on="on">-->
-<!--                  Export-->
-<!--                </v-btn>-->
-<!--              </template>-->
-
-<!--              <v-card>-->
-<!--                <v-card-title>-->
-<!--                  Export-->
-<!--                </v-card-title>-->
-
-<!--                <v-card-text>-->
-<!--                  You are attempting to export {{totalUsers | currency('', 0)}} results.-->
-<!--                  This can take 1-2 minutes.-->
-<!--                  We recommend that you cancel and filter the result set before exporting.-->
-<!--                </v-card-text>-->
-
-<!--                <v-divider></v-divider>-->
-
-<!--                <v-card-actions>-->
-<!--                  <div class="flex-grow-1"></div>-->
-<!--                  <v-btn-->
-<!--                      color="grey"-->
-<!--                      text-->
-<!--                      @click="dialog = false"-->
-<!--                  >-->
-<!--                    Cancel-->
-<!--                  </v-btn>-->
-<!--                  <v-btn-->
-<!--                      color="primaryCustom"-->
-<!--                      text-->
-<!--                      @click="exportUsers"-->
-<!--                  >-->
-<!--                    Continue Anyway-->
-<!--                  </v-btn>-->
-<!--                </v-card-actions>-->
-<!--              </v-card>-->
-<!--            </v-dialog>-->
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -342,14 +305,14 @@
         </div>
       </v-card>
     </v-dialog>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import { Actions } from '@/store'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
@@ -360,9 +323,7 @@
 
   export default {
     name: 'Users',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         delay: 500,
@@ -419,7 +380,8 @@
         emailAttachments: [],
         textMediaUrls: [],
         emailFile: null,
-        textFile: null
+        textFile: null,
+        primaryPositionsOnly: true
       }
     },
     computed: {
@@ -488,7 +450,7 @@
               positions: this.filters.positions,
               orgs: this.getOrgIdsForMax(),
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
-              primaryFlag: true
+              primaryFlag: this.primaryPositionsOnly
             }
 
             const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
@@ -499,6 +461,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
@@ -506,31 +469,6 @@
           this.users = []
         }
       },
-      // async exportUsers () {
-      //   this.dialog = false
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     const params = {
-      //       search: this.filters.search,
-      //       firstName: this.filters.firstName,
-      //       lastName: this.filters.lastName,
-      //       email: this.filters.email,
-      //       phone: this.filters.phone,
-      //       statuses: this.filters.statuses,
-      //       positions: this.filters.positions,
-      //     }
-      //     const {data} = await postRequest(`/user/exportUsers`, params)
-      //     let blob = new Blob([data], {
-      //       type: 'text/csv;charset=utf-8'
-      //     });
-      //     saveAs(blob, "users.csv");
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Exporting Users')
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
       async getOrgFilters (initialLoad) {
         // filter out any org filters that were left empty like {"4": []}
         Object.keys(this.filters.orgs).forEach(key => {
@@ -573,6 +511,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -606,6 +545,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -617,6 +557,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -659,6 +600,14 @@
         if(reset) {
           this.filters.orgs = {}
           this.orgFilters = cloneDeep(this.masterOrgFilterList)
+          this.filters.positions = []
+          this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
+          this.filters.search = ''
+          this.filters.firstName = ''
+          this.filters.lastName = ''
+          this.filters.email = ''
+          this.filters.phone = ''
+
         } else {
           Object.keys(this.filters.orgs).forEach(k => {
             if(k > this.selectedLevel) {
@@ -710,10 +659,12 @@
                   await postRequest(`/communication/sendTexts`, params)
               }
               this.snackbar = getSnackbar('SUCCESS', 'Message sent')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           }  catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error sending message')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           }
           return;
@@ -744,6 +695,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getEmailSenders() {
@@ -753,6 +705,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Email Addresses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
     }

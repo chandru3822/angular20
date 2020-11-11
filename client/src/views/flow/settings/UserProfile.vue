@@ -108,7 +108,6 @@
         </div>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
@@ -120,14 +119,9 @@ import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar.vue'
-import cloneDeep from 'lodash.clonedeep'
 
 export default {
   name: 'UserProfile',
-  components: {
-    Snackbar
-  },
   data () {
     return {
       loadComplete: false,
@@ -177,6 +171,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -187,6 +182,7 @@ export default {
         this.user.newPassword = null
         this.user.newPasswordConfirm = null
         this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -204,12 +200,14 @@ export default {
             this.profileImage = {}
             this.$store.commit(UserMutations.SET_USER_IMAGE, {})
             this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         })
       } catch(e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -225,12 +223,14 @@ export default {
             this.$store.commit(UserMutations.SET_USER_IMAGE, img)
             this.addImage = false
             this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         })
       } catch(e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -248,6 +248,7 @@ export default {
       } catch(e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

@@ -15,7 +15,6 @@
     <Messaging :primaryId="parseInt(projectId)"/>
   </v-col>
 
-  <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
 
@@ -24,7 +23,7 @@
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Messaging from '@/views/flow/components/Messaging'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 
 export default {
@@ -32,7 +31,7 @@ export default {
   components: {
     NotesAndActivity,
     Messaging,
-    Snackbar,
+
   },
   data () {
     return {

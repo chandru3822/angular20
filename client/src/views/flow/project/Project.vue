@@ -118,7 +118,7 @@
 
       <router-view/>
     </v-col>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-row>
   <v-row align="center" justify="center" v-else-if="!projectLoading">
     <v-col cols="12" sm="8">
@@ -140,7 +140,7 @@
 <script>
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getCompanyStates} from '@/services/stateService'
@@ -148,7 +148,7 @@ import {getCompanyStates} from '@/services/stateService'
 export default {
   name: 'Project',
   components: {
-    Snackbar,
+
   },
   data () {
     return {
@@ -205,6 +205,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -216,6 +217,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -228,6 +230,7 @@ export default {
         this.statuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     updateStatus: async function () {
@@ -237,6 +240,7 @@ export default {
       }  catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating project status')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -249,6 +253,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -269,6 +274,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -281,6 +287,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

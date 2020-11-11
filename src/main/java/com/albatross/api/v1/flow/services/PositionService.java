@@ -120,7 +120,7 @@ public class PositionService {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
         if(null != ac.getId()) {
           params.put("enabled", ac.isEnabled());
-          params.put("positionFeatureAccessControlId", ac.getAccessControlId());
+          params.put("id", ac.getId());
           sqlCache.update("position.updatePositionFeatureAccessControl", params);
         } else if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());

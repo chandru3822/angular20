@@ -75,21 +75,19 @@
       {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
     </div>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-card>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import Snackbar from '@/components/Snackbar'
+
   import { AppMutations } from '@/stores/AppStore'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjContact",
-    components: {
-      Snackbar
-    },
+
     props: {
       title: {
         type: String
@@ -166,9 +164,11 @@
             }
             this.contactsCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Contact added')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding contact')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.addMode = false
         } else {
@@ -188,9 +188,11 @@
             this.contactsCopy[updatedContactIndex].address = res.data.address
             this.contactsCopy[updatedContactIndex].notes = res.data.notes
             this.snackbar = getSnackbar('SUCCESS', 'Contact updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding contact')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.editMode = false
         }
@@ -208,9 +210,11 @@
           let deletedContactIndex = this.contactsCopy.findIndex(i => i.id === this.contact.id)
           this.contactsCopy.splice(deletedContactIndex, 1)
           this.snackbar = getSnackbar('SUCCESS', 'Contact deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting contact')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
         this.editMode = false
         this.$store.commit(AppMutations.SET_LOADING, false)

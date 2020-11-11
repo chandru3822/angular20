@@ -83,8 +83,8 @@
       inner join flow.project p on p.contact_id = c.id
       left outer join flow.company_state cs on cs.id = c.company_state_id
       left outer join flow.state s on s.id = cs.state_id
-      inner join flow.company_country cc on cc.id = c.company_country_id
-      inner join flow.country ct on ct.id = cc.country_id
+      left join flow.company_country cc on cc.id = c.company_country_id
+      left join flow.country ct on ct.id = cc.country_id
     where p.id = :projectId
        and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -124,8 +124,8 @@
   <contact.updateContact><![CDATA[
     update flow.contact set
            contact_type_id = :contactTypeId,
-           first_name = :firstName,
-           last_name = :lastName,
+           first_name = trim(:firstName),
+           last_name = trim(:lastName),
            street1 = :street1,
            city = :city,
            company_state_id = :companyStateId,
@@ -142,7 +142,7 @@
 
   <contact.insertContact><![CDATA[
     insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
-    values (:contactTypeId, :firstName, :lastName, :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
   ]]></contact.insertContact>
 
   <contact.getOwners><![CDATA[
@@ -157,7 +157,7 @@
          inner join flow."user" u on u.id = up.user_id
          inner join flow.position p on p.id = up.position_id
          inner join flow.company_user_status cus on cus.user_id = u.id
-          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+         inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
     where op.company_id = :companyId
       and op.owner_type_id = 1
       and ust.has_access is true
@@ -179,7 +179,7 @@
            mailing_street1 = :street1,
            mailing_street2 = :street2,
            mailing_city = :city,
-           mailing_state = :state,
+           mailing_company_state_id = :stateId,
            mailing_postal_code = :postalCode,
            modified_by_id = :modifiedById,
            date_modified = now()

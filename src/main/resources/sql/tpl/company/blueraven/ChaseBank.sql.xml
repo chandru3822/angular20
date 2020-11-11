@@ -11,14 +11,14 @@
                c.mailing_street1,
                c.mailing_street2,
                c.mailing_city,
-               (select state.abbreviation from flow.state where state.state = c.mailing_state) as mailing_state,
+               (select s.abbreviation from flow.state s inner join flow.company_state cs on  s.id = cs.state_id
+                    where cs.id = c.mailing_company_state_id) as mailing_state,
                c.mailing_postal_code,
                c.street1 as customer_street1,
                c.street2 as customer_street2,
                c.city    as customer_city,
-               (select s.abbreviation from flow.state s
-                  inner join flow.company_state cs on cs.state_id = s.id
-                  where s.id = cs.state_id) as customer_state,
+               (select s.abbreviation from flow.state s inner join flow.company_state cs on  s.id = cs.state_id
+                    where cs.id = c.company_state_id) as customer_state,
                c.postal_code as customer_postal_code
         from brs.project_rebate_payment prp
         inner join flow.project p  on prp.project_id = p.id

@@ -215,22 +215,20 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getCompanyStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {
     name: 'Inverters',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         delay: 500,
@@ -268,6 +266,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Inverters')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -276,11 +275,12 @@
         try {
           await deleteRequest(`/propTool/inverter/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Inverter Deleted')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Inverter')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -298,6 +298,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -312,6 +313,7 @@
           this.inverters = orderBy(this.inverters, [p => p.inverterName.toLowerCase()])
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Inverter Saved' : 'Inverter Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // reset the new fields
           this.addNew = false
@@ -321,6 +323,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', item.id ? 'Error Updating Inverter' : 'Error Adding Inverter')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

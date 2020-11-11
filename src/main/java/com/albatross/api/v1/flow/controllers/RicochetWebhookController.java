@@ -1,9 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.RicochetLead;
-//import com.albatross.api.v1.flow.services.RicochetWebhookService;
+import com.albatross.api.v1.flow.services.RicochetWebhookService;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -19,14 +19,31 @@ public class RicochetWebhookController {
     @Value(value = "${ricochet.apiKey}")
     private String apiKey;
 
-//    @Autowired
-//    private RicochetWebhookService ricochetWebhookService;
+    @Autowired
+    private RicochetWebhookService ricochetWebhookService;
 
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/lead")
     public ResponseEntity saveLead(@RequestBody RicochetLead lead, @RequestHeader("Authorization") String authHeader) throws Exception {
-        if (!StringUtils.equals(authHeader, (apiKey)))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authorization configured");
+        String msg;
+
+        if (!StringUtils.equals(authHeader, (apiKey))) {
+            msg = "Invalid authorization configured";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + msg);
+        }
+
+        if (lead.getUniqueIdentifier() == null) {
+            msg = "Ricochet Lead ID is missing";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
+
+        if (lead.getCustomer().getLastName().isBlank()) {
+            msg = "Last name cannot be blank";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
 
         log.info(
             "Received new contact information from Ricochet. " +
@@ -60,8 +77,6 @@ public class RicochetWebhookController {
                 lead.getHubspotId() != null ? lead.getHubspotId() : "null"
         );
 
-//        ricochetWebhookService.saveLead(lead);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Just testing connection to Ricochet.");
+        return ricochetWebhookService.saveLead(lead);
     }
 }

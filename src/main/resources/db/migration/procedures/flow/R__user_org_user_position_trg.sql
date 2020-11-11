@@ -50,6 +50,27 @@ $BODY$
     VOLATILE
     COST 100;
 
+CREATE OR REPLACE FUNCTION flow.refresh_position_records()
+    RETURNS trigger AS
+$BODY$
+declare
+    v_user_id integer;
+    v_user_ids integer[];
+BEGIN
+
+    select array_agg(user_id)
+    into v_user_ids
+    from flow.user_position
+    where position_id = new.id;
+    perform flow.update_user_org_user_position(v_user_ids);
+    RETURN NEW;
+END;
+$BODY$
+    LANGUAGE plpgsql
+    VOLATILE
+    COST 100;
+
+
 
 CREATE OR REPLACE FUNCTION flow.refresh_org_records()
     RETURNS trigger AS
@@ -93,3 +114,10 @@ CREATE TRIGGER user_position_trg
     ON flow.user_position
     FOR EACH ROW
 EXECUTE PROCEDURE flow.refresh_user_position_records();
+
+drop trigger if exists position_trg on flow.position;
+CREATE TRIGGER position_trg
+    AFTER INSERT OR UPDATE OR DELETE
+    ON flow.position
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.refresh_position_records();

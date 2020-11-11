@@ -49,6 +49,7 @@ public class InstallAgreementRepository {
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
+    params.put("companyId", user.getCompanyId());
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());

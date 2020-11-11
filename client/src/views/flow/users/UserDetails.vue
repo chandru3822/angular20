@@ -42,22 +42,86 @@
                             v-model="user.username"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
-                <div v-if="userIsAdmin">
+                <v-toolbar color="transparent" class="elevation-0" id="company-access-toolbar">
+                  <v-toolbar-title>Company Access:</v-toolbar-title>
+                  <v-spacer></v-spacer>
+                  <v-toolbar-items>
+                    <v-btn
+                      v-if="userIsAdmin"
+                      text
+                      @click="addUserCompany = !addUserCompany">Add</v-btn>
+                  </v-toolbar-items>
+                </v-toolbar>
+                <v-divider :class="{'mb-2': !addUserCompany}"></v-divider>
+                <v-card flat color="transparent" class="px-3" v-if="addUserCompany">
                   <v-select
-                      v-model="user.companies"
-                      :items="companies"
-                      label="Company Access"
-                      multiple
-                      item-text="companyName"
-                      return-object
+                    v-model="newCompany.id"
+                    :items="filterUserCompanies()"
+                    label="Company"
+                    item-text="companyName"
+                    item-value="id"
+                    @input="getUserStatusTypes(newCompany.id)"
                   ></v-select>
+                  <v-select
+                    v-model="newCompany.companyUserStatusTypeId"
+                    :items="companyUserStatusTypes"
+                    label="User Status"
+                    item-text="userStatusType"
+                    item-value="id"
+                  ></v-select>
+                  <v-btn
+                    v-if="userIsAdmin"
+                    color="primaryCustom"
+                    class="white--text mb-2"
+                    :disabled="!newCompany.id || !newCompany.companyUserStatusTypeId"
+                    text
+                    @click="saveUserCompany">Add User to Company</v-btn>
+                </v-card>
+                <v-divider v-if="addUserCompany" class="mb-2"></v-divider>
+
+                <div v-for="uc in user.companies">
+                    {{uc.companyName}}
+                  <v-dialog
+                    v-if="userIsAdmin"
+                    v-model="uc.deleteConfirm"
+                    width="500">
+                    <template #activator="{ on }">
+                      <v-btn x-small text v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title>
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text class="pt-4">
+                        Are you sure you want to delete {{uc.companyName}} from this user?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="uc.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="removeUserCompany(uc)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </div>
-                <div v-else>
-                  <label>Company Access:</label>
-                  <div class="ml-4"  v-for="uc in user.companies">{{uc.companyName}}</div>
-                </div>
+
               </div>
-              <v-text-field text
+              <v-text-field text class="mt-4"
                             v-if="userIsAdmin"
                             label="Password"
                             placeholder=" "
@@ -88,22 +152,23 @@
         </v-col>
       </v-row>
     </div>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
+  import cloneDeep from 'lodash.clonedeep'
 
   export default {
     name: 'User',
     components: {
-      Snackbar,
+
       CustomValueInput,
       NotesAndActivity
     },
@@ -130,6 +195,9 @@
         companyId: this.$store.state.user.details.companyId,
         changeOwner: false,
         userStatusTypes: [],
+        addUserCompany: false,
+        newCompany: {},
+        companyUserStatusTypes: [],
       }
     },
     created () {
@@ -158,6 +226,7 @@
             console.error('*** ERROR ***', e)
             let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
             this.snackbar = getSnackbar('ERROR', errorMsg)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
@@ -180,6 +249,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -192,6 +262,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -205,6 +276,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Companies')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -219,19 +291,70 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getUserStatusTypes () {
+      async getUserStatusTypes (companyId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/user/statuses`)
-          this.userStatusTypes = data
+          let params = {
+            companyId: companyId
+          }
+          const {data} = await getRequestWithParams(`/user/statuses`, {params})
+          if(companyId) {
+            //the user status types for adding a user to a user_company
+            this.companyUserStatusTypes = cloneDeep(data)
+          } else {
+            // the user statuses for saving the current user
+            this.userStatusTypes = cloneDeep(data)
+          }
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async removeUserCompany (uc) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            companyId: uc.id,
+            userId: this.userId
+          }
+          const {data} = await postRequest(`/user/removeFromCompany`, params)
+          this.user.companies = data
+          if(this.companyId === uc.id) {
+            this.$router.push({name: 'users'})
+          }
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Removing User Company')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveUserCompany () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            companyId: this.newCompany.id,
+            companyUserStatusTypeId: this.newCompany.companyUserStatusTypeId,
+            userId: this.userId
+          }
+          const {data} = await postRequest(`/user/addToCompany`, params)
+          this.user.companies = data
+          this.newCompany = {}
+          this.addUserCompany = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving User Company')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -243,16 +366,27 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       getReadOnly: function (field) {
         return !this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
       },
+      filterUserCompanies: function () {
+        let companiesInUse = this.user.companies.map(c => c.id)
+        return this.companies.filter(c => !companiesInUse.includes(c.id))
+      },
     }
   }
 </script>
 
+<style lang="scss">
+#company-access-toolbar .v-toolbar__content {
+  padding-left: 0;
+  padding-top: 0;
+}
+</style>
 <style lang="scss" scoped>
   .user-header {
     background-color: white;

@@ -116,12 +116,12 @@
       </v-dialog>
 
     </v-col>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {
       getRequest,
       deleteRequest,
@@ -136,9 +136,7 @@
 
   export default {
     name: 'ProjectRequests',
-    components: {
-      Snackbar
-    },
+
     data: () => ({
       snackbar: {},
       dataLoading: true,
@@ -208,6 +206,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving installation agreements')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       debounceFilterProjects: debounce( function () {
@@ -235,6 +234,7 @@
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error retrieving proposal numbers')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
 
           this.requestDialog = true;
@@ -256,6 +256,7 @@
               if (!this.requestItem.proposal_nbr) {
                   console.error('*** ERROR ***', 'Error saving installation agreement request: No Proposal Number selected')
                   this.snackbar = getSnackbar('ERROR', 'Unable to save installation agreement request without Proposal Number')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
                   this.$store.commit(AppMutations.SET_LOADING, false)
                   return
               }
@@ -264,9 +265,11 @@
               this.requestDialog = false;
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('SUCCESS', 'Installation agreement request submitted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               console.error('*** ERROR ***', e)
           }
       },
@@ -275,6 +278,7 @@
               if (!this.requestItem.proposal_nbr) {
                   console.error('*** ERROR ***', 'Error: Unable to generate LonaPal application without Proposal Number')
                   this.snackbar = getSnackbar('ERROR', 'Unable to generate LonaPal application without Proposal Number')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
                   return
               }
               const {data} = await getRequest('/install-agreement/generate/'+this.requestItem.project_id+'/'+this.requestItem.proposal_nbr, 'blueraven')
@@ -283,6 +287,7 @@
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error generating LoanPal Application')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },
       async updateEmail(it) {
@@ -295,11 +300,13 @@
               this.currentEmail = this.requestItem.email;
               this.editEmail = false;
               this.snackbar = getSnackbar('SUCCESS', 'Email address updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error updating email address')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },
       resetEmail() {

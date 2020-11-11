@@ -21,7 +21,7 @@
     "@vue/devtools": "^5.3.3",
     "axios": "^0.20.0",
     "deepmerge": "^4.2.2",
-    "fibers": "^4.0.1",
+    "fibers": "^5.0.0",
     "file-saver": "^2.0.2",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",

@@ -44,7 +44,6 @@
       </v-data-table>
     </v-col>
   </v-row>
-  <Snackbar :snackbar="snackbar"/>
 </v-container>
 </template>
 
@@ -52,13 +51,11 @@
 
 import {getRequest, getSnackbar, logError} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 export default {
   name: 'Smartlists',
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       constants,

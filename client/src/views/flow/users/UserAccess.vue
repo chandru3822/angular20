@@ -14,6 +14,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <AccessControl v-if="userAccessLoaded"
+                       :key="accessControlKey"
                        :user-can-edit="userCanEdit"
                        :companyFeatures="userCompanyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
       </v-col>
@@ -108,13 +109,13 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {
     getRequest,
@@ -128,7 +129,7 @@
   export default {
     name: 'UserAccess',
     components: {
-      Snackbar,
+
       AccessControl
     },
     computed: {
@@ -154,6 +155,7 @@
           { text: 'Calendar', value: 'calendar', show: true },
           { text: '', value: 'icons', show: true },
         ],
+        accessControlKey: 0
       }
     },
     created () {
@@ -172,6 +174,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Access Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -184,6 +187,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Calendars')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -202,6 +206,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Org Calendar to User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -214,6 +219,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Calendar from User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -237,10 +243,13 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/feature/user/${this.userId}`, this.userCompanyFeatures)
+          this.userCompanyFeatures = data
+          this.accessControlKey++
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Access Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 

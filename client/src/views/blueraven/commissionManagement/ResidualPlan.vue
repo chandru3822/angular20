@@ -610,24 +610,23 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../../helpers/helpers";
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 
   export default {
     name: 'ResidualPlan',
     mixins: [Vue2Filters.mixin],
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     created() {
@@ -725,6 +724,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Residual Plan Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -816,6 +816,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Residual Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -829,6 +830,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Approving Residual Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -837,10 +839,12 @@
         try {
           await postRequest(`/commissionManagement/residuals/${this.planId}/inactivate`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Inactivated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$router.push({name: 'residualPlans'})
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Inactivating Residual Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -849,10 +853,12 @@
         try {
           await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$router.push({name: 'residualPlans'})
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -871,6 +877,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Cloning ResidualPlan')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -881,10 +888,12 @@
           this.assignedUserExpanded = []
           this.userHistory = []
           this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -909,6 +918,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Residual Plan Users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -925,12 +935,14 @@
           const {data} = await postRequest(`/commissionManagement/residuals/${this.planId}/users`, params, 'blueraven')
           this.residualPlan.users = data
           this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.addUser = false
           this.newUser = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Residual Plan User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -939,11 +951,13 @@
         try {
           await deleteRequest(`/commissionManagement/residuals/${this.planId}/residualPlanUser/${residualPlanUser.id}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Residual Plan User Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           residualPlanUser.archived = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan User')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -968,6 +982,7 @@
           this.errorLoadingUserHistory = true
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -983,6 +998,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Level')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -991,6 +1007,7 @@
         try {
           await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}/allocation/${residualPlanAllocationId}`, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Level Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.residualPlan.residualPlanAllocations = this.residualPlan.residualPlanAllocations.filter(rpa => {
             return rpa.id !== residualPlanAllocationId
           })
@@ -998,6 +1015,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Level')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1009,6 +1027,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Level')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

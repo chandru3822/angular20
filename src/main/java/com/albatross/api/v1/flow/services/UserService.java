@@ -3,14 +3,10 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.UserController;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SequenceWriter;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.google.common.collect.Collections2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +19,10 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 
 /**
@@ -68,47 +63,6 @@ public class UserService {
 
     Page<User> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
     return page;
-  }
-
-  public ResponseEntity exportUsers(UserSearch search) {
-    User user = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("query", search.getSearch());
-    params.put("firstName", search.getFirstName());
-    params.put("lastName", search.getLastName());
-    params.put("email", search.getEmail());
-    params.put("phone", search.getPhone());
-    params.put("statuses", search.getStatuses());
-    params.put("positions", search.getPositions());
-
-    List<User> results = sqlCache.query("user.exportUsers", params, User.class);
-
-    // set up CSV writing
-    CsvMapper mapper = new CsvMapper();
-    CsvSchema schema = mapper.typedSchemaFor(UserExportTemplate.class).withHeader();
-    ObjectWriter writer = mapper.writer(schema);
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-    // get user deets and write to CSV
-    try (SequenceWriter outToBuffer = writer.writeValues(buffer)) {
-      // first, get deets
-      Collection<UserExportTemplate> details = Collections2.transform(
-          results,
-          UserExportTemplate::from);
-
-      // next, write them to a buffer so we can identify errors before writing across the network
-      outToBuffer.writeAll(details);
-      outToBuffer.flush();
-
-      // finally, write to network because no errors were encountered
-      return ResponseEntity.ok(buffer.toString(StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      log.error("Encountered error while writing user export to CSV", e);
-      return ResponseEntity.status(500)
-          .body("Encountered error while writing user export to CSV");
-    }
   }
 
   public boolean emailExists(String email, Long userId) {
@@ -163,10 +117,10 @@ public class UserService {
       if(null != user.getUserStatusTypeId()) {
         saveUserStatus(true, id, user.getUserStatusTypeId());
       }
-      //save user companies
-      if(null != user.getCompanies()) {
-        handleSavingUserCompanies(user.getCompanies(), user.getId());
-      }
+      //save user companies - we do this differently now
+//      if(null != user.getCompanies()) {
+//        handleSavingUserCompanies(user.getCompanies(), user.getId());
+//      }
       //save user password if sent in
       if(null != user.getNewPassword()) {
         String newPwd = BCrypt.hashpw(user.getNewPassword(), BCrypt.gensalt(10));
@@ -230,23 +184,6 @@ public class UserService {
     return results;
   }
 
-  public void handleSavingUserCompanies(List<Company> companies, Long userId){
-    //archive any existing rows that are no longer there
-    List<Long> companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
-    params.put("companyIds", companyIds);
-    sqlCache.update("user.archiveUserCompanies", params);
-
-    for(Company company: companies) {
-      //upsert any new/existing rows
-      HashMap<String, Object> vars = new HashMap<>();
-      vars.put("userId", userId);
-      vars.put("companyId", company.getId());
-      sqlCache.update("user.upsertUserCompany", vars);
-    }
-  }
-
   public User findByUsernameIgnoreCase(String username, Long userId) {
     // i updated this to find by username or by userId so that we can call the same function on login AND on change context
     HashMap<String, Object> params = new HashMap<>();
@@ -278,11 +215,44 @@ public class UserService {
     return user.orElse(null);
   }
 
-  public List<UserStatusType> getCompanyUserStatuses() {
+  public List<UserStatusType> getCompanyUserStatuses(Long companyId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", null != companyId ? companyId :user.getCompanyId());
     List<UserStatusType> results = sqlCache.query("user.getCompanyUserStatuses", params, UserStatusType.class);
+    return results;
+  }
+
+  public List<Company> removeFromCompany(UserController.NewUserCompanyRequest req) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", req.getCompanyId());
+    params.put("userId", req.getUserId());
+    params.put("modifiedById", user.getId());
+    sqlCache.update("user.deleteUserCompany", params);
+
+    //per judson request also remove the user_status for that company and user
+    sqlCache.update("user.archiveUserStatus", params);
+
+    List<Company> results = sqlCache.query("user.getUserCompanies", params, Company.class);
+    return results;
+  }
+
+
+  public List<Company> addToCompany(UserController.NewUserCompanyRequest req) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", req.getCompanyId());
+    params.put("userId", req.getUserId());
+    params.put("userStatusTypeId", req.getCompanyUserStatusTypeId());
+    params.put("currentUserId", user.getId());
+    sqlCache.update("user.upsertUserCompany", params);
+
+    //check if there is already a user status for this user and company, if not, add new
+    sqlCache.update("user.upsertUserStatus", params);
+//    saveUserStatus(false, req.getUserId(), req.getCompanyUserStatusTypeId());
+
+    List<Company> results = sqlCache.query("user.getUserCompanies", params, Company.class);
     return results;
   }
 

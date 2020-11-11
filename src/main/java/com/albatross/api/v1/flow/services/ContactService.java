@@ -160,7 +160,7 @@ public class ContactService {
     params.put("street1", contact.getMailingStreet1());
     params.put("street2", contact.getMailingStreet2());
     params.put("city", contact.getMailingCity());
-    params.put("state", contact.getState());
+    params.put("stateId", contact.getCompanyStateId());
     params.put("postalCode", contact.getMailingPostalCode());
     params.put("modifiedById", currentUser.getId());
     params.put("id", contact.getId());
@@ -202,7 +202,7 @@ public class ContactService {
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId);
+        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, true);
       }
     }
 

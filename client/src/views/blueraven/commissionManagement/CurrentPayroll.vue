@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pa-0">
+  <v-container class="pa-0" id="payroll-container">
     <v-toolbar v-if="!payrollLoading && !additionalPayrollDataNeeded" :color="payrollStatus.color" class="mt-2">
       <v-toolbar-title class="app-title" :style="{'color': payrollStatus.textColor}">
         {{payrollStatus.message}}
@@ -98,18 +98,23 @@
                               :loading="customersLoading"
                               :search-input.sync="customerSearch"
                               label="Customer..."
+                              clearable
                               item-text="fullName"
                               item-value="id"
                               autocomplete="new-password"
+                              type="search"
+                              @click:clear="customers = []"
               ></v-autocomplete>
               <v-autocomplete v-model="accountingSearch.salesRepId"
                               :items="reps"
                               :loading="repsLoading"
                               :search-input.sync="repSearch"
                               label="Sales Rep..."
+                              clearable
                               item-text="name"
                               item-value="userId"
-                              autocomplete="new-password"
+                              type="search"
+                              @click:clear="reps = []"
               ></v-autocomplete>
               <div class="text-left">
                 <v-btn color="primaryCustom" dark @click="getAccountingData()">Search</v-btn>
@@ -130,6 +135,7 @@
               label="Search"
               single-line
               hide-details
+              @input="debounceSearch"
             ></v-text-field>
           </v-card-title>
           <v-divider></v-divider>
@@ -137,11 +143,15 @@
               :headers="headers"
               :items="accountingData"
               :fixed-header="true"
-              :search="search"
+              :search="debouncedSearch"
+              :footer-props="footerProps"
+              disable-sort
+              :mobile-breakpoint="0"
               :show-select="payrollStatus.showSelect"
               :loading="dataLoading"
-              hide-default-footer
+              :items-per-page="25"
               class="elevation-1"
+              id="tester-face"
           >
             <template #no-data>
               No available accounting data
@@ -158,7 +168,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }">
                 <td v-if="payrollStatus.showSelect">
-                  <v-checkbox color="primaryCustom" v-model="item.selected"></v-checkbox>
+                  <v-checkbox color="primaryCustom" v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
                 <td class="text-left">{{item.project_id}}</td>
                 <td class="text-left">{{item.customer_name }}</td>
@@ -166,7 +176,6 @@
                 <td class="text-left">{{item.closer }}</td>
                 <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
                 <td class="text-left">{{item.source_name }}</td>
-                <td class="text-left">{{item.stage_name }}</td>
                 <td class="text-left">{{item.cancelled_date }}</td>
                 <td class="text-left">{{item.installation_agreement_signed_date | formatDate('date') }}</td>
                 <td class="text-left">{{item.final_design_signed_date | formatDate('date') }}</td>
@@ -260,24 +269,25 @@
         </v-card>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import cloneDeep from 'lodash.clonedeep'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../../helpers/helpers";
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import Vue2Filters from "vue2-filters";
+  import constants from "@/helpers/constants";
+  import debounce from "lodash.debounce";
 
   export default {
     name: 'Accounting',
     mixins: [Vue2Filters.mixin],
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     created() {
@@ -314,6 +324,7 @@
         repsLoading: false,
         approveConfirm: false,
         search: '',
+        debouncedSearch: '',
         payDate: null,
         additionalPayrollDataNeeded: false,
         payrollLoading: true,
@@ -334,7 +345,6 @@
           {text: 'Sales Rep', value: 'closer', show: true},
           {text: 'Current Pay', value: 'current_pay', show: true},
           {text: 'Source', value: 'source_name', show: true},
-          {text: 'Stage', value: 'stage_name', show: true},
           {text: 'Cancelled', value: 'cancelled_date', show: true},
           {text: 'IAS', value: 'installation_agreement_signed_date', show: true},
           {text: 'FDS', value: 'final_design_signed_date', show: true},
@@ -359,6 +369,15 @@
           {text: 'Remaining Value Overrides', value: 'remaining_value_overrides', show: true},
         ],
         accountingData: [],
+        masterSelectedPayrollIds: [],
+        // options: {
+        //   // itemsPerPage: 100
+        //   itemsPerPage: 10
+        // },
+        footerProps: {
+          'items-per-page-options': [25, 50, 100],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
         currentPayroll: {},
         payrollStatus: {},
         accountingSearch: {}
@@ -369,6 +388,18 @@
         this.accountingData.forEach(ad => {
           ad.selected = this.selectAll
         })
+        if(this.selectAll) {
+          this.currentPayroll.selectedProjectIds = this.masterSelectedPayrollIds.concat(this.accountingData.map(ad => ad.id))
+        } else {
+          this.currentPayroll.selectedProjectIds = []
+        }
+      },
+      toggleSingleSelect(item) {
+        if(item.selected) {
+          this.currentPayroll.selectedProjectIds.push(item.project_id)
+        } else {
+          this.currentPayroll.selectedProjectIds = this.currentPayroll.selectedProjectIds.filter(p => p !== item.project_id)
+        }
       },
       async submitForApproval (action) {
         let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
@@ -377,15 +408,18 @@
         }
         if(this.payrollStatus.showSelect && (!selectedIds || selectedIds.length === 0)) {
           this.snackbar = getSnackbar('WARNING', 'You must select at least one project.')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             await postRequest(`/payroll/${this.currentPayroll.id}/${action}`, params, 'blueraven')
             this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
-            this.getCurrentPayroll()
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            await this.getCurrentPayroll()
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Updating')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -400,6 +434,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Adjustment History')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -416,10 +451,12 @@
           }
           await postRequest(`/payroll/${this.currentPayroll.id}/adjustments`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Adjustment Added')
-          this.getCurrentPayroll()
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          await this.getCurrentPayroll()
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Adjustment')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -427,19 +464,22 @@
         let params = {
           description: this.currentPayroll.description,
           periodEnd: this.currentPayroll.periodEnd,
-          projectIds: []
+          projectIds: this.currentPayroll.selectedProjectIds
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/payroll/${this.currentPayroll.id}`, params, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.currentPayroll = data
           this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
           this.getStatusColor()
-          this.getAccountingData()
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          // await this.getAccountingData()
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -483,11 +523,12 @@
         try {
           const {data} = await getRequest(`/payroll/current`, 'blueraven')
           this.currentPayroll = data
+          this.masterSelectedPayrollIds = cloneDeep(this.currentPayroll.selectedProjectIds)
           this.getStatusColor()
           this.payrollLoading = false
           this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
           if(null != this.currentPayroll.periodEnd) {
-            this.getAccountingData()
+            await this.getAccountingData()
           } else {
             this.dataLoading = false
             this.accountingData = []
@@ -496,6 +537,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -509,6 +551,9 @@
             customerId: this.accountingSearch.customerId,
             salesRepId: this.accountingSearch.salesRepId
           }
+          if(this.currentPayroll?.status !== 'PENDING' && this.currentPayroll?.status !== 'REJECTED') {
+            params.selectedProjectIds = this.currentPayroll.selectedProjectIds
+          }
           const {data} = await postRequest(`/commissionManagement/accountReview/search`, params, 'blueraven')
           data.forEach(d => {
             d.selected = !!this.currentPayroll.selectedProjectIds?.includes(d.project_id)
@@ -519,11 +564,9 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Accounting Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async viewDetails (item) {
-        console.log('randaLogger', item)
       },
       getCustomersDebounced(val) {
         clearTimeout(this._searchTimerId)
@@ -544,7 +587,16 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customers')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
+      },
+      debounceSearch () {
+        clearTimeout(this._textSearchTimerId)
+        this._textSearchTimerId = setTimeout(() => {
+          console.log('randaLogger', this.search)
+          this.debouncedSearch = this.search
+        }, 700)
+
       },
       getRepsDebounced(val) {
         clearTimeout(this._repTimerId)
@@ -565,6 +617,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sales Reps')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
     }

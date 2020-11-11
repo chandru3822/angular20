@@ -1074,7 +1074,7 @@
     <!-- FUNNEL DRILLDOWN END -->
     <!----------------------------------- PIPELINE TAB END ----------------------------------->
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
@@ -1084,7 +1084,7 @@
   import orderBy from 'lodash.orderby'
   import $ from 'jquery'
   import moment from 'moment'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import constants from '@/helpers/constants'
   import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
@@ -1092,9 +1092,7 @@
 
   export default {
     name: 'closerDashboard',
-    components: {
-      Snackbar
-    },
+
     data: () => ({
       snackbar: {},
       constants,
@@ -1506,6 +1504,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Ironman data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.ironmanLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -1629,6 +1628,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1671,6 +1671,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving list of round robins')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1723,6 +1724,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving ranking table data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.rankingTablesLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -2018,6 +2020,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving lists of sources')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -2058,6 +2061,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments Created Pipeline data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -2136,6 +2140,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -2536,6 +2541,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
