@@ -70,7 +70,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
         }
     }
 
-    @Scheduled(cron = "0 3 * ? * *")
+    @Scheduled(cron = "0 0,10,20,30,40,50 * ? * * *")
     public void autoTriggers() {
       log.info("*** CRON: start autoTriggers ***");
       if (autoTriggers) {
