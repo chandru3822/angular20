@@ -384,7 +384,7 @@
                                 <v-btn
                                     color="primaryCustom"
                                     text
-                                    @click="deleteWithChecks(cf, null, cf.id)">
+                                    @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
