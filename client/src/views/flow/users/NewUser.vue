@@ -6,7 +6,7 @@
         <v-spacer></v-spacer>
         <v-btn text class="mr-3" to="/users">Cancel</v-btn>
         <v-btn color="primaryCustom white--text" @click="validate"
-               :disabled="(newPosition.positionId != null && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)">Save</v-btn>
+               :disabled="(newPosition.positionId != null && newPosition.endDate && !newPosition.startDate) || ((newPosition.startDate != null || newPosition.endDate != null) && !newPosition.positionId)">Save</v-btn>
       </v-card-title>
 
       <v-form ref="userForm">
@@ -23,11 +23,9 @@
                             v-model="user.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
-                            :rules="requiredRules"
                             v-model="user.street1"></v-text-field>
               <v-text-field text
                             label="City"
-                            :rules="requiredRules"
                             v-model="user.city"></v-text-field>
               <v-autocomplete v-model="user.companyStateId"
                               :items="states"
@@ -55,11 +53,9 @@
                             v-model="user.email"></v-text-field>
               <v-text-field text
                             label="Zip Code"
-                            :rules="requiredRules"
                             v-model="user.postalCode"></v-text-field>
               <v-select v-model="user.companyCountryId"
                         :items="countries"
-                        :rules="requiredRules"
                         label="Country"
                         item-text="country"
                         item-value="id"
