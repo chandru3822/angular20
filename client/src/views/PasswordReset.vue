@@ -1,5 +1,5 @@
 <template>
-  <v-content>
+  <v-main>
     <v-container class="fill-height" v-if="!requestValidating && !requestValid">
       <v-row>
         <v-col cols="12">
@@ -57,7 +57,7 @@
       </v-row>
 
     </v-container>
-  </v-content>
+  </v-main>
 </template>
 
 <script>
