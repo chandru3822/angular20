@@ -343,7 +343,7 @@ public class SmartlistService {
       if (f.getSmartlistSystemListId() != null) {
         final String tempAlias = UUID.randomUUID().toString();
 
-        if (f.getSmartlistSystemListId() == 1) {
+        if (f.getSmartlistSystemListId() == 1 || f.getSmartlistSystemListId() == 3) {
           location = String.format("(select name from (%s) \"%s\" where \"%s\".id = %s.%s)", smartlistSystemListSubquery, tempAlias, tempAlias, f.getJoinTable(), f.getJoinColumn());
         } else if (f.getSmartlistSystemListId() == 2) {
           String ppsTable;
@@ -531,10 +531,10 @@ public class SmartlistService {
             String referenceTable = "";
             final String smartlistSystemListTable = String.format("smartlist.systemlist.%s", r.getSmartlistSystemListId());
 
-            if (r.getSmartlistSystemListId() == 1) {
-              if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(1::int, %s", r.getCompanyId())) == -1) {
+            if (r.getSmartlistSystemListId() == 1 || r.getSmartlistSystemListId() == 3) {
+              if (additionalJoins.indexOf(String.format("left join (select * from flow.get_smartlist_system_list_options(%s::int, %s", r.getSmartlistSystemListId(), r.getCompanyId())) == -1) {
                 referenceTable = UUID.randomUUID().toString();
-                final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", 1, r.getCompanyId());
+                final String subquery = String.format("select * from flow.get_smartlist_system_list_options(%s::int, %s::int)", r.getSmartlistSystemListId(), r.getCompanyId());
                 additionalJoins.append(String.format("\nleft join (%s) \"%s\" on \"%s\".id = %s.%s ", subquery, referenceTable, referenceTable, r.getJoinTable(), r.getJoinColumn()));
               }
             } else if (r.getSmartlistSystemListId() == 2) {

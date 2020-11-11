@@ -1035,16 +1035,16 @@
                 </td>
               </tr>
             </template>
-            <template v-if="showTotalSystemSize" #footer="{ props: {} }">
+            <template v-if="showTotalSystemSize" v-slot:body.append>
               <tr id="total-system-size-row">
-                <td style="width: 25px"></td>
-                <td style="width: 90px"></td>
-                <td style="width: 115px"></td>
-                <td style="width: 75px"></td>
-                <td style="width: 90px"></td>
-                <td style="width: 85px"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
                 <td id="total-system-size-label">Total Size:</td>
-                <td style="width: 110px">{{ totalSystemSize ? totalSystemSize : 0 }}</td>
+                <td>{{ totalSystemSize ? totalSystemSize : 0 }}</td>
               </tr>
             </template>
 
@@ -3862,7 +3862,6 @@
       #total-system-size-label {
         font-weight: bold;
         text-align: right;
-        min-width: 85px;
       }
 
       .customer-name {
