@@ -829,7 +829,13 @@
 
   #calendar-container .fc-rows tr,
   #calendar-container .fc-rows tr .fc-widget-content div{
-    height: 25px !important;
+    padding: 5px 0 !important;
+
+  }
+
+  #calendar-container .fc-rows tr,
+  #calendar-container .fc-rows tr .fc-widget-content{
+    height: auto !important;
   }
 
   #calendar-container .fc-cell-content {
