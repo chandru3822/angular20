@@ -662,6 +662,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
             and site_survey_completed_date::date = (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                and dce2.deleted is false
             where
                 site_survey_completed_date is not null
               and originator_id = 1
@@ -1792,6 +1793,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_packet_submitted_date::date
+                and dce2.deleted is false
             where
                 permit_packet_submitted_date is not null
               and originator_id = 1
@@ -1864,6 +1866,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pack_revision_submittal_date::date
+                and dce2.deleted is false
             where
                 permit_pack_revision_submittal_date is not null
               and originator_id = 1
@@ -1936,6 +1939,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_b_submittal_date::date
+                and dce2.deleted is false
             where
                 permit_revision_b_submittal_date is not null
               and originator_id = 1
@@ -2008,6 +2012,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_c_submittal_date::date
+                and dce2.deleted is false
             where
                 permit_revision_c_submittal_date is not null
               and originator_id = 1
@@ -3418,6 +3423,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_permit_submittal_date::date
+                and dce2.deleted is false
             where
                 in_house_mpu_permit_submittal_date is not null
               and originator_id = 1
@@ -3690,6 +3696,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pick_up_date::date
+                and dce2.deleted is false
             where
                 permit_pick_up_date is not null
               and originator_id = 1
@@ -3751,6 +3758,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pack_revision_pickup_date::date
+                and dce2.deleted is false
             where
                 permit_pack_revision_pickup_date is not null
               and originator_id = 1
@@ -3812,6 +3820,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_b_pickup_date::date
+                and dce2.deleted is false
             where
                 permit_revision_b_pickup_date is not null
               and originator_id = 1
@@ -3873,6 +3882,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_c_pickup_date::date
+                and dce2.deleted is false
             where
                 permit_revision_c_pickup_date is not null
               and originator_id = 1
@@ -3972,6 +3982,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = fl_noc_application_signature_date::date
+                and dce2.deleted is false
             where
                 fl_noc_application_signature_date is not null
               and originator_id = 1
@@ -4248,6 +4259,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = installation_date::date
+                and dce2.deleted is false
             where
                 installation_date :: DATE is not null
               and originator_id = 1
@@ -4431,6 +4443,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = installation_closeout_date::date
+                and dce2.deleted is false
             where
                 installation_closeout_date is not null
               and originator_id = 1
@@ -4936,6 +4949,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_date::date
+                and dce2.deleted is false
             where
                 ahj_inspection_date is not null and ahj_inspection_ready_to_schedule_date < substantial_completion_date
               and originator_id = 1
@@ -5549,6 +5563,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = system_service_date::date
+                and dce2.deleted is false
             where
                 system_service_date is not null
               and originator_id = 1
@@ -7025,6 +7040,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_date::date
+                and dce2.deleted is false
             where
                 in_house_mpu_date is not null
               and originator_id = 1
@@ -7208,6 +7224,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                 non_standard_installation_work_date is not null
               and (NOT (non_standard_installation_work LIKE ANY (ARRAY ['%Structural Upgrade%', '%Trenching%',
@@ -7473,6 +7490,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_work_date::date
+                and dce2.deleted is false
             where
                 ahj_inspection_work_date is not null
               and originator_id = 1
@@ -7658,6 +7676,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = energization_visit_date::date
+                and dce2.deleted is false
             where
                 energization_visit_date is not null
               and originator_id = 1
@@ -9040,6 +9059,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_date::date
+                and dce2.deleted is false
             where
                 resurvey_date is not null
               and originator_id = 1
@@ -9107,6 +9127,7 @@ with process_step1 as (
                                     ON project.id = d.id
                          left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                     and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_b_date::date
+                    and dce2.deleted is false
                 where
                     resurvey_b_date is not null
                   and originator_id = 1
@@ -9172,6 +9193,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_c_date::date
+                and dce2.deleted is false
             where
                 resurvey_c_date is not null
               and originator_id = 1
@@ -11737,6 +11759,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','Main Panel Upgrade'])
               and non_standard_installation_work_date is not null
@@ -11919,6 +11942,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%Main Panel Upgrade - In House%'])
                 and in_house_mpu_date is not null
@@ -12101,6 +12125,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%Structural Upgrade%'])
               and non_standard_installation_work_date is not null
@@ -12282,6 +12307,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%Reroof%'])
               and non_standard_installation_work_date is not null
@@ -12463,6 +12489,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%Trenching%'])
               and non_standard_installation_work_date is not null
@@ -12642,6 +12669,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%Tree Trimming%'])
               and non_standard_installation_work_date is not null
@@ -12822,6 +12850,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
               and non_standard_installation_work_date is not null
@@ -13000,6 +13029,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false
             where
                     non_standard_installation_work like any (array['%Source Deadfront%'])
               and non_standard_installation_work_date is not null
@@ -13383,6 +13413,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_date::date
+                and dce2.deleted is false
             where
                 ahj_reinspection_date is not null
               and originator_id = 1
@@ -13449,6 +13480,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_b_date::date
+                and dce2.deleted is false
             where
                 ahj_reinspection_b_date is not null
               and originator_id = 1
@@ -14214,6 +14246,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_mid_point_inspection_date::date
+                and dce2.deleted is false
             where
                 ahj_mid_point_inspection_date is not null
               and originator_id = 1
@@ -14480,6 +14513,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_date::date
+                and dce2.deleted is false
             where
                 ahj_inspection_date is not null and (ahj_inspection_ready_to_schedule_date >= substantial_completion_date or ahj_inspection_ready_to_schedule_date is null)
               and originator_id = 1
@@ -14548,6 +14582,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_date::date
+                and dce2.deleted is false
             where
                 ahj_reinspection_date is not null
               and originator_id = 1
@@ -14615,6 +14650,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_b_date::date
+                and dce2.deleted is false
             where
                 ahj_reinspection_b_date is not null
               and originator_id = 1
@@ -14796,6 +14832,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = additional_ahj_inspection_date::date
+                and dce2.deleted is false
             where
                 additional_ahj_inspection_date is not null
               and originator_id = 1
@@ -14976,6 +15013,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_permit_pickup_date::date
+                and dce2.deleted is false
             where
                 in_house_mpu_permit_pickup_date is not null
               and originator_id = 1
@@ -16257,6 +16295,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = asbuilt_permit_pack_submittal_date::date
+                and dce2.deleted is false
             where
                 asbuilt_permit_pack_submittal_date is not null
               and originator_id = 1
@@ -16601,6 +16640,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = as_built_permit_pickup_date::date
+                and dce2.deleted is false
             where
                 as_built_permit_pickup_date is not null
               and originator_id = 1
@@ -18052,6 +18092,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_inspection_scheduled_date::date
+                and dce2.deleted is false
             where
                 in_house_mpu_inspection_scheduled_date is not null and ahj_inspection_date is not null
               and originator_id = 1
