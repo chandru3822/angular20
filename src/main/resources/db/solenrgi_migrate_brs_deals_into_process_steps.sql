@@ -17737,7 +17737,7 @@ with active_step as (
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where originator_id = 2 and installation_date is not null and substantial_completion_date is null
-           and installation_date >= (now() at time zone 'US/Mountain')::date
+           and  installation_closeout_required_date is null
         ) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
