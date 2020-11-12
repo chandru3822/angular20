@@ -44,7 +44,7 @@
           <v-btn color="secondary" class="mr-2"
                  @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
           <v-btn color="primaryCustom" class="white--text mr-2"
-                 :disabled="!newPosition.startDate || !newPosition.positionId"
+                 :disabled="!newPosition.positionId || (newPosition.positionId && newPosition.endDate && !newPosition.startDate )"
                  @click="savePosition(newPosition)">Add</v-btn>
         </v-card>
 

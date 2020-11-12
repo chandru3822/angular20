@@ -18,7 +18,8 @@ BEGIN
       and pps.process_step_id = (select ps2.id
           from flow.process_step ps2
           where ps2.company_id = ps.company_id
-          and ps2.process_step_name = 'Verify HOA Application Approval');
+          and ps2.process_step_name = 'Verify HOA Application Approval'
+          and ps2.archived is not true);
 
     select ppscfv.date_value
     into v_hoa_request_for_submitted_date
@@ -31,7 +32,8 @@ BEGIN
     and pps.process_step_id = (select ps2.id
         from flow.process_step ps2
         where ps2.company_id = ps.company_id
-        and ps2.process_step_name = 'Submit HOA Application');
+        and ps2.process_step_name = 'Submit HOA Application'
+        and ps2.archived is not true);
 
     return v_hoa_approved_date > v_hoa_request_for_submitted_date;
 END

@@ -141,8 +141,8 @@
                     <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
                     <v-text-field
                         label="Field Name"
-                        :readonly="true"
-                        :disabled="true"
+                        :readonly="!item.custom"
+                        :disabled="!item.custom"
                         tabindex=1
                         v-model="item.newFieldName"
                     ></v-text-field>
