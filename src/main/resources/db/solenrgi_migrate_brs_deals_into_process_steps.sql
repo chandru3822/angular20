@@ -44,9 +44,9 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, timestamp_value,
                                                          int_value,boolean_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1646 then coalesce(ad.start_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
-                 when p.custom_field_group_assignment_id = 1919 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')) else null end,
-             --    when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1646 then coalesce(ad.start_date,d2.appointment_date)
+                 when p.custom_field_group_assignment_id = 1919 then coalesce(ad.end_date,d2.appointment_date) else null end,
+             --    when p.custom_field_group_assignment_id = 25 then proposal_appointment_date else null end,
             case when p.custom_field_group_assignment_id = 1659 then blueraven.get_user_position_for_closer(d2.id::integer,d2.added_on::date) else null end,
             case when p.custom_field_group_assignment_id = 11916 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
@@ -86,9 +86,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, timestamp_value,
                                                          int_value,boolean_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1646 then coalesce(ad.start_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
-                 when p.custom_field_group_assignment_id = 1919 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')) else null end,
-             --   when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1646 then coalesce(ad.start_date,d2.appointment_date)
+                 when p.custom_field_group_assignment_id = 1919 then coalesce(ad.end_date,d2.appointment_date) else null end,
+             --   when p.custom_field_group_assignment_id = 25 then proposal_appointment_date else null end,
             case when p.custom_field_group_assignment_id = 1659 then blueraven.get_user_position_for_closer(d2.id::integer,d2.added_on::date) else null end,
             case when p.custom_field_group_assignment_id = 11916 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
@@ -224,8 +224,8 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,
                                                          int_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-           -- case when p.custom_field_group_assignment_id = 23 then ((d2.props_double_check  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 1854 then ((d2.proposal_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+           -- case when p.custom_field_group_assignment_id = 23 then d2.props_double_check else null end,
+            case when p.custom_field_group_assignment_id = 1854 then d2.proposal_complete_date else null end,
             case when p.custom_field_group_assignment_id = 1945 then (select id from flow.list_of_value where parent_id = 2016
                                                                                                         and name = d2.proposal_status)
                  when p.custom_field_group_assignment_id = 6664 then (select id from flow.list_of_value where parent_id = 2094
@@ -277,7 +277,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,
                                                          int_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1854 then ((d2.proposal_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1854 then d2.proposal_complete_date else null end,
             case when p.custom_field_group_assignment_id = 1945 then (select id from flow.list_of_value where parent_id = 2016
                                                                                                         and name = d2.proposal_status)
                  when p.custom_field_group_assignment_id = 6664 then (select id from flow.list_of_value where parent_id = 2094
@@ -328,12 +328,12 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,date_value,
                                                          int_value,numeric_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6170 then ((installation_agreement_request_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 6170 then installation_agreement_request_submitted_date
                  else null end,
-            case when p.custom_field_group_assignment_id = 1698 then ((installation_agreement_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9251 then ((financial_agreement_sent_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 14217 then ((credit_decision_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9264 then ((agreement_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 1698 then installation_agreement_signed_date
+                 when p.custom_field_group_assignment_id = 9251 then financial_agreement_sent_date
+                 when p.custom_field_group_assignment_id = 14217 then credit_decision_date
+                 when p.custom_field_group_assignment_id = 9264 then agreement_signed_date
                  else null end,
             case when p.custom_field_group_assignment_id = 1841 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
@@ -409,12 +409,12 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,date_value,
                                                          int_value,numeric_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6170 then ((installation_agreement_request_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 6170 then installation_agreement_request_submitted_date
                  else null end,
-            case when p.custom_field_group_assignment_id = 1698 then ((installation_agreement_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9251 then ((financial_agreement_sent_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 14217 then ((credit_decision_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9264 then ((agreement_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 1698 then installation_agreement_signed_date
+                 when p.custom_field_group_assignment_id = 9251 then financial_agreement_sent_date
+                 when p.custom_field_group_assignment_id = 14217 then credit_decision_date
+                 when p.custom_field_group_assignment_id = 9264 then agreement_signed_date
                  else null end,
             case when p.custom_field_group_assignment_id = 1841 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
@@ -490,7 +490,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 -- when p.custom_field_group_assignment_id = 19 then (select id from flow.list_of_value where parent_id = 353
                  --                                                                                       and name = d2.site_survey_type)
                 -- else null end,
-            case when p.custom_field_group_assignment_id = 11526 then ((d2.site_survey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 11526 then d2.site_survey_scheduled_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -509,6 +509,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and site_survey_completed_date::date = (start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date
+                and dce2.deleted is false and work_type_id = 7
             where
                 site_survey_completed_date is not null
               and originator_id = 2
@@ -553,7 +554,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                 -- when p.custom_field_group_assignment_id = 19 then (select id from flow.list_of_value where parent_id = 353
                 --                                                                                        and name = d2.site_survey_type)
                  else null end,
-            case when p.custom_field_group_assignment_id = 11526 then ((d2.site_survey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 11526 then d2.site_survey_scheduled_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -588,7 +589,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1542 then ((site_survey_uploaded_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1542 then site_survey_uploaded_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -626,7 +627,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1542 then ((site_survey_uploaded_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1542 then site_survey_uploaded_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -673,9 +674,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          int_value,int_array_value,timestamp_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1724 then ((site_survey_photos_missing_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12878 then ((site_survey_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 1685 then ((site_survey_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')else null end,
+            case when p.custom_field_group_assignment_id = 1724 then site_survey_photos_missing_date
+                 when p.custom_field_group_assignment_id = 12878 then site_survey_brs_no_show
+                 when p.custom_field_group_assignment_id = 1685 then site_survey_verified_dateelse null end,
             case when p.custom_field_group_assignment_id = 2023 then (select id from flow.list_of_value where parent_id = 289
                                                                                                         and name = d2.price_change)
                  when p.custom_field_group_assignment_id = 2010 then (select id from flow.list_of_value where parent_id = 151
@@ -693,7 +694,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                 json_array_elements_text((select site_survey_quality_checklist::json from blueraven.deal
                                                                                                           where site_survey_quality_checklist is not null and
                                                                                                                   id = d2.id)))) else null end,
-            case when p.custom_field_group_assignment_id = 1737 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1737 then final_design_created_date else null end,
             case when p.custom_field_group_assignment_id = 13177 then d2.site_survey_quality_issue
                  when p.custom_field_group_assignment_id = 8822 then  d2.pv_watts_estimate else null end,
             now(),now(),2350555,2350555
@@ -734,9 +735,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          int_value,int_array_value,timestamp_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1724 then ((site_survey_photos_missing_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12878 then ((site_survey_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 1685 then ((site_survey_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')else null end,
+            case when p.custom_field_group_assignment_id = 1724 then site_survey_photos_missing_date
+                 when p.custom_field_group_assignment_id = 12878 then site_survey_brs_no_show
+                 when p.custom_field_group_assignment_id = 1685 then site_survey_verified_dateelse null end,
             case when p.custom_field_group_assignment_id = 2023 then (select id from flow.list_of_value where parent_id = 289
                                                                                                         and name = d2.price_change)
                  when p.custom_field_group_assignment_id = 2010 then (select id from flow.list_of_value where parent_id = 151
@@ -754,7 +755,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                 json_array_elements_text((select site_survey_quality_checklist::json from blueraven.deal
                                                                                                           where site_survey_quality_checklist is not null and
                                                                                                                   id = d2.id)))) else null end,
-            case when p.custom_field_group_assignment_id = 1737 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1737 then final_design_created_date else null end,
             case when p.custom_field_group_assignment_id = 13177 then d2.site_survey_quality_issue
                  when p.custom_field_group_assignment_id = 8822 then  d2.pv_watts_estimate else null end,
             now(),now(),2350555,2350555
@@ -791,7 +792,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1958 then ((final_design_qa_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1958 then final_design_qa_date else null end,
             case when p.custom_field_group_assignment_id = 1997 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.final_design_qa_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
@@ -838,7 +839,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1958 then ((final_design_qa_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1958 then final_design_qa_date else null end,
             case when p.custom_field_group_assignment_id = 1997 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.final_design_qa_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
@@ -886,9 +887,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,numeric_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case --when p.custom_field_group_assignment_id = 710 then ((credit_decision_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9537 then ((financial_agreement_sent_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 1594 then ((final_design_sent_to_customer_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case --when p.custom_field_group_assignment_id = 710 then credit_decision_date
+                 when p.custom_field_group_assignment_id = 9537 then financial_agreement_sent_date else null end,
+            case when p.custom_field_group_assignment_id = 1594 then final_design_sent_to_customer_date else null end,
             case when p.custom_field_group_assignment_id = 10005 then d2.system_size
                  when p.custom_field_group_assignment_id = 10031 then d2.referral_promotion_amount
                  when p.custom_field_group_assignment_id = 10044 then d2.total_ancillary_cost_with_fees
@@ -956,9 +957,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,numeric_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case --when p.custom_field_group_assignment_id = 710 then ((credit_decision_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9537 then ((financial_agreement_sent_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 1594 then ((final_design_sent_to_customer_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case --when p.custom_field_group_assignment_id = 710 then credit_decision_date
+                 when p.custom_field_group_assignment_id = 9537 then financial_agreement_sent_date else null end,
+            case when p.custom_field_group_assignment_id = 1594 then final_design_sent_to_customer_date else null end,
             case when p.custom_field_group_assignment_id = 10005 then d2.system_size
                  when p.custom_field_group_assignment_id = 10031 then d2.referral_promotion_amount
                  when p.custom_field_group_assignment_id = 10044 then d2.total_ancillary_cost_with_fees
@@ -1030,9 +1031,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6430 then ((final_design_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15374 then ((agreement_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16700 then ((countersign_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6430 then final_design_signed_date
+                 when p.custom_field_group_assignment_id = 15374 then agreement_signed_date
+                 when p.custom_field_group_assignment_id = 16700 then countersign_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -1072,9 +1073,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6430 then ((final_design_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15374 then ((agreement_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16700 then ((countersign_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6430 then final_design_signed_date
+                 when p.custom_field_group_assignment_id = 15374 then agreement_signed_date
+                 when p.custom_field_group_assignment_id = 16700 then countersign_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -1120,9 +1121,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case
-                 when p.custom_field_group_assignment_id = 8276 then ((plan_set_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                     when p.custom_field_group_assignment_id = 9693 then ((electrical_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                    when  p.custom_field_group_assignment_id = 9706 then ((structural_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                 when p.custom_field_group_assignment_id = 8276 then plan_set_created_date
+                     when p.custom_field_group_assignment_id = 9693 then electrical_post_install_letter_required_date
+                    when  p.custom_field_group_assignment_id = 9706 then structural_post_install_letter_required_date
                 else null end,
             case when p.custom_field_group_assignment_id = 1867 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.plan_set_created_by
@@ -1176,9 +1177,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case
-                 when p.custom_field_group_assignment_id = 8276 then ((plan_set_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9693 then ((electrical_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when  p.custom_field_group_assignment_id = 9706 then ((structural_post_install_letter_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                 when p.custom_field_group_assignment_id = 8276 then plan_set_created_date
+                 when p.custom_field_group_assignment_id = 9693 then electrical_post_install_letter_required_date
+                 when  p.custom_field_group_assignment_id = 9706 then structural_post_install_letter_required_date
                  else null end,
             case when p.custom_field_group_assignment_id = 1867 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.plan_set_created_by
@@ -1233,7 +1234,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 14984 then (select id from flow.list_of_value where parent_id = 2393
                                                                                                          and name = d2.plan_set_qa_result)
                  else null end,
-            case when p.custom_field_group_assignment_id = 2036 then ((plan_set_qa_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2036 then plan_set_qa_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -1279,7 +1280,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 14984 then (select id from flow.list_of_value where parent_id = 2393
                                                                                                          and name = d2.plan_set_qa_result)
                  else null end,
-            case when p.custom_field_group_assignment_id = 2036 then ((plan_set_qa_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2036 then plan_set_qa_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -1315,8 +1316,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3180 then ((structural_analysis_complete::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 3167 then ((structural_analysis_required::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3180 then structural_analysis_complete::date
+                 when p.custom_field_group_assignment_id = 3167 then structural_analysis_required::date else null end,
             case when p.custom_field_group_assignment_id = 3193 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.structural_analysis_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
@@ -1359,8 +1360,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3180 then ((structural_analysis_complete::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 3167 then ((structural_analysis_required::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3180 then structural_analysis_complete::date
+                 when p.custom_field_group_assignment_id = 3167 then structural_analysis_required::date else null end,
             case when p.custom_field_group_assignment_id = 3193 then (select up.id from blueraven.deal d
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.structural_analysis_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
@@ -1402,8 +1403,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3232 then ((engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 3245 then ((engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3232 then engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 3245 then engineering_stamp_received_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -1442,8 +1443,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3232 then ((engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 3245 then ((engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3232 then engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 3245 then engineering_stamp_received_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -1481,8 +1482,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3284 then ((electrical_engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12892 then ((electrical_engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3284 then electrical_engineering_stamp_received_date
+                 when p.custom_field_group_assignment_id = 12892 then electrical_engineering_stamp_requested_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -1521,8 +1522,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3284 then ((electrical_engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 13892 then ((electrical_engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3284 then electrical_engineering_stamp_received_date
+                 when p.custom_field_group_assignment_id = 13892 then electrical_engineering_stamp_requested_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -1606,8 +1607,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,numeric_value,boolean_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 12631 then permit_application_signature_required_date
+                 when p.custom_field_group_assignment_id = 9810 then permit_submission_hold_requested_date else null end,
               case  when p.custom_field_group_assignment_id = 10473 then (select id from flow.list_of_value where parent_id = 1197
                                                                                                              and name = d2.permit_submission_hold_reason)
                 else null end,
@@ -1635,6 +1636,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_packet_submitted_date::date
+                and dce2.deleted is false and work_type_id = 9
             where
                 permit_packet_submitted_date is not null
               and originator_id = 2
@@ -1675,8 +1677,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,numeric_value,boolean_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 12631 then permit_application_signature_required_date
+                 when p.custom_field_group_assignment_id = 9810 then permit_submission_hold_requested_date else null end,
             case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
@@ -1706,6 +1708,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pack_revision_submittal_date::date
+                and dce2.deleted is false and work_type_id = 16
             where
                 permit_pack_revision_submittal_date is not null
               and originator_id = 2
@@ -1747,8 +1750,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,numeric_value,boolean_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 12631 then permit_application_signature_required_date
+                 when p.custom_field_group_assignment_id = 9810 then permit_submission_hold_requested_date else null end,
             case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
@@ -1778,6 +1781,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_b_submittal_date::date
+                and dce2.deleted is false and work_type_id = 18
             where
                 permit_revision_b_submittal_date is not null
               and originator_id = 2
@@ -1818,8 +1822,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,numeric_value,boolean_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 12631 then permit_application_signature_required_date
+                 when p.custom_field_group_assignment_id = 9810 then permit_submission_hold_requested_date else null end,
             case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
@@ -1849,6 +1853,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_c_submittal_date::date
+                and dce2.deleted is false and work_type_id = 19
             where
                 permit_revision_c_submittal_date is not null
               and originator_id = 2
@@ -1889,8 +1894,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,numeric_value,boolean_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12631 then ((permit_application_signature_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9810 then ((permit_submission_hold_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 12631 then permit_application_signature_required_date
+                 when p.custom_field_group_assignment_id = 9810 then permit_submission_hold_requested_date else null end,
             case when p.custom_field_group_assignment_id = 2218 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2231 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 2244 then p1.migrated_org_id
@@ -1957,8 +1962,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13905 then ((greatest(permit_pack_submittal_verified,permit_pack_revision_submittal_verified_date,permit_revision_b_submitted_verified_date,permit_revision_c_submitted_verified_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16778 then ((permit_submission_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 13905 then greatest(permit_pack_submittal_verified,permit_pack_revision_submittal_verified_date,permit_revision_b_submitted_verified_date,permit_revision_c_submitted_verified_date)
+                 when p.custom_field_group_assignment_id = 16778 then permit_submission_brs_no_show
                 else null end,
 
             now(),now(),2350555,2350555
@@ -1999,8 +2004,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13905 then ((permit_pack_submittal_verified  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16778 then ((permit_submission_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 13905 then permit_pack_submittal_verified
+                 when p.custom_field_group_assignment_id = 16778 then permit_submission_brs_no_show
                  else null end,
 
             now(),now(),2350555,2350555
@@ -2040,8 +2045,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13905 then ((permit_pack_revision_submittal_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16778 then ((permit_submission_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 13905 then permit_pack_revision_submittal_verified_date
+                 when p.custom_field_group_assignment_id = 16778 then permit_submission_brs_no_show
                  else null end,
 
             now(),now(),2350555,2350555
@@ -2081,8 +2086,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13905 then ((permit_revision_b_submitted_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16778 then ((permit_submission_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 13905 then permit_revision_b_submitted_verified_date
+                 when p.custom_field_group_assignment_id = 16778 then permit_submission_brs_no_show
                  else null end,
 
             now(),now(),2350555,2350555
@@ -2122,8 +2127,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13905 then ((permit_revision_c_submitted_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16778 then ((permit_submission_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 13905 then permit_revision_c_submitted_verified_date
+                 when p.custom_field_group_assignment_id = 16778 then permit_submission_brs_no_show
                  else null end,
 
             now(),now(),2350555,2350555
@@ -2179,8 +2184,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14646 then ((greatest(permit_approved_date,permit_pack_revision_approved_date,permit_revision_b_approved_date,permit_revision_c_approved_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                   when  p.custom_field_group_assignment_id = 9745 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14646 then greatest(permit_approved_date,permit_pack_revision_approved_date,permit_revision_b_approved_date,permit_revision_c_approved_date)
+                   when  p.custom_field_group_assignment_id = 9745 then greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)
                 else null end,
             case when p.custom_field_group_assignment_id = 2920 then (select array_agg(id)
                                                                       from flow.list_of_value
@@ -2233,8 +2238,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14646 then ((permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 9745 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14646 then permit_approved_date
+         when  p.custom_field_group_assignment_id = 9745 then greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)
          else null end,
             case when p.custom_field_group_assignment_id = 2920 then (select array_agg(id)
                                                                       from flow.list_of_value
@@ -2286,8 +2291,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14646 then ((permit_pack_revision_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 9745 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14646 then permit_pack_revision_approved_date
+         when  p.custom_field_group_assignment_id = 9745 then greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)
          else null end,
             case when p.custom_field_group_assignment_id = 2920 then (select array_agg(id)
                                                                       from flow.list_of_value
@@ -2339,8 +2344,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14646 then ((permit_revision_b_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 9745 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14646 then permit_revision_b_approved_date
+         when  p.custom_field_group_assignment_id = 9745 then greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)
          else null end,
             case when p.custom_field_group_assignment_id = 2920 then (select array_agg(id)
                                                                       from flow.list_of_value
@@ -2392,8 +2397,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,text_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14646 then ((permit_revision_c_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-         when  p.custom_field_group_assignment_id = 9745 then ((greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14646 then permit_revision_c_approved_date
+         when  p.custom_field_group_assignment_id = 9745 then greatest(engineering_due_diligence_required_date,engineering_due_diligence_b_required_date::date,engineering_due_diligence_c_required_date::date)
          else null end,
             case when p.custom_field_group_assignment_id = 2920 then (select array_agg(id)
                                                                       from flow.list_of_value
@@ -2445,9 +2450,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8380 then ((utility_bill_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7418 then ((proof_of_homeowners_insurance_obtained_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9758 then ((homeowners_insurance_expiration_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 8380 then utility_bill_verified_date
+                 when p.custom_field_group_assignment_id = 7418 then proof_of_homeowners_insurance_obtained_date
+                 when p.custom_field_group_assignment_id = 9758 then homeowners_insurance_expiration_date
                 else null end,
             case when p.custom_field_group_assignment_id = 6443 then (select id from flow.list_of_value where parent_id = 2003
                                                                                                          and case when name = 'Yes' then True else false end = d2.proof_of_howmeowners_insurance_required) else null end,
@@ -2491,9 +2496,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8380 then ((utility_bill_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7418 then ((proof_of_homeowners_insurance_obtained_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9758 then ((homeowners_insurance_expiration_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 8380 then utility_bill_verified_date
+                 when p.custom_field_group_assignment_id = 7418 then proof_of_homeowners_insurance_obtained_date
+                 when p.custom_field_group_assignment_id = 9758 then homeowners_insurance_expiration_date
                  else null end,
             case when p.custom_field_group_assignment_id = 6443 then (select id from flow.list_of_value where parent_id = 2003
                                                                                                          and case when name = 'Yes' then True else false end = d2.proof_of_howmeowners_insurance_required) else null end,
@@ -2595,7 +2600,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9875 then ((nem_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 9875 then nem_sent_to_homeowner_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -2633,7 +2638,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9875 then ((nem_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 9875 then nem_sent_to_homeowner_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -2681,8 +2686,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14685 then ((nem_submitted_to_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 8705 then ((interconnection_application_fee_sent  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14685 then nem_submitted_to_utility_date
+                 when p.custom_field_group_assignment_id = 8705 then interconnection_application_fee_sent
                 else null end,
             case when p.custom_field_group_assignment_id = 7223 then interconnection_application_fee_check_no
                 else null end,
@@ -2724,8 +2729,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14685 then ((nem_submitted_to_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 8705 then ((interconnection_application_fee_sent  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14685 then nem_submitted_to_utility_date
+                 when p.custom_field_group_assignment_id = 8705 then interconnection_application_fee_sent
                  else null end,
             case when p.custom_field_group_assignment_id = 7223 then interconnection_application_fee_check_no
                  else null end,
@@ -2764,8 +2769,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13918 then ((nem_approved_by_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 13931 then ((interconnection_application_rejected  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13918 then nem_approved_by_utility_date
+                 when p.custom_field_group_assignment_id = 13931 then interconnection_application_rejected else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -2804,8 +2809,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13918 then ((nem_approved_by_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 13931 then ((interconnection_application_rejected  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13918 then nem_approved_by_utility_date
+                 when p.custom_field_group_assignment_id = 13931 then interconnection_application_rejected else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -2839,7 +2844,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3427 then ((nem_submitted_to_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3427 then nem_submitted_to_utility_date else null end,
             case when p.custom_field_group_assignment_id = 8627 then interconnection_application_fee_check_no else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -2879,7 +2884,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3427 then ((nem_submitted_to_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3427 then nem_submitted_to_utility_date else null end,
             case when p.custom_field_group_assignment_id = 8627 then interconnection_application_fee_check_no else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -3005,7 +3010,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2400 then ((hoa_request_for_approval_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2400 then hoa_request_for_approval_submitted_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -3044,7 +3049,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2400 then ((hoa_request_for_approval_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2400 then hoa_request_for_approval_submitted_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3079,7 +3084,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2413 then ((hoa_approval_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2413 then hoa_approval_received_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -3118,7 +3123,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2413 then ((hoa_approval_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2413 then hoa_approval_received_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3162,7 +3167,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3297 then ((in_house_mpu_permit_pack_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3297 then in_house_mpu_permit_pack_complete_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -3201,7 +3206,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3297 then ((in_house_mpu_permit_pack_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 3297 then in_house_mpu_permit_pack_complete_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3238,7 +3243,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8133 then ((in_house_mpu_permit_submittal_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 8133 then in_house_mpu_permit_submittal_verified_date
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -3258,6 +3263,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_permit_submittal_date::date
+                and dce2.deleted is false and work_type_id = 25
             where
                 in_house_mpu_permit_submittal_date is not null
               and originator_id = 2
@@ -3301,7 +3307,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 2426 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2439 then p1.migrated_end_time
                  else null end,
-            case when p.custom_field_group_assignment_id = 8133 then ((in_house_mpu_permit_submittal_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 8133 then in_house_mpu_permit_submittal_verified_date
                  else null end,
             case when p.custom_field_group_assignment_id = 2452 then p1.migrated_org_id
                  else null end,
@@ -3345,7 +3351,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2465 then ((in_house_mpu_permit_submittal_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2465 then in_house_mpu_permit_submittal_verified_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -3384,7 +3390,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2465 then ((in_house_mpu_permit_submittal_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2465 then in_house_mpu_permit_submittal_verified_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3422,8 +3428,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2374 then ((in_house_mpu_permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 6196 then ((permit_packet_rejected_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 2374 then in_house_mpu_permit_approved_date
+                 when p.custom_field_group_assignment_id = 6196 then permit_packet_rejected_date
                 else null end,
             case when p.custom_field_group_assignment_id = 6209 then (select array_agg(id)
                                                                         from flow.list_of_value
@@ -3473,8 +3479,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2374 then ((in_house_mpu_permit_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 6196 then ((permit_packet_rejected_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 2374 then in_house_mpu_permit_approved_date
+                 when p.custom_field_group_assignment_id = 6196 then permit_packet_rejected_date
                 else null end,
             case when p.custom_field_group_assignment_id = 6209 then (select array_agg(id)
                                                                       from flow.list_of_value
@@ -3530,6 +3536,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pick_up_date::date
+                and dce2.deleted is false and work_type_id = 8
             where
                 permit_pick_up_date is not null
               and originator_id = 2
@@ -3590,6 +3597,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_pack_revision_pickup_date::date
+                and dce2.deleted is false and work_type_id = 17
             where
                 permit_pack_revision_pickup_date is not null
               and originator_id = 2
@@ -3650,6 +3658,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_b_pickup_date::date
+                and dce2.deleted is false and work_type_id = 20
             where
                 permit_revision_b_pickup_date is not null
               and originator_id = 2
@@ -3710,6 +3719,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = permit_revision_c_pickup_date::date
+                and dce2.deleted is false and work_type_id = 21
             where
                 permit_revision_c_pickup_date is not null
               and originator_id = 2
@@ -3808,6 +3818,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = fl_noc_application_signature_date::date
+                and dce2.deleted is false and work_type_id = 30
             where
                 fl_noc_application_signature_date is not null
               and originator_id = 2
@@ -3887,7 +3898,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 134 then ((fl_noc_application_signature_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 134 then fl_noc_application_signature_verified_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -3926,7 +3937,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2569 then ((fl_noc_application_signature_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2569 then fl_noc_application_signature_verified_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -3964,7 +3975,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2478 then ((installation_ready_to_schedule_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2478 then installation_ready_to_schedule_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -4003,7 +4014,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2478 then ((installation_ready_to_schedule_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2478 then installation_ready_to_schedule_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4078,7 +4089,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10408 then ((scheduled_installation_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10408 then scheduled_installation_date
             else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4098,6 +4109,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = installation_date::date
+                and dce2.deleted is false and work_type_id = 1
             where
                 installation_date :: DATE is not null
               and originator_id = 2
@@ -4137,7 +4149,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10408 then ((scheduled_installation_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10408 then scheduled_installation_date
                  else null end,
             case when p.custom_field_group_assignment_id = 2582 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2595 then p1.migrated_end_time else null end,
@@ -4179,10 +4191,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3141 then ((substantial_completion_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12397 then ((installation_closeout_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12514 then ((installation_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 17168 then ((installation_closeout_brs_now_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3141 then substantial_completion_date
+                 when p.custom_field_group_assignment_id = 12397 then installation_closeout_required_date
+                 when p.custom_field_group_assignment_id = 12514 then installation_brs_no_show
+                 when p.custom_field_group_assignment_id = 17168 then installation_closeout_brs_now_show
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4222,10 +4234,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3141 then ((substantial_completion_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12397 then ((installation_closeout_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12514 then ((installation_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 17168 then ((installation_closeout_brs_now_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3141 then substantial_completion_date
+                 when p.custom_field_group_assignment_id = 12397 then installation_closeout_required_date
+                 when p.custom_field_group_assignment_id = 12514 then installation_brs_no_show
+                 when p.custom_field_group_assignment_id = 17168 then installation_closeout_brs_now_show
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4261,7 +4273,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13164 then ((installation_closeout_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13164 then installation_closeout_scheduled_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -4280,6 +4292,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = installation_closeout_date::date
+                and dce2.deleted is false and work_type_id = 2
             where
                 installation_closeout_date is not null
               and originator_id = 2
@@ -4319,7 +4332,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13164 then ((installation_closeout_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13164 then installation_closeout_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 2621 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2634 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 2647 then p1.migrated_org_id else null end,
@@ -4359,7 +4372,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13957 then ((materials_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13957 then materials_ordered_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -4398,7 +4411,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13957 then ((materials_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13957 then materials_ordered_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4452,7 +4465,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2673 then ((greatest(placard_ordered_date,additional_placard_ordered_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2673 then greatest(placard_ordered_date,additional_placard_ordered_date) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -4491,7 +4504,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2673 then ((placard_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2673 then placard_ordered_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4529,7 +4542,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2673 then ((additional_placard_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2673 then additional_placard_ordered_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4567,7 +4580,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13970 then ((greatest(placard_shipped_date,additional_placard_shipped_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13970 then greatest(placard_shipped_date,additional_placard_shipped_date) else null end,
             case when p.custom_field_group_assignment_id = 13983 then placard_tracking_number else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4607,7 +4620,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13970 then ((placard_shipped_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13970 then placard_shipped_date else null end,
             case when p.custom_field_group_assignment_id = 13983 then placard_tracking_number else null end,
                      now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4646,7 +4659,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13970 then ((additional_placard_shipped_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 13970 then additional_placard_shipped_date else null end,
             case when p.custom_field_group_assignment_id = 13983 then placard_tracking_number else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -4684,7 +4697,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2738 then ((substantial_completion_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2738 then substantial_completion_approved_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -4723,7 +4736,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2738 then ((substantial_completion_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2738 then substantial_completion_approved_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4761,7 +4774,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14698  then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14698  then ahj_inspection_scheduled_date else null end,
 
              case    when p.custom_field_group_assignment_id = 11929 then (select id from flow.list_of_value where parent_id = 2432
                                                                                                          and name::boolean = d2.additional_ahj_inspection_required)
@@ -4784,6 +4797,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_date::date
+                and dce2.deleted is false and work_type_id = 3
             where
                 ahj_inspection_date is not null and ahj_inspection_ready_to_schedule_date < substantial_completion_date
               and originator_id = 2
@@ -4824,7 +4838,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14698  then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14698  then ahj_inspection_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 2751 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2764 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 2777 then p1.migrated_org_id
@@ -4868,7 +4882,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2790 then ((ahj_inspection_ready_to_schedule_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2790 then ahj_inspection_ready_to_schedule_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -4907,7 +4921,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2790 then ((ahj_inspection_ready_to_schedule_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2790 then ahj_inspection_ready_to_schedule_date else null end,
              now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -4970,8 +4984,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11201 then ((greatest(ahj_inspection_passed_date,ahj_reinspection_date,ahj_reinspection_b_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                  when p.custom_field_group_assignment_id = 9225 then ((ahj_inspection_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 11201 then greatest(ahj_inspection_passed_date,ahj_reinspection_date,ahj_reinspection_b_date)
+                  when p.custom_field_group_assignment_id = 9225 then ahj_inspection_brs_no_show
                 else null end,
             case when p.custom_field_group_assignment_id = 3128 then (select id from flow.list_of_value where parent_id = 1587
                                                                                                          and name = d2.ahj_inspection_outcome) else null end,
@@ -5013,8 +5027,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11201 then ((ahj_inspection_passed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9225 then ((ahj_inspection_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 11201 then ahj_inspection_passed_date
+                 when p.custom_field_group_assignment_id = 9225 then ahj_inspection_brs_no_show
                  else null end,
             case when p.custom_field_group_assignment_id = 3128 then (select id from flow.list_of_value where parent_id = 1587
                                                                                                          and name = d2.ahj_inspection_outcome) else null end,
@@ -5055,8 +5069,8 @@ FROM flow.project
                                                                date_value,int_value,
                                                                date_created, date_modified, created_by_id, modified_by_id)
           (select p1.id,p.custom_field_group_assignment_id,
-                  case when p.custom_field_group_assignment_id = 11201 then ((ahj_reinspection_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                       when p.custom_field_group_assignment_id = 9225 then ((ahj_inspection_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                  case when p.custom_field_group_assignment_id = 11201 then ahj_reinspection_date
+                       when p.custom_field_group_assignment_id = 9225 then ahj_inspection_brs_no_show
                        else null end,
                   case when p.custom_field_group_assignment_id = 3128 then (select id from flow.list_of_value where parent_id = 1587
                                                                                                                and name = d2.ahj_inspection_outcome) else null end,
@@ -5097,8 +5111,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11201 then ((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 9225 then ((ahj_inspection_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 11201 then ahj_reinspection_b_date
+                 when p.custom_field_group_assignment_id = 9225 then ahj_inspection_brs_no_show
                  else null end,
             case when p.custom_field_group_assignment_id = 3128 then (select id from flow.list_of_value where parent_id = 1587
                                                                                                          and name = d2.ahj_inspection_outcome) else null end,
@@ -5142,8 +5156,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2803 then ((greatest(verified_inspection_approval_received_by_utility_date,ahj_inspection_approval_submitted_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11318 then ((verified_inspection_approval_received_by_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 2803 then greatest(verified_inspection_approval_received_by_utility_date,ahj_inspection_approval_submitted_date)
+                 when p.custom_field_group_assignment_id = 11318 then verified_inspection_approval_received_by_utility_date
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -5183,8 +5197,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2803 then ((greatest(verified_inspection_approval_received_by_utility_date,ahj_inspection_approval_submitted_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11318 then ((verified_inspection_approval_received_by_utility_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 2803 then greatest(verified_inspection_approval_received_by_utility_date,ahj_inspection_approval_submitted_date)
+                 when p.custom_field_group_assignment_id = 11318 then verified_inspection_approval_received_by_utility_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -5222,7 +5236,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2816 then ((utility_meter_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2816 then utility_meter_ordered_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -5261,7 +5275,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2816 then ((utility_meter_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2816 then utility_meter_ordered_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -5298,8 +5312,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 157 then ((utility_meter_set_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 158 then ((permission_to_operate_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 157 then utility_meter_set_date
+                 when p.custom_field_group_assignment_id = 158 then permission_to_operate_date else null end,
             case when p.custom_field_group_assignment_id = 156 then utility_account_number else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -5339,8 +5353,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14022 then ((utility_meter_set_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 14035 then ((permission_to_operate_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14022 then utility_meter_set_date
+                 when p.custom_field_group_assignment_id = 14035 then permission_to_operate_date else null end,
             case when p.custom_field_group_assignment_id = 14009 then utility_account_number else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -5376,7 +5390,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9576 then ((system_service_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 9576 then system_service_scheduled_date else null end,
 
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -5396,6 +5410,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = system_service_date::date
+                and dce2.deleted is false and work_type_id = 6
             where
                 system_service_date is not null
               and originator_id = 2
@@ -5435,7 +5450,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9576 then ((system_service_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 9576 then system_service_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 2855 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 2868 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 2881 then p1.migrated_org_id else null end,
@@ -5474,8 +5489,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 162 then ((work_order_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 992 then ((work_order_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 162 then work_order_verified_date
+                 when p.custom_field_group_assignment_id = 992 then work_order_brs_no_show
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -5515,8 +5530,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6235 then ((work_order_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12501 then ((work_order_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 6235 then work_order_verified_date
+                 when p.custom_field_group_assignment_id = 12501 then work_order_brs_no_show
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -5568,7 +5583,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14048 then ((greatest(structural_engineering_review_complete_date,structural_engineering_review_b_required_date::date,structural_engineering_review_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14048 then greatest(structural_engineering_review_complete_date,structural_engineering_review_b_required_date::date,structural_engineering_review_c_required_date::date)
                  else null end,
             case when p.custom_field_group_assignment_id = 14061 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5620,7 +5635,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14048 then ((structural_engineering_review_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14048 then structural_engineering_review_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14061 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5671,7 +5686,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14074 then ((structural_engineering_review_b_required_date::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14074 then structural_engineering_review_b_required_date::date
                  else null end,
             case when p.custom_field_group_assignment_id = 14061 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5721,7 +5736,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14074 then ((structural_engineering_review_c_required_date::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14074 then structural_engineering_review_c_required_date::date
                  else null end,
             case when p.custom_field_group_assignment_id = 14061 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5782,7 +5797,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3011 then ((greatest(engineering_review_complete_date::date,electrical_engineering_review_b_required_date::date,electrical_engineering_review_c_required_date::date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3011 then greatest(engineering_review_complete_date::date,electrical_engineering_review_b_required_date::date,electrical_engineering_review_c_required_date::date)
                  else null end,
             case when p.custom_field_group_assignment_id = 2985 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5834,7 +5849,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3011 then ((engineering_review_complete_date::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3011 then engineering_review_complete_date::date
                  else null end,
             case when p.custom_field_group_assignment_id = 2985 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5885,7 +5900,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3011 then ((electrical_engineering_review_b_required_date::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3011 then electrical_engineering_review_b_required_date::date
                  else null end,
             case when p.custom_field_group_assignment_id = 2985 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5935,7 +5950,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3011 then ((electrical_engineering_review_c_required_date::date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3011 then electrical_engineering_review_c_required_date::date
                  else null end,
             case when p.custom_field_group_assignment_id = 2985 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5984,8 +5999,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3154 then ((d2.low_production_inquiry_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 3206 then ((d2.low_production_inquiry_reviewed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3154 then d2.low_production_inquiry_requested_date
+                 when p.custom_field_group_assignment_id = 3206 then d2.low_production_inquiry_reviewed_date
                  else null end,
             case when p.custom_field_group_assignment_id = 13723 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -6047,8 +6062,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3154 then ((d2.low_production_inquiry_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 3206 then ((d2.low_production_inquiry_reviewed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3154 then d2.low_production_inquiry_requested_date
+                 when p.custom_field_group_assignment_id = 3206 then d2.low_production_inquiry_reviewed_date
                  else null end,
             case when p.custom_field_group_assignment_id = 13723 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -6107,7 +6122,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3050 then ((d2.low_production_inquiry_resolved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3050 then d2.low_production_inquiry_resolved_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6147,7 +6162,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3050 then ((d2.low_production_inquiry_resolved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3050 then d2.low_production_inquiry_resolved_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6188,7 +6203,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7821 then ((d2.structural_post_install_engineering_letter_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7821 then d2.structural_post_install_engineering_letter_complete_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6228,7 +6243,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7821 then ((d2.structural_post_install_engineering_letter_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7821 then d2.structural_post_install_engineering_letter_complete_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6269,7 +6284,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3037 then ((d2.electrical_post_install_letter_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3037 then d2.electrical_post_install_letter_complete_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6308,7 +6323,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3037 then ((d2.electrical_post_install_letter_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3037 then d2.electrical_post_install_letter_complete_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6346,8 +6361,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14087 then ((d2.in_house_mpu_materials_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 14100 then ((d2.in_house_mpu_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14087 then d2.in_house_mpu_materials_ordered_date
+                 when p.custom_field_group_assignment_id = 14100 then d2.in_house_mpu_inspection_scheduled_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6387,8 +6402,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14087 then ((d2.in_house_mpu_materials_ordered_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 14100 then ((d2.in_house_mpu_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14087 then d2.in_house_mpu_materials_ordered_date
+                 when p.custom_field_group_assignment_id = 14100 then d2.in_house_mpu_inspection_scheduled_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6428,7 +6443,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,boolean_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3102 then ((d2.utility_rebate_application_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3102 then d2.utility_rebate_application_sent_to_homeowner_date
                  else null end,
             case when p.custom_field_group_assignment_id = 12410 then d2.does_not_qualify_for_eto else null end,
             now(),now(),2350555,2350555
@@ -6469,7 +6484,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,boolean_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3102 then ((d2.utility_rebate_application_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3102 then d2.utility_rebate_application_sent_to_homeowner_date
                  else null end,
             case when p.custom_field_group_assignment_id = 12410 then d2.does_not_qualify_for_eto else null end,
             now(),now(),2350555,2350555
@@ -6513,8 +6528,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14113 then ((d2.utility_rebate_application_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 14126 then ((d2.utility_rebate_application_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14113 then d2.utility_rebate_application_approved_date
+                 when p.custom_field_group_assignment_id = 14126 then d2.utility_rebate_application_submitted_date
                  else null end,
             case when  p.custom_field_group_assignment_id = 6144 then d2.utility_rebate_amount_to_brs
                  else null end,
@@ -6556,8 +6571,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14113 then ((d2.utility_rebate_application_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 14126 then ((d2.utility_rebate_application_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14113 then d2.utility_rebate_application_approved_date
+                 when p.custom_field_group_assignment_id = 14126 then d2.utility_rebate_application_submitted_date
                  else null end,
             case when  p.custom_field_group_assignment_id = 6144 then d2.utility_rebate_amount_to_brs
                  else null end,
@@ -6619,8 +6634,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4519 then ((greatest(d2.permit_pickup_verified_date,d2.permit_revision_pickup_verified_date,d2.permit_revision_b_pickup_verified_date,d2.permit_revision_c_pickup_verified_date)  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16843 then ((permit_delivery_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4519 then greatest(d2.permit_pickup_verified_date,d2.permit_revision_pickup_verified_date,d2.permit_revision_b_pickup_verified_date,d2.permit_revision_c_pickup_verified_date)
+                 when p.custom_field_group_assignment_id = 16843 then permit_delivery_brs_no_show
                  else null end,
             case when  p.custom_field_group_assignment_id = 4545 then (select id from flow.list_of_value where parent_id = 1912
                                                                                                           and name = d2.permit_location)
@@ -6663,8 +6678,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4519 then ((d2.permit_pickup_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16843 then ((permit_delivery_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4519 then d2.permit_pickup_verified_date
+                 when p.custom_field_group_assignment_id = 16843 then permit_delivery_brs_no_show
                  else null end,
             case when  p.custom_field_group_assignment_id = 4545 then (select id from flow.list_of_value where parent_id = 1912
                                                                                                           and name = d2.permit_location)
@@ -6706,8 +6721,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4519 then ((d2.permit_revision_pickup_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16843 then ((permit_delivery_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4519 then d2.permit_revision_pickup_verified_date
+                 when p.custom_field_group_assignment_id = 16843 then permit_delivery_brs_no_show
                  else null end,
             case when  p.custom_field_group_assignment_id = 4545 then (select id from flow.list_of_value where parent_id = 1912
                                                                                                           and name = d2.permit_location)
@@ -6749,8 +6764,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4519 then ((d2.permit_revision_b_pickup_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16843 then ((permit_delivery_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4519 then d2.permit_revision_b_pickup_verified_date
+                 when p.custom_field_group_assignment_id = 16843 then permit_delivery_brs_no_show
                  else null end,
             case when  p.custom_field_group_assignment_id = 4545 then (select id from flow.list_of_value where parent_id = 1912
                                                                                                           and name = d2.permit_location)
@@ -6792,8 +6807,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4519 then ((d2.permit_revision_c_pickup_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16843 then ((permit_delivery_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4519 then d2.permit_revision_c_pickup_verified_date
+                 when p.custom_field_group_assignment_id = 16843 then permit_delivery_brs_no_show
                  else null end,
             case when  p.custom_field_group_assignment_id = 4545 then (select id from flow.list_of_value where parent_id = 1912
                                                                                                           and name = d2.permit_location)
@@ -6852,7 +6867,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11500 then ((in_house_mpu_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 11500 then in_house_mpu_scheduled_date else null end,
 
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6872,6 +6887,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_date::date
+                and dce2.deleted is false  and work_type_id = 27
             where
                 in_house_mpu_date is not null
               and originator_id = 2
@@ -6911,7 +6927,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11500 then ((in_house_mpu_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 11500 then in_house_mpu_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 3323 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 3336 then p1.migrated_end_time
                  else null end,
@@ -6954,7 +6970,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3362 then ((d2.in_house_mpu_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3362 then d2.in_house_mpu_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -6994,7 +7010,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3362 then ((d2.in_house_mpu_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3362 then d2.in_house_mpu_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7054,6 +7070,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                 non_standard_installation_work_date is not null
               and (NOT (non_standard_installation_work LIKE ANY (ARRAY ['%Structural Upgrade%', '%Trenching%',
@@ -7142,7 +7159,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3401 then ((d2.non_standard_installation_work_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3401 then d2.non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7182,7 +7199,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3401 then ((d2.non_standard_installation_work_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3401 then d2.non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7220,8 +7237,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3414 then ((d2.utility_reinspection_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7873 then ((d2.failed_utility_inspection_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3414 then d2.utility_reinspection_requested_date
+                 when p.custom_field_group_assignment_id = 7873 then d2.failed_utility_inspection_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7261,8 +7278,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3414 then ((d2.utility_reinspection_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7873 then ((d2.failed_utility_inspection_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3414 then d2.utility_reinspection_requested_date
+                 when p.custom_field_group_assignment_id = 7873 then d2.failed_utility_inspection_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7318,6 +7335,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_work_date::date
+                and dce2.deleted is false and work_type_id = 4
             where
                 ahj_inspection_work_date is not null
               and originator_id = 2
@@ -7397,9 +7415,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4558 then ((d2.energized_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12475 then ((d2.final_documents_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16752 then ((d2.energization_visit_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4558 then d2.energized_date
+                 when p.custom_field_group_assignment_id = 12475 then d2.final_documents_sent_to_homeowner_date
+                 when p.custom_field_group_assignment_id = 16752 then d2.energization_visit_requested_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7439,9 +7457,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4558 then ((d2.energized_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12475 then ((d2.final_documents_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16752 then ((d2.energization_visit_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4558 then d2.energized_date
+                 when p.custom_field_group_assignment_id = 12475 then d2.final_documents_sent_to_homeowner_date
+                 when p.custom_field_group_assignment_id = 16752 then d2.energization_visit_requested_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7502,6 +7520,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = energization_visit_date::date
+                and dce2.deleted is false and work_type_id = 12
             where
                 energization_visit_date is not null
               and originator_id = 2
@@ -7585,7 +7604,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6391 then ((d2.final_completion_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 6391 then d2.final_completion_submitted_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7625,7 +7644,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6391 then ((d2.final_completion_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 6391 then d2.final_completion_submitted_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7665,7 +7684,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3492 then ((d2.final_completion_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3492 then d2.final_completion_approved_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7705,7 +7724,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 3492 then ((d2.final_completion_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 3492 then d2.final_completion_approved_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -7742,7 +7761,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4571 then ((d2.first_cash_payment_invoiced_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4571 then d2.first_cash_payment_invoiced_date
                  else null end,
             case when p.custom_field_group_assignment_id = 4584 then d2.first_cash_payment_amount
                  else null end,
@@ -7784,7 +7803,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4571 then ((d2.first_cash_payment_invoiced_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4571 then d2.first_cash_payment_invoiced_date
                  else null end,
             case when p.custom_field_group_assignment_id = 4584 then d2.first_cash_payment_amount
                  else null end,
@@ -7823,7 +7842,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4597 then ((d2.first_cash_payment_paid_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4597 then d2.first_cash_payment_paid_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16388 then first_cash_payment_amount else null end,
             now(),now(),2350555,2350555
@@ -7864,7 +7883,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 4597 then ((d2.first_cash_payment_paid_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 4597 then d2.first_cash_payment_paid_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16388 then first_cash_payment_amount else null end,
             now(),now(),2350555,2350555
@@ -7902,7 +7921,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14139 then ((d2.second_cash_payment_invoiced_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14139 then d2.second_cash_payment_invoiced_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14152 then d2.second_cash_payment_amount
                  else null end,
@@ -7944,7 +7963,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14139 then ((d2.second_cash_payment_invoiced_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14139 then d2.second_cash_payment_invoiced_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14152 then d2.second_cash_payment_amount
                  else null end,
@@ -7985,7 +8004,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14165 then ((d2.second_cash_payment_paid_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14165 then d2.second_cash_payment_paid_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16739 then d2.second_cash_payment_amount else null end,
             now(),now(),2350555,2350555
@@ -8026,7 +8045,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,numeric_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14165 then ((d2.second_cash_payment_paid_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14165 then d2.second_cash_payment_paid_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16739 then d2.second_cash_payment_amount else null end,
             now(),now(),2350555,2350555
@@ -8067,7 +8086,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                          timestamp_value,
 --                                                          date_created, date_modified, created_by_id, modified_by_id)
 --     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 5975 then ((d2.redesign_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+--             case when p.custom_field_group_assignment_id = 5975 then d2.redesign_sent_to_homeowner_date
 --                  else null end,
 --             now(),now(),2350555,2350555
 --      from blueraven.deal d2
@@ -8107,7 +8126,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 --                                                          timestamp_value,
 --                                                          date_created, date_modified, created_by_id, modified_by_id)
 --     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 5975 then ((d2.redesign_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+--             case when p.custom_field_group_assignment_id = 5975 then d2.redesign_sent_to_homeowner_date
 --                  else null end,
 --             now(),now(),2350555,2350555
 --      from blueraven.deal d2
@@ -8153,7 +8172,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6105 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6105 then final_design_created_date else null end,
             case when p.custom_field_group_assignment_id = 9524 then (select id from flow.list_of_value where parent_id = 1964
                                                                                                          and name = d2.price_change)
                  when p.custom_field_group_assignment_id = 9511 then (select id from flow.list_of_value where parent_id = 1795
@@ -8203,7 +8222,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6105 then ((final_design_created_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6105 then final_design_created_date else null end,
             case when p.custom_field_group_assignment_id = 9524 then (select id from flow.list_of_value where parent_id = 1964
                                                                                                          and name = d2.price_change)
                  when p.custom_field_group_assignment_id = 9511 then (select id from flow.list_of_value where parent_id = 1795
@@ -8254,7 +8273,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6040 then ((utility_rebate_application_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')else null end,
+            case when p.custom_field_group_assignment_id = 6040 then utility_rebate_application_signed_dateelse null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -8293,7 +8312,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6040 then ((utility_rebate_application_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')else null end,
+            case when p.custom_field_group_assignment_id = 6040 then utility_rebate_application_signed_dateelse null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -8333,7 +8352,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6586 then ((pre_design_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')else null end,
+            case when p.custom_field_group_assignment_id = 6586 then pre_design_complete_dateelse null end,
             case when p.custom_field_group_assignment_id = 6573 then (select id from flow.list_of_value where parent_id = 1951
                                                                                                          and name = d2.pre_design_status)
                 when p.custom_field_group_assignment_id = 13281 then (select up.id from blueraven.deal d
@@ -8379,7 +8398,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6586 then ((pre_design_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')else null end,
+            case when p.custom_field_group_assignment_id = 6586 then pre_design_complete_dateelse null end,
             case when p.custom_field_group_assignment_id = 6573 then (select id from flow.list_of_value where parent_id = 1951
                                                                                                          and name = d2.pre_design_status)
                  when p.custom_field_group_assignment_id = 13281 then (select up.id from blueraven.deal d
@@ -8770,9 +8789,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 13243 then ((energized_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when    p.custom_field_group_assignment_id = 16765 then ((energization_visit_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                when p.custom_field_group_assignment_id = 16817 then ((energization_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 13243 then energized_date
+                 when    p.custom_field_group_assignment_id = 16765 then energization_visit_verified_date
+                when p.custom_field_group_assignment_id = 16817 then energization_brs_no_show
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -8812,9 +8831,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14243 then ((energized_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when    p.custom_field_group_assignment_id = 16765 then ((energization_visit_verified_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16817 then ((energization_brs_no_show  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14243 then energized_date
+                 when    p.custom_field_group_assignment_id = 16765 then energization_visit_verified_date
+                 when p.custom_field_group_assignment_id = 16817 then energization_brs_no_show
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -8858,7 +8877,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 7678 then resurvey_scheduled_date else null end,
 
 
              case when    p.custom_field_group_assignment_id = 3024 then (select id from flow.list_of_value where parent_id = 2523
@@ -8884,6 +8903,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_date::date
+                and dce2.deleted is false and work_type_id = 11
             where
                 resurvey_date is not null
               and originator_id = 2
@@ -8924,7 +8944,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 7678 then resurvey_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 6287 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 6300 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 6313 then p1.migrated_org_id
@@ -8950,6 +8970,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_b_date::date
+                and dce2.deleted is false and work_type_id = 28
             where
                 resurvey_b_date is not null
               and originator_id = 2
@@ -8990,7 +9011,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 7678 then resurvey_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 6287 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 6300 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 6313 then p1.migrated_org_id
@@ -9015,6 +9036,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = resurvey_c_date::date
+                and dce2.deleted is false and work_type_id = 29
             where
                 resurvey_c_date is not null
               and originator_id = 2
@@ -9055,7 +9077,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7678 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 7678 then resurvey_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 6287 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 6300 then p1.migrated_end_time else null end,
             case when p.custom_field_group_assignment_id = 6313 then p1.migrated_org_id
@@ -9104,7 +9126,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                           date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11513 then ((final_design_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 11513 then final_design_complete_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -9141,7 +9163,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                           date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11513 then ((final_design_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 11513 then final_design_complete_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -9238,7 +9260,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6027 then (( nem_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6027 then nem_signed_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -9275,7 +9297,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6027 then ((nem_signed_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6027 then nem_signed_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -9309,7 +9331,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 17129 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 17129 then site_survey_brs_no_show else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -9347,7 +9369,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 17129 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 17129 then site_survey_brs_no_show else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -9384,7 +9406,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 17129 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 17129 then site_survey_brs_no_show else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -9421,7 +9443,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 17129 then (( site_survey_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 17129 then site_survey_brs_no_show else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -9463,8 +9485,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9498 then (( permit_pack_revision_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11825 then (( plan_set_created_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 9498 then permit_pack_revision_requested_date
+                 when p.custom_field_group_assignment_id = 11825 then plan_set_created_date
                 else null end,
             case when p.custom_field_group_assignment_id = 9485 then permit_revision_a_reason else null end,
             case when p.custom_field_group_assignment_id = 11851 then (select id from flow.list_of_value where parent_id = 2198
@@ -9524,8 +9546,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9498 then (( permit_pack_revision_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11825 then (( plan_set_created_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 9498 then permit_pack_revision_requested_date
+                 when p.custom_field_group_assignment_id = 11825 then plan_set_created_date
                  else null end,
             case when p.custom_field_group_assignment_id = 9485 then permit_revision_a_reason else null end,
             case when p.custom_field_group_assignment_id = 11851 then (select id from flow.list_of_value where parent_id = 2198
@@ -9584,8 +9606,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9498 then (( permit_pack_revision_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11825 then (( plan_set_created_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 9498 then permit_pack_revision_requested_date
+                 when p.custom_field_group_assignment_id = 11825 then plan_set_created_date
                  else null end,
             case when p.custom_field_group_assignment_id = 9485 then permit_revision_a_reason else null end,
             case when p.custom_field_group_assignment_id = 11851 then (select id from flow.list_of_value where parent_id = 2198
@@ -9644,8 +9666,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9485 then (( permit_pack_revision_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11825 then (( plan_set_created_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 9485 then permit_pack_revision_requested_date
+                 when p.custom_field_group_assignment_id = 11825 then plan_set_created_date
                  else null end,
             case when p.custom_field_group_assignment_id = 9485 then permit_revision_a_reason else null end,
             case when p.custom_field_group_assignment_id = 11851 then (select id from flow.list_of_value where parent_id = 2198
@@ -9704,7 +9726,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 -- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
 --                                                          date_created, date_modified, created_by_id, modified_by_id)
 --     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 6716 then (( redesign_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+--             case when p.custom_field_group_assignment_id = 6716 then redesign_signed_date
 --                  else null end,
 --             now(),now(),2350555,2350555
 --      from blueraven.deal d2
@@ -9743,7 +9765,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 -- insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
 --                                                          date_created, date_modified, created_by_id, modified_by_id)
 --     (select p1.id,p.custom_field_group_assignment_id,
---             case when p.custom_field_group_assignment_id = 6716 then (( redesign_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+--             case when p.custom_field_group_assignment_id = 6716 then redesign_signed_date
 --                  else null end,
 --             now(),now(),2350555,2350555
 --      from blueraven.deal d2
@@ -9852,8 +9874,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7522 then (( work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12488 then (( remote_work_required_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7522 then work_order_required
+                 when p.custom_field_group_assignment_id = 12488 then remote_work_required_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -9894,8 +9916,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7522 then (( work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12488 then (( remote_work_required_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7522 then work_order_required
+                 when p.custom_field_group_assignment_id = 12488 then remote_work_required_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -9931,8 +9953,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7548 then (( work_order_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7535 then (( work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7548 then work_order_verified_date
+                 when p.custom_field_group_assignment_id = 7535 then work_order_required
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -9971,8 +9993,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7548 then (( work_order_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7535 then (( work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7548 then work_order_verified_date
+                 when p.custom_field_group_assignment_id = 7535 then work_order_required
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -10011,7 +10033,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10421 then (( cancelled_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10421 then cancelled_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -10052,11 +10074,11 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 5962 then (( retention_saved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 6183 then (( retention_cold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11487 then (( retention_not_eligible_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16986 then (( retention_attempt_1 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 17012 then (( retention_attempt_2 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 5962 then retention_saved_date
+                 when p.custom_field_group_assignment_id = 6183 then retention_cold_date
+                 when p.custom_field_group_assignment_id = 11487 then retention_not_eligible_date
+                 when p.custom_field_group_assignment_id = 16986 then retention_attempt_1
+                 when p.custom_field_group_assignment_id = 17012 then retention_attempt_2
                  else null end,
             case when p.custom_field_group_assignment_id = 17025 then (select up.id from blueraven.deal d
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_2_attempted_by
@@ -10116,11 +10138,11 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 5962 then (( retention_saved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 6183 then (( retention_cold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 11487 then (( retention_not_eligible_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16986 then (( retention_attempt_1 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 17012 then (( retention_attempt_2 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 5962 then retention_saved_date
+                 when p.custom_field_group_assignment_id = 6183 then retention_cold_date
+                 when p.custom_field_group_assignment_id = 11487 then retention_not_eligible_date
+                 when p.custom_field_group_assignment_id = 16986 then retention_attempt_1
+                 when p.custom_field_group_assignment_id = 17012 then retention_attempt_2
                  else null end,
             case when p.custom_field_group_assignment_id = 17025 then (select up.id from blueraven.deal d
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_2_attempted_by
@@ -10177,11 +10199,11 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 17038 then (( retention_attempt_1 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 17064 then (( retention_attempt_2 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7795 then (( retention_cold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7808 then (( retention_not_eligible_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7600 then (( retention_saved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 17038 then retention_attempt_1
+                 when p.custom_field_group_assignment_id = 17064 then retention_attempt_2
+                 when p.custom_field_group_assignment_id = 7795 then retention_cold_date
+                 when p.custom_field_group_assignment_id = 7808 then retention_not_eligible_date
+                 when p.custom_field_group_assignment_id = 7600 then retention_saved_date
                  else null end,
             case when p.custom_field_group_assignment_id = 17077 then (select up.id from blueraven.deal d
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_2_attempted_by
@@ -10240,11 +10262,11 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 17038 then (( retention_attempt_1 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 17064 then (( retention_attempt_2 AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7795 then (( retention_cold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7808 then (( retention_not_eligible_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 7600 then (( retention_saved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 17038 then retention_attempt_1
+                 when p.custom_field_group_assignment_id = 17064 then retention_attempt_2
+                 when p.custom_field_group_assignment_id = 7795 then retention_cold_date
+                 when p.custom_field_group_assignment_id = 7808 then retention_not_eligible_date
+                 when p.custom_field_group_assignment_id = 7600 then retention_saved_date
                  else null end,
             case when p.custom_field_group_assignment_id = 17077 then (select up.id from blueraven.deal d
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_2_attempted_by
@@ -10298,10 +10320,10 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          numeric_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15452 then (( termination_fee_invoice_sent_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15478 then (( termination_fee_collected_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15491 then (( termination_fee_collection_failed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16167 then (( termination_fee_sent_to_ecrs_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15452 then termination_fee_invoice_sent_date
+                 when p.custom_field_group_assignment_id = 15478 then termination_fee_collected_date
+                 when p.custom_field_group_assignment_id = 15491 then termination_fee_collection_failed_date
+                 when p.custom_field_group_assignment_id = 16167 then termination_fee_sent_to_ecrs_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15465 then termination_fee_to_be_collected_amount::numeric
                  when p.custom_field_group_assignment_id = 16180 then ecrs_termination_fee_to_be_collected::numeric
@@ -10343,10 +10365,10 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          numeric_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15452 then (( termination_fee_invoice_sent_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15478 then (( termination_fee_collected_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15491 then (( termination_fee_collection_failed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16167 then (( termination_fee_sent_to_ecrs_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15452 then termination_fee_invoice_sent_date
+                 when p.custom_field_group_assignment_id = 15478 then termination_fee_collected_date
+                 when p.custom_field_group_assignment_id = 15491 then termination_fee_collection_failed_date
+                 when p.custom_field_group_assignment_id = 16167 then termination_fee_sent_to_ecrs_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15465 then termination_fee_to_be_collected_amount::numeric
                  when p.custom_field_group_assignment_id = 16180 then ecrs_termination_fee_to_be_collected::numeric
@@ -10385,8 +10407,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 16297 then (( on_hold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16310 then (( off_hold_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 16297 then on_hold_date
+                 when p.custom_field_group_assignment_id = 16310 then off_hold_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16323 then (select up.id from blueraven.deal d
                                                                                            inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.retention_saved_by
@@ -10430,9 +10452,9 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14256 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14256 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 7574 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7574 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14204 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -10483,9 +10505,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14256 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14256 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 7574 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7574 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14204 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -10535,9 +10557,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14256 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14256 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 7574 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7574 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14204 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -10586,9 +10608,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14256 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14256 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 7574 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7574 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14204 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -10643,7 +10665,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12735 then (( engineering_due_diligence_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12735 then engineering_due_diligence_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 7405 then (select up.id from blueraven.deal d
                                                                                             inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.engineering_due_diligence_by
@@ -10687,7 +10709,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12735 then (( engineering_due_diligence_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12735 then engineering_due_diligence_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 7405 then (select up.id from blueraven.deal d
                                                                                             inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.engineering_due_diligence_by
@@ -10730,7 +10752,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12735 then (( engineering_due_diligence_b_complete_date::timestamp AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12735 then engineering_due_diligence_b_complete_date::timestamp
                  else null end,
             case when p.custom_field_group_assignment_id = 7405 then (select up.id from blueraven.deal d
                                                                                             inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.engineering_due_diligence_by
@@ -10772,7 +10794,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12735 then (( engineering_due_diligence_c_complete_date::timestamp AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12735 then engineering_due_diligence_c_complete_date::timestamp
                  else null end,
             case when p.custom_field_group_assignment_id = 7405 then (select up.id from blueraven.deal d
                                                                                             inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.engineering_due_diligence_by
@@ -10817,7 +10839,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          text_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12826 then ((materials_ordered_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12826 then materials_ordered_date
                  else null end,
             case when p.custom_field_group_assignment_id = 7912 then additional_materials_category
                  when p.custom_field_group_assignment_id = 7925 then additional_materials_details
@@ -10860,7 +10882,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value,
                                                          text_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12826 then ((materials_ordered_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12826 then materials_ordered_date
                  else null end,
             case when p.custom_field_group_assignment_id = 7912 then additional_materials_category
                  when p.custom_field_group_assignment_id = 7925 then additional_materials_details
@@ -11064,7 +11086,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-        case when p.custom_field_group_assignment_id = 6690 then ((utility_rebate_application_submitted_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+        case when p.custom_field_group_assignment_id = 6690 then utility_rebate_application_submitted_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11103,7 +11125,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6690 then ((utility_rebate_application_submitted_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 6690 then utility_rebate_application_submitted_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11217,7 +11239,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10291 then ((eto_inspection_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10291 then eto_inspection_requested_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11259,7 +11281,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10291 then ((eto_inspection_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10291 then eto_inspection_requested_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11298,8 +11320,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12540 then ((eto_inspection_passed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12553 then ((eto_inspection_corrections_required_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12540 then eto_inspection_passed_date
+                 when p.custom_field_group_assignment_id = 12553 then eto_inspection_corrections_required_date
                  else null end,
             case when p.custom_field_group_assignment_id = 7561 then (select id from flow.list_of_value where parent_id = 2328
                                                                                                          and name = d2.utility_rebate_inspection_outcome)
@@ -11353,8 +11375,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12540 then ((eto_inspection_passed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 12553 then ((eto_inspection_corrections_required_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12540 then eto_inspection_passed_date
+                 when p.custom_field_group_assignment_id = 12553 then eto_inspection_corrections_required_date
                  else null end,
             case when p.custom_field_group_assignment_id = 7561 then (select id from flow.list_of_value where parent_id = 2328
                                                                                                          and name = d2.utility_rebate_inspection_outcome)
@@ -11576,6 +11598,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                     non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','Main Panel Upgrade'])
               and non_standard_installation_work_date is not null
@@ -11657,7 +11680,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7119 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7119 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11698,7 +11721,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7119 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7119 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11757,6 +11780,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_date::date
+                and dce2.deleted is false and work_type_id = 27
             where
                     non_standard_installation_work like any (array['%Main Panel Upgrade - In House%'])
               and in_house_mpu_date is not null
@@ -11838,7 +11862,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7132 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7132 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11879,7 +11903,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7132 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7132 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -11938,6 +11962,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                     non_standard_installation_work like any (array['%Structural Upgrade%'])
               and non_standard_installation_work_date is not null
@@ -12019,7 +12044,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7145 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7145 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12060,7 +12085,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7145 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7145 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12118,6 +12143,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                     non_standard_installation_work like any (array['%Reroof%'])
               and non_standard_installation_work_date is not null
@@ -12199,7 +12225,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7158 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7158 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12240,7 +12266,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7158 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7158 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12298,6 +12324,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                     non_standard_installation_work like any (array['%Trenching%'])
               and non_standard_installation_work_date is not null
@@ -12378,7 +12405,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7171 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7171 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12419,7 +12446,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7171 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7171 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12476,6 +12503,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                     non_standard_installation_work like any (array['%Tree Trimming%'])
               and non_standard_installation_work_date is not null
@@ -12556,7 +12584,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7184 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7184 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12597,7 +12625,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7184 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7184 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12655,6 +12683,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                     non_standard_installation_work like any (array['%A/C Compressor Relocation%'])
               and non_standard_installation_work_date is not null
@@ -12735,7 +12764,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7197 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7197 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12776,7 +12805,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7197 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7197 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12832,6 +12861,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = non_standard_installation_work_date::date
+                and dce2.deleted is false and work_type_id = 13
             where
                     non_standard_installation_work like any (array['%Source Deadfront%'])
               and non_standard_installation_work_date is not null
@@ -12912,7 +12942,7 @@ and non_standard_installation_work_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7210 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7210 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12953,7 +12983,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7210 then ((non_standard_installation_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 7210 then non_standard_installation_work_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -12991,7 +13021,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,int_array_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14308 then ((work_order_required AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14308 then work_order_required
                  else null end,
             case when p.custom_field_group_assignment_id = 14295 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -13188,7 +13218,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8718 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 8718 then ahj_inspection_scheduled_date else null end,
 
               case  when p.custom_field_group_assignment_id = 8731 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                          and name::boolean = d2.technician_site_required)
@@ -13212,6 +13242,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_date::date
+                and dce2.deleted is false and work_type_id = 5
             where
                 ahj_reinspection_date is not null
               and originator_id = 2
@@ -13251,7 +13282,7 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8718 then ((ahj_reinspection_scheduled  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date else null end,
+            case when p.custom_field_group_assignment_id = 8718 then ahj_reinspection_scheduled::date else null end,
             case when p.custom_field_group_assignment_id = 14451 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 14464 then p1.migrated_end_time
                  else null end,
@@ -13277,6 +13308,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_b_date::date
+                and dce2.deleted is false and work_type_id = 23
             where
                 ahj_reinspection_b_date is not null
               and originator_id = 2
@@ -13316,7 +13348,7 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 8718 then ((ahj_reinspection_b_scheduled  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date else null end,
+            case when p.custom_field_group_assignment_id = 8718 then ahj_reinspection_b_scheduled::date else null end,
             case when p.custom_field_group_assignment_id = 14451 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 14464 then p1.migrated_end_time
                  else null end,
@@ -13532,8 +13564,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 16791 then ((ahj_inspection_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16804 then ((ahj_inspection_work_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 16791 then ahj_inspection_work_verified_date
+                 when p.custom_field_group_assignment_id = 16804 then ahj_inspection_work_brs_no_show
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -13571,8 +13603,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 16791 then ((ahj_inspection_work_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 16804 then ((ahj_inspection_work_brs_no_show AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 16791 then ahj_inspection_work_verified_date
+                 when p.custom_field_group_assignment_id = 16804 then ahj_inspection_work_brs_no_show
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -13608,9 +13640,9 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14906 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14906 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 14893 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14893 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14867 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -13660,9 +13692,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14906 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14906 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 14893 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14893 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14867 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -13711,9 +13743,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14906 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14906 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 14893 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14893 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14867 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -13762,9 +13794,9 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,timestamp_value,int_array_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14906 then ((props_double_check AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14906 then props_double_check
                  else null end,
-            case when p.custom_field_group_assignment_id = 14893 then ((proposal_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 14893 then proposal_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 14867 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -13849,7 +13881,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10993 then ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10993 then site_survey_uploaded_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -13887,7 +13919,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10993 then ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10993 then site_survey_uploaded_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -13925,7 +13957,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15010 then ((production_monitoring_activated_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15010 then production_monitoring_activated_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15036 then d2.production_monitoring_id
                  else null end,
@@ -13968,7 +14000,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15010 then ((production_monitoring_activated_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15010 then production_monitoring_activated_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15036 then d2.production_monitoring_id
                  else null end,
@@ -14014,7 +14046,7 @@ scheduled_installation_date is not null and rt.name = 'Yes' and
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1197 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1197 then ahj_inspection_scheduled_date else null end,
 
              case    when p.custom_field_group_assignment_id = 1201 then (select id from flow.list_of_value where parent_id = 977
                                                                                                           and name::boolean = d2.technician_site_required)
@@ -14040,6 +14072,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_mid_point_inspection_date::date
+                and dce2.deleted is false and work_type_id = 24
             where
                 ahj_mid_point_inspection_date is not null
               and originator_id = 2
@@ -14078,7 +14111,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14776 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14776 then ahj_inspection_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 12748 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 12761 then p1.migrated_end_time
                  else null end,
@@ -14196,7 +14229,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15062 then ((ahj_mid_point_inspection_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15062 then ahj_mid_point_inspection_verified_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15049 then (select id from flow.list_of_value where parent_id = 1600
                                                                                                          and name = d2.ahj_mid_point_inspection_outcome)
@@ -14237,7 +14270,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15062 then ((ahj_mid_point_inspection_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15062 then ahj_mid_point_inspection_verified_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15049 then (select id from flow.list_of_value where parent_id = 1600
                                                                                                          and name = d2.ahj_mid_point_inspection_outcome)
@@ -14280,7 +14313,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14711 then ahj_inspection_scheduled_date else null end,
              case    when p.custom_field_group_assignment_id = 7275 then (select id from flow.list_of_value where parent_id = 1327
                                                                                                           and name::boolean = d2.technician_site_required)
                  when p.custom_field_group_assignment_id = 11942 then (select id from flow.list_of_value where parent_id = 2432
@@ -14305,6 +14338,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_inspection_date::date
+                and dce2.deleted is false and work_type_id = 3
             where
                 ahj_inspection_date is not null and (ahj_inspection_ready_to_schedule_date >= substantial_completion_date or ahj_inspection_ready_to_schedule_date is null)
               and originator_id = 2
@@ -14344,7 +14378,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14711 then ahj_inspection_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 8068 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 8081 then p1.migrated_end_time
                  else null end,
@@ -14372,6 +14406,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_date::date
+                and dce2.deleted is false and work_type_id = 5
             where
                 ahj_reinspection_date is not null
               and originator_id = 2
@@ -14411,7 +14446,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14711 then ahj_inspection_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 8068 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 8081 then p1.migrated_end_time
                  else null end,
@@ -14438,6 +14473,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = ahj_reinspection_b_date::date
+                and dce2.deleted is false and work_type_id = 23
             where
                 ahj_reinspection_b_date is not null
               and originator_id = 2
@@ -14477,7 +14513,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,timestamp_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 14711 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 14711 then ahj_inspection_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 8068 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 8081 then p1.migrated_end_time
                  else null end,
@@ -14597,7 +14633,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2842 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2842 then ahj_inspection_scheduled_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -14617,6 +14653,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = additional_ahj_inspection_date::date
+                and dce2.deleted is false and work_type_id = 22
             where
                 additional_ahj_inspection_date is not null
               and originator_id = 2
@@ -14655,7 +14692,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          timestamp_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 2842 then ((ahj_inspection_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 2842 then ahj_inspection_scheduled_date else null end,
             case when p.custom_field_group_assignment_id = 12163 then P1.migrated_start_time
                  when p.custom_field_group_assignment_id = 12176 then p1.migrated_end_time
                  else null end,
@@ -14696,7 +14733,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12215 then ((additional_ahj_inspection_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12215 then additional_ahj_inspection_verified_date
                  else null end,
             case when p.custom_field_group_assignment_id = 12202 then (select id from flow.list_of_value where parent_id = 2458
                                                                                                          and name = d2.additional_ahj_inspection_outcome)
@@ -14737,7 +14774,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 12215 then ((additional_ahj_inspection_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 12215 then additional_ahj_inspection_verified_date
                  else null end,
             case when p.custom_field_group_assignment_id = 12202 then (select id from flow.list_of_value where parent_id = 2458
                                                                                                          and name = d2.additional_ahj_inspection_outcome)
@@ -14796,6 +14833,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_permit_pickup_date::date
+                and dce2.deleted is false and work_type_id = 26
             where
                 in_house_mpu_permit_pickup_date is not null
               and originator_id = 2
@@ -14874,8 +14912,8 @@ in_house_mpu_permit_pickup_verified_date is null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15166 then ((permit_approved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15179 then ((permit_pickup_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15166 then permit_approved_date
+                 when p.custom_field_group_assignment_id = 15179 then permit_pickup_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -14913,8 +14951,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15166 then ((permit_approved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15179 then ((permit_pickup_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15166 then permit_approved_date
+                 when p.custom_field_group_assignment_id = 15179 then permit_pickup_verified_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15117,7 +15155,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9836 then ((permit_submission_hold_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 9836 then permit_submission_hold_complete_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15155,7 +15193,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 9836 then ((permit_submission_hold_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 9836 then permit_submission_hold_complete_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15191,8 +15229,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15712 then ((as_built_permit_packet_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15673 then ((as_built_permit_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15712 then as_built_permit_packet_complete_date
+                 when p.custom_field_group_assignment_id = 15673 then as_built_permit_required_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15699 then (select id from flow.list_of_value where parent_id = 1626
                                                                                                          and name = d2.as_built_permit_location)
@@ -15239,8 +15277,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15712 then ((as_built_permit_packet_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15673 then ((as_built_permit_required_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15712 then as_built_permit_packet_complete_date
+                 when p.custom_field_group_assignment_id = 15673 then as_built_permit_required_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15699 then (select id from flow.list_of_value where parent_id = 1626
                                                                                                          and name = d2.as_built_permit_location)
@@ -15744,8 +15782,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15621 then  ((engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15634 then  ((engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15621 then  engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15634 then  engineering_stamp_received_date
                      else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15783,8 +15821,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15621 then  ((engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15634 then  ((engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15621 then  engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15634 then  engineering_stamp_received_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15821,8 +15859,8 @@ ahj_inspection_passed_date is null and as_built_permit_required_date is null) re
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15647 then  ((electrical_engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15660 then  ((electrical_engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15647 then  electrical_engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15660 then  electrical_engineering_stamp_received_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15860,8 +15898,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15647 then  ((electrical_engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15660 then  ((electrical_engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15647 then  electrical_engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15660 then  electrical_engineering_stamp_received_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15896,8 +15934,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15764 then  ((engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15777 then  ((engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15764 then  engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15777 then  engineering_stamp_received_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15935,8 +15973,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15764 then  ((engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15777 then  ((engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15764 then  engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15777 then  engineering_stamp_received_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15971,8 +16009,8 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15790 then  ((electrical_engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15803 then  ((electrical_engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15790 then  electrical_engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15803 then  electrical_engineering_stamp_received_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16010,8 +16048,8 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15790 then  ((electrical_engineering_stamp_requested_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
-                 when p.custom_field_group_assignment_id = 15803 then  ((electrical_engineering_stamp_received_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15790 then  electrical_engineering_stamp_requested_date
+                 when p.custom_field_group_assignment_id = 15803 then  electrical_engineering_stamp_received_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16075,6 +16113,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = asbuilt_permit_pack_submittal_date::date
+                and dce2.deleted is false and work_type_id = 14
             where
                 asbuilt_permit_pack_submittal_date is not null
               and originator_id = 2
@@ -16230,7 +16269,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10668 then ((as_built_permit_pack_submittal_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10668 then as_built_permit_pack_submittal_verified_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15868 then electrical_permit_number
                  when p.custom_field_group_assignment_id = 15855 then permit_number
@@ -16271,7 +16310,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,text_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10668 then ((as_built_permit_pack_submittal_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10668 then as_built_permit_pack_submittal_verified_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15868 then electrical_permit_number
                  when p.custom_field_group_assignment_id = 15855 then permit_number
@@ -16310,7 +16349,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15881 then ((asbuilt_permit_approved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15881 then asbuilt_permit_approved_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15933 then electrical_permit_number
                  when p.custom_field_group_assignment_id = 15920 then permit_number
@@ -16355,7 +16394,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15881 then ((asbuilt_permit_approved_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15881 then asbuilt_permit_approved_date
                  else null end,
             case when p.custom_field_group_assignment_id = 15933 then electrical_permit_number
                  when p.custom_field_group_assignment_id = 15920 then permit_number
@@ -16418,6 +16457,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = as_built_permit_pickup_date::date
+                and dce2.deleted is false and work_type_id = 15
             where
                 as_built_permit_pickup_date is not null
               and originator_id = 2
@@ -16499,7 +16539,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15946 then ((as_built_permit_pickup_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15946 then as_built_permit_pickup_verified_date
                  else null end,
             case
                 when p.custom_field_group_assignment_id = 10941 then (select id from flow.list_of_value where parent_id = 1626
@@ -16541,7 +16581,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 15946 then ((as_built_permit_pickup_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 15946 then as_built_permit_pickup_verified_date
                  else null end,
             case
                 when p.custom_field_group_assignment_id = 10941 then (select id from flow.list_of_value where parent_id = 1626
@@ -16583,7 +16623,7 @@ as_built_permit_required_date is not null) returning *),
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10837 then ((agreement_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10837 then agreement_signed_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16621,7 +16661,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10837 then ((agreement_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10837 then agreement_signed_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16657,7 +16697,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10837 then ((agreement_signed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10837 then agreement_signed_date
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16694,7 +16734,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10785 then ((retention_customer_concession_date_sent AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10785 then retention_customer_concession_date_sent
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16732,7 +16772,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 10785 then ((retention_customer_concession_date_sent AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 10785 then retention_customer_concession_date_sent
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -16810,7 +16850,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,numeric_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 16271 then ((termination_fee_sent_to_ecrs_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 16271 then termination_fee_sent_to_ecrs_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16284 then termination_fee_to_be_collected_amount::numeric
                  else null end,
@@ -16851,7 +16891,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,numeric_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 16271 then ((termination_fee_sent_to_ecrs_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 16271 then termination_fee_sent_to_ecrs_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16284 then termination_fee_to_be_collected_amount::numeric
                  else null end,
@@ -17277,7 +17317,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-        case when p.custom_field_group_assignment_id = 16687 then ((additional_ahj_inspection_audit_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+        case when p.custom_field_group_assignment_id = 16687 then additional_ahj_inspection_audit_complete_date
         else null end,
             case when p.custom_field_group_assignment_id = 16674 then d2.inspection_fail_feedback
                  else null end,
@@ -17320,7 +17360,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          timestamp_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 16687 then ((additional_ahj_inspection_audit_complete_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+            case when p.custom_field_group_assignment_id = 16687 then additional_ahj_inspection_audit_complete_date
                  else null end,
             case when p.custom_field_group_assignment_id = 16674 then d2.inspection_fail_feedback
                  else null end,
@@ -17737,7 +17777,7 @@ with active_step as (
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where originator_id = 2 and installation_date is not null and substantial_completion_date is null
-           and installation_date >= (now() at time zone 'US/Mountain')::date
+           and  installation_closeout_required_date is null
         ) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -17867,6 +17907,7 @@ with process_step1 as (
                                 ON project.id = d.id
                      left join blueraven.deal_calendar_event dce2 on dce2.deal_id = d.id
                 and (dce2.start_time::date AT TIME ZONE 'UTC' AT TIME ZONE 'US/Mountain')::date = in_house_mpu_inspection_scheduled_date::date
+                and dce2.deleted is false and work_type_id = 3
             where
                 in_house_mpu_inspection_scheduled_date is not null and ahj_inspection_date is not null
               and originator_id = 2
@@ -18053,7 +18094,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6742 then ((final_documents_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6742 then final_documents_sent_to_homeowner_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -18090,7 +18131,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6742 then ((final_documents_sent_to_homeowner_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6742 then final_documents_sent_to_homeowner_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -18195,7 +18236,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7938 then ((srec_part_2_rebate_application_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 7938 then srec_part_2_rebate_application_submitted_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -18232,7 +18273,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 7938 then ((srec_part_2_rebate_application_submitted_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 7938 then srec_part_2_rebate_application_submitted_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
 
@@ -18267,7 +18308,7 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,numeric_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6261 then ((srec_part_2_rebate_application_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6261 then srec_part_2_rebate_application_approved_date else null end,
             case when p.custom_field_group_assignment_id = 10577 then utility_rebate_amount_to_brs::numeric else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -18305,7 +18346,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
                                                          date_value,numeric_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 6261 then ((srec_part_2_rebate_application_approved_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 6261 then srec_part_2_rebate_application_approved_date else null end,
             case when p.custom_field_group_assignment_id = 10577 then utility_rebate_amount_to_brs::numeric else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
