@@ -252,7 +252,7 @@
                   <v-card-actions>
                     <v-btn color="primaryCustom"  @click="saveSchedule(schedule, false)" class="white--text"
                            v-if="userCanEdit"
-                           :disabled="!schedule.startDate || !schedule.endDate">
+                           :disabled="!schedule.startDate">
                       Save
                     </v-btn>
                   </v-card-actions>
@@ -411,7 +411,7 @@
 
 
         // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
-        if(new Date(s.startDate) > new Date(s.endDate)) {
+        if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
           this.saveError = true
           this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
         }
@@ -439,7 +439,7 @@
           } else {
 
             //if there is not an end date, update any other's without an end date (there should only ever be one) - backend will handle actual save
-            if(!s.endDate) {
+            if(!s.endDate && isNew) {
               let match = this.schedules.find(sc => !sc.endDate)
               if (match) {
                 match.endDate = moment.utc(s.startDate).subtract(1, 'd').format("YYYY-MM-DD")
@@ -447,16 +447,23 @@
             }
             //check that no other schedules overlap this one
             let scheduleOverlap = false
+            let unEndingScheduleBeforeOthers = false
             this.schedules.forEach(sd => {
               if(s.id !== sd.id && ((new Date(s.startDate) >= new Date(sd.startDate) && new Date(s.startDate) <= new Date(sd.endDate)) ||
                  (new Date(s.endDate) >= new Date(sd.startDate) && new Date(s.endDate) <= new Date(sd.endDate)))) {
                 scheduleOverlap = true
+              }
+              if(!s.endDate && s.startDate < sd.startDate) {
+                unEndingScheduleBeforeOthers = true
               }
             })
 
             if(scheduleOverlap) {
               this.saveError = true
               this.saveErrorMsg = '* Schedule dates cannot overlap other schedules'
+            } else if(unEndingScheduleBeforeOthers) {
+              this.saveError = true
+              this.saveErrorMsg = '* A schedule without an end date cannot be created before any other existing schedule'
             } else {
               this.saveError = false
               this.saveErrorMsg = ''
