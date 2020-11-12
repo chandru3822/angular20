@@ -7488,10 +7488,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Blue Raven Solar'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+            inner join flow.user u on u.id = up.user_id
+            inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
       from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where (d.originator_id =1 or d.originator_id is null));
+     where  c.id in (select customer_id from blueraven.deal d  where (d.originator_id =1 or d.originator_id is null)));
 
 -- INSERT INTO flow.contact (city,
 --                           company_country_id,
@@ -7653,10 +7654,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Energy Pal'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id= c.id
-     where  d.originator_id =16);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =16));
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7709,10 +7711,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Supernova Energy'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where d.originator_id =15);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =15));
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7765,10 +7768,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Solar 101'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-     inner join blueraven.deal d on d.customer_id = c.id
-     where  d.originator_id =9);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =9));
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7872,10 +7876,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Atlas Solar Advisors'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where d.originator_id =11);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =11));
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7928,10 +7933,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Direct Solar of America'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.cusomter_id = c.id
-     where d.originator_id =12);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =12));
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7984,10 +7990,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Revolution Solar'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where  d.originator_id =13);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =13));
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -8040,10 +8047,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Smart Money Solar'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where d.originator_id =14);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =14));
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8096,10 +8104,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Sun Run'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-        inner join blueraven.deal d on d.customer_id = c.id
-        where d.originator_id =7);
+        where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =7));
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8152,10 +8161,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Solenrgi'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where  d.originator_id =2
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2)
         and c.id != 109137 and  c.id != 135115);
 
 INSERT INTO flow.contact (city,
@@ -8209,10 +8219,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Salient Solar'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where  d.originator_id =6);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =6));
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8265,10 +8276,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'B+C Electric'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where d.originator_id =4);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =4));
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8321,10 +8333,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Eco Lux Solar'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where  d.originator_id =8);
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =8));
 
 -- change the flow.contact id sequence so the imported ids don't cause problems
 SELECT setval('flow.customer_id_seq',
@@ -8427,10 +8440,11 @@ INSERT INTO flow.contact (city,
             (select id from flow.company where company_name = 'Solenrgi'),
             (select up.id
              from flow.user_position up
-             where up.user_id = d.setter_user_id and primary_flag is true)
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
      from blueraven.customer c
-    inner join blueraven.deal d on d.customer_id = c.id
-     where  d.originator_id =2
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2)
        and c.id in ( 109137,135115));
 
 
