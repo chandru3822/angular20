@@ -2423,11 +2423,7 @@
         switch (funnelId) {
           // Appointments Created Pipeline
           case 12: // BRS-provided appointments created
-            this.funnelDrilldownHeaders[11].show = true // date_created
-            break
           case 13: // Self-gen appointments created
-            this.funnelDrilldownHeaders[11].show = true // date_created
-            break
           case 10: // Total Appointments Created
             this.funnelDrilldownHeaders[11].show = true // date_created
             break
@@ -2436,35 +2432,15 @@
           case 14: // Total Planned Appointments
             break
           case 15: // Cancelled in advance
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 16: // Ineligible for solar
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 17: // Total Eligible Planned Appointments
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 25: // Rescheduled
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 18: // Homeowner no show
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 19: // Closer missed appointment
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 20: // Turned away at the door
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 22: // No utility bill
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 24: // Non-dispositioned appointments
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 23: // Yet to occur
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 11: // Pitched
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
