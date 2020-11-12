@@ -51,13 +51,14 @@ with cpsst as (
         company_id = p_company_id and
         process_step_status_type_id = 1
 )
-insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, created_by_id, main)
+insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, created_by_id, main, user_position_id)
 select
     p_project_id,
     p_process_step_id,
     cpsst.id,
     p_user_id,
-    true
+    true,
+    p_user_position_id
 from cpsst
 returning id into p_project_process_step_id;
 

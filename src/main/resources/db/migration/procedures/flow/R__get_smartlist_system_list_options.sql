@@ -23,6 +23,13 @@ begin
         cpssst.company_id = p_company_id and
         cpssst.archived is not true
       order by cpssst.process_step_status_type;
+  when p_smartlist_system_list_id = 3 then
+    return query
+      select cpst.id, cpst.project_status_type as name
+      from flow.company_project_status_type cpst
+      where cpst.company_id = p_company_id and
+            cpst.archived is not true
+      order by cpst.project_status_type;
   end case;
 end;
 $$

@@ -18,7 +18,8 @@ BEGIN
       and pps.process_step_id = (select ps2.id
                                  from flow.process_step ps2
                                  where ps2.company_id = ps.company_id
-                                   and ps2.process_step_name = 'Verify Permit Approval');
+                                   and ps2.process_step_name = 'Verify Permit Approval'
+                                   and ps2.archived is not true);
 
 
     select ppscfv.date_value
@@ -32,7 +33,8 @@ BEGIN
       and pps.process_step_id = (select ps2.id
                                  from flow.process_step ps2
                                  where ps2.company_id = ps.company_id
-                                   and ps2.process_step_name = 'Needs a Permit Revision');
+                                   and ps2.process_step_name = 'Needs a Permit Revision'
+                                   and ps2.archived is not true);
 
     return v_permit_approved > v_plan_set_created;
 END

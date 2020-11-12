@@ -1035,16 +1035,16 @@
                 </td>
               </tr>
             </template>
-            <template v-if="showTotalSystemSize" #footer="{ props: {} }">
+            <template v-if="showTotalSystemSize" v-slot:body.append>
               <tr id="total-system-size-row">
-                <td style="width: 25px"></td>
-                <td style="width: 90px"></td>
-                <td style="width: 115px"></td>
-                <td style="width: 75px"></td>
-                <td style="width: 90px"></td>
-                <td style="width: 85px"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
                 <td id="total-system-size-label">Total Size:</td>
-                <td style="width: 110px">{{ totalSystemSize ? totalSystemSize : 0 }}</td>
+                <td>{{ totalSystemSize ? totalSystemSize : 0 }}</td>
               </tr>
             </template>
 
@@ -2423,11 +2423,7 @@
         switch (funnelId) {
           // Appointments Created Pipeline
           case 12: // BRS-provided appointments created
-            this.funnelDrilldownHeaders[11].show = true // date_created
-            break
           case 13: // Self-gen appointments created
-            this.funnelDrilldownHeaders[11].show = true // date_created
-            break
           case 10: // Total Appointments Created
             this.funnelDrilldownHeaders[11].show = true // date_created
             break
@@ -2436,35 +2432,15 @@
           case 14: // Total Planned Appointments
             break
           case 15: // Cancelled in advance
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 16: // Ineligible for solar
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 17: // Total Eligible Planned Appointments
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 25: // Rescheduled
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 18: // Homeowner no show
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 19: // Closer missed appointment
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 20: // Turned away at the door
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 22: // No utility bill
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 24: // Non-dispositioned appointments
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 23: // Yet to occur
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            break
           case 11: // Pitched
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
@@ -3862,7 +3838,6 @@
       #total-system-size-label {
         font-weight: bold;
         text-align: right;
-        min-width: 85px;
       }
 
       .customer-name {

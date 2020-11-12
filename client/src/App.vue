@@ -9,11 +9,11 @@
       </v-toolbar-items>
     </v-toolbar>
     <AppNav v-if="$route.name !== 'login'"/>
-    <v-content>
+    <v-main>
       <v-container class="router-container">
         <router-view class="router-view" />
       </v-container>
-    </v-content>
+    </v-main>
     <Snackbar></Snackbar>
   </v-app>
 
