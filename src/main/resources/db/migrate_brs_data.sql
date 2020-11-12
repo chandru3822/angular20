@@ -18,6 +18,9 @@ drop trigger if exists org_view_trg on flow.org;
 drop trigger if exists user_position_trg on flow.user_position;
 drop trigger if exists update_project_details_project_trg on flow.project_custom_field_value;
 drop trigger if exists update_contact_details_project_details_trg on flow.contact_custom_field_value;
+drop trigger if exists concrete_project_audit_trg ON flow.project;
+drop trigger if exists concrete_contact_audit_trg ON flow.contact;
+drop trigger if exists concrete_user_audit_trg ON flow.user;
 
 
 /*
@@ -2677,13 +2680,23 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
+-- INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, text_value, created_by_id)
+--     (SELECT o.id,
+--             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+--             o.birdeye_business_id,
+--             2350555 as created_by_id
+--      FROM blueraven.org o
+--      WHERE birdeye_business_id IS NOT NULL);
+
+
 INSERT INTO flow.organization_custom_field_value (org_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT o.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             o.birdeye_business_id,
             2350555 as created_by_id
      FROM blueraven.org o
      WHERE birdeye_business_id IS NOT NULL);
+
 
 -- insert into brs.sales_area_type(id, sales_area_type)
 --     (select id, sales_area_type
@@ -7445,7 +7458,8 @@ INSERT INTO flow.contact (city,
                            contact_type_id,
                            created_by_id,
                            date_created,
-                           company_id)
+                           company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
             from flow.company_country cc
@@ -7471,9 +7485,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Blue Raven Solar')
+            (select id from flow.company where company_name = 'Blue Raven Solar'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
       from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where (d.originator_id =1 or d.originator_id is null)));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where (d.originator_id =1 or d.originator_id is null));
 
 -- INSERT INTO flow.contact (city,
 --                           company_country_id,
@@ -7605,7 +7623,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -7631,9 +7650,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Energy Pal')
+            (select id from flow.company where company_name = 'Energy Pal'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =16));
+    inner join blueraven.deal d on d.customer_id= c.id
+     where  d.originator_id =16);
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7656,7 +7679,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -7682,9 +7706,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Supernova Energy')
+            (select id from flow.company where company_name = 'Supernova Energy'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =15));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where d.originator_id =15);
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7707,7 +7735,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -7733,9 +7762,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Solar 101')
+            (select id from flow.company where company_name = 'Solar 101'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =9));
+     inner join blueraven.deal d on d.customer_id = c.id
+     where  d.originator_id =9);
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7809,7 +7842,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -7835,9 +7869,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Atlas Solar Advisors')
+            (select id from flow.company where company_name = 'Atlas Solar Advisors'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =11));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where d.originator_id =11);
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7860,7 +7898,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -7886,9 +7925,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Direct Solar of America')
+            (select id from flow.company where company_name = 'Direct Solar of America'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =12));
+    inner join blueraven.deal d on d.cusomter_id = c.id
+     where d.originator_id =12);
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7911,7 +7954,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -7937,9 +7981,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Revolution Solar')
+            (select id from flow.company where company_name = 'Revolution Solar'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =13));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where  d.originator_id =13);
 
 INSERT INTO flow.contact (city,
                           company_country_id,
@@ -7962,7 +8010,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -7988,9 +8037,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Smart Money Solar')
+            (select id from flow.company where company_name = 'Smart Money Solar'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =14));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where d.originator_id =14);
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8013,7 +8066,8 @@ INSERT INTO flow.contact (city,
                            contact_type_id,
                            created_by_id,
                            date_created,
-                           company_id)
+                           company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -8039,9 +8093,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Sun Run')
+            (select id from flow.company where company_name = 'Sun Run'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-        where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =7));
+        inner join blueraven.deal d on d.customer_id = c.id
+        where d.originator_id =7);
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8064,7 +8122,8 @@ INSERT INTO flow.contact (city,
                            contact_type_id,
                            created_by_id,
                            date_created,
-                           company_id)
+                           company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -8090,9 +8149,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Solenrgi')
+            (select id from flow.company where company_name = 'Solenrgi'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2)
+    inner join blueraven.deal d on d.customer_id = c.id
+     where  d.originator_id =2
         and c.id != 109137 and  c.id != 135115);
 
 INSERT INTO flow.contact (city,
@@ -8116,7 +8179,8 @@ INSERT INTO flow.contact (city,
                            contact_type_id,
                            created_by_id,
                            date_created,
-                           company_id)
+                           company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -8142,9 +8206,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Salient Solar')
+            (select id from flow.company where company_name = 'Salient Solar'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =6));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where  d.originator_id =6);
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8167,7 +8235,8 @@ INSERT INTO flow.contact (city,
                            contact_type_id,
                            created_by_id,
                            date_created,
-                           company_id)
+                           company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -8193,9 +8262,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'B+C Electric')
+            (select id from flow.company where company_name = 'B+C Electric'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =4));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where d.originator_id =4);
 
 INSERT INTO flow.contact (city,
                            company_country_id,
@@ -8218,7 +8291,8 @@ INSERT INTO flow.contact (city,
                            contact_type_id,
                            created_by_id,
                            date_created,
-                           company_id)
+                           company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -8244,9 +8318,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Eco Lux Solar')
+            (select id from flow.company where company_name = 'Eco Lux Solar'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =8));
+    inner join blueraven.deal d on d.customer_id = c.id
+     where  d.originator_id =8);
 
 -- change the flow.contact id sequence so the imported ids don't cause problems
 SELECT setval('flow.customer_id_seq',
@@ -8320,7 +8398,8 @@ INSERT INTO flow.contact (city,
                           contact_type_id,
                           created_by_id,
                           date_created,
-                          company_id)
+                          company_id,
+                          owner_user_position_id)
     (SELECT city,
             (select cc.id
              from flow.company_country cc
@@ -8345,9 +8424,13 @@ INSERT INTO flow.contact (city,
             (select id from flow.contact_type where contact_type='Customer'),
             2350555 as created_by_id,
             created_date,
-            (select id from flow.company where company_name = 'Solenrgi')
+            (select id from flow.company where company_name = 'Solenrgi'),
+            (select up.id
+             from flow.user_position up
+             where up.user_id = d.setter_user_id and primary_flag is true)
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2)
+    inner join blueraven.deal d on d.customer_id = c.id
+     where  d.originator_id =2
        and c.id in ( 109137,135115));
 
 
@@ -10706,7 +10789,8 @@ with position_features as (
                   inner join flow.user_position up on up.user_id =u.id and up.end_date is null
                   inner join flow.position p on p.id = up.position_id
                   cross join position_features
-         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Installation Scheduling Coordinator', 'Install Scheduling Closeout Coordinator',
+         where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Installation Scheduling Coordinator',
+                                                                                           'Install Scheduling Closeout Coordinator',
                               'Installation Analyst', 'Install Scheduling Coordinator', 'Graphic Designer',
                               'Project Coordinator', 'Design Specialist', 'Accounts Payable Clerk', 'Retentions Specialist',
                               'Customer Insights Specialist', 'Human Resources Onboarding Coordinator', 'Operations Logistics',
@@ -10714,7 +10798,7 @@ with position_features as (
                               'Event Coordinator', 'Rafter Upgrade Specialist', 'Human Resources Generalist', 'Compliance Specialist',
                               'Supply Chain Coordinator', 'EPC Partner', 'Placard Operator', 'Bureau Operations Coordinator',
                               'Site Survey Coordinator', 'Inspections Coordinator', 'Structural and Design Engineer',
-                              'Engineer, Content Marketing Specialist', 'Digital Marketing Specialist', 'Permitting Coordinator',
+                              'Engineer', 'Content Marketing Specialist', 'Digital Marketing Specialist', 'Permitting Coordinator',
                               'Reviews Coordinator', 'Marketing Strategy Intern', 'Outreach Marketing Specialist', 'Scheduling Coordinator',
                               'Customer Experience Specialist', 'Retentions Coordinator', 'Payroll Specialist', 'Inspection Quality Coordinator',
                               'Support Coordinator', 'Inspections Scheduler', 'Licensing Coordinator', 'Partners Coordinator',
@@ -10737,22 +10821,22 @@ with position_features as (
          where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Field Service Manager', 'Field Operations Director', 'Field Service Technician Manager', 'Field HR Manager',
                               'Installation Director', 'Installation Director', 'National Installation Manager', 'Regional Installation Manager',
                               'Installation Quality and Safety Manager', 'Installer Manager', 'Installation Scheduling Lead',
-                              'Pre-Installation Director', 'Installation Director', 'Installation Scheduling Manager', 'Design Lead, Design Manager',
+                              'Pre-Installation Director', 'Installation Director', 'Installation Scheduling Manager', 'Design Lead', 'Design Manager',
                               'Executive', 'Marketing Manager', 'EPC Lead', 'Operations Logistics Manager', 'Human Resources Manager',
                               'Operations Director', 'Management Trainee', 'Customer Experience Manager', 'General Operations Lead',
                               'Software Development', 'Controller', 'Quality Assurance Lead', 'Director of Human Resources', 'Marketing Senior Manager',
                               'Operations Manager', 'System Production Manager', 'EPC Operations Manager', 'Support Lead', 'Support Manager',
-                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager', 'Technicians Manager',
+                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager', 'Field Operations Technician Manager',
                               'Inspections Manager', 'Inspections Lead', 'General Counsel', 'Supply Chain Manager', 'Operations Lead',
                               'Product Manager', 'Business Development Manager', 'Customer Insights Lead', 'Permitting Manager', 'EPC Regional',
                               'Marketing Director', 'Service Technician Manager', 'Reviews Lead', 'Mountain Project Manager',
                               'Engineering Manager', 'Project Manager', 'Scheduling Manager', 'Auditor', 'HR Business Partner',
                               'Rep Success Manager', 'Business Intelligence Senior Manager', 'Regional Director', 'Recruiting Budget Manager',
-                              'Retentions Manager', 'Automation, Payroll Manager', 'Supply Chain Director', 'Leader Development Senior Manager',
+                              'Retentions Manager', 'Automation', 'Payroll Manager', 'Supply Chain Director', 'Leader Development Senior Manager',
                               'Partners Manager', 'Partners Lead', 'Service Operations Manager', 'Utilities Lead', 'Utilities Manager',
                               'Office Manager & Executive Assistant', 'Permitting Lead', 'Engineering Lead', 'Market Manager',
                               'Marketing and Business Development Manager', 'Customer Experience Manager', 'Customer Experience Lead',
-                              'Business Development Senior Manager', 'Compliance Manager', 'Licensing Manager', 'BI Analyst, Director of Operations',
+                              'Business Development Senior Manager', 'Compliance Manager', 'Licensing Manager', 'BI Analyst', 'Director of Operations',
                               'VP of Operations', 'Systems Director'))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
@@ -10773,7 +10857,7 @@ with position_features as (
                               'Field Service Technican Lead', 'Field Recruiter', 'Field Service Coordinator', 'Field Service Lead',
                               'Site Surveyor', 'Installer', 'Installation Trainer', 'Installation Lead', 'Installation Trainer',
                               'Installation Coordinator', 'Installation Foreman', 'Supervising Electrician', 'Engineering EIT',
-                              'Crew Lead', 'Electrician, Electrician - Crew', 'Crew Lead + Electrician'))
+                              'Crew Lead', 'Electrician', 'Electrician - Crew', 'Crew Lead + Electrician'))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
 
