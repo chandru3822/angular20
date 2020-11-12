@@ -31,7 +31,6 @@
                               :items="states"
                               autocomplete="new-password"
                               label="State"
-                              :rules="requiredRules"
                               item-text="state"
                               item-value="id"/>
             </v-col>
