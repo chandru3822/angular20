@@ -58,10 +58,10 @@ BEGIN
                 values (v_project_process_step_id, p_cfga, null, null, p_value_to_save::boolean, null, null, null, null, 2350555);
             elsif v_data_type_id = 4 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, p_value_to_save::numeric(10,2), null, null, null, 2350555);
+                values (v_project_process_step_id, p_cfga, null, null, null, null,p_value_to_save::numeric(10,2), null, null, 2350555);
             elsif v_data_type_id = 5 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-                values (v_project_process_step_id, p_cfga, null, null, null, null, null, p_value_to_save::boolean, null, 2350555);
+                values (v_project_process_step_id, p_cfga, null, null, null, p_value_to_save::text, null,null, null, 2350555);
             elsif v_data_type_id = 6 then
                 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, date_value, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
                 values (v_project_process_step_id, p_cfga, null, null, null, null, null, p_value_to_save::int, null, 2350555);
