@@ -28,7 +28,7 @@ public class ContactController {
 
     private final ContactService contactService;
 
-    @Value("${home_url}")
+    @Value("${app.home_url}")
     private String homeUrl;
 
     @GetMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)

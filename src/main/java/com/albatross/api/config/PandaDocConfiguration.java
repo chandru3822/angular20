@@ -9,36 +9,36 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Data
 public class PandaDocConfiguration {
-    @Value("${pandadoc.enabled:false}")
+    @Value("${pandadoc.api.enabled:false}")
     private Boolean enabled;
 
-    @Value("${pandadoc.access_token}")
+    @Value("${pandadoc.api.access_token}")
     private String accessToken;
 
-    @Value("${pandadoc.document.prefix:}")
+    @Value("${pandadoc.api.document.prefix:}")
     private String documentPrefix;
 
-    @Value("${pandadoc.document.delay:30000}")
+    @Value("${pandadoc.api.document.delay:30000}")
     private Integer documentCreationDelay;
 
-    @Value("${pandadoc.notification.delay:5000}")
+    @Value("${pandadoc.api.notification.delay:5000}")
     private Integer notificationDelay;
 
-    @Value("${pandadoc.notification.email:}")
+    @Value("${pandadoc.api.notification.email:}")
     private String notificationEmail;
 
-    @Value("${pandadoc.notification.enabled:false}")
+    @Value("${pandadoc.api.notification.enabled:false}")
     private Boolean notificationEnabled;
 
-    @Value("${pandadoc.role.customer:Customer}")
+    @Value("${pandadoc.api.role.customer:Customer}")
     private String customerRole;
 
-    @Value("${pandadoc.role.closer:Sales Representative}")
+    @Value("${pandadoc.api.role.closer:Sales Representative}")
     private String closerRole;
 
-    @Value("${pandadoc.role.closer:Blue Raven Solar}")
+    @Value("${pandadoc.api.role.support:Blue Raven Solar}")
     private String supportRole;
 
-    @Value("${pandadoc.genericName:Generic}")
+    @Value("${pandadoc.api.genericName:Generic}")
     private String genericName;
 }

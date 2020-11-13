@@ -43,16 +43,16 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class BirdeyeService {
-    @Value(value = "${birdeye.apiKey}")
+    @Value(value = "${birdeye.api.key}")
     private String apiKey;
 
-    @Value(value = "${birdeye.toplevelBusinessId}")
+    @Value(value = "${birdeye.api.toplevelBusinessId}")
     private String toplevelBusinessId;
 
-    @Value(value = "${birdeye.sendInvitesFoReals:false}")
+    @Value(value = "${birdeye.api.sendInvitesForReals:false}")
     private Boolean sendInvitesFoReals;
 
-    @Value(value = "${birdeye.serverDomain}")
+    @Value(value = "${birdeye.api.serverDomain}")
     private Domain serverDomain;
 
     private final SqlCache sqlCache;
