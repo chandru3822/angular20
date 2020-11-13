@@ -121,12 +121,20 @@ public class SmartlistService {
         return field;
     }
 
+  public List<SmartlistFieldAssignment> getAvailableProjectDetailsFields() {
+    return sqlCache.query("smartlist.getAvailableProjectDetailsFields", null, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  }
+
   public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
     return sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 
   public SmartlistFieldAssignment getAssignedFieldById(Long assignmentId) {
     return sqlCache.get("smartlist.getAssignedFieldById", Map.of("id", assignmentId), SmartlistFieldAssignment.class).orElse(null);
+  }
+
+  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId) {
+    return sqlCache.query("smartlist.getAssignedProjectDetailsFields", Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 
     public SmartlistRequirement getRequirementById(Long requirementId) {
@@ -174,6 +182,7 @@ public class SmartlistService {
     params.put("displayOrder", assignment.getDisplayOrder());
     params.put("createdById", user.getId());
     params.put("processStepId", assignment.getProcessStepId());
+    params.put("projectDetailsColumn", assignment.getProjectDetailsColumn());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
     return this.getAssignedFieldById(assignmentId);
   }
@@ -233,7 +242,12 @@ public class SmartlistService {
   }
 
   public SmartlistResult getSmartlistResults(Long smartlistId) {
-      final String query = buildSql(smartlistId);
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+    }
+
+      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
       List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
@@ -241,13 +255,18 @@ public class SmartlistService {
   }
 
   public String getCsv(Long smartlistId) {
-      final List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+    }
+
+    final List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
 
       if (fields.isEmpty()) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
       }
 
-      final String query = buildSql(smartlistId);
+      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
       ArrayList<String> dateFields = new ArrayList<>();
 
@@ -260,19 +279,46 @@ public class SmartlistService {
       return writeCsv(results, fields, dateFields);
   }
 
-  public String buildSql(Long smartlistId) {
+  public String buildProjectDetailsSql(Smartlist smartlist) {
+
+  List<SmartlistFieldAssignment> fields = this.getAssignedProjectDetailsFields(smartlist.getId());
+
+    StringBuilder query = new StringBuilder("\nselect");
+
+    for (SmartlistFieldAssignment f: fields) {
+      if (f.getDataTypeId() == 1) {
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getProjectDetailsColumn()));
+      } else if(f.getDataTypeId() == 2) {
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getProjectDetailsColumn()));
+      } else {
+        query.append(String.format(" \n%s as \"%s\", ", f.getProjectDetailsColumn(), f.getProjectDetailsColumn()));
+      }
+    }
+
+    // Remove comma and space from last select field
+    query.deleteCharAt(query.length() - 1);
+    query.deleteCharAt(query.length() - 1);
+
+    // @TODO: Eventually de-hardcode brs schema
+    query.append("\n from brs.project_details ");
+
+
+    query.append(";");
+
+    //@TODO: humes, logging queries for debugging/testing
+    log.info("\n\n" + query.toString() + "\n\n");
+
+    return query.toString();
+  }
+
+  public String buildSql(Smartlist smartlist) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
-    Smartlist smartlist = this.getSmartlist(smartlistId);
-    if (smartlist == null) {
-      return null;
-    }
-
-    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
-    List<SmartlistRequirement> requirements = this.getRequirements(smartlistId, false);
+    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlist.getId());
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
     List<SmartlistFieldAssignment> joinTables = new ArrayList<>();
 

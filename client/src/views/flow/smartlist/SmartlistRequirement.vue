@@ -26,16 +26,34 @@
 
   <v-card v-if="showNewRequirementForm" class="elevation-1">
     <v-col class="text-left">
-      <v-autocomplete
+
+      <template v-if="isProjectDetails === true">
+        <v-autocomplete
+          v-model="newRequirement.selectedField"
+          label="Field"
+          :items="projectDetailsColumns"
+          item-value="project_details_column"
+          item-text="name"
+          return-object
+          @input="[
+            resetNewField(),
+            getOperators(newRequirement.selectedField.dataTypeId),
+            getDataTypeRequirements(newRequirement.selectedField.dataTypeId)
+          ]"
+        />
+      </template>
+
+      <template v-else>
+        <v-autocomplete
           v-model="newRequirement.objectTypeId"
           label="Object Type"
           :items="companyObjectTypes"
           item-value="objectTypeId"
           item-text="objectType"
           @input="[resetNewObjectType(), getAvailableFields()]"
-      />
+        />
 
-      <v-autocomplete
+        <v-autocomplete
           v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 4"
           v-model="newRequirement.processStepId"
           label="Process Step"
@@ -43,9 +61,9 @@
           item-value="processStepId"
           item-text="processStepName"
           @input="[resetNewProcessStep(), calculateAvailableFields()]"
-      />
+        />
 
-      <v-autocomplete
+        <v-autocomplete
           v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId !== 4 && newRequirement.objectTypeId != null)"
           v-model="newRequirement.selectedField"
           label="Field"
@@ -59,7 +77,8 @@
             getProcessStepFieldData(),
             checkSmartlistSystemList()
           ]"
-      />
+        />
+      </template>
 
       <v-autocomplete
         v-if="newRequirement.selectedField"
@@ -353,6 +372,14 @@ export default {
     canEdit: {
       type: Boolean,
       default: false
+    },
+    isProjectDetails: {
+      type: Boolean,
+      default: false
+    },
+    projectDetailsColumns: {
+      type: Array,
+      default: () => []
     }
   },
   data () {

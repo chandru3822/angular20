@@ -106,6 +106,13 @@
                     label="Public"
                   />
                 </v-col>
+
+                <v-col cols="6" md="3">
+                  <v-checkbox
+                    v-model="smartlist.projectDetails"
+                    label="Project Details"
+                  />
+                </v-col>
               </v-row>
             </v-card-text>
           </v-col>
@@ -140,33 +147,44 @@
 
       <v-card v-if="showNewFieldForm" class="elevation-1">
         <v-col class="text-left">
-          <v-autocomplete
-            v-model="newField.objectTypeId"
-            label="Object Type"
-            :items="companyObjectTypes"
-            item-value="objectTypeId"
-            item-text="objectType"
-            @input="getAvailableFields"
-          />
 
-          <v-autocomplete
-            v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
-            v-model="newField.processStepId"
-            label="Process Step"
-            :items="availableProcessSteps"
-            item-value="processStepId"
-            item-text="processStepName"
-            @input="calculateAvailableFields"
-          />
+          <template v-if="smartlist.projectDetails === true">
+            <v-autocomplete
+              v-model="newField.projectDetailsColumn"
+              label="Field"
+              :items="projectDetailsColumns"
+            />
+          </template>
 
-          <v-autocomplete
-            v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId !== 4 && newField.objectTypeId != null)"
-            v-model="newField.selectedField"
-            label="Field"
-            :items="availableFields"
-            item-text="name"
-            return-object
-          />
+          <template v-else>
+            <v-autocomplete
+              v-model="newField.objectTypeId"
+              label="Object Type"
+              :items="companyObjectTypes"
+              item-value="objectTypeId"
+              item-text="objectType"
+              @input="getAvailableFields"
+            />
+
+            <v-autocomplete
+              v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
+              v-model="newField.processStepId"
+              label="Process Step"
+              :items="availableProcessSteps"
+              item-value="processStepId"
+              item-text="processStepName"
+              @input="calculateAvailableFields"
+            />
+
+            <v-autocomplete
+              v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId !== 4 && newField.objectTypeId != null)"
+              v-model="newField.selectedField"
+              label="Field"
+              :items="availableFields"
+              item-text="name"
+              return-object
+            />
+          </template>
 
           <v-btn
             text
@@ -245,6 +263,8 @@
       :reset-form="resetRequirementForm"
       :disabled="!smartlist.id"
       :can-edit="canEdit"
+      :is-project-details="smartlist.projectDetails"
+      :project-details-columns="projectDetailsColumns"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -360,7 +380,8 @@ export default {
         {objectTypeId: 1, objectType: 'Project'},
         {objectTypeId: 2, objectType: 'Contact'}
       ],
-      requiredRules: constants.BASIC_REQUIRED_RULE
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      projectDetailsColumns: []
     }
   },
   created () {
@@ -369,13 +390,14 @@ export default {
       this.getAssignedFields()
       this.getRequirements()
       this.getLogic()
+      this.getProjectDetailsColumns()
     }
     this.getOperations()
     this.getCompanyObjectTypes()
   },
   computed: {
     isNewFieldButtonDisabled () {
-      return !this.newField?.selectedField
+      return !this.newField?.selectedField && !this.newField?.projectDetailsColumn
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
@@ -450,6 +472,16 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
+    async getProjectDetailsColumns () {
+      try {
+        const {data} = await getRequest(`/smartlist/availableProjectDetailsFields`)
+        this.projectDetailsColumns = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching project details fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     async getOperations () {
       try {
         const {data} = await getRequest(`/operation`)
@@ -487,7 +519,8 @@ export default {
           ...this.newField.selectedField,
           smartlistId: this.smartlist.id,
           displayOrder: this.assignedFields.length + 1,
-          processStepId: this.newField.processStepId || null
+          processStepId: this.newField.processStepId || null,
+          projectDetailsColumn: this.newField.projectDetailsColumn
         })
         this.assignedFields.push(data)
         this.resetNewFieldForm()
@@ -507,7 +540,8 @@ export default {
           ...requirement,
           smartlistId: this.smartlist.id,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
-          displayOrder: maxNumber + 1
+          displayOrder: maxNumber + 1,
+          projectDetailsColumn: requirement.projectDetailsColumn
         })
         this.requirements.push(data)
         this.resetRequirementForm = true
