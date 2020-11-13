@@ -4938,7 +4938,7 @@ with active_step as (
                  WHERE process_step_status_type = 'Active'
                    and company_id = (select id from flow.company where company_name = 'Sun Run')) AS process_step_status_id,
                 2350555 as created_by_id,
-                coalesce(greatest(ahj_inspection_date, ahj_reinspection_date, ahj_reinspectio((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')n_b_date,now())),
+                coalesce(greatest(ahj_inspection_date, ahj_reinspection_date, ((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now())),
                 (now() + interval '1 day')
          from flow.project p
                   inner join blueraven.deal d on d.id = p.id
@@ -4985,7 +4985,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11202 then greatest(ahj_inspection_passed_date,ahj_reinspection_date,ahj_reinsp((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')ection_b_date)
+            case when p.custom_field_group_assignment_id = 11202 then greatest(ahj_inspection_passed_date,ahj_reinspection_date,((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                  when p.custom_field_group_assignment_id = 9226 then ahj_inspection_brs_no_show
                  else null end,
             case when p.custom_field_group_assignment_id = 3129 then (select id from flow.list_of_value where parent_id = 1588
@@ -13776,7 +13776,7 @@ with process_step1 as (
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
                                                                         and company_id = (select id from flow.company where company_name = 'Sun Run')) AS process_step_status_id,
                 2350555 as created_by_id,
-                coalesce(regen_re((regen_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')quested_date,now()),
+                coalesce(((regen_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now()),
                 ((regen_c_complete_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
                  ,now()
          FROM flow.project
