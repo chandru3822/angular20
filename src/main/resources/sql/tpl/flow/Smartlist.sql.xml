@@ -463,7 +463,10 @@ select sr.id,
          pdc.field_to_update else
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
-       case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end as data_type_id,
+       case when sr.project_details_column is not null then
+         pdc.data_type_id else
+         case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
+       end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
            'id', dtr.id,
            'dataTypeValue', dtr.data_type_value,
@@ -565,7 +568,10 @@ select sr.id,
          pdc.field_to_update else
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
-       case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end as data_type_id,
+       case when sr.project_details_column is not null then
+         pdc.data_type_id else
+         case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
+       end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
            'id', dtr.id,
            'dataTypeValue', dtr.data_type_value,

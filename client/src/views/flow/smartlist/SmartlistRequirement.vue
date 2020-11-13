@@ -222,30 +222,43 @@
     <template #expanded-item="{headers}">
       <tr>
         <td :colspan="headers.length" class="text-left expanded-row">
-          <v-autocomplete
-            v-model="expandedRequirement"
-            :items="[expandedRequirement]"
-            label="Object Type"
-            item-text="objectType"
-            disabled
-          />
 
-          <v-autocomplete
-            v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 4"
-            v-model="expandedRequirement"
-            :items="[expandedRequirement]"
-            label="Process Step"
-            item-text="processStepName"
-            disabled
-          />
+          <template v-if="isProjectDetails === true">
+            <v-autocomplete
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Field"
+              item-text="name"
+              disabled
+            />
+          </template>
 
-          <v-autocomplete
-            v-model="expandedRequirement"
-            :items="[expandedRequirement]"
-            label="Field"
-            item-text="name"
-            disabled
-          />
+          <template v-else>
+            <v-autocomplete
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Object Type"
+              item-text="objectType"
+              disabled
+            />
+
+            <v-autocomplete
+              v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 4"
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Process Step"
+              item-text="processStepName"
+              disabled
+            />
+
+            <v-autocomplete
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Field"
+              item-text="name"
+              disabled
+            />
+          </template>
 
           <v-autocomplete
             v-model="expandedRequirement.operatorTypeId"
