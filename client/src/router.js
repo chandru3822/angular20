@@ -889,6 +889,17 @@ export default new Router({
         }
       ]
     }, {
+          path: '/electronicDocuments',
+          name: 'electronicDocuments',
+          meta: { title: 'Albatross - Electronic Documents'},
+          component: () => import (/* webpackChunkName: "finances" */ './views/flow/electronicDocuments/ElectronicDocuments.vue'),
+          children: [
+              {
+                  path: 'request',
+                  component: () => import (/* webpackChunkName: "request" */ './views/flow/electronicDocuments/Request.vue')
+              }
+          ]
+      }, {
       path: '/installation-agreements',
       name: 'installation-agreements',
       meta: { title: 'Albatross - Installation Agreements'},
