@@ -8433,7 +8433,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 436 then utility_rebate_application_signed_dateelse null end,
+            case when p.custom_field_group_assignment_id = 436 then utility_rebate_application_signed_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -8472,7 +8472,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 436 then utility_rebate_application_signed_dateelse null end,
+            case when p.custom_field_group_assignment_id = 436 then utility_rebate_application_signed_date else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
