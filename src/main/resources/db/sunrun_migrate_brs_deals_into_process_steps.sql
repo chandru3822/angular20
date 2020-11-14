@@ -7353,7 +7353,7 @@ with process_step1 as (
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
                                                                         and company_id = (select id from flow.company where company_name = 'Sun Run')) AS process_step_status_id,
                 2350555 as created_by_id,
-                coalesce(ahj_inspect((ahj_inspection_work_required  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')ion_work_required,now()),
+                coalesce(((ahj_inspection_work_required  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now()),
                 d1.complete_date
                  ,date_trunc('second', coalesce(complete_date,now())::timestamp)+ ((random() * 1000 ) + 1) * interval '1 milliseconds',
                 d1.org_id,

@@ -13,6 +13,7 @@ declare
     v_number_of_pitch integer;
     v_loan_type varchar;
 BEGIN
+
     select ppscfv.int_value
     into v_proposal_history_id
     from flow.project_process_step pps
@@ -22,6 +23,7 @@ BEGIN
     where pps.id = p_project_process_step_id
       and cf2.field_name = 'Proposal Log Number';
 
+
     select ppscfv.int_value
     into v_design_log_history_id
     from flow.project_process_step pps
@@ -30,6 +32,7 @@ BEGIN
              inner join flow.custom_field cf2  on cf2.id = cfga2.custom_field_id
     where pps.id = p_project_process_step_id
       and cf2.field_name = 'Design Log Number';
+
 
     select substring(loan_type,1,position(' ' in loan_type)-1)
     into v_loan_type
@@ -262,8 +265,8 @@ BEGIN
                  where plh.id = v_proposal_history_id) as t
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
-        --raise notice 'cfga% value %',_key,_value;
-        perform flow.set_pps_cfv(p_project_id, _key::integer, _value);
+       -- raise notice 'cfga% value %',_key,_value;
+        perform flow.set_pps_cfv(p_project_id,2350555, _key::integer, _value);
     END LOOP;
 
 

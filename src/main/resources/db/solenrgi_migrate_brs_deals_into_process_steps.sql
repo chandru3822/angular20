@@ -89,7 +89,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1646 then coalesce(ad.start_date,d2.appointment_date)
                  when p.custom_field_group_assignment_id = 1919 then coalesce(ad.end_date,d2.appointment_date) else null end,
              --   when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 1659 then blueraven.get_user_position_for_closer(d2.id::integer,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')n::date) else null end,
+            case when p.custom_field_group_assignment_id = 1659 then blueraven.get_user_position_for_closer(d2.id::integer,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date) else null end,
             case when p.custom_field_group_assignment_id = 11916 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -1049,7 +1049,7 @@ with process_step1 as (
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
                 2350555 as created_by_id,
-                coalesce(((final_design_sent_to_customer_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')_customer_date,now()),
+                coalesce(((final_design_sent_to_customer_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now()),
                 greatest(final_design_signed_date,agreement_signed_date)
          ,now()
 FROM flow.project
@@ -4938,7 +4938,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
              WHERE process_step_status_type = 'Active'
                and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
             2350555 as created_by_id,
-            coalesce(greatest(ahj_inspection_date, ahj_reinspection_date, ahj_reins((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')pection_b_date,now())),
+            coalesce(greatest(ahj_inspection_date, ahj_reinspection_date,((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now())),
 (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
@@ -4985,7 +4985,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 11201 then greatest(ahj_inspection_passed_date,ahj_reinspection_date,ahj_reinsp((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')ection_b_date)
+            case when p.custom_field_group_assignment_id = 11201 then greatest(ahj_inspection_passed_date,ahj_reinspection_date,((ahj_reinspection_b_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                   when p.custom_field_group_assignment_id = 9225 then ahj_inspection_brs_no_show
                 else null end,
             case when p.custom_field_group_assignment_id = 3128 then (select id from flow.list_of_value where parent_id = 1587
@@ -13624,7 +13624,7 @@ with active_step as (
                 (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
                 2350555 as created_by_id,
-                coalesce(regen_((regen_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')requested_date,now()),
+                coalesce(((regen_requested_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now()),
 (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
