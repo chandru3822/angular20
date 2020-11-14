@@ -70,9 +70,6 @@
 <style lang="scss">
 @import "@/styles/main.scss";
 
-#app .v-slide-group__prev {
-  display: none !important;
-}
 </style>
 
 <style scoped lang="scss">

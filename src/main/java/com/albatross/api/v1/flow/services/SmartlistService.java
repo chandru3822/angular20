@@ -525,7 +525,7 @@ public class SmartlistService {
       for (SmartlistRequirement r : requirements) {
           String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
-          String referenceLocation;
+          String referenceLocation = "";
 
           if (r.getSmartlistSystemListId() != null) {
             String referenceTable = "";
@@ -687,7 +687,29 @@ public class SmartlistService {
                   }
                 }
               } else {
-                referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+                if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
+                  referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+                } else if (r.getObjectTypeId() == 4) {
+                  String joinTable;
+                  try {
+                    joinTable = joinTables.stream()
+                      .filter(t -> t.getProcessStepId() != null && r.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
+                      .map(SmartlistFieldAssignment::getReferenceTable)
+                      .findFirst()
+                      .orElse(null);
+
+                    if (joinTable == null) {
+                      joinTable = UUID.randomUUID().toString();
+                    }
+                  } catch (NullPointerException e) {
+                    joinTable = UUID.randomUUID().toString();
+                  }
+                  additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinTable, joinTable, joinTable, r.getProcessStepId()));
+                  if (smartlist.isMainProcessSteps()) {
+                    additionalJoins.append(String.format("and \"%s\".main is true ", joinTable));
+                  }
+                  referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
+                }
               }
           }
 

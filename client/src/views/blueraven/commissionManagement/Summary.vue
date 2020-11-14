@@ -20,7 +20,7 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.closer_user}}</td>
               <td class="text-left">{{item.total_commission | currency('$', 2)}}</td>
               <td class="text-left">{{item.total_overrides | currency('$', 2)}}</td>

@@ -162,6 +162,14 @@ public class CommissionManagementService {
         return result.orElse("{}");
     }
 
+    public String getPlans(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+
+        Optional<String> users = sqlCache.get("commissionManagement.getPlans", params, new SingleColumnRowMapper<>(String.class));
+        return users.orElse("[]");
+    }
+
     public String getCommissionPlanUsers(Long id) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", id);

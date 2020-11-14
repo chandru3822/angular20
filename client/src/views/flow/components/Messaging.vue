@@ -216,6 +216,7 @@ export default {
 <style lang="scss">
 .message-container {
   min-height: 400px;
+  margin-top: 5px;
 }
 
 .sc-chat-window {

@@ -99,6 +99,9 @@
     created() {
       this.getOrgs()
       this.getUsers()
+      if(null !== this.userId) {
+        this.getApptLength()
+      }
     },
     methods: {
       async getOrgs() {

@@ -34,7 +34,7 @@ public class UserController {
     private final CommunicationService communicationService;
     private final UserService userService;
 
-    @Value("${home_url}")
+    @Value("${app.home_url}")
     private String homeUrl;
 
     @PostMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)

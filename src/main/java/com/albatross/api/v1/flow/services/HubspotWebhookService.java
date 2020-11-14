@@ -28,7 +28,7 @@ public class HubspotWebhookService {
     private final RequestConfig requestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
     private final CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
 
-    @Value(value = "${ricochet.token}")
+    @Value(value = "${ricochet.api.token}")
     private String token;
 
     public void postLeadToRicochet(RicochetLead lead) throws Exception {

@@ -1,11 +1,13 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.config.PandaDocConfiguration;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.TemplatingEngineService;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -43,6 +45,9 @@ public class PandaDocService {
 
   @Autowired
   private NamedParameterJdbcTemplate jdbc;
+
+  @Autowired
+  private SecurityService securityService;
 
   @Autowired
   private TemplatingEngineService templateService;
@@ -139,6 +144,14 @@ public class PandaDocService {
     return tplId;
   }
 
+  public JSONArray findTemplatesByName(String name) throws Exception {
+    log.info("PANDADOC: looking for template name='{}'", name);
+    String url = "/templates?q=" + URLEncoder.encode(name, "UTF-8");
+    HttpResponse resp = GET(url);
+    JSONObject out = resp.getJSON();
+    return out.getJSONArray("results");
+  }
+
   /**
    * Retrieve the details about the specified PandaDoc template.
    *
@@ -203,6 +216,21 @@ public class PandaDocService {
     // Set as request sent
 
     return respBody.toString();
+  }
+
+  public String generateElectronicDocument (Long projectId, String templateId) throws Exception {
+    log.info("PANDADOC: creating document for project {} using template {}", projectId, templateId);
+    JSONObject template = getTemplateDetails(templateId);
+    log.debug("PANDADOC: template: {}", template);
+
+    List<String> templateFields = getExpectedFields(template);
+    JSONObject tokens = getProjectTokens(projectId);
+    JSONObject body = getDocumentBody(templateId, templateFields, tokens);
+
+    setRecipientInfoElecDocs(template, tokens, body);
+    HttpResponse resp = POST("/documents", body.toString());
+    JSONObject respBody = resp.getJSON();
+    return String.format("https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets", respBody.get("id"));
   }
 
   /**
@@ -326,6 +354,43 @@ public class PandaDocService {
     body.append("recipients", closer);
 
     return body;
+  }
+
+  private void setRecipientInfoElecDocs(JSONObject template, JSONObject tokens, JSONObject body) {
+    JSONArray roles = template.getJSONArray("roles");
+    boolean hasCustomerRole = false;
+    boolean hasBRSRole = false;
+
+    if (!roles.isEmpty()) {
+        for (int i = 0; i < roles.length(); i++) {
+            JSONObject role = roles.getJSONObject(i);
+            if (role.get("name").equals("Customer")) {
+                hasCustomerRole = true;
+            }
+            else if (role.get("name").equals("Blue Raven Solar")) {
+                hasBRSRole = true;
+            }
+        }
+    }
+
+    JSONObject brs = new JSONObject();
+    User user = securityService.getCurrentUser();
+    brs.put("first_name", user.getFirstName());
+    brs.put("last_name", user.getLastName());
+    brs.put("email", user.getEmail());
+    if (hasBRSRole) {
+        brs.put("role", pandaDoc.getSupportRole());
+    }
+    body.append("recipients", brs);
+
+    JSONObject customer = new JSONObject();
+    customer.put("first_name", tokens.get("Deal.Contact.FirstName"));
+    customer.put("last_name", tokens.get("Deal.Contact.LastName"));
+    customer.put("email", tokens.isNull("Deal.Contact.Email") ? "jberns03@gmail.com" : tokens.get("Deal.Contact.Email"));
+    if (hasCustomerRole) {
+        customer.put("role", pandaDoc.getCustomerRole());
+    }
+    body.append("recipients", customer);
   }
 
   /**
@@ -545,6 +610,62 @@ public class PandaDocService {
     String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))
       .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
     tokens.put("Date", today);
+
+    return tokens;
+  }
+
+  /**
+   * Collect data about a project that will be useful in populating a PandaDoc for Electronic Documents
+   * document.
+   *
+   * @param projectId
+   * @return
+   * @throws JSONException
+   */
+  public JSONObject getProjectTokens(Long projectId) throws JSONException {
+    JSONObject tokens = new JSONObject();
+
+    try {
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("projectId", projectId);
+        Map<String, Object> result = jdbc.queryForObject(sqlCache.getByKey("electronicDocument.getProjectsDetails"), parameters, new ColumnMapRowMapper());
+
+        tokens.put("Deal.Id", result.get("id"));
+        tokens.put("Deal.Name", result.get("project_name"));
+        tokens.put("Deal.Contact.Address", joinIfPresent(", ",
+            result.get("street1"),
+            result.get("street2"),
+            result.get("city"),
+            result.get("state"),
+            result.get("postal_code")));
+        tokens.put("Deal.Contact.FirstName", result.get("first_name"));
+        tokens.put("Deal.Contact.LastName", result.get("last_name"));
+        tokens.put("Deal.Contact.Name", result.get("first_name") + " " + result.get("last_name"));
+        tokens.put("Deal.Contact.Email", result.get("email"));
+
+        // use the customer's mobile phone if their landline is not present
+        tokens.put("Deal.Contact.MobilePhone", result.get("phone"));
+        tokens.put("Deal.Contact.Phone", result.get("phone"));
+
+        // make bits of the customer's address usable individually
+        tokens.put("Deal.Address.State", result.get("state"));
+        String street = joinIfPresent(" ",
+            result.get("street1"),
+            result.get("street2"));
+        tokens.put("Deal.Address.Street", street);
+        tokens.put("Deal.Address.City", result.get("city"));
+        tokens.put("Deal.Address.StateAbbr", result.get("abbreviation"));
+        tokens.put("Deal.Address.PostalCode", result.get("postal_code"));
+
+        // include the current date for use in the template
+        String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))
+            .format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        tokens.put("Date", today);
+
+    } catch (EmptyResultDataAccessException e) {
+        log.warn("PANDADOC Error getting proposal log values: {}", e);
+        e.printStackTrace();
+    }
 
     return tokens;
   }

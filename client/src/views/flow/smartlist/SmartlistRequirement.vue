@@ -125,6 +125,7 @@
         v-if="newRequirement.dataTypeRequirementId && dataTypeRequirements.find(r => r.id === newRequirement.dataTypeRequirementId).secondaryRequirement"
         v-model="newRequirement.secondaryRequirementValue"
         label="Value"
+        type="number"
         placeholder="Enter a value"
       />
 
@@ -290,6 +291,7 @@
               v-if="shouldShowEditFormValueInput"
               v-model="expandedRequirement.secondaryRequirementValue"
               label="Value"
+              type="number"
               placeholder="Enter a value"
           />
 

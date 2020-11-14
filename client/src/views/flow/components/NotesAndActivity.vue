@@ -3,7 +3,7 @@
     <v-toolbar color="transparent" class="elevation-0">
       <v-toolbar-title>Notes</v-toolbar-title>
     </v-toolbar>
-    <v-card>
+    <v-card class="square-card">
       <v-toolbar flat dense color="white" class="elevation-0">
         <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
       </v-toolbar>
@@ -233,7 +233,7 @@
                             <v-btn
                               color="primaryCustom"
                               text
-                              @click="deleteNote(cn, false)">
+                              @click="deleteNote(cn, true, item)">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -259,6 +259,7 @@
 
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
 
 import Vue2Filters from "vue2-filters";
 
@@ -296,11 +297,14 @@ export default {
     }
   },
   methods: {
-    async deleteNote(n, isChildNote) {
+    async deleteNote(n, isChildNote, item) {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         await deleteRequest(`/note/${n.id}`)
         n.archived = true
+        if(isChildNote) {
+          item.childNotes = item.childNotes.filter(cn => !cn.archived)
+        }
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
