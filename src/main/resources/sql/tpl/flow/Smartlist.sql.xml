@@ -340,6 +340,7 @@ inner join (
 ) pdc on pdc.field_to_update = sfa.project_details_column
 where sfa.smartlist_id = :smartlistId and
       sfa.archived is not true
+order by sfa.display_order
 ]]></smartlist.getAssignedProjectDetailsFields>
 
 <smartlist.getAssignedFieldById><![CDATA[
