@@ -268,30 +268,31 @@ public class SmartlistService {
 
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
-      ArrayList<String> dateFields = new ArrayList<>();
+//      ArrayList<String> dateFields = new ArrayList<>();
 
-      for(SmartlistFieldAssignment field : fields) {
-         if (field.getDataTypeId() == 1) {
-             dateFields.add(field.getName());
-         }
-      }
+//      for(SmartlistFieldAssignment field : fields) {
+//         if (field.getDataTypeId() == 1) {
+//             dateFields.add(field.getName());
+//         }
+//      }
 
-      return writeCsv(results, fields, dateFields);
+      return writeCsv(results, fields);
   }
 
   public String buildProjectDetailsSql(Smartlist smartlist) {
 
-  List<SmartlistFieldAssignment> fields = this.getAssignedProjectDetailsFields(smartlist.getId());
+    List<SmartlistFieldAssignment> fields = this.getAssignedProjectDetailsFields(smartlist.getId());
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
     StringBuilder query = new StringBuilder("\nselect");
 
     for (SmartlistFieldAssignment f: fields) {
       if (f.getDataTypeId() == 1) {
-        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getProjectDetailsColumn()));
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getProjectDetailsColumn()));
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else {
-        query.append(String.format(" \n%s as \"%s\", ", f.getProjectDetailsColumn(), f.getProjectDetailsColumn()));
+        query.append(String.format(" \n%s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       }
     }
 
@@ -301,7 +302,22 @@ public class SmartlistService {
 
     // @TODO: Eventually de-hardcode brs schema
     query.append("\n from brs.project_details ");
+    query.append("\n where ");
 
+    for (SmartlistRequirement r: requirements) {
+      String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
+
+      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4) {
+        query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, getRequirementValue(r)));
+      } else {
+        query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, getRequirementValue(r)));
+      }
+    }
+
+    if (!requirements.isEmpty()) {
+      // remove the last "and "
+      query = query.delete(query.length() - 5, query.length());
+    }
 
     query.append(";");
 
@@ -812,16 +828,16 @@ public class SmartlistService {
     return query.toString();
   }
 
-  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, ArrayList<String> dateFields) {
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers) {
     CsvSchema.Builder builder = CsvSchema.builder();
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli
     for (int i = 0; i < data.size(); i++) {
       Map<String, Object> r = data.get(i);
 
-      for (String field : dateFields) {
-        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
-      }
+//      for (String field : dateFields) {
+//        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
+//      }
       data.set(i, r);
     }
 
