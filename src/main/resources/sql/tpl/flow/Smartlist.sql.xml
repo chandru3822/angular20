@@ -214,7 +214,19 @@ order by name,
 <smartlist.getAvailableProjectDetailsFields><![CDATA[
 select distinct field_to_update as project_details_column,
                 display_name as name,
-                data_type_id
+                case when field_to_update = 'ahj' then 8 else data_type_id end as data_type_id,
+                case when field_to_update = 'ahj' then true end as has_list_values,
+                case when field_to_update = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+                case when field_to_update = 'ahj' then (
+                   select to_jsonb(array_agg(row_to_json(listOfValues)))
+                   from (
+                          select a.id,
+                                 a.name
+                          from brs.ahj a
+                          where archived is not true
+                          order by a.name
+                        ) listOfValues
+                ) end as list_of_values
 from brs.project_details_config
 order by field_to_update
 ]]></smartlist.getAvailableProjectDetailsFields>
@@ -247,7 +259,7 @@ select
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
-  cf.custom_field_sql_key,
+  case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
   (select row_to_json(f) from(
       select
         cfga1.custom_field_group_id as "customFieldGroupId",
@@ -332,7 +344,8 @@ select sfa.id,
        sfa.smartlist_id,
        sfa.project_details_column,
        pdc.display_name as name,
-       pdc.data_type_id
+       case when sfa.project_details_column = 'ahj' then 8 else pdc.data_type_id end as data_type_id,
+       case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 inner join (
   select distinct field_to_update, display_name, data_type_id
@@ -372,7 +385,7 @@ select
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
-  cf.custom_field_sql_key
+  case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
@@ -450,7 +463,7 @@ select sr.id,
        sf.join_column,
        sf.smartlist_system_list_id,
        case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
-       cf.custom_field_sql_key,
+       case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
        case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
@@ -464,7 +477,7 @@ select sr.id,
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
        case when sr.project_details_column is not null then
-         pdc.data_type_id else
+         case when sr.project_details_column = 'ahj' then 8 else pdc.data_type_id end else
          case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
        end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
@@ -555,7 +568,7 @@ select sr.id,
        sf.join_column,
        sf.smartlist_system_list_id,
        case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
-       cf.custom_field_sql_key,
+       case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
        case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
@@ -569,7 +582,7 @@ select sr.id,
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
        case when sr.project_details_column is not null then
-         pdc.data_type_id else
+         case when sr.project_details_column = 'ahj' then 8 else pdc.data_type_id end else
          case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
        end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(

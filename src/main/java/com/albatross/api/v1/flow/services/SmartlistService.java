@@ -268,13 +268,6 @@ public class SmartlistService {
 
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
-//      ArrayList<String> dateFields = new ArrayList<>();
-
-//      for(SmartlistFieldAssignment field : fields) {
-//         if (field.getDataTypeId() == 1) {
-//             dateFields.add(field.getName());
-//         }
-//      }
 
       return writeCsv(results, fields);
   }
@@ -284,13 +277,24 @@ public class SmartlistService {
     List<SmartlistFieldAssignment> fields = this.getAssignedProjectDetailsFields(smartlist.getId());
     List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
-    StringBuilder query = new StringBuilder("\nselect");
+    StringBuilder query = new StringBuilder();
+
+    long ahjCount = fields.stream().filter(f -> Objects.equals(f.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
+    ahjCount += requirements.stream().filter(r -> Objects.equals(r.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
+
+    if (ahjCount > 0) {
+      query.append(String.format("\nwith \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
+    }
+
+    query.append("\nselect");
 
     for (SmartlistFieldAssignment f: fields) {
       if (f.getDataTypeId() == 1) {
         query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if(f.getDataTypeId() == 2) {
         query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+      } else if (f.getCustomFieldSqlKey() != null) {
+        query.append(String.format(" \n\"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
       } else {
         query.append(String.format(" \n%s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       }
@@ -302,7 +306,14 @@ public class SmartlistService {
 
     // @TODO: Eventually de-hardcode brs schema
     query.append("\nfrom brs.project_details");
-    query.append("\nwhere");
+
+    if (ahjCount > 0) {
+      query.append("\nleft join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
+    }
+
+    if (!requirements.isEmpty()) {
+      query.append("\nwhere");
+    }
 
     for (SmartlistRequirement r: requirements) {
       String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
