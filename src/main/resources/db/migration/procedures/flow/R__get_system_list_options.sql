@@ -96,6 +96,8 @@ BEGIN
               and ot.archived is not true
             order by name;
      when v_system_list_id = 3 and p_sub_options is true then
+         -- this doesn't require that the orgs be made available to children because the entire type was made available to the child in the step above
+         -- org.make_available is only used for system_list_id = 1
          RETURN QUERY
              select o.id,
                     o.org_name::text as name

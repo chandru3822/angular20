@@ -72,7 +72,7 @@ public class ScheduleController {
   @Data
   public static class ResourceRequest {
     private List<Long> systemListOptionIds;
-    private Long companyId, systemListId;
+    private Long companyId, systemListId, resourceId;
   }
 
 }

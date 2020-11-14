@@ -207,7 +207,7 @@
 
 <schedule.getAvailableProjectResources><![CDATA[
     select *
-      from flow.get_system_list_options(:companyId::integer, :systemListId::integer, true, array[ :systemListOptionIds ]::integer[])
+      from flow.get_system_list_options(:companyId::integer, :systemListId::integer, true, array[ :systemListOptionIds ]::integer[], :resourceId::integer)
 ]]></schedule.getAvailableProjectResources>
 
 <schedule.getProject>
