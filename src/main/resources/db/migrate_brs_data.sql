@@ -10746,10 +10746,36 @@ alter table flow.state drop column if exists time_zone_abbreviation;
 insert into  flow.user_org_access(org_id, user_id, date_created,
                                   created_by_id
 )
-    (select distinct  unnest(calendar_org_ids) as org_id,id as user_id,
-                      now(),2350555
-     from blueraven.user
-     where calendar_org_ids is not null);
+select * from (
+                  (select distinct  unnest(calendar_org_ids) as org_id,id as user_id,
+                                    now(),2350555
+                   from blueraven.user
+                   where calendar_org_ids is not null
+                  )) as foo
+where foo.user_id not in (select  user_id
+                          from blueraven.role_permission rp
+                                   inner join blueraven.role r on r.id = rp.role_id
+                                   inner join blueraven.permission p on p.id = rp.permission_id
+                                   inner join blueraven.user_role ur on ur.role_id = r.id
+                                   inner join blueraven."user" u on u.id = ur.user_id
+                          where  p.id = 201);
+
+
+insert into  flow.user_org_access(org_id, user_id, date_created,
+                                  created_by_id
+)
+with all_org_calendars as (
+    select distinct  unnest(calendar_org_ids) as org_id
+    from blueraven."user"
+    where id = 2350555
+) select  distinct org_id,user_id,now(),2350555
+from blueraven.role_permission rp
+         inner join blueraven.role r on r.id = rp.role_id
+         inner join blueraven.permission p on p.id = rp.permission_id
+         inner join blueraven.user_role ur on ur.role_id = r.id
+         inner join blueraven."user" u on u.id = ur.user_id
+         cross join all_org_calendars
+where  p.id = 201;
 
 grant connect on database blueraven_uat to brs_users;
 grant usage on schema public to brs_users;

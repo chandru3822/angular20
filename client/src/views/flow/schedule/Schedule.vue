@@ -434,11 +434,13 @@
       async getResources(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          item.resources = []
 
           let params = {
             companyId: item.companyId,
             systemListId: item.systemListId,
-            systemListOptionIds: item.systemListOptionIds
+            systemListOptionIds: item.systemListOptionIds,
+            resourceId: item.resourceId
           }
           const {data} = await postRequest(`/schedule/projectResources`, params)
           item.resources = data

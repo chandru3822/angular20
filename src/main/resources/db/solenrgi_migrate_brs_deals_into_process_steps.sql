@@ -4967,10 +4967,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                       ahj_reinspection_outcome = 'Pass' OR
                       ahj_reinspection_b_outcome = 'Pass') AND
                      ahj_inspection_passed_date IS NULL) or
-                    (additional_ahj_inspection_outcome = 'Pass' AND additional_ahj_inspection_verified_date IS NULL) or
-                    (d.ahj_mid_point_inspection_outcome != 'Pass' AND
-                     ((d.ahj_mid_point_inspection_date::date <= (now() at time zone 'US/Mountain')::date) OR
-                      (d.ahj_mid_point_inspection_date::date = (now() at time zone 'US/Mountain')::date AND extract(hour from (now() at time zone sd1.time_zone_abbreviation)) >= 15))))))returning *),
+                    (additional_ahj_inspection_outcome = 'Pass' AND additional_ahj_inspection_verified_date IS NULL))))returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga

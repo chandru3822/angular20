@@ -95,6 +95,7 @@ public class ScheduleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", req.getCompanyId());
     params.put("systemListId", req.getSystemListId());
+    params.put("resourceId", req.getResourceId());
     params.put("systemListOptionIds", req.getSystemListOptionIds());
     List<ListOfValue> results = sqlCache.query("schedule.getAvailableProjectResources", params, ListOfValue.class);
     return results;
