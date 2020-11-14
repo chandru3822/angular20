@@ -954,3 +954,7 @@ update flow.project_process_step_custom_field_value ppscfv2
 set text_value = un.note
 from update_notes un
 where un.id = ppscfv2.id;
+
+
+drop trigger if exists contact_audit_trg ON flow.contact_custom_field_value;
+drop trigger if exists project_audit_trg ON flow.project_custom_field_value;

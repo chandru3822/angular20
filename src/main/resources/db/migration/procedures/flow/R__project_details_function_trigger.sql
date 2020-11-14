@@ -69,36 +69,16 @@ CREATE OR REPLACE FUNCTION flow.update_project_details_process_steps()
 $body$
 
 declare
-    v_field_to_update character varying;
-    v_data_type_id    integer;
-    v_config_id       integer;
-    v_project_id      integer;
-    v_sql             character varying;
-    v_value           character varying;
-    v_user_id         integer;
-    v_cfga_id         integer;
-    is_list_of_value  boolean default false;
+    v_field_to_update        character varying;
+    v_second_field_to_update character varying;
+    v_data_type_id           integer;
+    v_config_id              integer;
+    v_project_id             integer;
+    v_sql                    character varying;
+    v_value                  character varying;
+    v_user_id                integer;
+    v_cfga_id                integer;
 BEGIN
-
-    select true
-    into is_list_of_value
-    from flow.custom_field_group_assignment cfga
-             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-             inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-             inner join flow.data_type dt on dt.id = cdt.data_type_id
-             inner join flow.list_of_value lov on lov.id = cf.list_of_value_id
-    where cfga.id = new.custom_field_group_assignment_id
-      and dt.id != 7;
-
-    if is_list_of_value is true then
-        case when new.int_value is null then select 'null' into v_value;
-            else
-                select quote_literal(name)
-                into v_value
-                from flow.list_of_value
-                where id = new.int_value;
-            end case;
-    end if;
 
     select pps.project_id
     into v_project_id
@@ -114,8 +94,8 @@ BEGIN
       and cf.field_name = 'Closer Appointment Resource'
     limit 1;
 
-    select pdc.id, field_to_update, data_type_id
-    into v_config_id,v_field_to_update,v_data_type_id
+    select pdc.id, field_to_update, data_type_id,pdc.second_field_to_update
+    into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update
     from brs.project_details_config pdc
     where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
       and case
@@ -123,11 +103,8 @@ BEGIN
                   field_to_update = 'closer_user_position_id'
               else 1 = 1 end;
 
-    --raise notice 'what are these values % second % third %' ,v_config_id,v_field_to_update,v_data_type_id;
 
     if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 5, 6, 7) and v_project_id is not null then
-        if is_list_of_value is null or is_list_of_value is false then
-
             if v_data_type_id = 1 then
                 case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
                 v_value = v_value || '::date';
@@ -153,12 +130,23 @@ BEGIN
                                                                                             into v_value; end case;
                 v_value = v_value || '::text';
             end if;
-        end if;
 
         v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
-       -- raise notice 'id =  % sql = % ',new.custom_field_group_assignment_id,v_sql;
-         execute v_sql;
+        execute v_sql;
+
+        if v_second_field_to_update is not null then
+            case when new.int_value is null then select 'null' into v_value;
+                else
+                    select quote_literal(name)
+                    into v_value
+                    from flow.list_of_value
+                    where id = new.int_value;
+                end case;
+            v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
+           where project_id = $$ || v_project_id;
+            execute v_sql;
+        end if;
 
         if v_cfga_id is not null then
 
@@ -341,7 +329,7 @@ BEGIN
     if old.main is false and new.main is true or v_found > 0 then
         v_sql = 'update brs.project_details set ';
         for v_record in
-            select lead(cfga.id) OVER () IS NULL AS is_last_row, pdc.field_to_update
+            select lead(cfga.id) OVER () IS NULL AS is_last_row, pdc.field_to_update,pdc.second_field_to_update
             from flow.custom_field_group_assignment cfga
                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
@@ -354,7 +342,10 @@ BEGIN
               and cfga.archived is false
             loop
                 v_count = v_count + 1;
-                v_sql = v_sql || v_record.field_to_update || ' = null';
+                if v_record.second_field_to_update is not null then
+                    v_sql = v_sql || v_record.second_field_to_update || ' = null, ';
+                end if;
+                v_sql = v_sql || v_record.field_to_update || ' = null ';
                 case when v_record.is_last_row is false then
                     v_sql = v_sql || ' , ';
                     else null;
