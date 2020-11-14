@@ -133,21 +133,6 @@ export default {
         this.isFieldsLoading = false
       }
     },
-    async getAvailableOwners () {
-      // this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //@TODO: @randa, pretty sure the contact list will work for process steps and projects but double checking
-        const {data} = await getRequest(`/project/owners`)
-        this.availableOwners = data
-
-        // this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        // this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     updateFieldGroups: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)

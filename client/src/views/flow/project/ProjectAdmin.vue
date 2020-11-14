@@ -171,7 +171,6 @@ export default {
   },
   async created () {
     this.getContact()
-    this.getAvailableOwners()
     await this.getProject()
     this.getProcess()
     await this.getAvailableStatuses()
@@ -224,17 +223,6 @@ export default {
         this.contact = data
       } catch (e) {
         console.error('*** ERROR ***', e)
-      }
-    },
-    async getAvailableOwners () {
-      try {
-        //@TODO: @randa, pretty sure the contact list will work for process steps and projects but double checking
-        const {data} = await getRequest(`/project/owners`)
-        this.availableOwners = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getAvailableStatuses () {

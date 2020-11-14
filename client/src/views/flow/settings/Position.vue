@@ -44,6 +44,10 @@
             <label>Can Schedule Round Robins:</label>
             <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.scheduler">
           </div>
+          <div class="mb-3">
+            <label>Can Own Contacts:</label>
+            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.contactOwner">
+          </div>
           <div v-if="$store.getters.isParent(parentId)">
             <label>Make Available in Children</label>
             <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
