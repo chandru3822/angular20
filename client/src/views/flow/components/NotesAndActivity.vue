@@ -233,7 +233,7 @@
                             <v-btn
                               color="primaryCustom"
                               text
-                              @click="deleteNote(cn, false)">
+                              @click="deleteNote(cn, true, item)">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -297,11 +297,14 @@ export default {
     }
   },
   methods: {
-    async deleteNote(n, isChildNote) {
+    async deleteNote(n, isChildNote, item) {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         await deleteRequest(`/note/${n.id}`)
         n.archived = true
+        if(isChildNote) {
+          item.childNotes = item.childNotes.filter(cn => !cn.archived)
+        }
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {

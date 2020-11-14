@@ -362,6 +362,14 @@
             this.$set(this.userPositions, itemIndex, item)
           }
         }
+        if(item.primaryFlag) {
+          //clear out any other primary flags in the ui - the db should have already done it
+          this.userPositions.forEach(up => {
+            if(up.primaryFlag && up.id !== item.id) {
+              up.primaryFlag = false
+            }
+          })
+        }
         this.addNew = false
         this.expanded = []
       },
