@@ -133,12 +133,14 @@
             title: 'Admin',
             icon: 'mdi-cogs',
             show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
-          }, {
-            path: '/propToolAdmin',
-            title: 'Prop Tool Temp',
-            icon: 'mdi-cogs',
-            show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
-          },
+          }
+          // turning this off for now until prop tool is being worked on again
+          // , {
+          //   path: '/propToolAdmin',
+          //   title: 'Prop Tool Temp',
+          //   icon: 'mdi-cogs',
+          //   show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
+          // },
 
         ]
       }

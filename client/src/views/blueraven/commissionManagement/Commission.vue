@@ -287,7 +287,7 @@
           <v-text-field text
                         type="number"
                         label="Milestone Payment $"
-                        v-model="selectedMilestone.allocation">
+                        v-model.number="selectedMilestone.allocation">
           </v-text-field>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addMilestoneToPlan()"
                  :disabled="!selectedMilestone.id || !selectedMilestone.allocation">
@@ -320,7 +320,7 @@
               <v-text-field text
                             type="number"
                             label="Milestone Payment $"
-                            v-model="item.allocation">
+                            v-model.number="item.allocation">
               </v-text-field>
               <v-btn :disabled="!item.allocation"
                      @click="[milestoneExpanded = [], updateMilestone(item)]">Save</v-btn>
@@ -785,6 +785,8 @@
       },
       userSearch (val, test, third) {
         if(!val) {
+          this.usersToAdd = []
+          this.newUser.userId = null
           return
         }
         this.usersToAdd = []
@@ -942,7 +944,8 @@
           this.errorMessages.push('The Rate per kW cannot be zero.')
         }
         //sum of m1 and m2 payment = rate per kw
-        let sum = this.commission.milestones.reduce((a, b) => a + b.allocation, 0)
+        console.log('randaLogger', this.commission.milestones)
+        let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
         if(sum !== this.commission.total) {
           this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')
         }
@@ -1147,6 +1150,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
+          this.checkErrorMessages()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

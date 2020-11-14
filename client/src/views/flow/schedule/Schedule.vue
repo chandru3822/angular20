@@ -313,6 +313,10 @@
     },
     watch: {
       search(val) {
+        if(!val) {
+          this.searchProject = {}
+          return
+        }
         if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
           this.getProjectsSearchedFor(val);
         }

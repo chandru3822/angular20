@@ -105,7 +105,8 @@
                               type="search"
                               @click:clear="customers = []"
               ></v-autocomplete>
-              <v-autocomplete v-model="accountingSearch.salesRepId"
+              <v-autocomplete ref="repAutocomplete"
+                              v-model="accountingSearch.salesRepId"
                               :items="reps"
                               :loading="repsLoading"
                               :search-input.sync="repSearch"
@@ -296,6 +297,8 @@
     watch: {
       customerSearch (val) {
         if(!val) {
+          this.customers = []
+          this.accountingSearch.customerId = null
           return
         }
         this.customers = []
@@ -303,6 +306,8 @@
       },
       repSearch (val) {
         if(!val) {
+          this.accountingSearch.salesRepId = null
+          this.reps = []
           return
         }
         this.reps = []

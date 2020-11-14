@@ -40,9 +40,11 @@
                           multiple
                           class="mr-3"
                           :loading="postalCodeZoneUsersLoading"
-                          hide-details
                           return-object
-                          @input="postalCodeZoneUserValuesChanged = true"
+                          :hide-details="countSelected < maxSelectionAllowed"
+                          :error="countSelected >= maxSelectionAllowed"
+                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
+                          @input="[postalCodeZoneUserValuesChanged = true, limiter()]"
                           item-text="fullName"
                           item-value="id"
                           @blur="getEvents(false)"
@@ -52,7 +54,7 @@
               slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedPostalCodeZoneUsers.length < 3">
-                <v-chip small close @click:close="selectedPostalCodeZoneUsers.splice(idx, 1)"
+                <v-chip small close @click:close="[selectedPostalCodeZoneUsers.splice(idx, 1), limiter()]"
                         v-for="(sr, idx) in selectedPostalCodeZoneUsers">
                   <span>{{ sr.fullName }}</span>
                 </v-chip>
@@ -63,15 +65,17 @@
               >{{ selectedPostalCodeZoneUsers.length }} selected</span>
             </template>
             <v-list-item
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllPostalCodeZoneUsers()">
+                v-if="postalCodeZoneUsers.length <= 10"
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllPostalCodeZoneUsers()">
               <v-list-item-action>
                 <v-icon>{{ iconPostalCodeZoneUsers }}</v-icon>
               </v-list-item-action>
               <v-list-item-title>Select All</v-list-item-title>
             </v-list-item>
             <v-divider
+              v-if="postalCodeZoneUsers.length <= 10"
               slot="prepend-item"
               class="mt-2"
             ></v-divider>
@@ -206,6 +210,9 @@
         postalCodeZonesLoading: true,
         postalCodeZoneUsers: [],
         postalCodeZoneUserValuesChanged: false,
+        countSelected: 0,
+        maxSelectionAllowed: 1,
+        countErrorMessage: 'Maximum Selection Reached',
         selectedPostalCodeZoneUsers: [],
         postalCodeZoneUsersLoading: true,
         resources: [],
@@ -304,6 +311,14 @@
       }
     },
     methods: {
+      limiter(e) {
+        this.countSelected = this.selectedPostalCodeZoneUsers?.length
+        console.log('count', this.countSelected)
+        this.postalCodeZoneUsers.forEach(u => {
+          let match = this.selectedPostalCodeZoneUsers.find(su => su.id === u.id)
+          u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
+        })
+      },
       handleResourceColors() {
         this.selectedPostalCodeZoneUsers.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
