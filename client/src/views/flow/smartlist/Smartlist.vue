@@ -153,7 +153,7 @@
               v-model="newField.projectDetailsColumn"
               label="Field"
               :items="projectDetailsColumns"
-              item-value="project_details_column"
+              item-value="projectDetailsColumn"
               item-text="name"
             />
           </template>
