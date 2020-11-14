@@ -644,6 +644,8 @@
       },
       userSearch (val, test, third) {
         if(!val) {
+          this.newUser.userId = null
+          this.usersToAdd = []
           return
         }
         this.usersToAdd = []

@@ -215,7 +215,7 @@ public class OverridePlanService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("userId", receivingUser.getUserId());
-        params.put("m1", receivingUser.getM2Allocation());
+        params.put("m1", receivingUser.getM1Allocation());
         params.put("m2", receivingUser.getM2Allocation());
         params.put("updatedBy", securityService.getCurrentUser().getId());
         params.put("note", receivingUser.getNote());
@@ -244,6 +244,14 @@ public class OverridePlanService {
 
         List<String> query = sqlCache.query("overridePlan.findUserHistory", params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? null : query.get(0);
+    }
+
+    public String getOverrides(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+
+        Optional<String> result = sqlCache.get("commissionManagement.getOverrides", params, new SingleColumnRowMapper<>(String.class));
+        return result.orElse("[]");
     }
 
     public String getAssignedUser(Long planId, Long userId) {
@@ -282,7 +290,10 @@ public class OverridePlanService {
             sqlCache.update("overridePlan.appendAssignedNote", params);
         }
 
-        return getAssignedUser(planId, assignedUser.getUserId());
+        //if existing just return the one user, otherwise return the full updated list
+        return assignedUser.getId() != null
+          ? getAssignedUser(planId, assignedUser.getUserId())
+          : getOverrides(assignedUser.getUserId());
     }
 
     public String getPlanAssignedUsers(Long id){

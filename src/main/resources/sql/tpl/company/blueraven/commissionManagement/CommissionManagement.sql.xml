@@ -209,7 +209,7 @@
           left join brs.commission_plan_user cpu on cp.id = cpu.commission_plan_id
           inner join brs.commission_plan_status cps on cp.status_id = cps.id
           WHERE name IS NOT NULL AND name != ''
-        group by cp.id, cps.status_type
+        group by cp.id, cp.name, cps.status_type
         order by cp.name;
     ]]></commissionManagement.getCommissionPlans>
 
@@ -257,6 +257,39 @@
         GROUP BY u.id, u.first_name, u.last_name, ust.id, cp.name, cp.description, cp.id, op.name, op.description, op.id
         ORDER BY name
     ]]></commissionManagement.getClosers>
+
+    <commissionManagement.getPlans><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(rows)))
+        FROM (SELECT cpu.id as "userPlanId",
+                                   cpu.start_date AS "startDate",
+                                   cpu.end_date   AS "endDate",
+                                   cpu.note,
+                                   cp.name        ,
+                                   cp.id          ,
+                                   cp.description
+                            FROM brs.commission_plan_user cpu
+                                     INNER JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id
+                            WHERE cpu.user_id = :userId
+                          order by cpu.start_date desc
+                          ) as rows
+    ]]></commissionManagement.getPlans>
+
+    <commissionManagement.getOverrides><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(rows)))
+        FROM (SELECT opau.id,
+                           opau.user_id    AS "userId",
+                           opau.start_date AS "startDate",
+                           opau.end_date   AS "endDate",
+                           opau.note,
+                           op.id           as "planId",
+                           op.name         as "planName",
+                           op.description  AS "planDescription"
+                    FROM brs.override_plan_assigned_user opau
+                             INNER JOIN brs.override_plan op ON op.id = opau.override_plan_id
+                    WHERE opau.user_id = :userId
+                  order by opau.start_date desc
+                          ) as rows
+    ]]></commissionManagement.getOverrides>
 
     <commissionManagement.getCloserDetails><![CDATA[
    SELECT array_to_json(array_agg(row_to_json(sub_rows)))

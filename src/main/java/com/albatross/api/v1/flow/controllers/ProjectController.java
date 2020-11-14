@@ -64,11 +64,6 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
   }
 
-  @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Owner>> getAvailableProjectOwners() {
-    return new ResponseEntity<>(projectService.getOwners(), HttpStatus.OK);
-  }
-
   @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectStatus>> getProjectStatuses(@RequestParam(required = false) Long projectId) {
       return new ResponseEntity<>(projectService.getStatuses(projectId), HttpStatus.OK);
