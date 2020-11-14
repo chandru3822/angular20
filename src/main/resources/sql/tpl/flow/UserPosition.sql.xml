@@ -69,8 +69,8 @@
   ]]></userPosition.updateUserPosition>
 
   <userPosition.insertUserPosition><![CDATA[
-    insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, created_by_id)
-    values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :createdById)
+    insert into flow.user_position(user_id, position_id, start_date, end_date, org_id, created_by_id, primary_flag)
+    values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :createdById, :primaryFlag)
   ]]></userPosition.insertUserPosition>
 
   <userPosition.resetPrimaryFlags><![CDATA[
