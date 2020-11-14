@@ -213,7 +213,7 @@ order by name,
 
 <smartlist.getAvailableProjectDetailsFields><![CDATA[
 select distinct field_to_update as project_details_column,
-                field_to_update as name,
+                display_name as name,
                 data_type_id
 from brs.project_details_config
 order by field_to_update
@@ -238,9 +238,8 @@ select
   case when sfa.custom_field_group_assignment_id is not null then cdt1.data_type_id else cdt.data_type_id end as data_type_id,
   case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then cdt.company_id else cdt1.company_id end as company_id,
-  case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end as name,
   case when sfa.project_details_column is not null then
-    pdc.field_to_update else
+    pdc.display_name else
     case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
   end as name,
   sfa.process_step_id,
@@ -319,7 +318,7 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step ps1 on ps1.id = sfa.process_step_id
 left join (
-  select distinct field_to_update, data_type_id
+  select distinct field_to_update, display_name, data_type_id
   from brs.project_details_config
 ) pdc on pdc.field_to_update = sfa.project_details_column
 where
@@ -332,11 +331,11 @@ order by sfa.display_order;
 select sfa.id,
        sfa.smartlist_id,
        sfa.project_details_column,
-       pdc.field_to_update as name,
+       pdc.display_name as name,
        pdc.data_type_id
 from flow.smartlist_field_assignment sfa
 inner join (
-  select distinct field_to_update, data_type_id
+  select distinct field_to_update, display_name, data_type_id
   from brs.project_details_config
 ) pdc on pdc.field_to_update = sfa.project_details_column
 where sfa.smartlist_id = :smartlistId and
@@ -364,7 +363,7 @@ select
   case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then cdt.company_id else cdt1.company_id end as company_id,
   case when sfa.project_details_column is not null then
-    pdc.field_to_update else
+    pdc.display_name else
     case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
   end as name,
   sfa.process_step_id,
@@ -389,7 +388,7 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step ps1 on ps1.id = sfa.process_step_id
 left join (
-  select distinct field_to_update, data_type_id
+  select distinct field_to_update, display_name, data_type_id
   from brs.project_details_config
 ) pdc on pdc.field_to_update = sfa.project_details_column
 where
@@ -460,7 +459,7 @@ select sr.id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
        case when sr.project_details_column is not null then
-         pdc.field_to_update else
+         pdc.display_name else
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
        case when sr.project_details_column is not null then
@@ -519,7 +518,7 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 left join (
-  select distinct field_to_update, data_type_id
+  select distinct field_to_update, display_name, data_type_id
   from brs.project_details_config
 ) pdc on pdc.field_to_update = sr.project_details_column
 where sr.id = :requirementId and
@@ -565,7 +564,7 @@ select sr.id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
        case when sr.project_details_column is not null then
-         pdc.field_to_update else
+         pdc.display_name else
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
        case when sr.project_details_column is not null then
@@ -678,7 +677,7 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 left join (
-  select distinct field_to_update, data_type_id
+  select distinct field_to_update, display_name, data_type_id
   from brs.project_details_config
 ) pdc on pdc.field_to_update = sr.project_details_column
 where sr.smartlist_id = :smartlistId and
