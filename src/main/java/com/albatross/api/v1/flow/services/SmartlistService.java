@@ -310,7 +310,7 @@ public class SmartlistService {
 
       //Check for double negative with "nots" between operator and requirement
       if (r.getDataTypeRequirementId() != null) {
-        if (requirementValue.toString().contains("not") && operator.contains("not")) {
+        if (requirementValue != null && requirementValue.toString().contains("not") &&  operator != null && operator.contains("not")) {
           operator = operator.replace("not", "");
 
           if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
@@ -319,7 +319,7 @@ public class SmartlistService {
         }
       }
 
-      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || r.getDataTypeRequirementId() != null) {
+      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null)) {
         query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
       } else {
         query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
@@ -597,7 +597,6 @@ public class SmartlistService {
     }
 
       for (SmartlistRequirement r : requirements) {
-          String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
           String referenceLocation = "";
 
@@ -788,26 +787,25 @@ public class SmartlistService {
           }
 
           Object requirementValue = getRequirementValue(r);
+          String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
-          // Check for a double negative between the operator and data type requirement value, the user might make a requirement like this for whatever reason
-          if (!r.getIsCustomValue() && r.getOperatorTypeId() == 2 && requirementValue != null && requirementValue.toString().startsWith("not ")) {
+          //Check for double negative with "nots" between operator and requirement
+          if (r.getDataTypeRequirementId() != null) {
+            if (requirementValue != null && requirementValue.toString().contains("not") && operator != null && operator.contains("not")) {
               operator = operator.replace("not", "");
-              requirementValue = requirementValue.toString().replace("not ", "");
-          }
 
-          // date, timestamp, and text (text only when it's a custom value) data types need single quotes around them
-          if ((List.of(1L, 2L).contains(r.getDataTypeId())) || r.getDataTypeId() == 5 && r.getIsCustomValue()) {
-              if (!Objects.equals(requirementValue, "null")) {
-                requirementValue = String.format("'%s'", requirementValue);
+              if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
+                requirementValue = requirementValue.toString().replace("not", "");
               }
-          } else if (r.getDataTypeId() == 9) {
-              requirementValue = r.getListOfValueId();
+            }
           }
 
           if (r.getDataTypeId() == 7) {
-              whereClause.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+            whereClause.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null)) {
+            whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
-              whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
+            whereClause.append(String.format("\n%s %s '%s' and ", referenceLocation, operator, requirementValue));
           }
       }
 
@@ -994,7 +992,12 @@ public class SmartlistService {
                 }
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 8:
+            case 9:
+              if (r.getIsCustomValue()) {
                 return r.getListOfValueId();
+              }
+
+              return r.getDataTypeRequirement().getDataTypeValue();
             default:
                 return null;
         }
@@ -1006,9 +1009,6 @@ public class SmartlistService {
     // List of whether the dataTypeRequirementId is being compared to `null` or `not null`
     List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L);
 
-    // List of data type requirement IDs which are "nots"
-//    List<Long> negativeIds = List.of(5L, 13L, 17L, 19L, 21L, 23L, 25L, 27L);
-
     switch (operatorTypeId.intValue()) {
       case 1:
         //If field is boolean, this is the only option
@@ -1019,17 +1019,9 @@ public class SmartlistService {
         // If field is a dataTypeRequirement
         if (r != null) {
           if (nullableIds.contains(r.getId())) {
-//            if (negativeIds.contains(r.getId())) {
-//              return "is not";
-//            } else {
-              return "is";
-//            }
+            return "is";
           } else {
-//            if (negativeIds.contains(r.getId())) {
-//              return "!=";
-//            } else {
-              return "=";
-//            }
+            return "=";
           }
         } else {
           return "=";
@@ -1043,17 +1035,9 @@ public class SmartlistService {
         // If field is a dataTypeRequirement
         if (r != null) {
           if (nullableIds.contains(r.getId())) {
-//            if (negativeIds.contains(r.getId())) {
-//              return "is";
-//            } else {
-              return "is not";
-//            }
+            return "is not";
           } else {
-//            if (negativeIds.contains(r.getId())) {
-//              return "=";
-//            } else {
-              return "!=";
-//            }
+            return "!=";
           }
         } else {
           return "!=";
