@@ -313,6 +313,10 @@
     },
     watch: {
       search(val) {
+        if(!val) {
+          this.searchProject = {}
+          return
+        }
         if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
           this.getProjectsSearchedFor(val);
         }
@@ -430,11 +434,13 @@
       async getResources(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          item.resources = []
 
           let params = {
             companyId: item.companyId,
             systemListId: item.systemListId,
-            systemListOptionIds: item.systemListOptionIds
+            systemListOptionIds: item.systemListOptionIds,
+            resourceId: item.resourceId
           }
           const {data} = await postRequest(`/schedule/projectResources`, params)
           item.resources = data

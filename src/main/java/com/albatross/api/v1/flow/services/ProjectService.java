@@ -238,10 +238,6 @@ public class ProjectService {
       new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
-  public List<Owner> getOwners() {
-    return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
-  }
-
   public List<ProjectStatus> getStatuses(Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();

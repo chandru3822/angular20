@@ -40,7 +40,7 @@ public class InstallAgreementRepository {
   @Autowired
   private PandaDocService pandaDocService;
 
-  @Value(value = "${app.loanpal.baseUrl}")
+  @Value(value = "${loanpal.api.baseUrl}")
   private String baseUrl;
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {

@@ -163,6 +163,7 @@
                 return-object
             ></v-select>
             <v-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"
+                          type="number"
                           v-model="newRequirement.secondaryRequirementValue"
                           placeholder="Enter a value"
                           @input="validateRequirementForm()"
@@ -330,6 +331,7 @@
                       return-object
                   ></v-select>
                   <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
+                                type="number"
                                 v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
                                 :disabled="item.immutable || !userCanEdit"

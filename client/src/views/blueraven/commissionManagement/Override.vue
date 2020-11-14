@@ -9,7 +9,7 @@
       <v-toolbar-items>
         <div class="commission-button-container">
           <v-btn color="primaryCustom" class="white--text mr-2"
-                 :disabled="!override.name"
+                 :disabled="!override.name || !override.positionId || !override.total"
                  v-if="userCanEdit"
                  @click="saveOverride()">
             Save
@@ -335,12 +335,12 @@
               <v-text-field text
                             type="number"
                             label="M1 Allocation"
-                            v-model="item.m1Allocation">
+                            v-model.number="item.m1Allocation">
               </v-text-field>
               <v-text-field text
                             type="number"
                             label="M2 Allocation"
-                            v-model="item.m2Allocation">
+                            v-model.number="item.m2Allocation">
               </v-text-field>
               <v-btn :disabled="!item.m1Allocation || !item.m2Allocation"
                      @click="[expanded = [], updateReceivingUser(item)]">Save</v-btn>
@@ -649,6 +649,8 @@
       },
       assignedUserSearch (val) {
         if(!val) {
+          this.newAssignedUser.userId = null
+          this.assignedUsersToAdd = []
           return
         }
         this.assignedUsersToAdd = []
@@ -656,6 +658,8 @@
       },
       receivingUserSearch (val) {
         if(!val) {
+          this.receivingUsersToAdd = []
+          this.newReceivingUser.userId = null
           return
         }
         this.receivingUsersToAdd = []
@@ -744,7 +748,7 @@
         this.errorMessages = []
         //sum of all m1 and m2's should equal rate per kw$
         let sum = 0
-        this.override.receivingUsers.forEach(ru => {
+        this.override?.receivingUsers?.forEach(ru => {
           sum += ru.m1Allocation + ru.m2Allocation
         })
         if(sum !== this.override.total) {
@@ -1021,7 +1025,8 @@
             let params = {
               query,
               planId: this.override.id,
-              isReceiving: true
+              isReceiving: true,
+              positionId: this.positionId
             }
             const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
             this.receivingUsersToAdd = data
@@ -1038,6 +1043,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUser`, item, 'blueraven')
+          this.checkErrorMessages()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1055,6 +1061,7 @@
               m2Allocation: this.newReceivingUser.m2Allocation
             }
             const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUsers`, params, 'blueraven')
+            this.checkErrorMessages()
             this.override.receivingUsers.push(data)
             this.newReceivingUser = {
               m1Allocation: 0,

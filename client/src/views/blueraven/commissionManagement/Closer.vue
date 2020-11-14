@@ -63,7 +63,7 @@
             {{planErrorObj.noteMsg}}
           </div>
           <div>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="savePlan(newCommissionPlan, 2, true)"
+            <v-btn color="primaryCustom" class="mr-3 white--text" @click="[addNewCommissionPlan = false, savePlan(newCommissionPlan, 2, true)]"
                    :disabled="planErrorObj.dateError || !newCommissionPlan.id || !newCommissionPlan.startDate">
               Save
             </v-btn>
@@ -117,7 +117,11 @@
               <td class="text-left">{{item.description}}</td>
               <td class="text-left">{{item.startDate | formatDate('date')}}</td>
               <td class="text-left">{{item.endDate | formatDate('date')}}</td>
-              <td class="text-left">{{item.note}}</td>
+              <td class="text-left">
+                <pre class="app-pre-wrapper">
+                  {{item.note}}
+                </pre>
+              </td>
               <td>
                 <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                        v-if="!expanded.includes(item) && userCanEdit">
@@ -240,7 +244,11 @@
               <td class="text-left">{{item.planDescription}}</td>
               <td class="text-left">{{item.startDate | formatDate('date')}}</td>
               <td class="text-left">{{item.endDate | formatDate('date')}}</td>
-              <td class="text-left">{{item.note}}</td>
+              <td class="text-left">
+                <pre class="app-pre-wrapper">
+                  {{item.note}}
+                </pre>
+              </td>
               <td>
                 <v-btn small text @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
                        v-if="!overrideExpanded.includes(item) && userCanEdit">
@@ -328,14 +336,18 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item, 3)">Save</v-btn>
+              <v-btn :disabled="!item.endDate && !item.note" @click="[addNewReceivingPlan = false, savePlan(item, 3)]">Save</v-btn>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
-              <td class="text-left">{{item.note}}</td>
+              <td class="text-left">
+                <pre class="app-pre-wrapper">
+                  {{item.note}}
+                </pre>
+              </td>
               <td>
                 <v-btn small text @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
                        v-if="!receivingExpanded.includes(item) && userCanEdit">
@@ -528,23 +540,29 @@
             url = `/commissionManagement/overrides/${item.id}/receivingUser`
         }
         try {
-          await postRequest(url, params, 'blueraven')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data} = await postRequest(url, params, 'blueraven')
           //reset fields as needed
           if(type === 1) {
-            this.expanded = []
-            this.newCommissionPlan = {}
-            this.addNewCommissionPlan = false
-          } else if (type === 2) {
             this.overrideExpanded = []
             this.addNewOverridePlan = false
             this.newOverridePlan = {}
+            if(isNew) {
+              this.closer.overrides = data
+            }
+          } else if (type === 2) {
+            this.expanded = []
+            this.newCommissionPlan = {}
+            this.addNewCommissionPlan = false
+            if(isNew) {
+              this.closer.plans = data
+            }
           } else {
             this.receivingExpanded = []
             this.addNewReceivingPlan = false
           }
           this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Plan')
