@@ -301,16 +301,28 @@ public class SmartlistService {
     query.deleteCharAt(query.length() - 1);
 
     // @TODO: Eventually de-hardcode brs schema
-    query.append("\n from brs.project_details ");
-    query.append("\n where ");
+    query.append("\nfrom brs.project_details");
+    query.append("\nwhere");
 
     for (SmartlistRequirement r: requirements) {
       String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
+      Object requirementValue = getRequirementValue(r);
 
-      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4) {
-        query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, getRequirementValue(r)));
+      //Check for double negative with "nots" between operator and requirement
+      if (r.getDataTypeRequirementId() != null) {
+        if (requirementValue.toString().contains("not") && operator.contains("not")) {
+          operator = operator.replace("not", "");
+
+          if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
+            requirementValue = requirementValue.toString().replace("not", "");
+          }
+        }
+      }
+
+      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || r.getDataTypeRequirementId() != null) {
+        query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
       } else {
-        query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, getRequirementValue(r)));
+        query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
       }
     }
 
@@ -995,7 +1007,7 @@ public class SmartlistService {
     List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L);
 
     // List of data type requirement IDs which are "nots"
-    List<Long> negativeIds = List.of(5L, 13L, 17L, 19L, 21L, 23L, 25L, 27L);
+//    List<Long> negativeIds = List.of(5L, 13L, 17L, 19L, 21L, 23L, 25L, 27L);
 
     switch (operatorTypeId.intValue()) {
       case 1:
@@ -1007,17 +1019,17 @@ public class SmartlistService {
         // If field is a dataTypeRequirement
         if (r != null) {
           if (nullableIds.contains(r.getId())) {
-            if (negativeIds.contains(r.getId())) {
-              return "is not";
-            } else {
+//            if (negativeIds.contains(r.getId())) {
+//              return "is not";
+//            } else {
               return "is";
-            }
+//            }
           } else {
-            if (negativeIds.contains(r.getId())) {
-              return "!=";
-            } else {
+//            if (negativeIds.contains(r.getId())) {
+//              return "!=";
+//            } else {
               return "=";
-            }
+//            }
           }
         } else {
           return "=";
@@ -1031,17 +1043,17 @@ public class SmartlistService {
         // If field is a dataTypeRequirement
         if (r != null) {
           if (nullableIds.contains(r.getId())) {
-            if (negativeIds.contains(r.getId())) {
-              return "is";
-            } else {
+//            if (negativeIds.contains(r.getId())) {
+//              return "is";
+//            } else {
               return "is not";
-            }
+//            }
           } else {
-            if (negativeIds.contains(r.getId())) {
-              return "=";
-            } else {
+//            if (negativeIds.contains(r.getId())) {
+//              return "=";
+//            } else {
               return "!=";
-            }
+//            }
           }
         } else {
           return "!=";
