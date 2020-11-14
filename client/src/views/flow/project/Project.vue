@@ -98,25 +98,48 @@
       </v-row>
       <v-divider></v-divider>
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" md="6">
+          <v-tabs v-if="tabs.length > 0"
+                  background-color="transparent"
+                  show-arrows>
+            <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
+            <v-tab v-for="t in tabs" :key="t.id" @click="selectedTab = t">
+              {{t.tabName}}
+            </v-tab>
+          </v-tabs>
+          <v-tabs v-else background-color="transparent">
+            <v-tab>
+              Project Details
+            </v-tab>
+          </v-tabs>
+          <ProjectDetails :project="project" :selected-tab="selectedTab"></ProjectDetails>
+
+        </v-col>
+        <v-col cols="12" md="6">
           <v-toolbar flat dense class="app-toolbar" color="transparent">
             <v-spacer></v-spacer>
             <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
               <v-tabs background-color="transparent">
                 <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
-                <v-tab :to="`/project/${this.projectId}/details`">
-                  Project Details
+                <v-tab @click="secondaryTab = 1">
+                  Process Steps
                 </v-tab>
-                <v-tab :to="`/project/${this.projectId}/notes`">
-                  Notes & Communication
+                <v-tab @click="secondaryTab = 2">
+                  Notes
+                </v-tab>
+                <v-tab @click="secondaryTab = 3">
+                  Communication
                 </v-tab>
               </v-tabs>
             </v-toolbar-items>
           </v-toolbar>
+          <ActiveProcessSteps v-if="secondaryTab === 1" :project="project"></ActiveProcessSteps>
+          <ProjectNotes v-if="secondaryTab === 2"></ProjectNotes>
+          <Messaging v-if="secondaryTab === 3" :primaryId="parseInt(projectId)"/>
         </v-col>
       </v-row>
 
-      <router-view/>
+
     </v-col>
 
   </v-row>
@@ -140,7 +163,10 @@
 <script>
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-
+import ProjectDetails from '@/views/flow/project/ProjectDetails'
+import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
+import ProjectNotes from '@/views/flow/project/ProjectNotes'
+import Messaging from '@/views/flow/components/Messaging'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getCompanyStates} from '@/services/stateService'
@@ -148,11 +174,19 @@ import {getCompanyStates} from '@/services/stateService'
 export default {
   name: 'Project',
   components: {
-
+    ProjectDetails,
+    ActiveProcessSteps,
+    ProjectNotes,
+    Messaging
   },
   data () {
     return {
       snackbar: {},
+      tabs: [],
+      tabsLoading: true,
+      selectedTab: {},
+      secondaryTab: 1,
+      menuOpen: false,
       constants,
       projectId: parseInt(this.$route.params.projectId),
       companyId: this.$store.state.user.details.companyId,
@@ -179,8 +213,21 @@ export default {
     this.getAvailableOwners()
     this.getProject()
     this.getStatuses()
+    this.getProjectTabs()
   },
   methods: {
+    getProjectTabs: async function () {
+      this.tabsLoading = true
+      try {
+        const {data} = await getRequest(`/objectTypeTab/project`)
+        this.tabs = data
+        this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.tabsLoading = false
+      }
+    },
     getProject: async function () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

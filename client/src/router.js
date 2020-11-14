@@ -623,7 +623,11 @@ export default new Router({
         path: 'details',
         name: 'projectDetails',
         meta: { title: 'Albatross - Project Details'},
-        component: () => import (/*webpackChunkName: "projectDetails" */ './views/flow/project/ProjectDetails.vue')
+        // component: () => import (/*webpackChunkName: "projectDetails" */ './views/flow/project/ProjectDetails.vue')
+        components: {
+          default: () => import (/*webpackChunkName: "projectDetails" */ './views/flow/project/ProjectDetails.vue'),
+          tabs: () => import (/*webpackChunkName: "projectDetails" */ './views/flow/project/ProjectDetails.vue'),
+        }
       }, {
         path: 'notes',
         name: 'projectNotes',
