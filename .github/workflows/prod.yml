@@ -6,7 +6,7 @@ name: Albatross Build
 on:
     push:
         branches:
-            - "change to the correct prod branch when ready"
+            - "master"
 
 jobs:
     build:

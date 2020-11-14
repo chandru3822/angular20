@@ -16,7 +16,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @RequestMapping(value = "/webhook/ricochet")
 @Slf4j
 public class RicochetWebhookController {
-    @Value(value = "${ricochet.apiKey}")
+    @Value(value = "${ricochet.api.key}")
     private String apiKey;
 
     @Autowired
