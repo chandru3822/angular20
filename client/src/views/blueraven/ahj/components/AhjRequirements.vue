@@ -82,7 +82,7 @@
             ></AhjDocumentsButton>
           </v-list-item-action>
           <v-list-item-action>
-            <v-dialog v-model="deleteConfirm" max-width="500px">
+            <v-dialog v-model="requirement.deleteConfirm" max-width="500px">
               <template #activator="{ on }">
                 <v-icon v-on="on" small title="Archive requirement">delete</v-icon>
               </template>
@@ -96,9 +96,9 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="secondaryButton" text @click="deleteConfirm = false">No</v-btn>
+                  <v-btn color="secondaryButton" text @click="requirement.deleteConfirm = false">No</v-btn>
                   <v-btn color="brRed" class="white--text"
-                         @click="archiveRequirement(requirement.originalRequirementId)">Yes</v-btn>
+                         @click="[archiveRequirement(requirement.originalRequirementId), requirement.deleteConfirm = false]">Yes</v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -235,11 +235,10 @@
           description: null,
           position: null,
           archived: null,
-          complete: null
+          complete: null,
         },
         addMode: false,
         editMode: false,
-        deleteConfirm: false,
         snackbar: {},
         requirementsCopy: orderBy(this.requirements, requirement => requirement.position)
       }
@@ -361,7 +360,6 @@
         }
 
         this.editMode = false
-        this.deleteConfirm = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
