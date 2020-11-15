@@ -78,6 +78,11 @@
     async created() {
       this.getWorkQueueCategories()
       this.getWorkQueueOwners()
+      this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
+      console.log('randaLogger', this.selectedWorkQueueCategory.id)
+      if(this.selectedWorkQueueCategory.id) {
+        this.getWorkQueues()
+      }
     },
     methods: {
       async getWorkQueueCategories() {
@@ -108,6 +113,7 @@
           this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
         }
         if(this.selectedWorkQueueCategory?.id) {
+          localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             const {data} = await getRequestWithParams(`/workQueue`, { params: {
