@@ -10843,7 +10843,7 @@ with position_features as (
                               'Customer Experience Specialist', 'Retentions Coordinator', 'Payroll Specialist', 'Inspection Quality Coordinator',
                               'Support Coordinator', 'Inspections Scheduler', 'Licensing Coordinator', 'Partners Coordinator',
                               'Utilities Coordinator', 'Onboarding Coordinator', 'Onboarding Coordinator', 'Engineering Specialist',
-                              'Licensing Coordinator', 'Customer Experience Coordinator' ))
+                              'Licensing Coordinator', 'Customer Experience Coordinator','Proposals Specialist', 'Proposals Mentor' ))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
 
@@ -10866,7 +10866,7 @@ with position_features as (
                               'Operations Director', 'Management Trainee', 'Customer Experience Manager', 'General Operations Lead',
                               'Software Development', 'Controller', 'Quality Assurance Lead', 'Director of Human Resources', 'Marketing Senior Manager',
                               'Operations Manager', 'System Production Manager', 'EPC Operations Manager', 'Support Lead', 'Support Manager',
-                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager', 'Field Operations Technician Manager',
+                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager','Technicians Manager', 'Field Operations Technician Manager',
                               'Inspections Manager', 'Inspections Lead', 'General Counsel', 'Supply Chain Manager', 'Operations Lead',
                               'Product Manager', 'Business Development Manager', 'Customer Insights Lead', 'Permitting Manager', 'EPC Regional',
                               'Marketing Director', 'Service Technician Manager', 'Reviews Lead', 'Mountain Project Manager',
@@ -10877,7 +10877,7 @@ with position_features as (
                               'Office Manager & Executive Assistant', 'Permitting Lead', 'Engineering Lead', 'Market Manager',
                               'Marketing and Business Development Manager', 'Customer Experience Manager', 'Customer Experience Lead',
                               'Business Development Senior Manager', 'Compliance Manager', 'Licensing Manager', 'BI Analyst', 'Director of Operations',
-                              'VP of Operations', 'Systems Director'))
+                              'VP of Operations', 'Systems Director','Proposals Lead','Proposals Manager'))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
 
