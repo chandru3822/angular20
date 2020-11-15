@@ -88,6 +88,10 @@ public class SmartlistService {
     sqlCache.update("smartlist.update", params);
   }
 
+  public void deleteSmartlist(Long smartlistId) {
+    sqlCache.update("smartlist.delete", Map.of("id", smartlistId, "userId", securityService.getCurrentUser().getId()));
+  }
+
   public boolean isNameUnique(String name) {
     User user = securityService.getCurrentUser();
     List<Smartlist> smartlists = sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
