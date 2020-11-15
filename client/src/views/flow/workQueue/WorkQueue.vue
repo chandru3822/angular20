@@ -109,10 +109,10 @@
         }
       },
       async getWorkQueues(reset, c) {
-        localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
         if(reset) {
           this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
         }
+        localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
         if(this.selectedWorkQueueCategory?.id || this.showAll) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
