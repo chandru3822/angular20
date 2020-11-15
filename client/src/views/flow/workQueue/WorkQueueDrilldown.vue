@@ -86,6 +86,7 @@
                   </v-card>
                 </v-dialog>
               </td>
+              <td class="text-left" v-if="showPropCustom">{{item.proposalDueDate  | formatDate('timestamp')}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -116,6 +117,7 @@
         showNotesModal: false,
         selectedPps: {},
         constants,
+        showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
@@ -151,6 +153,11 @@
     },
     computed: {},
     async created() {
+      if([98,99,106].includes(parseInt(this.workQueueTypeId))){
+        console.log('high')
+        this.showPropCustom = true
+        this.headers.push({ text: 'Proposal Due Date', value: 'proposalDueDate', show: true },)
+      }
     },
     methods: {
       async getWorkDetails() {
