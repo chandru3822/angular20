@@ -105,18 +105,7 @@
                               type="search"
                               @click:clear="customers = []"
               ></v-autocomplete>
-              <v-autocomplete ref="repAutocomplete"
-                              v-model="accountingSearch.salesRepId"
-                              :items="reps"
-                              :loading="repsLoading"
-                              :search-input.sync="repSearch"
-                              label="Sales Rep..."
-                              clearable
-                              item-text="name"
-                              item-value="userId"
-                              type="search"
-                              @click:clear="reps = []"
-              ></v-autocomplete>
+
               <div class="text-left">
                 <v-btn color="primaryCustom" dark @click="getAccountingData()">Search</v-btn>
                 <v-btn class="ml-3" @click="accountingSearch = {}">Reset</v-btn>
@@ -407,25 +396,31 @@
         }
       },
       async submitForApproval (action) {
-        let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
-        let params = {
-          payDate: this.payDate
-        }
-        if(this.payrollStatus.showSelect && (!selectedIds || selectedIds.length === 0)) {
-          this.snackbar = getSnackbar('WARNING', 'You must select at least one project.')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            await postRequest(`/payroll/${this.currentPayroll.id}/${action}`, params, 'blueraven')
-            this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
+        //to avoid any unsaved changes prior to approval we are just saving changes prior to submitting
+        const val = await this.saveChangesToPayroll(true)
+        //dont submit for approval if the save changes request failed
+        if(val) {
+          console.log('randaLogger', val)
+          let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
+          let params = {
+            payDate: this.payDate
+          }
+          if(this.payrollStatus.showSelect && (!selectedIds || selectedIds.length === 0)) {
+            this.snackbar = getSnackbar('WARNING', 'You must select at least one project.')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            await this.getCurrentPayroll()
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Updating')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+          } else {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            try {
+              await postRequest(`/payroll/${this.currentPayroll.id}/${action}`, params, 'blueraven')
+              this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              await this.getCurrentPayroll()
+            } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error Updating')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
           }
         }
       },
@@ -465,7 +460,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveChangesToPayroll () {
+      async saveChangesToPayroll (keepLoading) {
         let params = {
           description: this.currentPayroll.description,
           periodEnd: this.currentPayroll.periodEnd,
@@ -479,13 +474,17 @@
           this.currentPayroll = data
           this.additionalPayrollDataNeeded = null == this.currentPayroll.periodEnd || null == this.currentPayroll.description
           this.getStatusColor()
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          if(!keepLoading) {
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
           // await this.getAccountingData()
+          return true
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          return false
         }
       },
       getStatusColor () {
