@@ -63,6 +63,18 @@ public class SmartlistController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
+  @DeleteMapping(value = "/{smartlistId}")
+  public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
+    User user = securityService.getCurrentUser();
+
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("DELETE", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    }
+
+    smartlistService.deleteSmartlist(smartlistId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
   @GetMapping(value = "/{smartlistId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFieldSmartlistFields(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistService.getAssignedFields(smartlistId), HttpStatus.OK);
