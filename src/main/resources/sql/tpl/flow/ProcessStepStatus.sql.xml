@@ -9,13 +9,21 @@
     order by process_step_status_type
   ]]></processStepStatus.getTypesForCompany>
 
-<processStepStatus.getActiveTypeForCompany><![CDATA[
-    select *
-    from flow.company_process_step_status_type
-    where archived is not true and
-          company_id = :companyId and
-          process_step_status_type_id = 1
-]]></processStepStatus.getActiveTypeForCompany>
+  <processStepStatus.getActiveTypeForCompany><![CDATA[
+      select *
+      from flow.company_process_step_status_type
+      where archived is not true and
+            company_id = :companyId and
+            process_step_status_type_id = 1
+  ]]></processStepStatus.getActiveTypeForCompany>
+
+  <processStepStatus.getCancelledTypeForCompany><![CDATA[
+      select *
+      from flow.company_process_step_status_type
+      where archived is not true and
+            company_id = :companyId and
+            process_step_status_type_id = 3
+    ]]></processStepStatus.getCancelledTypeForCompany>
 
    <processStepStatus.getType>
     <![CDATA[

@@ -136,7 +136,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
-                :readonly="selectedProject.startFieldReadOnly || !userCanEdit"
+                :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
@@ -146,7 +146,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
-                :readonly="selectedProject.endFieldReadOnly || !userCanEdit"
+                :readonly="selectedProject.endFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
@@ -159,16 +159,53 @@
                         return-object
                         clearable
                         item-text="name"
-                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit"
-                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit"
+                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
               />
               <v-btn color="primaryCustom"
                      class="white--text"
-                     :disabled="saveInvalid || !userCanEdit"
+                     :disabled="saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
                      @click="scheduleProject">Save</v-btn>
+              <v-dialog
+                  v-if="selectedProject.processStepStatusTypeId === 2"
+                  v-model="selectedProject.unscheduleConfirm"
+                  width="500">
+                <template #activator="{ on }">
+                  <v-btn color="secondaryCustom"
+                         class="ml-3"
+                         v-on="on">Unschedule Event</v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    Are you sure you want to unschedule this event?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        @click="selectedProject.unscheduleConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                        color="primaryCustom"
+                        text
+                        @click="cancelProjectProcessStep">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </div>
           </v-card-text>
         </v-card>
@@ -202,8 +239,8 @@
               v-model="selectedRows"
               item-key="projectProcessStepId"
               :show-select="true"
-              :item-selected="(item, value) => addToMap(item, value)"
-              :toggle-select-all="(value) => addToMap(value)"
+              :item-selected="(item, value) => this.zoomToMap(item, value)"
+              :toggle-select-all="(value) => this.zoomToMap(value)"
               class="elevation-1"
           >
             <template #no-data>
@@ -370,6 +407,22 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Scheduling Project')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async cancelProjectProcessStep() {
+        try {
+          await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/cancel`, this.selectedProject)
+          // this.selectedProject.unscheduleConfirm = false
+          this.projects = this.projects.filter(p => p.projectProcessStepId !== this.selectedProject.projectProcessStepId)
+          this.selectedProject.processStepStatusTypeId = 3
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Unscheduling Event')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -544,6 +597,9 @@
         }
       },
 
+    },
+    zoomToMap(item) {
+      console.log('randaLogger', item)
     }
   }
 </script>

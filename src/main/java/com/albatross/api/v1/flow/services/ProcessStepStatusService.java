@@ -53,6 +53,10 @@ public class ProcessStepStatusService {
       return sqlCache.get("processStepStatus.getActiveTypeForCompany", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), CompanyProcessStepStatusType.class);
   }
 
+  public Optional<CompanyProcessStepStatusType> getCancelledType(Long companyId) {
+    return sqlCache.get("processStepStatus.getCancelledTypeForCompany", Map.of("companyId", companyId), CompanyProcessStepStatusType.class);
+  }
+
   public void deleteType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
