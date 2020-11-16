@@ -193,4 +193,10 @@
     where id = :contactId
   ]]></contact.convertToContact>
 
+  <contact.getCompanyId><![CDATA[
+    select c.company_id
+    from flow.contact c
+    where c.id = :contactId
+  ]]></contact.getCompanyId>
+
 </sql>

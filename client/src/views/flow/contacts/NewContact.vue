@@ -142,7 +142,7 @@ export default {
     async getCompanyStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCompanyStates()
+        const {data} = await getCompanyStates(parseInt(this.companyId))
         this.states = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -155,7 +155,7 @@ export default {
     async getCountries () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCountries()
+        const {data} = await getCountries(parseInt(this.companyId))
         this.countries = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

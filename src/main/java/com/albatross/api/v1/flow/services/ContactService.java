@@ -168,10 +168,18 @@ public class ContactService {
     sqlCache.update("contact.updateMailingAddress", params);
   }
 
-  public List<Owner> getOwnersForContact() {
+  public List<Owner> getOwnersForContact(Long contactId) {
     User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+
+    if(null != contactId) {
+      //had to change this so that a parent looking at a child project could still see owners
+      params.put("contactId", contactId);
+      companyId = sqlCache.queryForObject("contact.getCompanyId", params, Long.class);
+
+    }
+    params.put("companyId", companyId);
 
     List<Owner> results = sqlCache.query("contact.getOwners", params, Owner.class);
     return results;
@@ -187,11 +195,11 @@ public class ContactService {
     params.put("modifiedById", currentUser.getId());
     sqlCache.update("contact.convertToContact", params);
 
-    //get contact to get their full name for the project
+    //get contact to get their full name for the project and also so a parent can find this contact
     Contact contact = getContact(contactId);
 
     //create project (use contact_full_name as project_name)
-    Optional<Project> project = projectService.insertProject(contactId, process.getId(), contact);
+    Optional<Project> project = projectService.insertProject(contact.getId(), process.getId(), contact);
 
     //get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());

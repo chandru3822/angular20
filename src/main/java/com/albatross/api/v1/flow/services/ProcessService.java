@@ -32,9 +32,18 @@ public class ProcessService {
 
     private final SecurityService securityService;
 
-    public List<Process> getProcessesForCompany() {
+    public List<Process> getProcessesForCompany(Long contactId) {
       User user = securityService.getCurrentUser();
-        return sqlCache.query("process.getAllForCompany", ImmutableMap.of("companyId", user.getCompanyId()), Process.class);
+      Long companyId = user.getCompanyId();
+
+        if(null != contactId) {
+            //had to change this so that a parent looking at a child contact could still see processes
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("contactId", contactId);
+            companyId = sqlCache.queryForObject("contact.getCompanyId", params, Long.class);
+        }
+
+      return sqlCache.query("process.getAllForCompany", ImmutableMap.of("companyId", companyId), Process.class);
     }
 
     public Optional<Process> getProcess(Long companyId, Long processId, Long projectId) {

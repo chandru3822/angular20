@@ -25,8 +25,8 @@ public class ObjectTypeTabController {
   private final ObjectTypeTabService objectTypeTabService;
 
   @GetMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectTypeTab> getTabs () {
-    return objectTypeTabService.getTabs(ObjectType.PROJECT.id);
+  public List<ObjectTypeTab> getTabs (@RequestParam(required = false) Long projectId) {
+    return objectTypeTabService.getTabs(ObjectType.PROJECT.id, projectId);
   }
 
   @PostMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -28,8 +28,8 @@ public class StateController {
   }
 
   @GetMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyState> getAllCompanyStates() {
-    return stateService.getAllCompanyStates();
+  public List<CompanyState> getAllCompanyStates(@RequestParam(required = false) Long companyId) {
+    return stateService.getAllCompanyStates(companyId);
   }
 
   @PutMapping(value = "/saveCompanyState", produces = MediaType.APPLICATION_JSON_VALUE)

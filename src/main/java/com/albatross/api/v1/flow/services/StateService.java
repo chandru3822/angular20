@@ -42,11 +42,11 @@ public class StateService {
     return states;
   }
 
-  public List<CompanyState> getAllCompanyStates() {
+  public List<CompanyState> getAllCompanyStates(Long companyId) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", null != companyId ? companyId : user.getCompanyId());
     List<CompanyState> states = sqlCache.query("state.getAllCompanyStates", params, CompanyState.class);
     return states;
   }

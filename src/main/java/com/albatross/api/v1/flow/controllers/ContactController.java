@@ -74,8 +74,8 @@ public class ContactController {
     }
 
     @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Owner> getOwners() {
-      return contactService.getOwnersForContact();
+    public List<Owner> getOwners(@RequestParam(required = false) Long contactId) {
+      return contactService.getOwnersForContact(contactId);
     }
 
     @PutMapping(value = "/{contactId}/convert", produces = MediaType.APPLICATION_JSON_VALUE)
