@@ -576,6 +576,9 @@ public class SmartlistService {
             if (f.getJoinTable() != null && f.getJoinColumn() != null) {
               final String joinUuid = UUID.randomUUID().toString();
               query.append(String.format("\nleft join %s \"%s\" on \"%s\".process_step_id = %s and \"%s\".project_id = flow.project.id ", f.getJoinTable(), joinUuid, joinUuid, f.getProcessStepId(), joinUuid));
+              if (smartlist.isMainProcessSteps()) {
+                query.append(String.format("and \"%s\".main is true ", joinUuid));
+              }
               query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), joinAlias, joinAlias, joinUuid, f.getJoinColumn()));
             } else {
               query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinAlias, joinAlias, joinAlias, f.getProcessStepId()));
