@@ -20,12 +20,44 @@
                   v-model="checklistItem.description">
       </v-textarea>
       <div class="checklist-btns">
-        <a @click="hideCtrls"
-           class="cancel-link">Cancel</a>
-        <v-btn v-show="editMode" color="brRed" small
-               @click="deleteItem" class="white--text py-1 px-2">
-          Delete
-        </v-btn>
+        <a @click="hideCtrls" class="cancel-link mr-3">Cancel</a>
+        <v-dialog
+            v-model="checklistItem.deleteConfirm"
+            width="500">
+          <template #activator="{ on }">
+            <v-btn v-show="editMode" color="brRed" small v-on="on"
+                    class="white--text py-1 px-2">
+              Delete
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title
+                class="headline grey lighten-2"
+                primary-title>
+              Confirm
+            </v-card-title>
+
+            <v-card-text class="pt-4">
+              Are you sure you want to delete this checklist item?
+            </v-card-text>
+
+            <v-divider></v-divider>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                  @click="checklistItem.deleteConfirm = false">
+                No
+              </v-btn>
+              <v-btn
+                  color="primaryCustom"
+                  text
+                  @click="[deleteItem(), checklistItem.deleteConfirm = false]">
+                Yes
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-btn @click="saveItem" color="primaryButton" class="white--text py-1 px-2"
                :disabled="checklistItem.description === ''" small>
           {{ addMode ? 'Add' : 'Update' }}
@@ -34,17 +66,17 @@
     </form>
     <draggable v-model="checklistItemsCopy" group="checklistGroup"
                @start="drag=true" @end="reorderChecklistItems">
-      <v-list v-for="item in checklistItemsCopy"
-              :key="item.id">
+      <v-list v-for="(item,idx) in checklistItemsCopy" :key="item.id" class="py-0">
+        <v-divider v-if="idx !== 0"></v-divider>
         <v-list-item v-show="checklistItemsCopy.length > 0"
                      class="grab" :title="item.description">
           <v-list-item-action>
             <v-icon small v-if="userCanEdit" class="mr-3" @click="editItem(item)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.description"
-                               :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
-            </v-list-item-title>
+            <pre class="app-pre-wrapper">
+                 {{item.description}}
+            </pre>
           </v-list-item-content>
           <v-list-item-action>
             <v-icon v-if="userCanEdit">drag_handle</v-icon>
@@ -246,5 +278,8 @@
     padding: 20px;
     font-size: 0.95em;
     text-align: left;
+  }
+  .ahj-checklist-item {
+    border-bottom: solid 1px #6B777D;
   }
 </style>
