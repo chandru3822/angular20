@@ -40,7 +40,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 
@@ -190,13 +189,21 @@ public class ProjectProcessStepService {
 
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, boolean performAutoTrigger) {
     User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
+
+    if(null != projectId) {
+      //had to change this so that a parent looking at a child project could still see right statuses
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("processStepId", processStepId);
     params.put("userPositionId", userPositionId);
     params.put("userId", user.getId());
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", companyId);
 
     Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
 
