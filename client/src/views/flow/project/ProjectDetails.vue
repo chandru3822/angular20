@@ -1,7 +1,6 @@
 <template>
 <v-row id="project-details-container" v-if="project && project.id" class="mt-2">
   <v-col cols="12" lg="12" class="pt-0">
-
     <v-col v-if="isFieldsLoading">
       <SpinnerInline :size="20" color="primaryCustom"/>
     </v-col>

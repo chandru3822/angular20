@@ -5,7 +5,8 @@
            cott.company_object_type_id,
            cot.object_type_id,
            cott.display_order,
-           cott.archived
+           cott.archived,
+           concat('tab_',cott.id) as unique_identifier
     from flow.company_object_type_tab cott
         inner join flow.company_object_type cot on cot.id = cott.company_object_type_id
     where cot.object_type_id = :objectTypeId

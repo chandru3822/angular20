@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 public class ObjectTypeTab {
 
   private Long id, companyObjectTypeId, displayOrder;
-  private String tabName;
+  private String tabName, uniqueIdentifier;
   private Boolean archived;
 }
