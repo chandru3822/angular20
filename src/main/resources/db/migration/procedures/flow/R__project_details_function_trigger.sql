@@ -116,7 +116,7 @@ BEGIN
                 v_value = v_value || '::numeric';
             elsif v_data_type_id = 5 then
                 case when new.text_value is null then select 'null' into v_value; else select quote_literal(new.text_value) into v_value; end case;
-                v_value = v_value || '::numeric';
+                v_value = v_value || '::text';
             elsif v_data_type_id = 6 then
                 case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
                 v_value = v_value || '::integer';
@@ -194,11 +194,11 @@ declare
     v_config_id       integer;
     v_sql             character varying;
     v_value           character varying;
+    v_second_field_to_update character varying;
 BEGIN
 
-
-    select pdc.id, field_to_update, data_type_id
-    into v_config_id,v_field_to_update,v_data_type_id
+    select pdc.id, field_to_update, data_type_id,second_field_to_update
+    into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update
     from brs.project_details_config pdc
     where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id;
 
@@ -225,6 +225,18 @@ BEGIN
         -- raise notice 'in if %',v_sql;
         execute v_sql;
 
+        if v_second_field_to_update is not null then
+            case when new.int_value is null then select 'null' into v_value;
+                else
+                    select quote_literal(name)
+                    into v_value
+                    from flow.list_of_value
+                    where id = new.int_value;
+                end case;
+            v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
+           where project_id = $$ || new.project_id;
+            execute v_sql;
+        end if;
 
     end if;
 
