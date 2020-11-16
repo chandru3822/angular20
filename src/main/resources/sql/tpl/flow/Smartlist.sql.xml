@@ -350,13 +350,13 @@ order by sfa.display_order;
 <smartlist.getAssignedProjectDetailsFields><![CDATA[
 select sfa.id,
        sfa.smartlist_id,
-       sfa.project_details_column,
+       case when pdc.second_field_to_update is not null then sfa.project_details_column || '_name' else sfa.project_details_column end as project_details_column,
        pdc.display_name as name,
        case when sfa.project_details_column = 'ahj' then 8 else pdc.data_type_id end as data_type_id,
        case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 inner join (
-  select distinct field_to_update, display_name, data_type_id
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update
   from brs.project_details_config
 ) pdc on pdc.field_to_update = sfa.project_details_column
 where sfa.smartlist_id = :smartlistId and
@@ -393,7 +393,7 @@ select
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
-  case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
+  case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
