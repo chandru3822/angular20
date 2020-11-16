@@ -37,14 +37,14 @@ public class SystemListService {
     return results;
   }
 
-  public List<ListOfValue> getSystemListOptionsForCompany(Long listId, Boolean subOptions, List<Long> systemListOptionIds) {
-    return getSystemListOptionsForCompany(listId, subOptions, systemListOptionIds, null);
+  public List<ListOfValue> getSystemListOptionsForCompany(Long listId, Boolean subOptions, List<Long> systemListOptionIds, Long companyId) {
+    return getSystemListOptionsForCompany(listId, subOptions, systemListOptionIds, null, companyId);
   }
 
-  public List<ListOfValue> getSystemListOptionsForCompany(Long listId, Boolean subOptions, List<Long> systemListOptionIds, Long intValue) {
+  public List<ListOfValue> getSystemListOptionsForCompany(Long listId, Boolean subOptions, List<Long> systemListOptionIds, Long intValue, Long companyId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", null != companyId ? companyId : user.getCompanyId());
     params.put("systemListId", listId);
     params.put("subOptions", subOptions);
     params.put("systemListOptionIds", systemListOptionIds);

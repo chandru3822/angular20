@@ -236,7 +236,7 @@ public class CustomFieldService {
         }
       } else if (null != cf.getCompanySystemListId()) {
         cf.setHasListValues(true);
-        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getCompanySystemListId(), true, cf.getSystemListOptionIds());
+        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
         cf.setListOfValues(listOfValues);
       }
     }
@@ -265,7 +265,7 @@ public class CustomFieldService {
         }
       } else if (null != cf.getCompanySystemListId()) {
         cf.setHasListValues(true);
-        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getCompanySystemListId(), true, cf.getSystemListOptionIds());
+        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());
         cf.setListOfValues(listOfValues);
       }
     }
