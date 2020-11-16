@@ -75,7 +75,6 @@
             v-model="processStep.main"
             :disabled="processStep.main || !userCanEdit || projectHasActiveProcessStep(processStep)"
             label="Primary"
-            @change="updateMain(processStep.projectProcessStepId)"
           />
         </template>
         <v-card>
