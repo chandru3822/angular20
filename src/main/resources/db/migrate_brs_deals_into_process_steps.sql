@@ -1079,6 +1079,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id =1293 then max_pitch::integer
                  when p.custom_field_group_assignment_id =707 then (select id from flow.list_of_value where parent_id = 720
                                                                                                         and name = d2.financier :: JSON #>> '{0}')
+                when p.custom_field_group_assignment_id =17271 then (select design_nbr
+                                                                     from blueraven.version_control vc
+                                                                              inner join blueraven.design_log dl on dl.id = log_id
+                                                                     where document_package_type_id = 3
+                                                                       and is_active is true
+                                                                       and log_type_id = 2
+                                                                        and vc.deal_id = d2.id limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -1149,6 +1156,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id =1293 then max_pitch::integer
                  when p.custom_field_group_assignment_id =707 then (select id from flow.list_of_value where parent_id = 720
                                                                                                         and name = d2.financier :: JSON #>> '{0}')
+                 when p.custom_field_group_assignment_id =17271 then (select design_nbr
+                                                                      from blueraven.version_control vc
+                                                                               inner join blueraven.design_log dl on dl.id = log_id
+                                                                      where document_package_type_id = 3
+                                                                        and is_active is true
+                                                                        and log_type_id = 2
+                                                                        and vc.deal_id = d2.id limit 1)
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -14391,9 +14405,10 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-         where originator_id = 1 and (ahj_mid_point_inspection_outcome in ('Pass','Fail') or
-                                      (ahj_mid_point_inspection_date <= (now() at time zone 'US/Mountain') and ahj_mid_point_inspection_outcome is null))
-           and ahj_mid_point_inspection_verified_date is null) returning *),
+         where originator_id = 1 and ahj_inspection_passed_date is null and
+                 ahj_mid_point_inspection_date ::DATE <= (now() at time zone 'US/Mountain') and
+             (ahj_mid_point_inspection_outcome is null OR
+              (ahj_mid_point_inspection_outcome in ('Pass','Fail') and ahj_mid_point_inspection_verified_date is null))) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -17984,13 +17999,13 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                       from blueraven.deal d1
                                                                                inner join blueraven.design_log_bom dlb on dlb.deal_id = d2.id
                                                                       where dlb.delivery_time is not null and
-                                                                          d1.id = d2.id  )
+                                                                          d1.id = d2.id limit 1 )
                  else null end,
             case when p.custom_field_group_assignment_id = 1032 then (select dlb.note
                                                                       from blueraven.deal d1
                                                                                inner join blueraven.design_log_bom dlb on dlb.deal_id = d2.id
                                                                       where dlb.note is not null and
-                                                                              d1.id = d2.id  )
+                                                                              d1.id = d2.id  limit 1 )
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2

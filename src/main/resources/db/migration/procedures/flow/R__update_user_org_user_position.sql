@@ -54,7 +54,8 @@ BEGIN
                   left join flow.org o on o.id = up.org_id and o.company_id = p.company_id
                   left join flow.company_state cs on cs.id = o.company_state_id
                   cross join flow.user_org_hierarchy(o.id) org_hierarchy
-         where u.id = any (p_user_ids));
+         where u.id = any (p_user_ids)
+            and up.archived is false);
 
     insert into flow.user_position_hierarchy_vw(user_id, org_id, user_position_id, position_id, hierarchy)
         (select up.user_id,
@@ -71,7 +72,8 @@ BEGIN
                                      ) order by h.org_level_id)::jsonb
                  from flow.user_org_hierarchy(up.org_id) as h) as hierarchy
          from flow.user_position up
-         where up.user_id = any (p_user_ids));
+         where up.user_id = any (p_user_ids)
+            and up.archived is false);
 END;
 $BODY$
     LANGUAGE plpgsql VOLATILE

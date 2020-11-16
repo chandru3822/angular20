@@ -363,3 +363,30 @@ drop trigger if exists concrete_user_audit_trg ON flow.user;
 CREATE TRIGGER concrete_user_audit_trg
     after INSERT or update ON flow.user
     FOR EACH ROW EXECUTE PROCEDURE flow.concrete_user_audit();
+
+
+
+CREATE OR REPLACE FUNCTION flow.concrete_project_process_step_audit()
+    RETURNS TRIGGER AS $$
+BEGIN
+    insert into flow.project_process_step_audit(project_process_step_id, project_id, process_step_id,
+                                                user_position_id, company_process_step_status_type_id,
+                                                process_step_complete_date, date_created, date_modified,
+                                                created_by_id, modified_by_id, archived, main, migrated_created_date,
+                                                migrated_work_type_id, migrated_org_id, migrated_start_time, migrated_end_time)
+    values(new.id, new.project_id, new.process_step_id,
+           new.user_position_id, new.company_process_step_status_type_id,
+           new.process_step_complete_date, new.date_created, new.date_modified,
+           new.created_by_id, new.modified_by_id, new.archived, new.main, new.migrated_created_date,
+           new.migrated_work_type_id, new.migrated_org_id, new.migrated_start_time, new.migrated_end_time);
+
+
+    RETURN NULL;
+END
+$$
+    LANGUAGE plpgsql;
+
+drop trigger if exists concrete_project_process_step_audit_trg ON flow.project_process_step;
+CREATE TRIGGER concrete_project_process_step_audit_trg
+    after INSERT or update ON flow.project_process_step
+    FOR EACH ROW EXECUTE PROCEDURE flow.concrete_project_process_step_audit();
