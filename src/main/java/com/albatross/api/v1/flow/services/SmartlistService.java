@@ -592,6 +592,7 @@ public class SmartlistService {
                 final String joinUserPosition = UUID.randomUUID().toString();
                 query.append(String.format("\nleft join flow.user_position \"%s\" on \"%s\".id = \"%s\".%s ", joinUserPosition, joinUserPosition, joinUuid, f.getJoinColumn()));
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), joinAlias, joinAlias, joinUserPosition));
+                f.setUserPositionTable(joinUserPosition);
               } else {
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), joinAlias, joinAlias, joinUuid, f.getJoinColumn()));
               }
@@ -757,7 +758,13 @@ public class SmartlistService {
                 try {
                   referenceTable = joinTables.stream()
                     .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
-                    .map(SmartlistFieldAssignment::getValueReferenceTable)
+                    .map(t -> {
+                      if (Objects.equals(t.getReferenceTable(), "flow.user")) {
+                        return (t.getObjectTypeId() == 4) ? t.getUserPositionTable() : "flow.user_position";
+                      } else {
+                        return t.getValueReferenceTable();
+                      }
+                    })
                     .findFirst()
                     .orElse(null);
                 } catch (NullPointerException e) {
@@ -772,23 +779,32 @@ public class SmartlistService {
                     final String referenceUuid = UUID.randomUUID().toString();
 
                     additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".process_step_id = %s and \"%s\".project_id = flow.project.id ", r.getJoinTable(), joinUuid, joinUuid, r.getProcessStepId(), joinUuid));
-                    additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , r.getReferenceTable(), referenceUuid, referenceUuid, joinUuid, r.getJoinColumn()));
+
+                    if (Objects.equals(r.getReferenceTable(), "flow.user")) {
+                      additionalJoins.append(String.format("\nleft join flow.user_position \"%s\" on \"%s\".id = \"%s\".%s ", referenceUuid, referenceUuid, joinUuid, r.getJoinColumn()));
+                    } else {
+                      additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , r.getReferenceTable(), referenceUuid, referenceUuid, joinUuid, r.getJoinColumn()));
+                    }
+
                     referenceLocation = String.format("\"%s\".id", referenceUuid);
                   } else {
-
-                    // see if table we need is already been joined, if so use it
-                    final String table = joinTables.stream()
-                      .filter(t -> (t.getJoinTable() != null && t.getJoinColumn() != null) && t.getJoinTable().equals(r.getJoinTable()) && t.getJoinColumn().equals(r.getJoinColumn()))
-                      .map(SmartlistFieldAssignment::getValueReferenceTable)
-                      .findFirst()
-                      .orElse(null);
-
-                    if (table != null) {
-                      referenceLocation = "\"" + table + "\".id";
+                    if (Objects.equals(r.getReferenceTable(), "flow.user")) {
+                      referenceLocation = "flow.user_position.id";
                     } else {
-                      final String referenceUuid = UUID.randomUUID().toString();
-                      additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", r.getReferenceTable(), referenceUuid, referenceUuid, r.getJoinTable(), r.getJoinColumn()));
-                      referenceLocation = String.format("\"%s\".id", referenceUuid);
+                      // see if table we need is already been joined, if so use it
+                      final String table = joinTables.stream()
+                        .filter(t -> (t.getJoinTable() != null && t.getJoinColumn() != null) && t.getJoinTable().equals(r.getJoinTable()) && t.getJoinColumn().equals(r.getJoinColumn()))
+                        .map(SmartlistFieldAssignment::getValueReferenceTable)
+                        .findFirst()
+                        .orElse(null);
+
+                      if (table != null) {
+                        referenceLocation = "\"" + table + "\".id";
+                      } else {
+                        final String referenceUuid = UUID.randomUUID().toString();
+                        additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", r.getReferenceTable(), referenceUuid, referenceUuid, r.getJoinTable(), r.getJoinColumn()));
+                        referenceLocation = String.format("\"%s\".id", referenceUuid);
+                      }
                     }
                   }
                 }
