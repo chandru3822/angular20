@@ -152,11 +152,12 @@
                 label="End Time"
                 @input="validateSaveEvent()"
               />
-              <v-select v-model="selectedProject.resource"
+              <v-autocomplete v-model="selectedProject.resource"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
                         placeholder=" "
                         return-object
+                        clearable
                         item-text="name"
                         :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit"
                         :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit"
