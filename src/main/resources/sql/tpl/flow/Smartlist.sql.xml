@@ -236,7 +236,7 @@ select distinct field_to_update as project_details_column,
                         ) listOfValues
                 ) end as list_of_values
 from brs.project_details_config
-order by field_to_update
+order by display_name
 ]]></smartlist.getAvailableProjectDetailsFields>
 
 <smartlist.getAssignedFields><![CDATA[
