@@ -3,7 +3,7 @@
     select *
     from flow.company_process_step_status_type
     where archived is not true
-    and case when :isParent
+    and case when (:isParent and not :parentOverride)
         then company_id = :parentCompanyId
         else company_id = :companyId end
     order by process_step_status_type

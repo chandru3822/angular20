@@ -362,7 +362,11 @@ export default {
     },
     async getAvailableStatuses () {
       try {
-        const {data} = await getRequest(`/processStep/status`)
+        let params = {
+          projectId: parseInt(this.projectId)
+        }
+        const {data} = await getRequestWithParams(`/processStep/status`, { params })
+        // const {data} = await getRequest(`/processStep/status`)
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
@@ -527,7 +531,7 @@ export default {
       async updateMain(projectProcessStepId) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
-              await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.id === 1))
+              await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1))
           } catch (e) {
               logError(e)
               this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
