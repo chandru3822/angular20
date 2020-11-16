@@ -96,6 +96,14 @@ where
   id = :id;
 ]]></smartlist.update>
 
+<smartlist.delete><![CDATA[
+update flow.smartlist
+set archived = true,
+    date_modified = now(),
+    modified_by_id = :userId
+where id = :id
+]]></smartlist.delete>
+
 <smartlist.getAvailableFieldByCfgaId><![CDATA[
 select null as "smartlistFieldId",
     cfga.id as "customFieldGroupAssignmentId",

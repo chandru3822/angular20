@@ -18,4 +18,7 @@ public class WorkQueueDetail {
 
     //one day i will become a good developer and understand why i can't set these types of values in vue without them existing in the first place!
     private Boolean showNotesModal = false;
+
+    //i hate this so much - this is a value only used in 3 work queues - but br NEEDED it for go live
+    private String proposalDueDate;
 }

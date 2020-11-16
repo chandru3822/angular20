@@ -54,14 +54,23 @@
                           label="Type of Inspections Required"
                           filled
             ></v-text-field>
-            <v-textarea v-model="ahjInspection.schedulingNote"
-                        @change="dataWasChanged = true"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Scheduling Note"
-                        filled
-                        auto-grow
-            ></v-textarea>
+            <v-card flat class="pa-0">
+              <v-card-title class="pa-0">
+                Scheduling Note
+                <v-btn text x-small fab @click="editSchedulingNote = !editSchedulingNote">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjInspection.schedulingNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editSchedulingNote"
+                            :disabled="!userCanEdit || !editSchedulingNote"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjChecklist v-if="dataReady"
                           title="Checklist"
                           :checklistTypeId="12"
@@ -105,22 +114,40 @@
                             class="other-field"
               ></v-text-field>
             </div>
-            <v-textarea v-model="ahjInspection.technicianInstructionNote"
-                        @change="dataWasChanged = true"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Instructions for BRS Technician"
-                        filled
-                        auto-grow
-            ></v-textarea>
-            <v-textarea v-model="ahjInspection.documentationNote"
-                        @change="dataWasChanged = true"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Documentation Notes"
-                        filled
-                        auto-grow
-            ></v-textarea>
+            <v-card flat class="pa-0">
+              <v-card-title class="pa-0">
+                Instructions for BRS Technician
+                <v-btn text x-small fab @click="editInstructionsForBRSTech = !editInstructionsForBRSTech">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjInspection.technicianInstructionNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editInstructionsForBRSTech"
+                            :disabled="!userCanEdit || !editInstructionsForBRSTech"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
+            <v-card flat class="pa-0">
+              <v-card-title class="pa-0">
+                Documentation Notes
+                <v-btn text x-small fab @click="editDocumentationNote = !editDocumentationNote">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjInspection.documentationNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editDocumentationNote"
+                            :disabled="!userCanEdit || !editDocumentationNote"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjChecklist v-if="dataReady"
                           title="Checklist"
                           :checklistTypeId="13"
@@ -169,14 +196,23 @@
                           label="Phone # for Time Window"
                           filled
             ></v-text-field>
-            <v-textarea v-model="ahjInspection.schedulingWithCustomerNote"
-                        @change="dataWasChanged = true"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Scheduling with Customer Note"
-                        filled
-                        auto-grow
-            ></v-textarea>
+            <v-card flat class="pa-0">
+              <v-card-title class="pa-0">
+                Scheduling with Customer Note
+                <v-btn text x-small fab @click="editCustomerNote = !editCustomerNote">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjInspection.schedulingWithCustomerNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editCustomerNote"
+                            :disabled="!userCanEdit || !editCustomerNote"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjChecklist v-if="dataReady"
                           title="Scheduling Checklist"
                           :checklistTypeId="9"
@@ -225,14 +261,23 @@
                             class="other-field"
               ></v-text-field>
             </div>
-            <v-textarea v-model="ahjInspection.obtainingResultsNote"
-                        @change="dataWasChanged = true"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Obtaining Results Notes"
-                        filled
-                        auto-grow
-            ></v-textarea>
+            <v-card flat class="pa-0">
+              <v-card-title class="pa-0">
+                Obtaining Results Notes
+                <v-btn text x-small fab @click="editObtainingResultsNote = !editObtainingResultsNote">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjInspection.obtainingResultsNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editObtainingResultsNote"
+                            :disabled="!userCanEdit || !editObtainingResultsNote"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjChecklist v-if="dataReady"
                           title="Obtaining Results Checklist"
                           :checklistTypeId="10"
@@ -292,14 +337,23 @@
                           :disabled="!userCanEdit"
                           filled
             ></v-text-field>
-            <v-textarea v-model="ahjInspection.reinspectionNote"
-                        @change="dataWasChanged = true"
-                        label="Re-inspection Notes"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        filled
-                        auto-grow
-            ></v-textarea>
+            <v-card flat class="pa-0">
+              <v-card-title class="pa-0">
+                Re-inspection Notes
+                <v-btn text x-small fab @click="editReinspectionNote = !editReinspectionNote">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjInspection.reinspectionNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editReinspectionNote"
+                            :disabled="!userCanEdit || !editReinspectionNote"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjChecklist v-if="dataReady"
                           title="Re-inspections Checklist"
                           :checklistTypeId="11"
@@ -339,14 +393,23 @@
                         filled
               ></v-select>
             </div>
-            <v-textarea v-model="ahjInspection.mpuInspectionNote"
-                        @change="dataWasChanged = true"
-                        label="MPU Inspection Notes"
-                        filled
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        auto-grow
-            ></v-textarea>
+            <v-card flat class="pa-0">
+              <v-card-title class="pa-0">
+                MPU Inspection Notes
+                <v-btn text x-small fab @click="editMPUNote = !editMPUNote">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjInspection.mpuInspectionNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editMPUNote"
+                            :disabled="!userCanEdit || !editMPUNote"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjContact v-if="dataReady"
                         title="Utility Service Department Contacts"
                         :contactTypeId="9"
@@ -579,6 +642,13 @@
       dataWasChanged: false,
       dataReady: false,
       customFieldGroupAssignments: [],
+      editSchedulingNote: false,
+      editDocumentationNote: false,
+      editInstructionsForBRSTech: false,
+      editCustomerNote: false,
+      editObtainingResultsNote: false,
+      editReinspectionNote: false,
+      editMPUNote: false,
       ahjInspection: {
         reinspectionFeeAmount: null,
         schedulingWithAhjChecklist: [],

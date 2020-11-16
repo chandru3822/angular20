@@ -52,7 +52,7 @@
                              THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
                          ELSE 1 = 1 END
                 AND CASE WHEN :projectId:: INTEGER IS NOT NULL
-                             THEN p.id = :projectId:: INTEGER ELSE 1 = 1 END
+                             THEN prj.id = :projectId:: INTEGER ELSE 1 = 1 END
 
               GROUP BY p.id, p.period_end
               ORDER BY p.period_end desc) AS sub_rows

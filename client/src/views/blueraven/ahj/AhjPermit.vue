@@ -179,15 +179,23 @@
                           :checklistItems="ahjPermit.submissionChecklist"
                           :isNested="true"
             ></AhjChecklist>
-            <v-textarea v-model="ahjPermit.submissionNote"
-                        @change="dataWasChanged = true"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Submission Instructions"
-                        filled
-                        auto-grow
-                        style="margin-top: 30px"
-            ></v-textarea>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                Submission Instructions
+                <v-btn text x-small fab @click="editSubmissionInstruction = !editSubmissionInstruction">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.submissionNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editSubmissionInstruction"
+                            :disabled="!userCanEdit || !editSubmissionInstruction"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
           </v-card-text>
         </v-card>
       </v-col>
@@ -239,15 +247,23 @@
                           :checklist-items="ahjPermit.revisionChecklist"
                           :isNested="true"
             ></AhjChecklist>
-            <v-textarea v-model="ahjPermit.revisionNote"
-                        @change="dataWasChanged = true"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        label="Revision Submission Instructions"
-                        filled
-                        auto-grow
-                        style="margin-top: 30px"
-            ></v-textarea>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                Revision Submission Instructions
+                <v-btn text x-small fab @click="editRevisionSubmissionInstruction = !editRevisionSubmissionInstruction">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.revisionNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editRevisionSubmissionInstruction"
+                            :disabled="!userCanEdit || !editRevisionSubmissionInstruction"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
           </v-card-text>
         </v-card>
       </v-col>
@@ -299,15 +315,23 @@
                           :checklist-items="ahjPermit.asBuiltChecklist"
                           :isNested="true"
             ></AhjChecklist>
-            <v-textarea v-model="ahjPermit.asBuiltNote"
-                        @change="dataWasChanged = true"
-                        label="As-Built Submission Instructions"
-                        filled
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        auto-grow
-                        style="margin-top: 30px"
-            ></v-textarea>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                As-Built Submission Instructions
+                <v-btn text x-small fab @click="editAsBuiltSubmissionInstruction = !editAsBuiltSubmissionInstruction">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.asBuiltNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editAsBuiltSubmissionInstruction"
+                            :disabled="!userCanEdit || !editAsBuiltSubmissionInstruction"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
           </v-card-text>
         </v-card>
       </v-col>
@@ -410,14 +434,23 @@
                          :documents="documents"
                          :isNested="true"
             ></AhjDocument>
-            <v-textarea v-model="ahjPermit.deliveryNote"
-                        @change="dataWasChanged = true"
-                        label="Delivery Instructions"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
-                        filled
-                        auto-grow
-            ></v-textarea>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                Delivery Instructions
+                <v-btn text x-small fab @click="editDeliveryInstruction = !editDeliveryInstruction">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.deliveryNote"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editDeliveryInstruction"
+                            :disabled="!userCanEdit || !editDeliveryInstruction"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
           </v-card-text>
         </v-card>
       </v-col>
@@ -595,6 +628,10 @@
       businessLicenseMenu: false,
       contractorLicenseMenu: false,
       otherLicenseMenu: false,
+      editRevisionSubmissionInstruction: false,
+      editSubmissionInstruction: false,
+      editAsBuiltSubmissionInstruction: false,
+      editDeliveryInstruction: false,
       // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
       ahjPermit: {
         submissionChecklist: [],

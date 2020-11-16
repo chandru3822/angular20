@@ -40,14 +40,51 @@
                   <span v-if="!constants.IS_MOBILE">Save</span>
                 </v-btn>
 
-                <v-btn
+                <v-dialog
+                  v-model="showDeleteDialog"
+                  width="500"
                   v-if="smartlist.id && canEdit"
-                  text
-                  color="brRed"
                 >
-                  <v-icon>delete</v-icon>
-                  <span v-if="!constants.IS_MOBILE">Delete</span>
-                </v-btn>
+                  <template #activator="{on}">
+                    <v-btn
+                      text
+                      color="brRed"
+                      v-on="on"
+                    >
+                      <v-icon>delete</v-icon>
+                      <span v-if="!constants.IS_MOBILE">Delete</span>
+                    </v-btn>
+                  </template>
+
+                  <v-card>
+                    <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title
+                    >
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text>
+                      Are you sure you want to delete this smartlist?
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="showDeleteDialog = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primaryCustom"
+                        text
+                        @click="[showDeleteDialog = false, deleteSmartlist()]">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </v-toolbar-items>
             </v-toolbar>
           </v-col>
@@ -383,6 +420,7 @@ export default {
         {objectTypeId: 2, objectType: 'Contact'}
       ],
       requiredRules: constants.BASIC_REQUIRED_RULE,
+      showDeleteDialog: false,
       projectDetailsColumns: []
     }
   },
@@ -589,6 +627,19 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteSmartlist () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/smartlist/${this.$route.params.smartlistId}`)
+        this.$router.go(-1)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Unable to delete smartlist')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
