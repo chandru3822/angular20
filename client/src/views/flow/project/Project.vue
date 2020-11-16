@@ -218,7 +218,10 @@ export default {
     getProjectTabs: async function () {
       this.tabsLoading = true
       try {
-        const {data} = await getRequest(`/objectTypeTab/project`)
+        let params = {
+          projectId: parseInt(this.projectId)
+        }
+        const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
         this.tabs = data
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
       } catch (e) {

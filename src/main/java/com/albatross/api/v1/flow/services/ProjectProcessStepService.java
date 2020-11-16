@@ -81,6 +81,11 @@ public class ProjectProcessStepService {
       throw new RuntimeException("File cannot be empty");
     }
 
+    //had to change this so that a parent looking at a child project could still see project statuses
+    HashMap<String, Object> p2 = new HashMap<>();
+    p2.put("projectProcessStepId", projectProcessStepId);
+    Long companyId = sqlCache.queryForObject("projectProcessStep.getCompanyId", p2, Long.class);
+
     //get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
@@ -104,7 +109,7 @@ public class ProjectProcessStepService {
     params.put("size", file.getSize());
     params.put("createdById", user.getId());
     params.put("attachmentTypeId", attachmentTypeId);
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", companyId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
 

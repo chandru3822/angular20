@@ -310,7 +310,10 @@ export default {
     async getOwners () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/contact/owners`)
+        let params = {
+          contactId: parseInt(this.contactId)
+        }
+        const {data} = await getRequestWithParams(`/contact/owners`, { params })
         this.owners = data
 
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -353,7 +356,10 @@ export default {
     async getAvailableProcesses () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/processes`)
+        let params = {
+          contactId: parseInt(this.contactId)
+        }
+        const {data} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
 
         this.$store.commit(AppMutations.SET_LOADING, false)
