@@ -286,7 +286,6 @@ public class ProjectProcessStepService {
       securityService.setCurrentUserDetails(userDetails);
 
       ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
-      log.info("fetch query: pps");
 
       if (pps.getProcessStepStatusTypeId() == 1) {
           pps.getActions().forEach(action -> {
@@ -337,14 +336,11 @@ public class ProjectProcessStepService {
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
       Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, false);
-        log.info("insert query: pps");
       if (childStep.getAutoTriggerActionCount() > 0) {
-          log.info("going recursive");
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
       }
     });
 
-    log.info("log performed action");
     sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(), "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.getId()));
   }
 
@@ -399,9 +395,8 @@ public class ProjectProcessStepService {
     ExpressionParser parser = new SpelExpressionParser();
     if (logicString.length() > 0) {
       // @TODO: humes, This is for debugging purposes
-      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), logicString.toString()));
       final String tempString = logicString.toString().replaceAll("AND", "&&").replaceAll("OR", "||");
-      log.info(String.format("REPL friendly string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
+      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
       return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
     } else {
       return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
@@ -766,7 +761,6 @@ public class ProjectProcessStepService {
                 String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
-                log.info(String.format("Successfully executed child action function. CFA ID: %s, action ID: %s",childFunction.getId(), actionId));
             } catch (Exception e) {
                 log.error(String.format("Unable to run child action function. CFA ID: %s, action ID: %s", childFunction.getId(), actionId));
                 e.printStackTrace();
