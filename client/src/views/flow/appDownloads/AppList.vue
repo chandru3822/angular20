@@ -131,7 +131,7 @@ export default {
         {text: 'Filename', value: 'filename', show: true},
         {text: 'Version', value: 'version', show: true},
         {text: 'Created', value: 'dateCreated', show: true},
-        {text: '', value: 'icons', show: true},
+        {text: '', value: 'icons', show: true, width: 175},
       ],
     }
   },
