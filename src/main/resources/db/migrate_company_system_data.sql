@@ -159,7 +159,7 @@ insert into flow.list_of_value(name, code, parent_id, display_order, date_create
 insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id,
                               date_created, date_modified, created_by_id, modified_by_id, archived,
                               company_system_list_id, custom_field_sql_reference_table,
-                              custom_field_sql_key, system_list_option_ids,readonly, multi_line,migrated_original_id)
+                              custom_field_sql_key, system_list_option_ids,readonly,migrated_original_id)
     (select  (select id
                                          from flow.list_of_value lov
                                          where cf.list_of_value_id = lov.migrated_original_id and lov.migrated_company_id = c.id),
@@ -168,7 +168,7 @@ insert into flow.custom_field(list_of_value_id, company_id, field_name, company_
                                         (select csl2.id from flow.company_system_list csl2
                                                             inner join flow.system_list sl1 on sl1.id = csl2.system_list_id
                                          where csl2.company_id = c.id and sl1.system_list = sl.system_list), custom_field_sql_reference_table,
-                                        custom_field_sql_key,system_list_option_ids, readonly, multi_line,cf.id
+                                        custom_field_sql_key,system_list_option_ids, readonly,cf.id
      from flow.custom_field cf
               left join flow.company_data_type cdt2  on cdt2.id = cf.company_data_type_id
               left join flow.company_system_list csl on csl.id = cf.company_system_list_id
