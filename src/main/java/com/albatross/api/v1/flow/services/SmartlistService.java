@@ -489,7 +489,7 @@ public class SmartlistService {
           query.append(String.format(" \n(select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
           final String tempUuid = UUID.randomUUID().toString();
-          final String subQuery = String.format("select * from flow.get_system_list_options(%s::int, %s::int, true, array%s::int[], \"%s\".int_value)", f.getCompanyId(), f.getCompanySystemListId(), f.getCustomField().getSystemListOptionIds(), f.getValueReferenceTable());
+          final String subQuery = String.format("select * from flow.get_system_list_option_value(%s::int, \"%s\".int_value)", f.getCompanySystemListId(), f.getValueReferenceTable());
           final String sql = String.format(" \n(select \"%s\".name from (%s) as \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", tempUuid, subQuery, tempUuid, tempUuid, f.getValueReferenceTable(), f.getName());
           query.append(sql);
       } else {
