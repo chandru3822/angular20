@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.FieldInUse;
+import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.services.ProcessStepService;
 import lombok.extern.slf4j.Slf4j;
@@ -64,5 +65,10 @@ public class ProcessStepController {
   @GetMapping(value = "/getByCompany", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProcessStep>> getProcessStepsByCompanyId() {
     return new ResponseEntity<>(processStepService.getByCompanyId(), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{id}/owners", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Owner>> getAvailableProcessStepOwners(@PathVariable Long id) {
+    return new ResponseEntity<>(processStepService.getOwners(id), HttpStatus.OK);
   }
 }
