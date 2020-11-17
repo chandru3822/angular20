@@ -42,7 +42,8 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       select array(
         select pspop.position_id
         from flow.process_step_process_owning_position pspop
-        where pspop.process_step_process_id = :processStepProcessId
+        where pspop.process_step_process_id = :processStepProcessId and
+              pspop.archived is not true
       ) as position_ids
     )
     select
@@ -62,8 +63,9 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
     where
       ust.has_access is true and
       up.start_date <= now() and
-      (up.end_date is null or up.end_date >= now())
-    order by u.last_name, u.first_name;
+      (up.end_date is null or up.end_date >= now()) and
+      p.archived is not true
+    order by u.last_name, u.first_name
   ]]></projectProcessStep.getOwners>
 
   <projectProcessStep.updateOwner><![CDATA[
