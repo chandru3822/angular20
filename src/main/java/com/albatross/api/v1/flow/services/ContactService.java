@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -170,19 +171,8 @@ public class ContactService {
 
   public List<Owner> getOwnersForContact(Long contactId) {
     User user = securityService.getCurrentUser();
-    Long companyId = user.getCompanyId();
-    HashMap<String, Object> params = new HashMap<>();
-
-    if(null != contactId) {
-      //had to change this so that a parent looking at a child project could still see owners
-      params.put("contactId", contactId);
-      companyId = sqlCache.queryForObject("contact.getCompanyId", params, Long.class);
-
-    }
-    params.put("companyId", companyId);
-
-    List<Owner> results = sqlCache.query("contact.getOwners", params, Owner.class);
-    return results;
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    return sqlCache.query("contact.getOwners", Map.of("companyId", user.getCompanyId(), "inParentCompany", inParentCompany), Owner.class);
   }
 
   public Project convertToContact(Long contactId, Process process) {

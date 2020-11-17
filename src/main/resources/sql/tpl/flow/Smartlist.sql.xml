@@ -504,12 +504,12 @@ select sr.id,
         case
           when cf.list_of_value_id is not null then
             coalesce((
-            select array_to_json(array_agg(row_to_json(lov))) from (
-            select
-              lv.id,
-              lv.name
-            from flow.list_of_value lv
-            where lv.parent_id = cf.list_of_value_id
+              select array_to_json(array_agg(row_to_json(lov))) from (
+              select
+                lv.id,
+                lv.name
+              from flow.list_of_value lv
+              where lv.parent_id = cf.list_of_value_id
             ) lov), '[]')
           when cf.company_system_list_id is not null then
             coalesce((
@@ -520,6 +520,14 @@ select sr.id,
           when sf.smartlist_system_list_id is not null then
             (select array_to_json(array_agg(row_to_json(rows))) from (
               select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 2 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
+            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 4 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
             ) rows)
           else '[]'
         end as available_list_of_values
@@ -609,12 +617,12 @@ select sr.id,
         case
           when cf.list_of_value_id is not null then
             coalesce((
-            select array_to_json(array_agg(row_to_json(lov))) from (
-            select
-              lv.id,
-              lv.name
-            from flow.list_of_value lv
-            where lv.parent_id = cf.list_of_value_id
+              select array_to_json(array_agg(row_to_json(lov))) from (
+              select
+                lv.id,
+                lv.name
+              from flow.list_of_value lv
+              where lv.parent_id = cf.list_of_value_id
             ) lov), '[]')
           when cf.company_system_list_id is not null then
             coalesce((
@@ -626,6 +634,14 @@ select sr.id,
             (select array_to_json(array_agg(row_to_json(rows))) from (
              select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 2 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
+            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 4 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
+            ) rows)
           else '[]'
         end as available_list_of_values,
         (select row_to_json(f) from(

@@ -142,7 +142,9 @@ public class SmartlistService {
   }
 
     public SmartlistRequirement getRequirementById(Long requirementId) {
-        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+        User user = securityService.getCurrentUser();
+        Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
 
         if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
             final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
@@ -223,7 +225,9 @@ public class SmartlistService {
   }
 
   public List<SmartlistRequirement> getRequirements(Long smartlistId, boolean includeListValues) {
-    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId());
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
     List<SmartlistRequirement> requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
     if (includeListValues) {

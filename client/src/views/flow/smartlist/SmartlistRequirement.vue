@@ -75,7 +75,9 @@
             getOperators(newRequirement.selectedField.dataTypeId),
             getDataTypeRequirements(newRequirement.selectedField.dataTypeId),
             getProcessStepFieldData(),
-            checkSmartlistSystemList()
+            checkSmartlistSystemList(),
+            getContactOwners(),
+            getProcessStepOwners()
           ]"
         />
       </template>
@@ -449,7 +451,7 @@ export default {
       return this.newRequirement.selectedField.hasListValues || this.newRequirement.selectedField.customFieldSqlKey !== null || this.newRequirement.selectedField.companySystemListId !== null
     },
     isExpandedListField () {
-      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null
+      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null || this.expandedRequirement.availableListOfValues != null
     },
     expandedRequirementArray: {
       get: function () {
@@ -504,6 +506,32 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process step data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getContactOwners () {
+      if (this.newRequirement.objectTypeId === 2) {
+        try {
+          const {data} = await getRequest(`/contact/owners`)
+          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+          this.newRequirement.selectedField.hasListValues = true
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getProcessStepOwners () {
+      if (this.newRequirement.processStepId !== null) {
+        try {
+          const {data} = await getRequest(`/processStep/${this.newRequirement.processStepId}/owners`)
+          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+          this.newRequirement.selectedField.hasListValues = true
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
