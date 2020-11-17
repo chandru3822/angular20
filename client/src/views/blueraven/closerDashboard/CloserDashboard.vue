@@ -2789,7 +2789,6 @@
           &:hover {
             background-color: var(--v-primaryCustom-base);
             color: #fff !important;
-            opacity: 100%;
           }
         }
 
