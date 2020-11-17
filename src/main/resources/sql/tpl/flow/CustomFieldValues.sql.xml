@@ -547,6 +547,7 @@
     inner join flow.contact c on c.id = p.contact_id
     where p.id = :sourceId
   ]]></customFieldValues.project.getCompanyId>
+
   <customFieldValues.process_step.getCompanyId><![CDATA[
     select c.company_id
     from flow.project_process_step pps

@@ -135,14 +135,14 @@ public class AttachmentService {
      * @param attachmentTypeId ID of the attachmentType
      * @return
      */
-    public List<Attachment> getAttachmentsByType(String bucket, Long attachmentTypeId) {
+    public List<Attachment> getAttachmentsByType(Long attachmentTypeId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("attachmentTypeId", attachmentTypeId);
 
         List<Attachment> attachments = sqlCache.query("attachment.getAttachmentsByType", params, Attachment.class);
         attachments.forEach(attachment -> {
-            setAttachmentUrl(bucket, attachment);
-            setAttachmentPresignedUrl(bucket, attachment);
+            setAttachmentUrl(storageBucket, attachment);
+            setAttachmentPresignedUrl(storageBucket, attachment);
         });
 
         return attachments;
@@ -360,5 +360,16 @@ public class AttachmentService {
         params.put("attachmentTypeId", attachmentTypeId);
 
         sqlCache.update("attachment.addToJoinTable", params);
+    }
+
+    public void showOrHideAttachment(Attachment attachment) {
+        User currentUser = securityService.getCurrentUser();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", attachment.getId());
+        params.put("show", attachment.getShow());
+        params.put("userId", currentUser.getId());
+
+        sqlCache.update("attachment.showOrHideAttachment", params);
     }
 }

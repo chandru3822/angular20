@@ -80,6 +80,12 @@ export default new Router({
         }
       }
     }, {
+      path: '/apps',
+      name: 'appDownloads',
+      meta: { title: 'Albatross - App Download'},
+      props: true,
+      component: () => import(/* webpackChunkName: "schedule" */ './views/flow/appDownloads/AppDownloads.vue')
+    }, {
       path: '/errorLog',
       name: 'errorLog',
       meta: { title: 'Albatross - Errors'},
