@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.AttachmentType;
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.MobileAttachment;
 import com.albatross.api.v1.flow.services.AppService;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -35,5 +37,16 @@ public class AppController {
     @PutMapping(value = "/show", produces = MediaType.APPLICATION_JSON_VALUE)
     public void getApps(@RequestBody Attachment attachment) {
         attachmentService.showOrHideAttachment(attachment);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/addAttachmentRecord")
+    public Attachment uploadDocument(@RequestBody MobileAttachment mobileAttachment) throws IOException {
+
+        Attachment newRecord = attachmentService.insertAttachmentRecord(bucket, mobileAttachment);
+
+        //add to the join table
+        attachmentService.addToJoinTable(newRecord.getId(), mobileAttachment.getSourceId(), mobileAttachment.getAttachmentSourceTypeId(), false);
+
+        return newRecord;
     }
 }

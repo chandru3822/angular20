@@ -2741,6 +2741,9 @@
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
   }
+  #closer-dash-btn-toggle {
+
+  }
 
   #closer-dash-toolbar-container {
     position: sticky;
@@ -2786,7 +2789,7 @@
           &:hover {
             background-color: var(--v-primaryCustom-base);
             color: #fff !important;
-            opacity: 75%;
+            opacity: 100%;
           }
         }
 
