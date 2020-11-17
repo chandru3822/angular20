@@ -1,9 +1,11 @@
-DROP FUNCTION IF EXISTS brs.get_request_for_installation_agreements_count(boolean, bigint, character varying);
+DROP FUNCTION IF EXISTS brs.get_request_for_installation_agreements_count(boolean, bigint, boolean, bigint, bigint, character varying);
 
 CREATE OR REPLACE FUNCTION brs.get_request_for_installation_agreements_count(
     p_view_all boolean,
     p_platform_user_id bigint,
+    p_is_parent boolean,
     p_company_id bigint,
+    p_parent_company_id bigint,
     p_searchterm character varying
 )
     RETURNS INTEGER
@@ -22,7 +24,9 @@ BEGIN
                      INNER JOIN flow.state s ON s.id = cs.state_id
             WHERE pd.cancelled_date is null
                 AND pd.energized_date is null
-              and c.company_id = p_company_id
+                AND case when p_is_parent
+                    then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(p_parent_company_id::int)))
+                    else c.company_id = p_company_id end
                 AND p.project_name ILIKE '%' || p_searchterm || '%';
         ELSE
                 SELECT count(*) into p_agreement_count
@@ -34,7 +38,9 @@ BEGIN
                 where pd.closer_user_id = p_platform_user_id
                     AND pd.cancelled_date is null
                     AND pd.energized_date is null
-                  and c.company_id = p_company_id
+                    AND case when p_is_parent
+                        then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(p_parent_company_id::int)))
+                        else c.company_id = p_company_id end
                     AND p.project_name ILIKE '%' || p_searchterm || '%';
         END CASE;
         return p_agreement_count;
