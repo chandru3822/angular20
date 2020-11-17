@@ -79,7 +79,7 @@ BEGIN
                    (upv.end_date IS NULL OR upv.end_date > now()))
             union
                 select upv.user_position_id,
-                       concat(upv.first_name,' ', upv.last_name::text, ' - ', upv.position) as name
+                       concat(upv.first_name,' ', upv.last_name::text) as name
                 from flow.user_positions_vw upv
                 where user_position_id = p_int_value
             order by name;
