@@ -37,14 +37,16 @@
     <electronicDocument.getProjects>
         <![CDATA[
             SELECT *
-            FROM brs.get_request_for_installation_agreements(:view_all, :user_id, :companyId, :query, :limit, :offset)
+            FROM brs.get_request_for_installation_agreements(:view_all, :user_id, :isParent, :companyId, :parentCompanyId,
+                :query, :limit, :offset)
         ]]>
     </electronicDocument.getProjects>
 
     <electronicDocument.getProjectsCount>
         <![CDATA[
             SELECT *
-            FROM brs.get_request_for_installation_agreements_count(:view_all, :user_id, :companyId, :query)
+            FROM brs.get_request_for_installation_agreements_count(:view_all, :user_id, :isParent, :companyId,
+                :parentCompanyId, :query)
         ]]>
     </electronicDocument.getProjectsCount>
 

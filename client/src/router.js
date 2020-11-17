@@ -902,11 +902,23 @@ export default new Router({
           path: '/electronicDocuments',
           name: 'electronicDocuments',
           meta: { title: 'Albatross - Electronic Documents'},
-          component: () => import (/* webpackChunkName: "finances" */ './views/flow/electronicDocuments/ElectronicDocuments.vue'),
+          component: () => {
+              if(store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')) {
+                  return import (/* webpackChunkName: "electronicDocuments" */ './views/flow/electronicDocuments/ElectronicDocuments.vue')
+              } else  {
+                  return accessDenied()
+              }
+          },
           children: [
               {
                   path: 'request',
-                  component: () => import (/* webpackChunkName: "request" */ './views/flow/electronicDocuments/Request.vue')
+                  component: () => {
+                      if(store.getters.userHasFeature('ELECTRONIC_DOCUMENTS')) {
+                          return import (/* webpackChunkName: "electronicDocuments" */ './views/flow/electronicDocuments/Request.vue')
+                      } else  {
+                          return accessDenied()
+                      }
+                  }
               }
           ]
       }, {
