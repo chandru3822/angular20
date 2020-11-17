@@ -567,6 +567,7 @@ public class SmartlistService {
 
             final String pcfvUUID = UUID.randomUUID().toString();
             query.append(String.format("\nleft join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), pcfvUUID, pcfvUUID, joinField, joinedField, pcfvUUID, f.getCustomFieldGroupAssignmentId()));
+            f.setValueReferenceTable(pcfvUUID);
 
             if (f.getCustomFieldSqlKey() != null) {
               //custom value sql
