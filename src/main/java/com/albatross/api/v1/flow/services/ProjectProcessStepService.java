@@ -120,7 +120,7 @@ public class ProjectProcessStepService {
 
     sqlCache.update("projectProcessStep.addAttachment", params);
 
-    return attachmentService.findById(storageBucket, attachmentId);
+    return attachmentService.findById(attachmentId);
   }
 
   public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {

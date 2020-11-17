@@ -221,7 +221,7 @@ public class ProjectService {
 
     sqlCache.update("project.addAttachment", params);
 
-    return attachmentService.findById(storageBucket, attachmentId);
+    return attachmentService.findById(attachmentId);
   }
 
   public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
