@@ -99,7 +99,7 @@
   import constants from '@/helpers/constants'
 
   export default {
-    name: 'Attachments',
+    name: 'Links',
     mixins: [Vue2Filters.mixin],
 
     data () {

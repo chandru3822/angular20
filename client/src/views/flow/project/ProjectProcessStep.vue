@@ -283,6 +283,10 @@
     <v-row>
       <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
     </v-row>
+
+    <v-row>
+      <Links :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+    </v-row>
   </v-col>
 
 
@@ -296,6 +300,7 @@ import ActionButton from './ActionButton'
 import {AppMutations} from '@/stores/AppStore'
 
 import Attachments from '@/views/flow/components/Attachments'
+import Links from '@/views/flow/components/Links'
 // import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
@@ -306,7 +311,7 @@ export default {
   name: 'ProjectProcessStep',
   components: {
     ActionButton,
-
+    Links,
     Attachments,
     // NotesAndActivity,
     CustomValueInput,

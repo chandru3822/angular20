@@ -24,13 +24,17 @@ public class LinkController {
   @Autowired
   private LinkService linkService;
 
-  // AttachmentType stuff (move to a different controller?)
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Link> getLinks () {
     return linkService.getLinksForCompany();
   }
 
   @GetMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Link> getLinksForProcessStep (@PathVariable Long id) {
+    return linkService.getLinksForProcessStep(id);
+  }
+
+  @GetMapping(value = "/processStep/{id}/available", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Link> getAvailableLinksForStep (@PathVariable Long id) {
     return linkService.getAvailableLinksForProcessStep(id);
   }
