@@ -42,7 +42,7 @@ public class AppController {
     @RequestMapping(method = RequestMethod.POST, value = "/addAttachmentRecord")
     public Attachment uploadDocument(@RequestBody MobileAttachment mobileAttachment) throws IOException {
 
-        Attachment newRecord = attachmentService.insertAttachmentRecord(bucket, mobileAttachment);
+        Attachment newRecord = attachmentService.insertAttachmentRecord(mobileAttachment);
 
         //add to the join table
         attachmentService.addToJoinTable(newRecord.getId(), mobileAttachment.getSourceId(), mobileAttachment.getAttachmentSourceTypeId(), false);
