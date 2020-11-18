@@ -342,6 +342,16 @@ public class SmartlistService {
       query.append("\nwhere");
     }
 
+    // If user is in a parent company, get all rows. else if user is the child, limit rows to that company
+    User user = securityService.getCurrentUser();
+    boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    if (inParentCompany) {
+      query.append(String.format("\nbrs.project_details.company_id = any(select id from flow.company c where (c.id = %s or c.parent_company_id = %s) and c.archived is not true) and ", user.getCompanyId(), user.getCompanyId()));
+    } else {
+      query.append(String.format("\nbrs.project_details.company_id = %s and ", user.getCompanyId()));
+    }
+
     for (SmartlistRequirement r: requirements) {
       String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
       Object requirementValue = getRequirementValue(r);
