@@ -282,7 +282,7 @@
 
           <!--      if field is a single-select item -->
           <v-autocomplete
-              v-if="expandedRequirement.operatorTypeId !== null && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.listOfValueId"
+              v-if="expandedRequirement.operatorTypeId !== null && expandedRequirement.isCustomValue && isExpandedListField && !expandedRequirement.allowMultiple"
               v-model="expandedRequirement.listOfValueId"
               :items="expandedRequirement.availableListOfValues"
               label="Available Values"
@@ -292,7 +292,7 @@
 
           <!--      if field is a multi-select list -->
           <v-autocomplete
-              v-else-if="expandedRequirement.operatorTypeId && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.listOfValueIds"
+              v-else-if="expandedRequirement.operatorTypeId && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.allowMultiple"
               v-model="expandedRequirement.listOfValueIds"
               :items="expandedRequirement.availableListOfValues"
               label="Available Values"
