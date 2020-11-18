@@ -789,5 +789,21 @@ where smartlist_id = :smartlistId;
 insert into flow.smartlist_logic (smartlist_id, smartlist_requirement_id, operation_type_id, sql_order, created_by_id)
 values (:smartlistId, :smartlistRequirementId, :operationTypeId, :sqlOrder, :userId);
 ]]></smartlist.updateLogic>
+
+<smartlist.clearFieldsAndRequirements><![CDATA[
+update flow.smartlist_field_assignment
+set archived = true,
+    date_modified = now(),
+    modified_by_id = :userId
+where smartlist_id = :smartlistId and
+      archived is not true;
+
+update flow.smartlist_requirement
+set archived = true,
+    date_modified = now(),
+    modified_by_id = :userId
+where smartlist_id = :smartlistId and
+      archived is not true;
+]]></smartlist.clearFieldsAndRequirements>
 </sql>
 

@@ -76,6 +76,11 @@ public class SmartlistService {
   public void updateSmartlist(Smartlist smartlist) {
 
     Smartlist existingSmartlist = this.getSmartlist(smartlist.getId());
+
+    if (existingSmartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to find given smartlist", new RuntimeException());
+    }
+
     final boolean updatingName = !existingSmartlist.getName().trim().toLowerCase().equals(smartlist.getName().trim().toLowerCase());
 
     if (updatingName && !this.isNameUnique(smartlist.getName())) {
@@ -90,6 +95,20 @@ public class SmartlistService {
 
   public void deleteSmartlist(Long smartlistId) {
     sqlCache.update("smartlist.delete", Map.of("id", smartlistId, "userId", securityService.getCurrentUser().getId()));
+  }
+
+  @Transactional
+  public void toggleType(Long smartlistId) {
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to find given smartlist", new RuntimeException());
+    }
+
+    smartlist.setProjectDetails(!smartlist.isProjectDetails());
+    this.updateSmartlist(smartlist);
+
+    sqlCache.update("smartlist.clearFieldsAndRequirements", Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
   }
 
   public boolean isNameUnique(String name) {
