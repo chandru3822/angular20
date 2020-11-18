@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION flow.cache_available_time_slots()
+CREATE OR REPLACE FUNCTION brs.cache_available_time_slots()
     RETURNS void
 AS
 $BODY$

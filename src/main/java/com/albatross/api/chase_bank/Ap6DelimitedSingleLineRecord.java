@@ -42,7 +42,6 @@ import static org.apache.commons.lang3.StringUtils.*;
                     "payeeState",
                     "payeePostalCode",
                     "payeeCountry",
-                    "invoiceNumber",
                     "description",
                     "invoiceDate",
                     "netAmount",
@@ -86,8 +85,6 @@ public class Ap6DelimitedSingleLineRecord {
     @Builder.Default private Amount grossAmount = Amount.ZERO;
     @NonNull
     @Builder.Default private Amount discountAmount = Amount.ZERO;
-    @NonNull
-    private InvoiceNumber invoiceNumber;
     @NonNull
     private InvoiceDate invoiceDate;
     @NonNull
@@ -314,24 +311,6 @@ public class Ap6DelimitedSingleLineRecord {
 
         public String toString() {
             return zipCode;
-        }
-    }
-
-    public static class InvoiceNumber implements ToStringSerializable {
-        private final String invoiceNum;
-
-        public InvoiceNumber(Object o) {
-            this(o.toString());
-        }
-
-        public InvoiceNumber(String s) {
-            checkArgument(isAlphanumeric(s), "invoice number must only contain alphanumeric chars");
-            checkArgument(s.length() <= 30, "invoice number must be no longer than thirty chars");
-            this.invoiceNum = s;
-        }
-
-        public String toString() {
-            return invoiceNum;
         }
     }
 

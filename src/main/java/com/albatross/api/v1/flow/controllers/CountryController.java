@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class CountryController {
   }
 
   @GetMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyCountry> getAllCountriesForCompany() {
-    return countryService.getAllCountriesForCompany();
+  public List<CompanyCountry> getAllCountriesForCompany(@RequestParam(required = false) Long companyId) {
+    return countryService.getAllCountriesForCompany(companyId);
   }
 }

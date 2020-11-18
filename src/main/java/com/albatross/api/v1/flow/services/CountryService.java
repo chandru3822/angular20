@@ -32,11 +32,11 @@ public class CountryService {
     return results;
   }
 
-  public List<CompanyCountry> getAllCountriesForCompany() {
+  public List<CompanyCountry> getAllCountriesForCompany(Long companyId) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", null != companyId ? companyId : currentUser.getCompanyId());
     List<CompanyCountry> results = sqlCache.query("country.getAllForCompany", params, CompanyCountry.class);
     return results;
   }

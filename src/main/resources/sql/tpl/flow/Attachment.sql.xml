@@ -31,6 +31,7 @@
       a.filename,
       a.s3_key,
       a.size,
+      a.show,
       src.source_id,
       a.date_created,
       a.date_modified,
@@ -38,8 +39,9 @@
     FROM flow.attachment a
       INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
       INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
-    WHERE a.id = :attachmentTypeId
+    WHERE at.id = :attachmentTypeId
       AND a.archived IS NOT TRUE
+      order by a.date_created desc
   ]]></attachment.getAttachmentsByType>
 
   <attachment.getAttachmentBySourceAndType><![CDATA[
@@ -146,5 +148,12 @@
     where at.id = :id
   ]]></attachment.getAttachmentType>
 
+  <attachment.showOrHideAttachment><![CDATA[
+        UPDATE flow.attachment
+            SET show = :show,
+                date_modified = now(),
+                modified_by_id = :userId
+        WHERE id = :id
+    ]]></attachment.showOrHideAttachment>
 
 </sql>

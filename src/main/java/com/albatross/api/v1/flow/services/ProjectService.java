@@ -130,7 +130,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
 
     // Get active company project status type so new projects can have an active status
-    CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(user.getCompanyId());
+    CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(contact.getCompanyId());
     Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
     HashMap<String, Object> params = new HashMap<>();
@@ -182,6 +182,11 @@ public class ProjectService {
       throw new RuntimeException("File cannot be empty");
     }
 
+    //had to change this so that a parent looking at a child project could still see project statuses
+    HashMap<String, Object> p2 = new HashMap<>();
+    p2.put("projectId", projectId);
+    Long companyId = sqlCache.queryForObject("project.getCompanyId", p2, Long.class);
+
     //get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key = String.format( currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
@@ -204,7 +209,7 @@ public class ProjectService {
     params.put("key", key);
     params.put("size", file.getSize());
     params.put("createdById", currentUser.getId());
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", companyId);
     params.put("attachmentTypeId", attachmentTypeId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
@@ -216,7 +221,7 @@ public class ProjectService {
 
     sqlCache.update("project.addAttachment", params);
 
-    return attachmentService.findById(storageBucket, attachmentId);
+    return attachmentService.findById(attachmentId);
   }
 
   public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {

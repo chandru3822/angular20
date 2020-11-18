@@ -653,12 +653,12 @@
                   </v-toolbar>
                   <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
                     <h3>Add Child Process Step</h3>
-                    <v-select v-model="selectedProcessStep"
+                    <v-autocomplete v-model="selectedProcessStep"
                               :items="childProcessSteps"
                               label="Process Step"
                               item-text="processStepName"
                               return-object
-                    ></v-select>
+                    ></v-autocomplete>
                     <div class="mt-3">
                       <v-btn :disabled="!selectedProcessStep.id"
                              @click="saveProcessStepToAction(item)">
@@ -742,13 +742,13 @@
                     </v-toolbar>
                     <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildFunction">
                       <h3>Add Child Function</h3>
-                      <v-select v-model="selectedChildFunction"
+                      <v-autocomplete v-model="selectedChildFunction"
                                 :items="childFunctions"
                                 label="Function"
                                 item-text="companyFunctionName"
                                 return-object
                                 @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
-                      ></v-select>
+                      ></v-autocomplete>
                       <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
                         <h5 class="text-left">Dynamic Function Parameters</h5>
                         <v-card flat color="transparent">

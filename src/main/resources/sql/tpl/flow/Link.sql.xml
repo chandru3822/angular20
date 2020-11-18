@@ -6,6 +6,15 @@
     and archived is not true
   ]]></link.getLinksForCompany>
 
+  <link.getLinksForProcessStep><![CDATA[
+    select *
+    from flow.process_step_link psl
+        inner join flow.link l on psl.link_id = l.id
+    where process_step_id = :processStepId
+    and psl.archived is not true
+      and l.archived is not true
+  ]]></link.getLinksForProcessStep>
+
   <link.getAvailableLinksForProcessStep><![CDATA[
     select l.*
       from flow.link l

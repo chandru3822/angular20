@@ -37,11 +37,11 @@ public class CustomFieldValueService {
   @Autowired
   ObjectMapper om;
 
-  public void handleCustomListOfValue (List<CustomFieldGroup> results) {
-    handleCustomListOfValue(results, null, null);
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
+    handleCustomListOfValue(results, null, null, companyId);
   }
 
-  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId) {
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId, Long companyId) {
     for(CustomFieldGroup cfg : results) {
       for(CustomFieldValue cv : cfg.getCustomFieldValues()){
         if(null != cv.getCustomFieldSqlKey()) {
@@ -58,7 +58,7 @@ public class CustomFieldValueService {
         } else if (null != cv.getCompanySystemListId()) {
           cv.setHasListValues(true);
 //          cv.getIntValue() is passed so we can add to the sub option list any option already selected but no longer available in the list
-          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue());
+          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue(), companyId);
           cv.setListOfValues(listOfValues);
         }
       }
@@ -114,12 +114,12 @@ public class CustomFieldValueService {
 
     // this allows us to pass project_id and user_id to custom sql queries
     if(objectType.equals("project")) {
-      handleCustomListOfValue(fieldGroups, id, user.getId());
+      handleCustomListOfValue(fieldGroups, id, user.getId(), companyId);
     } else if (objectType.equals("process_step")) {
       Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
-      handleCustomListOfValue(fieldGroups, projectId, user.getId());
+      handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
     } else {
-      handleCustomListOfValue(fieldGroups);
+      handleCustomListOfValue(fieldGroups, companyId);
     }
 
     return fieldGroups;

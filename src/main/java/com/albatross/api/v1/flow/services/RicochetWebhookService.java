@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -20,18 +19,16 @@ public class RicochetWebhookService {
     private final SqlCache sqlCache;
 
     private String mapLeadStatus(String leadStatus) {
-        /* TODO: Find out which groups these new(er) lead statuses should go in: "Aged Database (Temp.)", "Email Preferred", "Re-engaged - CNC", *
-         * "Re-engaged - CNI", "Referrals - Energized", "Referrals - Energized 3 mo. Follow up", "Referrals - Energized 6 mo. Follow up",        *
-         * "Referrals - Installed"                                                                                                               */
-
         switch (leadStatus) {
+            case "Aged Database (Temp.)":
+                return "Aged Database (Temp.)";
             case "Attempted Contact":
                 return "Attempted Contact";
             case "Cold - Never Contacted":
             case "Cold - Not Interested":
                 return "Cold";
-            case "Re-Contact":
-                return "Re-Contact";
+            case "Email Preferred":
+                return "Email Preferred";
             case "":
             case "Low Income/Low Credit Check-in":
             case "New":
@@ -42,6 +39,20 @@ public class RicochetWebhookService {
             case "Renting/Non - Homeowner Check-in":
             case "Scheduled":
                 return "New";
+            case "Re-Contact":
+                return "Re-Contact";
+            case "Re-engaged - CNC":
+                return "Re-engaged - CNC";
+            case "Re-engaged - CNI":
+                return "Re-engaged - CNI";
+            case "Referrals - Energized":
+                return "Referrals - Energized";
+            case "Referrals - Energized 3 mo. Follow up":
+                return "Referrals - Energized 3 mo. Follow up";
+            case "Referrals - Energized 6 mo. Follow up":
+                return "Referrals - Energized 6 mo. Follow up";
+            case "Referrals - Installed":
+                return "Referrals - Installed";
             case "Unqualified - Already Has Solar":
             case "Unqualified - Bad Contact Info":
             case "Unqualified - DNC":

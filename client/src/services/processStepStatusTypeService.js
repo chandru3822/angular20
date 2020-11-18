@@ -1,8 +1,13 @@
-import {getRequest} from '@/helpers/helpers'
+import {getRequestWithParams} from '@/helpers/helpers'
 
-export async function getStatusTypes() {
+export async function getStatusTypes(projectId, projectProcessStepId) {
   try {
-    const {data, status} = await getRequest(`/processStep/status`)
+    let params = {
+      projectId,
+      projectProcessStepId
+    }
+    const {data} = await getRequestWithParams(`/processStep/status`, { params })
+    // const {data, status} = await getRequest(`/processStep/status`)
     return {data, status}
   } catch (e) {
     throw e

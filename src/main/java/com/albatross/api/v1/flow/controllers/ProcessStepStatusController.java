@@ -25,8 +25,9 @@ public class ProcessStepStatusController {
   private ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyProcessStepStatusType> getStatusTypesForCompany () {
-    return processStepStatusService.getStatusTypesForCompany();
+  public List<CompanyProcessStepStatusType> getStatusTypesForCompany (@RequestParam(required = false) Long projectId,
+                                                                      @RequestParam(required = false) Long projectProcessStepId) {
+    return processStepStatusService.getStatusTypesForCompany(projectId, projectProcessStepId);
   }
 
   @DeleteMapping(value = "/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)

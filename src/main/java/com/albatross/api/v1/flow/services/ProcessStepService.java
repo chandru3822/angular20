@@ -116,6 +116,12 @@ public class ProcessStepService {
     return sqlCache.query("processStep.getProcessStepProcessByCompanyId", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), ProcessStep.class);
   }
 
+  public List<Owner> getOwners(Long id) {
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    return sqlCache.query("processStep.getOwners", Map.of("id", id, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany), Owner.class);
+  }
+
   public static class ProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

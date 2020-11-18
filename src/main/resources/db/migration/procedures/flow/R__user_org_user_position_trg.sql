@@ -1,3 +1,31 @@
+CREATE OR REPLACE FUNCTION flow.refresh_company_user_status_records()
+    RETURNS trigger AS
+$BODY$
+declare
+    v_user_id integer;
+    v_user_ids integer[];
+BEGIN
+
+    IF (TG_OP = 'DELETE') THEN
+        v_user_id = old.user_id;
+
+
+    ELSIF (TG_OP = 'UPDATE' or TG_OP = 'INSERT') then
+        v_user_id = new.user_id;
+
+    end if;
+    select array_agg(v_user_id)
+    into v_user_ids;
+    perform flow.update_user_org_user_position(v_user_ids);
+    RETURN NEW;
+END;
+$BODY$
+    LANGUAGE plpgsql
+    VOLATILE
+    COST 100;
+
+
+
 CREATE OR REPLACE FUNCTION flow.refresh_user_records()
     RETURNS trigger AS
 $BODY$
@@ -93,6 +121,27 @@ $BODY$
     VOLATILE
     COST 100;
 
+CREATE OR REPLACE FUNCTION flow.refresh_user_status_type_records()
+    RETURNS trigger AS
+$BODY$
+declare
+    v_user_ids integer[];
+BEGIN
+
+    select array_agg(user_id)
+    into v_user_ids
+    from flow.company_user_status
+    where user_status_type_id = new.id;
+    perform flow.update_user_org_user_position(v_user_ids);
+
+
+    RETURN NEW;
+END;
+$BODY$
+    LANGUAGE plpgsql
+    VOLATILE
+    COST 100;
+
 
 drop trigger if exists user_view_trg on flow.user;
 CREATE TRIGGER user_view_trg
@@ -121,3 +170,18 @@ CREATE TRIGGER position_trg
     ON flow.position
     FOR EACH ROW
 EXECUTE PROCEDURE flow.refresh_position_records();
+
+drop trigger if exists company_user_status_trg on flow.company_user_status;
+CREATE TRIGGER company_user_status_trg
+    AFTER INSERT OR UPDATE OR DELETE
+    ON flow.company_user_status
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.refresh_company_user_status_records();
+
+
+drop trigger if exists user_status_type_trg on flow.user_status_type;
+CREATE TRIGGER user_status_type_trg
+    AFTER  UPDATE
+    ON flow.user_status_type
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.refresh_user_status_type_records();

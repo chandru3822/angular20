@@ -99,11 +99,14 @@
       <v-divider></v-divider>
       <v-row>
         <v-col cols="12" md="6">
+          <!-- this v-model crap makes absolutely no sense to me but this is working so i am pushing it up -->
           <v-tabs v-if="tabs.length > 0"
                   background-color="transparent"
+                  v-model="selectedTab.uniqueIdentifier"
                   show-arrows>
             <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
-            <v-tab v-for="t in tabs" :key="t.id" @click="selectedTab = t">
+            <v-tab v-for="t in tabs" :key="t.id"
+                   @click="selectedTab = t">
               {{t.tabName}}
             </v-tab>
           </v-tabs>
@@ -218,8 +221,12 @@ export default {
     getProjectTabs: async function () {
       this.tabsLoading = true
       try {
-        const {data} = await getRequest(`/objectTypeTab/project`)
+        let params = {
+          projectId: parseInt(this.projectId)
+        }
+        const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
         this.tabs = data
+        console.log('randaLogger', this.tabs[0])
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
       } catch (e) {
         logError(e)

@@ -508,7 +508,7 @@
         try {
           this.addNewLink = !this.addNewLink
           if(this.addNewLink){
-            const { data } = await getRequest(`/links/processStep/${this.$route.params.id}`)
+            const { data } = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
             this.availableLinks = data
           }
           this.$store.commit(AppMutations.SET_LOADING, false)

@@ -8,7 +8,7 @@
         <v-btn text @click="refreshPage">Click here to Refresh</v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <AppNav v-if="$route.name !== 'login'"/>
+    <AppNav v-if="$route.name !== 'login' && !hideHeader"/>
     <v-main>
       <v-container class="router-container">
         <router-view class="router-view" />
@@ -31,7 +31,9 @@
       Snackbar
     },
     data() {
-      return {}
+      return {
+        hideHeader: this.$store.state.user.hideHeader || false
+      }
     },
     created () {
       document.addEventListener(

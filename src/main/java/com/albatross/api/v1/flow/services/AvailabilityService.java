@@ -508,6 +508,11 @@ public class AvailabilityService {
 
   }
 
+  public void cacheAvailability() {
+
+    sqlCache.update("availability.cacheAvailability", Collections.emptyMap());
+  }
+
   private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
     if (array != null && !array.isEmpty()) {
       try (Connection connection = dataSource.getConnection()) {
