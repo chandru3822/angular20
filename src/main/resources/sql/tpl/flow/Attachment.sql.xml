@@ -180,8 +180,8 @@
     ]]></attachment.showOrHideAttachment>
 
   <attachment.insertAttachmentRecord><![CDATA[
-        INSERT INTO flow.attachment (filename, content_type, s3_key, size, date_created)
-        VALUES (:filename, :contentType, :key, :size, now())
+        INSERT INTO flow.attachment (filename, content_type, s3_key, size, date_created, company_id, attachment_type_id)
+        VALUES (:filename, :contentType, :key, :size, now(), :companyId, :attachmentTypeId)
     ]]></attachment.insertAttachmentRecord>
 
 </sql>
