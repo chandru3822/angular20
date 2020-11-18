@@ -5,7 +5,7 @@
         from flow.organization_custom_field_value ocfv
         where ocfv.custom_field_group_assignment_id =
               (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on cf.id = cfg.custom_field_id
-                 WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select company_id from brs.project_details where project_id = :projectId))
+                 WHERE field_name = 'Birdeye Business ID' and cf.company_id = (select o.company_id from brs.project_details pd inner join flow.org o on pd.installation_resource = o.id where project_id = :projectId))
         and ocfv.org_id = (select installation_resource from brs.project_details where project_id = :projectId)
     ]]>
   </birdeye.getBusinessId>

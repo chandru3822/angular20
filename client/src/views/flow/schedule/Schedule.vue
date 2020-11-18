@@ -252,7 +252,7 @@
             </template>
 
             <template #item.start="{ item }">
-              {{item.start | formatDate('date')}}
+              {{item.start | formatDate('timestamp', 'MM/DD/YYYY')}}
             </template>
 
             <template #item.projectName="{ item }">

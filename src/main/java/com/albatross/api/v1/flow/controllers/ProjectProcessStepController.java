@@ -51,7 +51,7 @@ public class ProjectProcessStepController {
       ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
 
       if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
-          return new ResponseEntity<>(String.format("{\"canPerform\": %s}", false), HttpStatus.OK);
+          return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s}", false, null != action && action.getAlreadyTriggered()), HttpStatus.OK);
       }
 
       List<Long> requirementIds = action.getProcessStepLogicList().stream()
