@@ -26,12 +26,19 @@ public class ObjectTypeTabService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
 
-  public List<ObjectTypeTab> getTabs(Long objectTypeId) {
+  public List<ObjectTypeTab> getTabs(Long objectTypeId, Long projectId) {
     User currentUser = securityService.getCurrentUser();
-
+    Long companyId = currentUser.getCompanyId();
     HashMap<String, Object> params = new HashMap<>();
+
+    if(null != projectId) {
+      //had to change this so that a parent looking at a child project could still see project tabs
+      params.put("projectId", projectId);
+      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+    }
+
     params.put("objectTypeId", objectTypeId);
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", companyId);
 
     List<ObjectTypeTab> results = sqlCache.query("objectTypeTab.getProjectTabs", params, ObjectTypeTab.class);
     return results;

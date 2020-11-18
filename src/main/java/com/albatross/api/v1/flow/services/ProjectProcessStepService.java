@@ -40,7 +40,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 
@@ -82,6 +81,11 @@ public class ProjectProcessStepService {
       throw new RuntimeException("File cannot be empty");
     }
 
+    //had to change this so that a parent looking at a child project could still see project statuses
+    HashMap<String, Object> p2 = new HashMap<>();
+    p2.put("projectProcessStepId", projectProcessStepId);
+    Long companyId = sqlCache.queryForObject("projectProcessStep.getCompanyId", p2, Long.class);
+
     //get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key = String.format( user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
@@ -105,7 +109,7 @@ public class ProjectProcessStepService {
     params.put("size", file.getSize());
     params.put("createdById", user.getId());
     params.put("attachmentTypeId", attachmentTypeId);
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", companyId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
 
@@ -116,7 +120,7 @@ public class ProjectProcessStepService {
 
     sqlCache.update("projectProcessStep.addAttachment", params);
 
-    return attachmentService.findById(storageBucket, attachmentId);
+    return attachmentService.findById(attachmentId);
   }
 
   public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
@@ -190,13 +194,21 @@ public class ProjectProcessStepService {
 
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, boolean performAutoTrigger) {
     User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
+
+    if(null != projectId) {
+      //had to change this so that a parent looking at a child project could still see right statuses
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("processStepId", processStepId);
     params.put("userPositionId", userPositionId);
     params.put("userId", user.getId());
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", companyId);
 
     Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
 
@@ -274,7 +286,6 @@ public class ProjectProcessStepService {
       securityService.setCurrentUserDetails(userDetails);
 
       ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
-      log.info("fetch query: pps");
 
       if (pps.getProcessStepStatusTypeId() == 1) {
           pps.getActions().forEach(action -> {
@@ -319,20 +330,15 @@ public class ProjectProcessStepService {
       this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
     }
 
-    Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
-
     performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, false);
-        log.info("insert query: pps");
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, false);
       if (childStep.getAutoTriggerActionCount() > 0) {
-          log.info("going recursive");
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
       }
     });
 
-    log.info("log performed action");
     sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(), "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.getId()));
   }
 
@@ -387,9 +393,8 @@ public class ProjectProcessStepService {
     ExpressionParser parser = new SpelExpressionParser();
     if (logicString.length() > 0) {
       // @TODO: humes, This is for debugging purposes
-      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), logicString.toString()));
       final String tempString = logicString.toString().replaceAll("AND", "&&").replaceAll("OR", "||");
-      log.info(String.format("REPL friendly string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
+      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
       return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
     } else {
       return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
@@ -754,7 +759,6 @@ public class ProjectProcessStepService {
                 String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId));
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
-                log.info(String.format("Successfully executed child action function. CFA ID: %s, action ID: %s",childFunction.getId(), actionId));
             } catch (Exception e) {
                 log.error(String.format("Unable to run child action function. CFA ID: %s, action ID: %s", childFunction.getId(), actionId));
                 e.printStackTrace();

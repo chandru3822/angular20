@@ -100,6 +100,7 @@
                   :timezone="timezone"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
+                  :readonly="closer.plans.indexOf(item) !== 0"
                   label="New End Date"
               />
               <label>Note:</label>
@@ -219,6 +220,7 @@
                   v-model="item.endDate"
                   :timezone="timezone"
                   :type="'date'"
+                  :readonly="closer.overrides.indexOf(item) !== 0"
                   :format="'MMMM DD, YYYY'"
                   label="New End Date"
                   @input="checkDates(item.startDate, item.endDate, closer.overrides, item, item.id)"
@@ -565,7 +567,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Plan')
+          let errorMsg = e?.msg ?? 'Error Saving Plan'
+          this.snackbar = getSnackbar('ERROR', errorMsg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

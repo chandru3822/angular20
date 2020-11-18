@@ -94,4 +94,10 @@ public class AvailabilityController {
   public ResponseEntity<Object> setCloserAppointment(@RequestBody CloserAppointmentRequest request) throws Exception {
     return availabilityService.setCloserAppointment(request);
   }
+
+  //used for the cron
+  @GetMapping(value = "/cacheAvailability", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void cacheAvailability() {
+    availabilityService.cacheAvailability();
+  }
 }

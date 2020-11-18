@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -168,13 +169,10 @@ public class ContactService {
     sqlCache.update("contact.updateMailingAddress", params);
   }
 
-  public List<Owner> getOwnersForContact() {
+  public List<Owner> getOwnersForContact(Long contactId) {
     User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-
-    List<Owner> results = sqlCache.query("contact.getOwners", params, Owner.class);
-    return results;
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    return sqlCache.query("contact.getOwners", Map.of("companyId", user.getCompanyId(), "inParentCompany", inParentCompany), Owner.class);
   }
 
   public Project convertToContact(Long contactId, Process process) {
@@ -187,11 +185,11 @@ public class ContactService {
     params.put("modifiedById", currentUser.getId());
     sqlCache.update("contact.convertToContact", params);
 
-    //get contact to get their full name for the project
+    //get contact to get their full name for the project and also so a parent can find this contact
     Contact contact = getContact(contactId);
 
     //create project (use contact_full_name as project_name)
-    Optional<Project> project = projectService.insertProject(contactId, process.getId(), contact);
+    Optional<Project> project = projectService.insertProject(contact.getId(), process.getId(), contact);
 
     //get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());

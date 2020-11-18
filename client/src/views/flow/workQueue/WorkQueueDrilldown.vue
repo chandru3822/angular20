@@ -9,7 +9,7 @@
           <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
         </v-toolbar>
         <v-data-table
-            :headers="headers"
+            :headers="filterHeaders()"
             :items="results"
             :fixed-header="true"
             disable-sort
@@ -34,6 +34,7 @@
               <td class="text-left">{{item.processStepName}}</td>
               <td class="text-left">{{item.daysInQueue}}</td>
               <td class="text-left">{{item.stateAbbreviation}}</td>
+              <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item.proposalDueDate  | formatDate('timestamp')}}</td>
               <td class="text-left">
                 <div v-if="item.owner">{{item.owner}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
@@ -116,6 +117,7 @@
         showNotesModal: false,
         selectedPps: {},
         constants,
+        showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
@@ -135,6 +137,7 @@
           { text: 'Process Step', value: 'processStepName', show: true },
           { text: 'Days In Queue', value: 'daysInQueue', show: true },
           { text: 'State', value: 'stateAbbreviation', show: true },
+          { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
           { text: 'Notes', value: 'notes', show: true },
@@ -150,9 +153,11 @@
       },
     },
     computed: {},
-    async created() {
-    },
+    async created() {},
     methods: {
+      filterHeaders () {
+        return this.headers.filter(header => header.show === true)
+      },
       async getWorkDetails() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { page, itemsPerPage } = this.options

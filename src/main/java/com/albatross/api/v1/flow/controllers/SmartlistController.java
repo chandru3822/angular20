@@ -63,6 +63,18 @@ public class SmartlistController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
+  @DeleteMapping(value = "/{smartlistId}")
+  public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
+    User user = securityService.getCurrentUser();
+
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("DELETE", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    }
+
+    smartlistService.deleteSmartlist(smartlistId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
   @GetMapping(value = "/{smartlistId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFieldSmartlistFields(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistService.getAssignedFields(smartlistId), HttpStatus.OK);
@@ -142,9 +154,14 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeId), HttpStatus.OK);
   }
 
-  @GetMapping( value = "/availableFieldByCfgaId/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/availableFieldByCfgaId/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SmartlistFieldAssignment> getAvailableSmarlistFieldByCfgaId(@PathVariable Long cfgaId) {
       return new ResponseEntity<>(smartlistService.getAvailableFieldByCfgaId(cfgaId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/availableProjectDetailsFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableProjectDetailsFields() {
+    return new ResponseEntity<>(smartlistService.getAvailableProjectDetailsFields(), HttpStatus.OK);
   }
 
   @GetMapping(value = "/shared", produces = MediaType.APPLICATION_JSON_VALUE)

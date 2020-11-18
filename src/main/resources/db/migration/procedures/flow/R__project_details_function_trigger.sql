@@ -94,7 +94,7 @@ BEGIN
       and cf.field_name = 'Closer Appointment Resource'
     limit 1;
 
-    select pdc.id, field_to_update, data_type_id,pdc.second_field_to_update
+    select pdc.id, field_to_update, data_type_id, pdc.second_field_to_update
     into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update
     from brs.project_details_config pdc
     where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
@@ -105,31 +105,31 @@ BEGIN
 
 
     if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 5, 6, 7) and v_project_id is not null then
-            if v_data_type_id = 1 then
-                case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
-                v_value = v_value || '::date';
-            elsif v_data_type_id = 2 then
-                case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
-                v_value = v_value || '::timestamp';
-            elsif v_data_type_id = 4 then
-                case when new.numeric_value is null then select 'null' into v_value; else select quote_literal(new.numeric_value) into v_value; end case;
-                v_value = v_value || '::numeric';
-            elsif v_data_type_id = 5 then
-                case when new.text_value is null then select 'null' into v_value; else select quote_literal(new.text_value) into v_value; end case;
-                v_value = v_value || '::numeric';
-            elsif v_data_type_id = 6 then
-                case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
-                v_value = v_value || '::integer';
-            elsif v_data_type_id = 3 then
-                case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
-                v_value = v_value || '::boolean';
-            elsif v_data_type_id = 7 then
-                case when new.int_array_value is null then select 'null' into v_value; else select quote_literal(string_agg(lov.name, ', '))
-                                                                                            from flow.list_of_value lov
-                                                                                            where array [lov.id] <@ new.int_array_value::integer[]
-                                                                                            into v_value; end case;
-                v_value = v_value || '::text';
-            end if;
+        if v_data_type_id = 1 then
+            case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
+            v_value = v_value || '::date';
+        elsif v_data_type_id = 2 then
+            case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
+            v_value = v_value || '::timestamp';
+        elsif v_data_type_id = 4 then
+            case when new.numeric_value is null then select 'null' into v_value; else select quote_literal(new.numeric_value) into v_value; end case;
+            v_value = v_value || '::numeric';
+        elsif v_data_type_id = 5 then
+            case when new.text_value is null then select 'null' into v_value; else select quote_literal(new.text_value) into v_value; end case;
+            v_value = v_value || '::text';
+        elsif v_data_type_id = 6 then
+            case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
+            v_value = v_value || '::integer';
+        elsif v_data_type_id = 3 then
+            case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
+            v_value = v_value || '::boolean';
+        elsif v_data_type_id = 7 then
+            case when new.int_array_value is null then select 'null' into v_value; else select quote_literal(string_agg(lov.name, ', '))
+                                                                                        from flow.list_of_value lov
+                                                                                        where array [lov.id] <@ new.int_array_value::integer[]
+                                                                                        into v_value; end case;
+            v_value = v_value || '::text';
+        end if;
 
         v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
@@ -189,18 +189,28 @@ CREATE OR REPLACE FUNCTION flow.update_project_details_project()
 $body$
 
 declare
-    v_field_to_update character varying;
-    v_data_type_id    integer;
-    v_config_id       integer;
-    v_sql             character varying;
-    v_value           character varying;
+    v_field_to_update        character varying;
+    v_data_type_id           integer;
+    v_config_id              integer;
+    v_sql                    character varying;
+    v_value                  character varying;
+    v_second_field_to_update character varying;
+    v_ahj_name            character varying;
 BEGIN
 
-
-    select pdc.id, field_to_update, data_type_id
-    into v_config_id,v_field_to_update,v_data_type_id
+    select pdc.id, field_to_update, data_type_id, second_field_to_update
+    into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update
     from brs.project_details_config pdc
     where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id;
+
+    select ahj.name
+    into v_ahj_name
+    from flow.custom_field_group_assignment cfga
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+             inner join brs.ahj ahj on ahj.id = new.int_value
+    where cfga.id = new.custom_field_group_assignment_id
+      and cf.field_name = 'AHJ'
+    limit 1;
 
     if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6) then
         if v_data_type_id = 1 then
@@ -224,6 +234,25 @@ BEGIN
            where project_id = $$ || new.project_id;
         -- raise notice 'in if %',v_sql;
         execute v_sql;
+
+        if v_second_field_to_update is not null then
+            case when new.int_value is null then select 'null' into v_value;
+                else
+                    select quote_literal(name)
+                    into v_value
+                    from flow.list_of_value
+                    where id = new.int_value;
+                end case;
+            v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
+           where project_id = $$ || new.project_id;
+            execute v_sql;
+        end if;
+
+        if v_ahj_name is not null then
+            update brs.project_details
+            set ahj_name = v_ahj_name
+            where project_id = new.project_id;
+        end if;
 
 
     end if;
@@ -329,7 +358,7 @@ BEGIN
     if old.main is false and new.main is true or v_found > 0 then
         v_sql = 'update brs.project_details set ';
         for v_record in
-            select lead(cfga.id) OVER () IS NULL AS is_last_row, pdc.field_to_update,pdc.second_field_to_update
+            select lead(cfga.id) OVER () IS NULL AS is_last_row, pdc.field_to_update, pdc.second_field_to_update
             from flow.custom_field_group_assignment cfga
                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id

@@ -227,7 +227,10 @@ export default {
     },
     async getAvailableStatuses () {
       try {
-        const {data} = await getRequest(`/processStep/status`)
+        let params = {
+          projectId: parseInt(this.projectId)
+        }
+        const {data} = await getRequestWithParams(`/processStep/status`, { params })
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
@@ -279,7 +282,7 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/`, {
           projectId: this.projectId,
           processStepId: this.selectedNewProjectProcessStep.processStepId,
-          companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.id === 1)?.processStepStatusTypeId,
+          companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1)?.processStepStatusTypeId,
           main: true
         })
         this.selectedNewProjectProcessStep = null
@@ -309,7 +312,7 @@ export default {
     updateMain: async function (projectProcessStepId) {
         try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.id === 1))
+            await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1))
             await this.getProjectProcessSteps()
         } catch (e) {
             logError(e)

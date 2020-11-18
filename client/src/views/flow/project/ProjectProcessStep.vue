@@ -75,7 +75,6 @@
             v-model="processStep.main"
             :disabled="processStep.main || !userCanEdit || projectHasActiveProcessStep(processStep)"
             label="Primary"
-            @change="updateMain(processStep.projectProcessStepId)"
           />
         </template>
         <v-card>
@@ -284,6 +283,10 @@
     <v-row>
       <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
     </v-row>
+
+    <v-row>
+      <Links :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+    </v-row>
   </v-col>
 
 
@@ -297,6 +300,7 @@ import ActionButton from './ActionButton'
 import {AppMutations} from '@/stores/AppStore'
 
 import Attachments from '@/views/flow/components/Attachments'
+import Links from '@/views/flow/components/Links'
 // import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
@@ -307,7 +311,7 @@ export default {
   name: 'ProjectProcessStep',
   components: {
     ActionButton,
-
+    Links,
     Attachments,
     // NotesAndActivity,
     CustomValueInput,
@@ -362,7 +366,11 @@ export default {
     },
     async getAvailableStatuses () {
       try {
-        const {data} = await getRequest(`/processStep/status`)
+        let params = {
+          projectId: parseInt(this.projectId)
+        }
+        const {data} = await getRequestWithParams(`/processStep/status`, { params })
+        // const {data} = await getRequest(`/processStep/status`)
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
@@ -527,7 +535,7 @@ export default {
       async updateMain(projectProcessStepId) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
-              await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.id === 1))
+              await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1))
           } catch (e) {
               logError(e)
               this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')

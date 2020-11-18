@@ -17,7 +17,7 @@ public class SmartlistFieldAssignment {
       displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
       companyId;
 
-  private String name, objectType, processStepName, customFieldSqlKey;
+  private String name, objectType, processStepName, customFieldSqlKey, projectDetailsColumn;
 
   private Timestamp dateCreated, dateModified;
 
@@ -31,6 +31,6 @@ public class SmartlistFieldAssignment {
 
   // The fields below are used for smartlist generation
   @JsonIgnore
-  private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn, ppsTable;
+  private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn, ppsTable, userPositionTable;
 
 }

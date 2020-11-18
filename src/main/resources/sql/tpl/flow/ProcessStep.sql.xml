@@ -245,4 +245,8 @@
     and psp.archived is not true
   order by ps.process_step_name;
 ]]></processStep.getProcessStepProcessByCompanyId>
+
+<processStep.getOwners><![CDATA[
+select * from flow.get_process_step_available_owners(:id::int, :companyId::int, :inParentCompany)
+]]></processStep.getOwners>
 </sql>

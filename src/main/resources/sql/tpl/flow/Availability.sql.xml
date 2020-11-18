@@ -330,4 +330,8 @@
                              ) appointments), '[]') AS "appointments"
        from recurring r
   ]]></availability.getDistinctRecurringEvents>
+
+  <availability.cacheAvailability><![CDATA[
+        select brs.cache_available_time_slots()
+  ]]></availability.cacheAvailability>
 </sql>

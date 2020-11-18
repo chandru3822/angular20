@@ -377,5 +377,8 @@
     ]]>
   </rebate.getRebateDetails>
 
+  <rebate.getCheckNumber>
+    select nextval('brs.rebate_check_nbr_seq')
+  </rebate.getCheckNumber>
 </sql>
 

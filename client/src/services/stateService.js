@@ -1,4 +1,4 @@
-import {getRequest} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams} from '@/helpers/helpers'
 
 export async function getStates() {
   try {
@@ -9,9 +9,12 @@ export async function getStates() {
   }
 }
 
-export async function getCompanyStates() {
+export async function getCompanyStates(companyId) {
   try {
-    const {data, status} = await getRequest(`/state/company`)
+    let params = {
+      companyId
+    }
+    const {data, status} = await getRequestWithParams(`/state/company`, {params})
     return {data, status}
   } catch (e) {
     throw e

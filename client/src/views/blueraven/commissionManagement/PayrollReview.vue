@@ -170,7 +170,7 @@
             this.payrollStatus.textColor = '#155724'
             break
           case 'SUBMITTED':
-            this.payrollStatus.message = 'This payroll has been Approved for Pay.'
+            this.payrollStatus.message = 'This payroll has been Submitted for Approval.'
             this.payrollStatus.color = '#DCDCDC'
             break
           case 'REJECTED':

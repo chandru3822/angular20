@@ -10843,7 +10843,7 @@ with position_features as (
                               'Customer Experience Specialist', 'Retentions Coordinator', 'Payroll Specialist', 'Inspection Quality Coordinator',
                               'Support Coordinator', 'Inspections Scheduler', 'Licensing Coordinator', 'Partners Coordinator',
                               'Utilities Coordinator', 'Onboarding Coordinator', 'Onboarding Coordinator', 'Engineering Specialist',
-                              'Licensing Coordinator', 'Customer Experience Coordinator' ))
+                              'Licensing Coordinator', 'Customer Experience Coordinator','Proposals Specialist', 'Proposals Mentor' ))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
 
@@ -10866,7 +10866,7 @@ with position_features as (
                               'Operations Director', 'Management Trainee', 'Customer Experience Manager', 'General Operations Lead',
                               'Software Development', 'Controller', 'Quality Assurance Lead', 'Director of Human Resources', 'Marketing Senior Manager',
                               'Operations Manager', 'System Production Manager', 'EPC Operations Manager', 'Support Lead', 'Support Manager',
-                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager', 'Field Operations Technician Manager',
+                              'Bureau Operations Lead', 'Bureau Operations Manager', 'Site Survey Manager','Technicians Manager', 'Field Operations Technician Manager',
                               'Inspections Manager', 'Inspections Lead', 'General Counsel', 'Supply Chain Manager', 'Operations Lead',
                               'Product Manager', 'Business Development Manager', 'Customer Insights Lead', 'Permitting Manager', 'EPC Regional',
                               'Marketing Director', 'Service Technician Manager', 'Reviews Lead', 'Mountain Project Manager',
@@ -10877,7 +10877,7 @@ with position_features as (
                               'Office Manager & Executive Assistant', 'Permitting Lead', 'Engineering Lead', 'Market Manager',
                               'Marketing and Business Development Manager', 'Customer Experience Manager', 'Customer Experience Lead',
                               'Business Development Senior Manager', 'Compliance Manager', 'Licensing Manager', 'BI Analyst', 'Director of Operations',
-                              'VP of Operations', 'Systems Director'))
+                              'VP of Operations', 'Systems Director','Proposals Lead','Proposals Manager'))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
 
@@ -10915,3 +10915,6 @@ with position_features as (
          where u.id not in (2350555,99999999,2405363, 2356764, 2410143) and p.position in ('Accounting Manager'))
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
+
+insert into brs.company_dashboard_targets(target_date, appointments_created_brs, appointments_created_partner, planned_appointments_brs, planned_appointments_partner, pitches_brs, pitches_partner, bookings_brs, bookings_partner, site_surveys_verified_brs, site_surveys_verified_partner, final_designs_qad_brs, final_designs_qad_partner, final_designs_sent_brs, final_designs_sent_partner, final_designs_approved_brs, final_designs_approved_partner, plan_sets_created_brs, plan_sets_created_partner, permit_packs_created_brs, permit_packs_created_partner, permits_submitted_brs, permits_submitted_partner, permits_approved_brs, permits_approved_partner, installations_scheduled_brs, installations_scheduled_partner, planned_installations_brs, planned_installations_partner, substantial_completions_brs, substantial_completions_partner, inspections_scheduled_brs, inspections_scheduled_partner, planned_inspections_brs, planned_inspections_partner, inspections_passed_brs, inspections_passed_partner, inspections_submitted_brs, inspections_submitted_partner, final_completions_brs, final_completions_partner)
+(select target_date, appointments_created_brs, appointments_created_partner, planned_appointments_brs, planned_appointments_partner, pitches_brs, pitches_partner, bookings_brs, bookings_partner, site_surveys_verified_brs, site_surveys_verified_partner, final_designs_qad_brs, final_designs_qad_partner, final_designs_sent_brs, final_designs_sent_partner, final_designs_approved_brs, final_designs_approved_partner, plan_sets_created_brs, plan_sets_created_partner, permit_packs_created_brs, permit_packs_created_partner, permits_submitted_brs, permits_submitted_partner, permits_approved_brs, permits_approved_partner, installations_scheduled_brs, installations_scheduled_partner, planned_installations_brs, planned_installations_partner, substantial_completions_brs, substantial_completions_partner, inspections_scheduled_brs, inspections_scheduled_partner, planned_inspections_brs, planned_inspections_partner, inspections_passed_brs, inspections_passed_partner, inspections_submitted_brs, inspections_submitted_partner, final_completions_brs, final_completions_partner from blueraven.company_dashboard_targets);

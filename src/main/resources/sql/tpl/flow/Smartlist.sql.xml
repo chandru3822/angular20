@@ -77,8 +77,8 @@ order by s.name
 ]]></smartlist.getSharedByObjectType>
 
 <smartlist.add><![CDATA[
-insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps)
-values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, true)
+insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id, view_object_type_id, main_process_steps, project_details)
+values (:name, :companyObjectTypeId, :shared, :ownerId, :createdById, :viewObjectTypeId, true, :projectDetails)
 returning id;
 ]]></smartlist.add>
 
@@ -90,10 +90,19 @@ set
   shared = :shared,
   view_object_type_id = :viewObjectTypeId,
   modified_by_id = :userId,
-  date_modified = now()
+  date_modified = now(),
+  project_details = :projectDetails
 where
   id = :id;
 ]]></smartlist.update>
+
+<smartlist.delete><![CDATA[
+update flow.smartlist
+set archived = true,
+    date_modified = now(),
+    modified_by_id = :userId
+where id = :id
+]]></smartlist.delete>
 
 <smartlist.getAvailableFieldByCfgaId><![CDATA[
 select null as "smartlistFieldId",
@@ -210,6 +219,26 @@ order by name,
          "processStepName";
 ]]></smartlist.getAvailableFields>
 
+<smartlist.getAvailableProjectDetailsFields><![CDATA[
+select distinct field_to_update as project_details_column,
+                display_name as name,
+                case when field_to_update = 'ahj' then 8 else data_type_id end as data_type_id,
+                case when field_to_update = 'ahj' then true end as has_list_values,
+                case when field_to_update = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+                case when field_to_update = 'ahj' then (
+                   select to_jsonb(array_agg(row_to_json(listOfValues)))
+                   from (
+                          select a.id,
+                                 a.name
+                          from brs.ahj a
+                          where archived is not true
+                          order by a.name
+                        ) listOfValues
+                ) end as list_of_values
+from brs.project_details_config
+order by display_name
+]]></smartlist.getAvailableProjectDetailsFields>
+
 <smartlist.getAssignedFields><![CDATA[
 select
   sfa.id,
@@ -218,6 +247,7 @@ select
   sfa.custom_field_group_assignment_id,
   sfa.archived,
   sfa.display_order,
+  sfa.project_details_column,
   sf.reference_table,
   sf.reference_column,
   sf.join_table,
@@ -228,13 +258,16 @@ select
   case when sfa.custom_field_group_assignment_id is not null then cdt1.data_type_id else cdt.data_type_id end as data_type_id,
   case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then cdt.company_id else cdt1.company_id end as company_id,
-  case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end as name,
+  case when sfa.project_details_column is not null then
+    pdc.display_name else
+    case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
+  end as name,
   sfa.process_step_id,
   case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
-  cf.custom_field_sql_key,
+  case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
   (select row_to_json(f) from(
       select
         cfga1.custom_field_group_id as "customFieldGroupId",
@@ -245,7 +278,6 @@ select
         cf.list_of_value_id as "listOfValueId",
         cf.field_name as "fieldName",
         cf.readonly,
-        cf.multi_line as "multiLine",
         cf.custom_field_sql_key as "customFieldSqlKey",
         cf.company_system_list_id as "companySystemListId",
         cf.system_list_option_ids as "systemListOptionIds",
@@ -304,11 +336,32 @@ left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
 left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step ps1 on ps1.id = sfa.process_step_id
+left join (
+  select distinct field_to_update, display_name, data_type_id
+  from brs.project_details_config
+) pdc on pdc.field_to_update = sfa.project_details_column
 where
   sfa.smartlist_id = :smartlistId and
   sfa.archived is not true
 order by sfa.display_order;
 ]]></smartlist.getAssignedFields>
+
+<smartlist.getAssignedProjectDetailsFields><![CDATA[
+select sfa.id,
+       sfa.smartlist_id,
+       case when pdc.second_field_to_update is not null then sfa.project_details_column || '_name' else sfa.project_details_column end as project_details_column,
+       pdc.display_name as name,
+       case when sfa.project_details_column = 'ahj' then 8 else pdc.data_type_id end as data_type_id,
+       case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key
+from flow.smartlist_field_assignment sfa
+inner join (
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update
+  from brs.project_details_config
+) pdc on pdc.field_to_update = sfa.project_details_column
+where sfa.smartlist_id = :smartlistId and
+      sfa.archived is not true
+order by sfa.display_order
+]]></smartlist.getAssignedProjectDetailsFields>
 
 <smartlist.getAssignedFieldById><![CDATA[
 select
@@ -318,6 +371,7 @@ select
   sfa.custom_field_group_assignment_id,
   sfa.archived,
   sfa.display_order,
+  sfa.project_details_column,
   ot.object_type,
   case when sfa.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
   case when sfa.custom_field_group_assignment_id is not null then cot1.object_type_id else cot.object_type_id end as object_type_id,
@@ -329,13 +383,16 @@ select
   case when sfa.custom_field_group_assignment_id is not null then cdt1.data_type_id else cdt.data_type_id end as data_type_id,
   case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then cdt.company_id else cdt1.company_id end as company_id,
-  case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end as name,
+  case when sfa.project_details_column is not null then
+    pdc.display_name else
+    case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
+  end as name,
   sfa.process_step_id,
   case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
-  cf.custom_field_sql_key
+  case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
@@ -351,14 +408,18 @@ left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
 left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step ps1 on ps1.id = sfa.process_step_id
+left join (
+  select distinct field_to_update, display_name, data_type_id
+  from brs.project_details_config
+) pdc on pdc.field_to_update = sfa.project_details_column
 where
   sfa.id = :id and
   sfa.archived is not true;
 ]]></smartlist.getAssignedFieldById>
 
 <smartlist.addField><![CDATA[
-insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, created_by_id, display_order, process_step_id)
-values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :createdById, :displayOrder, :processStepId)
+insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, created_by_id, display_order, process_step_id, project_details_column)
+values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :createdById, :displayOrder, :processStepId, :projectDetailsColumn)
 returning id;
 ]]></smartlist.addField>
 
@@ -402,13 +463,14 @@ select sr.id,
        sr.system_list_option_id,
        sr.custom_sql_option_id,
        case when sr.data_type_requirement_id is null then true else false end as is_custom_value,
+       sr.project_details_column,
        sf.reference_table,
        sf.reference_column,
        sf.join_table,
        sf.join_column,
        sf.smartlist_system_list_id,
        case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
-       cf.custom_field_sql_key,
+       case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
        case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
@@ -417,8 +479,14 @@ select sr.id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
-       case when sr.smartlist_field_id is not null then sf.name else cf.field_name end as name,
-       case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end as data_type_id,
+       case when sr.project_details_column is not null then
+         pdc.display_name else
+         case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
+       end as name,
+       case when sr.project_details_column is not null then
+         case when sr.project_details_column = 'ahj' then 8 else pdc.data_type_id end else
+         case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
+       end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
            'id', dtr.id,
            'dataTypeValue', dtr.data_type_value,
@@ -435,12 +503,12 @@ select sr.id,
         case
           when cf.list_of_value_id is not null then
             coalesce((
-            select array_to_json(array_agg(row_to_json(lov))) from (
-            select
-              lv.id,
-              lv.name
-            from flow.list_of_value lv
-            where lv.parent_id = cf.list_of_value_id
+              select array_to_json(array_agg(row_to_json(lov))) from (
+              select
+                lv.id,
+                lv.name
+              from flow.list_of_value lv
+              where lv.parent_id = cf.list_of_value_id
             ) lov), '[]')
           when cf.company_system_list_id is not null then
             coalesce((
@@ -451,6 +519,14 @@ select sr.id,
           when sf.smartlist_system_list_id is not null then
             (select array_to_json(array_agg(row_to_json(rows))) from (
               select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
+            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 2 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
+            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 4 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
             ) rows)
           else '[]'
         end as available_list_of_values
@@ -470,6 +546,10 @@ left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
 left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
+left join (
+  select distinct field_to_update, display_name, data_type_id
+  from brs.project_details_config
+) pdc on pdc.field_to_update = sr.project_details_column
 where sr.id = :requirementId and
       sr.archived is not true;
 ]]></smartlist.getRequirementById>
@@ -496,13 +576,14 @@ select sr.id,
        sr.system_list_option_id,
        sr.custom_sql_option_id,
        case when sr.data_type_requirement_id is null then true else false end as is_custom_value,
+       sr.project_details_column,
        sf.reference_table,
        sf.reference_column,
        sf.join_table,
        sf.join_column,
        sf.smartlist_system_list_id,
        case when sr.custom_field_group_assignment_id is not null then ot1.object_type else ot.object_type end as object_type,
-       cf.custom_field_sql_key,
+       case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
        cf.company_system_list_id,
        to_json(cf.system_list_option_ids) as system_list_option_ids,
        case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
@@ -511,8 +592,14 @@ select sr.id,
        case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
-       case when sr.smartlist_field_id is not null then sf.name else cf.field_name end as name,
-       case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end as data_type_id,
+       case when sr.project_details_column is not null then
+         pdc.display_name else
+         case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
+       end as name,
+       case when sr.project_details_column is not null then
+         case when sr.project_details_column = 'ahj' then 8 else pdc.data_type_id end else
+         case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
+       end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
            'id', dtr.id,
            'dataTypeValue', dtr.data_type_value,
@@ -529,12 +616,12 @@ select sr.id,
         case
           when cf.list_of_value_id is not null then
             coalesce((
-            select array_to_json(array_agg(row_to_json(lov))) from (
-            select
-              lv.id,
-              lv.name
-            from flow.list_of_value lv
-            where lv.parent_id = cf.list_of_value_id
+              select array_to_json(array_agg(row_to_json(lov))) from (
+              select
+                lv.id,
+                lv.name
+              from flow.list_of_value lv
+              where lv.parent_id = cf.list_of_value_id
             ) lov), '[]')
           when cf.company_system_list_id is not null then
             coalesce((
@@ -546,6 +633,14 @@ select sr.id,
             (select array_to_json(array_agg(row_to_json(rows))) from (
              select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::int, :companyId::int)
            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 2 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
+            ) rows)
+          when sf.reference_table = 'flow.user' and ot.id = 4 then
+            (select array_to_json(array_agg(row_to_json(rows))) from (
+              select user_position_id as id, full_name as name from flow.get_process_step_available_owners(sr.process_step_id, :companyId::int, :inParentCompany)
+            ) rows)
           else '[]'
         end as available_list_of_values,
         (select row_to_json(f) from(
@@ -558,7 +653,6 @@ select sr.id,
                 cf.list_of_value_id as "listOfValueId",
                 cf.field_name as "fieldName",
                 cf.readonly,
-                cf.multi_line as "multiLine",
                 cf.custom_field_sql_key as "customFieldSqlKey",
                 cf.company_system_list_id as "companySystemListId",
                 cf.system_list_option_ids as "systemListOptionIds",
@@ -618,14 +712,18 @@ left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
 left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
+left join (
+  select distinct field_to_update, display_name, data_type_id
+  from brs.project_details_config
+) pdc on pdc.field_to_update = sr.project_details_column
 where sr.smartlist_id = :smartlistId and
       sr.archived is not true
 order by sr.display_order;
 ]]></smartlist.getRequirements>
 
 <smartlist.addRequirement><![CDATA[
-insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, created_by_id, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id)
-values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :userId, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId)
+insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, created_by_id, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column)
+values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :userId, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn)
 returning id;
 ]]></smartlist.addRequirement>
 
@@ -640,7 +738,8 @@ set operator_type_id = :operatorTypeId,
     system_list_option_id = :systemListOptionId,
     custom_sql_option_id = :customSqlOptionId,
     modified_by_id = :userId,
-    date_modified = now()
+    date_modified = now(),
+    project_details_column = :projectDetailsColumn
 where id = :id;
 ]]></smartlist.updateRequirement>
 

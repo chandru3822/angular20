@@ -88,6 +88,10 @@ public class SmartlistService {
     sqlCache.update("smartlist.update", params);
   }
 
+  public void deleteSmartlist(Long smartlistId) {
+    sqlCache.update("smartlist.delete", Map.of("id", smartlistId, "userId", securityService.getCurrentUser().getId()));
+  }
+
   public boolean isNameUnique(String name) {
     User user = securityService.getCurrentUser();
     List<Smartlist> smartlists = sqlCache.query("smartlist.getAll", Map.of("companyId", user.getCompanyId(), "userId", user.getId()), Smartlist.class);
@@ -114,12 +118,16 @@ public class SmartlistService {
                     field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class));
                 }
             } else if (field.getCompanySystemListId() != null) {
-                field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds()));
+                field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds(), field.getCompanyId()));
             }
         }
 
         return field;
     }
+
+  public List<SmartlistFieldAssignment> getAvailableProjectDetailsFields() {
+    return sqlCache.query("smartlist.getAvailableProjectDetailsFields", null, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  }
 
   public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
     return sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
@@ -129,8 +137,14 @@ public class SmartlistService {
     return sqlCache.get("smartlist.getAssignedFieldById", Map.of("id", assignmentId), SmartlistFieldAssignment.class).orElse(null);
   }
 
+  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId) {
+    return sqlCache.query("smartlist.getAssignedProjectDetailsFields", Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  }
+
     public SmartlistRequirement getRequirementById(Long requirementId) {
-        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+        User user = securityService.getCurrentUser();
+        Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
 
         if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
             final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
@@ -174,6 +188,7 @@ public class SmartlistService {
     params.put("displayOrder", assignment.getDisplayOrder());
     params.put("createdById", user.getId());
     params.put("processStepId", assignment.getProcessStepId());
+    params.put("projectDetailsColumn", assignment.getProjectDetailsColumn());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
     return this.getAssignedFieldById(assignmentId);
   }
@@ -210,7 +225,9 @@ public class SmartlistService {
   }
 
   public List<SmartlistRequirement> getRequirements(Long smartlistId, boolean includeListValues) {
-    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId());
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
     List<SmartlistRequirement> requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
     if (includeListValues) {
@@ -233,7 +250,12 @@ public class SmartlistService {
   }
 
   public SmartlistResult getSmartlistResults(Long smartlistId) {
-      final String query = buildSql(smartlistId);
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+    }
+
+      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
       List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
@@ -241,38 +263,109 @@ public class SmartlistService {
   }
 
   public String getCsv(Long smartlistId) {
-      final List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
+    }
+
+    final List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
 
       if (fields.isEmpty()) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
       }
 
-      final String query = buildSql(smartlistId);
+      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
-      ArrayList<String> dateFields = new ArrayList<>();
 
-      for(SmartlistFieldAssignment field : fields) {
-         if (field.getDataTypeId() == 1) {
-             dateFields.add(field.getName());
-         }
-      }
-
-      return writeCsv(results, fields, dateFields);
+      return writeCsv(results, fields);
   }
 
-  public String buildSql(Long smartlistId) {
+  public String buildProjectDetailsSql(Smartlist smartlist) {
+
+    List<SmartlistFieldAssignment> fields = this.getAssignedProjectDetailsFields(smartlist.getId());
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
+
+    StringBuilder query = new StringBuilder();
+
+    long ahjCount = fields.stream().filter(f -> Objects.equals(f.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
+    ahjCount += requirements.stream().filter(r -> Objects.equals(r.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
+
+    if (ahjCount > 0) {
+      query.append(String.format("\nwith \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
+    }
+
+    query.append("\nselect");
+
+    for (SmartlistFieldAssignment f: fields) {
+      if (f.getDataTypeId() == 1) {
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+      } else if(f.getDataTypeId() == 2) {
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+      } else if (f.getCustomFieldSqlKey() != null) {
+        query.append(String.format(" \n\"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
+      } else {
+        query.append(String.format(" \n%s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+      }
+    }
+
+    // Remove comma and space from last select field
+    query.deleteCharAt(query.length() - 1);
+    query.deleteCharAt(query.length() - 1);
+
+    // @TODO: Eventually de-hardcode brs schema
+    query.append("\nfrom brs.project_details");
+
+    if (ahjCount > 0) {
+      query.append("\nleft join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
+    }
+
+    if (!requirements.isEmpty()) {
+      query.append("\nwhere");
+    }
+
+    for (SmartlistRequirement r: requirements) {
+      String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
+      Object requirementValue = getRequirementValue(r);
+
+      //Check for double negative with "nots" between operator and requirement
+      if (r.getDataTypeRequirementId() != null) {
+        if (requirementValue != null && requirementValue.toString().contains("not") &&  operator != null && operator.contains("not")) {
+          operator = operator.replace("not", "");
+
+          if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
+            requirementValue = requirementValue.toString().replace("not", "");
+          }
+        }
+      }
+
+      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null)) {
+        query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+      } else {
+        query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
+      }
+    }
+
+    if (!requirements.isEmpty()) {
+      // remove the last "and "
+      query = query.delete(query.length() - 5, query.length());
+    }
+
+    query.append(";");
+
+    //@TODO: humes, logging queries for debugging/testing
+    log.info("\n\n" + query.toString() + "\n\n");
+
+    return query.toString();
+  }
+
+  public String buildSql(Smartlist smartlist) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
-    Smartlist smartlist = this.getSmartlist(smartlistId);
-    if (smartlist == null) {
-      return null;
-    }
-
-    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
-    List<SmartlistRequirement> requirements = this.getRequirements(smartlistId, false);
+    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlist.getId());
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
     List<SmartlistFieldAssignment> joinTables = new ArrayList<>();
 
@@ -373,6 +466,8 @@ public class SmartlistService {
       else if (f.getCustomFieldGroupAssignmentId() != null && referenceTable != null) {
         final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
         location = String.format("\"%s\".%s", referenceTable, column);
+      } else if (Objects.equals(f.getReferenceTable(), "flow.user")) {
+        location = (f.getObjectTypeId() != 4) ? f.getReferenceColumn() : String.format("concat(\"%s\".first_name, ' ', \"%s\".last_name)", f.getValueReferenceTable(), f.getValueReferenceTable());
       } else {
         if (smartlist.getObjectTypeId() == 4) {
           location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
@@ -394,7 +489,7 @@ public class SmartlistService {
           query.append(String.format(" \n(select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
           final String tempUuid = UUID.randomUUID().toString();
-          final String subQuery = String.format("select * from flow.get_system_list_options(%s::int, %s::int, true, array%s::int[], \"%s\".int_value)", f.getCompanyId(), f.getCompanySystemListId(), f.getCustomField().getSystemListOptionIds(), f.getValueReferenceTable());
+          final String subQuery = String.format("select * from flow.get_system_list_option_value(%s::int, \"%s\".int_value)", f.getCompanySystemListId(), f.getValueReferenceTable());
           final String sql = String.format(" \n(select \"%s\".name from (%s) as \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", tempUuid, subQuery, tempUuid, tempUuid, f.getValueReferenceTable(), f.getName());
           query.append(sql);
       } else {
@@ -429,12 +524,16 @@ public class SmartlistService {
         query.append("\nfrom flow.project ");
         query.append("\ninner join flow.company_process on flow.company_process.id = flow.project.company_process_id ");
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
+        query.append("\nleft join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
+        query.append("\nleft join flow.user on flow.user.id = flow.user_position.user_id ");
 
         whereClause.append(String.format("\nflow.company_process.company_id = any(%s) and ", companySubquery));
         break;
       case 2:
         query.append(" \nfrom flow.contact ");
         query.append("\nleft join flow.project on flow.project.contact_id = flow.contact.id ");
+        query.append("\nleft join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
+        query.append("\nleft join flow.user on flow.user.id = flow.user_position.user_id ");
 
         whereClause.append(String.format("\nflow.contact.company_id = any(%s) and ", companySubquery));
         break;
@@ -448,6 +547,8 @@ public class SmartlistService {
 
         query.append("\nleft join flow.project on flow.project.id = flow.project_process_step.project_id  ");
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
+        query.append("\nleft join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
+        query.append("\nleft join flow.user on flow.user.id = flow.user_position.user_id ");
 
         whereClause.append(String.format("\nflow.process_step.company_id = any(%s) and ", companySubquery));
         break;
@@ -466,6 +567,7 @@ public class SmartlistService {
 
             final String pcfvUUID = UUID.randomUUID().toString();
             query.append(String.format("\nleft join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), pcfvUUID, pcfvUUID, joinField, joinedField, pcfvUUID, f.getCustomFieldGroupAssignmentId()));
+            f.setValueReferenceTable(pcfvUUID);
 
             if (f.getCustomFieldSqlKey() != null) {
               //custom value sql
@@ -487,7 +589,18 @@ public class SmartlistService {
             if (f.getJoinTable() != null && f.getJoinColumn() != null) {
               final String joinUuid = UUID.randomUUID().toString();
               query.append(String.format("\nleft join %s \"%s\" on \"%s\".process_step_id = %s and \"%s\".project_id = flow.project.id ", f.getJoinTable(), joinUuid, joinUuid, f.getProcessStepId(), joinUuid));
-              query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), joinAlias, joinAlias, joinUuid, f.getJoinColumn()));
+              if (smartlist.isMainProcessSteps()) {
+                query.append(String.format("and \"%s\".main is true ", joinUuid));
+              }
+
+              if (f.getReferenceTable().equals("flow.user")) {
+                final String joinUserPosition = UUID.randomUUID().toString();
+                query.append(String.format("\nleft join flow.user_position \"%s\" on \"%s\".id = \"%s\".%s ", joinUserPosition, joinUserPosition, joinUuid, f.getJoinColumn()));
+                query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), joinAlias, joinAlias, joinUserPosition));
+                f.setUserPositionTable(joinUserPosition);
+              } else {
+                query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , f.getReferenceTable(), joinAlias, joinAlias, joinUuid, f.getJoinColumn()));
+              }
             } else {
               query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinAlias, joinAlias, joinAlias, f.getProcessStepId()));
               if (smartlist.isMainProcessSteps()) {
@@ -523,7 +636,6 @@ public class SmartlistService {
     }
 
       for (SmartlistRequirement r : requirements) {
-          String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
           String referenceLocation = "";
 
@@ -651,7 +763,13 @@ public class SmartlistService {
                 try {
                   referenceTable = joinTables.stream()
                     .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
-                    .map(SmartlistFieldAssignment::getValueReferenceTable)
+                    .map(t -> {
+                      if (Objects.equals(t.getReferenceTable(), "flow.user")) {
+                        return (t.getObjectTypeId() == 4) ? t.getUserPositionTable() : "flow.user_position";
+                      } else {
+                        return t.getValueReferenceTable();
+                      }
+                    })
                     .findFirst()
                     .orElse(null);
                 } catch (NullPointerException e) {
@@ -666,23 +784,32 @@ public class SmartlistService {
                     final String referenceUuid = UUID.randomUUID().toString();
 
                     additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".process_step_id = %s and \"%s\".project_id = flow.project.id ", r.getJoinTable(), joinUuid, joinUuid, r.getProcessStepId(), joinUuid));
-                    additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , r.getReferenceTable(), referenceUuid, referenceUuid, joinUuid, r.getJoinColumn()));
+
+                    if (Objects.equals(r.getReferenceTable(), "flow.user")) {
+                      additionalJoins.append(String.format("\nleft join flow.user_position \"%s\" on \"%s\".id = \"%s\".%s ", referenceUuid, referenceUuid, joinUuid, r.getJoinColumn()));
+                    } else {
+                      additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".%s " , r.getReferenceTable(), referenceUuid, referenceUuid, joinUuid, r.getJoinColumn()));
+                    }
+
                     referenceLocation = String.format("\"%s\".id", referenceUuid);
                   } else {
-
-                    // see if table we need is already been joined, if so use it
-                    final String table = joinTables.stream()
-                      .filter(t -> (t.getJoinTable() != null && t.getJoinColumn() != null) && t.getJoinTable().equals(r.getJoinTable()) && t.getJoinColumn().equals(r.getJoinColumn()))
-                      .map(SmartlistFieldAssignment::getValueReferenceTable)
-                      .findFirst()
-                      .orElse(null);
-
-                    if (table != null) {
-                      referenceLocation = "\"" + table + "\".id";
+                    if (Objects.equals(r.getReferenceTable(), "flow.user")) {
+                      referenceLocation = "flow.user_position.id";
                     } else {
-                      final String referenceUuid = UUID.randomUUID().toString();
-                      additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", r.getReferenceTable(), referenceUuid, referenceUuid, r.getJoinTable(), r.getJoinColumn()));
-                      referenceLocation = String.format("\"%s\".id", referenceUuid);
+                      // see if table we need is already been joined, if so use it
+                      final String table = joinTables.stream()
+                        .filter(t -> (t.getJoinTable() != null && t.getJoinColumn() != null) && t.getJoinTable().equals(r.getJoinTable()) && t.getJoinColumn().equals(r.getJoinColumn()))
+                        .map(SmartlistFieldAssignment::getValueReferenceTable)
+                        .findFirst()
+                        .orElse(null);
+
+                      if (table != null) {
+                        referenceLocation = "\"" + table + "\".id";
+                      } else {
+                        final String referenceUuid = UUID.randomUUID().toString();
+                        additionalJoins.append(String.format("\nleft join %s \"%s\" on \"%s\".id = %s.%s", r.getReferenceTable(), referenceUuid, referenceUuid, r.getJoinTable(), r.getJoinColumn()));
+                        referenceLocation = String.format("\"%s\".id", referenceUuid);
+                      }
                     }
                   }
                 }
@@ -690,7 +817,7 @@ public class SmartlistService {
                 if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
                   referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
                 } else if (r.getObjectTypeId() == 4) {
-                  String joinTable;
+                  String joinTable = null;
                   try {
                     joinTable = joinTables.stream()
                       .filter(t -> t.getProcessStepId() != null && r.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
@@ -698,42 +825,42 @@ public class SmartlistService {
                       .findFirst()
                       .orElse(null);
 
-                    if (joinTable == null) {
-                      joinTable = UUID.randomUUID().toString();
-                    }
                   } catch (NullPointerException e) {
+                    // noop
+                  }
+                  if (joinTable == null) {
                     joinTable = UUID.randomUUID().toString();
+                    additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinTable, joinTable, joinTable, r.getProcessStepId()));
+                    if (smartlist.isMainProcessSteps()) {
+                      additionalJoins.append(String.format("and \"%s\".main is true ", joinTable));
+                    }
                   }
-                  additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinTable, joinTable, joinTable, r.getProcessStepId()));
-                  if (smartlist.isMainProcessSteps()) {
-                    additionalJoins.append(String.format("and \"%s\".main is true ", joinTable));
-                  }
+
                   referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
                 }
               }
           }
 
           Object requirementValue = getRequirementValue(r);
+          String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
-          // Check for a double negative between the operator and data type requirement value, the user might make a requirement like this for whatever reason
-          if (!r.getIsCustomValue() && r.getOperatorTypeId() == 2 && requirementValue != null && requirementValue.toString().startsWith("not ")) {
+          //Check for double negative with "nots" between operator and requirement
+          if (r.getDataTypeRequirementId() != null) {
+            if (requirementValue != null && requirementValue.toString().contains("not") && operator != null && operator.contains("not")) {
               operator = operator.replace("not", "");
-              requirementValue = requirementValue.toString().replace("not ", "");
-          }
 
-          // date, timestamp, and text (text only when it's a custom value) data types need single quotes around them
-          if ((List.of(1L, 2L).contains(r.getDataTypeId())) || r.getDataTypeId() == 5 && r.getIsCustomValue()) {
-              if (!Objects.equals(requirementValue, "null")) {
-                requirementValue = String.format("'%s'", requirementValue);
+              if (List.of(5L, 13L, 17L, 19L, 21L, 25L, 27L).contains(r.getDataTypeRequirementId())) {
+                requirementValue = requirementValue.toString().replace("not", "");
               }
-          } else if (r.getDataTypeId() == 9) {
-              requirementValue = r.getListOfValueId();
+            }
           }
 
           if (r.getDataTypeId() == 7) {
-              whereClause.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+            whereClause.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null)) {
+            whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
-              whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
+            whereClause.append(String.format("\n%s %s '%s' and ", referenceLocation, operator, requirementValue));
           }
       }
 
@@ -766,16 +893,16 @@ public class SmartlistService {
     return query.toString();
   }
 
-  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, ArrayList<String> dateFields) {
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers) {
     CsvSchema.Builder builder = CsvSchema.builder();
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli
     for (int i = 0; i < data.size(); i++) {
       Map<String, Object> r = data.get(i);
 
-      for (String field : dateFields) {
-        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
-      }
+//      for (String field : dateFields) {
+//        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
+//      }
       data.set(i, r);
     }
 
@@ -920,7 +1047,12 @@ public class SmartlistService {
                 }
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 8:
+            case 9:
+              if (r.getIsCustomValue()) {
                 return r.getListOfValueId();
+              }
+
+              return r.getDataTypeRequirement().getDataTypeValue();
             default:
                 return null;
         }
@@ -932,9 +1064,6 @@ public class SmartlistService {
     // List of whether the dataTypeRequirementId is being compared to `null` or `not null`
     List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L);
 
-    // List of data type requirement IDs which are "nots"
-    List<Long> negativeIds = List.of(5L, 13L, 17L, 19L, 21L, 23L, 25L, 27L);
-
     switch (operatorTypeId.intValue()) {
       case 1:
         //If field is boolean, this is the only option
@@ -945,17 +1074,9 @@ public class SmartlistService {
         // If field is a dataTypeRequirement
         if (r != null) {
           if (nullableIds.contains(r.getId())) {
-            if (negativeIds.contains(r.getId())) {
-              return "is not";
-            } else {
-              return "is";
-            }
+            return "is";
           } else {
-            if (negativeIds.contains(r.getId())) {
-              return "!=";
-            } else {
-              return "=";
-            }
+            return "=";
           }
         } else {
           return "=";
@@ -969,17 +1090,9 @@ public class SmartlistService {
         // If field is a dataTypeRequirement
         if (r != null) {
           if (nullableIds.contains(r.getId())) {
-            if (negativeIds.contains(r.getId())) {
-              return "is";
-            } else {
-              return "is not";
-            }
+            return "is not";
           } else {
-            if (negativeIds.contains(r.getId())) {
-              return "=";
-            } else {
-              return "!=";
-            }
+            return "!=";
           }
         } else {
           return "!=";

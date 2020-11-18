@@ -16,7 +16,7 @@
                     filled v-model="note.note"></v-textarea>
         <div class="text-left mb-2">
           <v-btn color="primaryCustom" class="white--text"
-                 :disabled="!note.note"
+                 :disabled="!note.note || savingNote"
                  @click="saveNote(note)">Save</v-btn>
           <v-btn text v-if="note.note" @click="note={}">
             <span>cancel</span>
@@ -281,6 +281,7 @@ export default {
       snackbar: {},
       addNote: false,
       note: {},
+      savingNote: false,
       userId: this.$store.state.user.details.id,
       noteOptions: [
         { label: 'Add Comment' },
@@ -315,6 +316,7 @@ export default {
     },
     async saveNote(n) {
       try {
+        this.savingNote = true
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         console.log('NOTE_HERE', n)
         let url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
@@ -338,10 +340,12 @@ export default {
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.savingNote = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Note')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.savingNote = false
       }
     },
     filterNotes() {

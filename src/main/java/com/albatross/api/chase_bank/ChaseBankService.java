@@ -1,7 +1,6 @@
 package com.albatross.api.chase_bank;
 
 import com.albatross.api.chase_bank.Ap6DelimitedSingleLineRecord.*;
-import com.albatross.api.config.WellsFargoConfiguration;
 import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -15,9 +14,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -38,13 +36,7 @@ public class ChaseBankService {
                                 CHASE_ACCOUNT_NUM = "370263003";
 
     @Autowired
-    private WellsFargoConfiguration config;
-
-    @Autowired
     private SqlCache sqlCache;
-
-    @Autowired
-    private JedisPool jedisPool;
 
     public String generateCsv_Ap6DelimitedSingleLine(Long batchId) throws Exception {
         try {
@@ -59,7 +51,7 @@ public class ChaseBankService {
                 try {
                     Integer checkNumber = payment.getCheckNumber();
                     if (checkNumber == null) {
-                        checkNumber = getNextCheckNumber();
+                        checkNumber = getNextCheckNumber(payment.getId());
 
                         //need to save the check number to the payment so we have a record of it and can export it
                         Map<String, Object> params = ImmutableMap.of("checkNumber", checkNumber,
@@ -92,7 +84,7 @@ public class ChaseBankService {
 
             Ap6DelimitedSingleLineRecordBuilder builder = Ap6DelimitedSingleLineRecord.builder();
             failures.validate(payment.getAmount(),       Amount::new,        builder::paymentAmount)
-                    .validate(payment.getId(),           InvoiceNumber::new, builder::invoiceNumber)
+                    .validate(payment.getId(),           CheckNumber::new,   builder::checkNumber)
                     .validate(payment.getAmount(),       Amount::new,        builder::netAmount)
                     .validate(payment.getAmount(),       Amount::new,        builder::grossAmount)
                     .validate(payment.getCustomerName(), Name::new,          builder::firstPayeeName)
@@ -107,7 +99,6 @@ public class ChaseBankService {
                     .validate(memo,                      Description::new,   builder::description)
                     .validate(LocalDate.now(),           PaymentDate::new,   builder::paymentDate)
                     .validate(LocalDate.now(),           InvoiceDate::new,   builder::invoiceDate)
-                    .validate(getTransactionNumber(),    InvoiceNumber::new, builder::invoiceNumber)
                     .validate(payment.getAmount(),       Amount::new,        builder::netAmount);
 
             if (payment.getStreet2().isPresent())
@@ -129,30 +120,9 @@ public class ChaseBankService {
         return sqlCache.query("chasebank.getPaymentsInBatch", params, RebatePayment.class);
     }
 
-    public Integer getTransactionNumber() {
-        return incrGet(config.getTransactionNumberKey());
-    }
-
-    public Integer getNextCheckNumber() {
-        return incrGet(config.getCheckNumberKey());
-    }
-
-    private Integer incrGet(String key) {
-        Integer num = 0;
-        Jedis jedis = jedisPool.getResource();
-        try {
-            jedis.incr(key);
-            String out = jedis.get(key);
-            if (StringUtils.isNotEmpty(out)) {
-                num = Integer.parseInt(out);
-            }
-        } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
-        }
-
-        return num;
+    public Integer getNextCheckNumber(Integer paymentId) {
+        ImmutableMap<String, Object> params = ImmutableMap.of("paymentId", paymentId);
+        return sqlCache.get("rebate.getCheckNumber", params, new SingleColumnRowMapper<>(Integer.class)).get();
     }
 
     @Setter

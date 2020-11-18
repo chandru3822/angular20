@@ -16,7 +16,7 @@
             </div>
           </div>
 
-          <v-tabs id="fixed-tabs-bar" class="mb-4" background-color="var(--v-secondary-base)">
+          <v-tabs id="fixed-tabs-bar" class="" background-color="var(--v-secondary-base)">
             <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path"
                    class="text-capitalize ma-0"
                    :style="{'margin-left': index === 0 ? '12px !important' : '0'}">

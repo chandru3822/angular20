@@ -9,7 +9,7 @@
         <v-row class="justify-center">
           <v-btn class="wq-button mx-2 mt-3 white--text" color="primaryCustom"
                  :outlined="showAll && !selectedWorkQueueCategory.id"
-                 @click="[showAll = true, getWorkQueues()]">
+                 @click="[showAll = !showAll, selectedWorkQueueCategory = {}, getWorkQueues()]">
             All
           </v-btn>
           <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2 mt-3"
@@ -78,6 +78,11 @@
     async created() {
       this.getWorkQueueCategories()
       this.getWorkQueueOwners()
+      this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
+      console.log('randaLogger', this.selectedWorkQueueCategory.id)
+      if(this.selectedWorkQueueCategory.id) {
+        this.getWorkQueues()
+      }
     },
     methods: {
       async getWorkQueueCategories() {
@@ -107,7 +112,8 @@
         if(reset) {
           this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
         }
-        if(this.selectedWorkQueueCategory?.id) {
+        localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
+        if(this.selectedWorkQueueCategory?.id || this.showAll) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             const {data} = await getRequestWithParams(`/workQueue`, { params: {
@@ -123,6 +129,8 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
+        } else {
+          this.workQueues = []
         }
       },
       loadDrilldown(wq) {

@@ -13,7 +13,7 @@ public class Smartlist {
 
   private String name, objectType, viewObjectType, owner;
 
-  private boolean shared, archived, mainProcessSteps;
+  private boolean shared, archived, mainProcessSteps, projectDetails;
 
   private Timestamp dateCreated, dateModified;
 }

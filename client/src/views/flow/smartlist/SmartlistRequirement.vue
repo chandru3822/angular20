@@ -26,16 +26,34 @@
 
   <v-card v-if="showNewRequirementForm" class="elevation-1">
     <v-col class="text-left">
-      <v-autocomplete
+
+      <template v-if="isProjectDetails === true">
+        <v-autocomplete
+          v-model="newRequirement.selectedField"
+          label="Field"
+          :items="projectDetailsColumns"
+          item-value="project_details_column"
+          item-text="name"
+          return-object
+          @input="[
+            resetNewField(),
+            getOperators(newRequirement.selectedField.dataTypeId),
+            getDataTypeRequirements(newRequirement.selectedField.dataTypeId)
+          ]"
+        />
+      </template>
+
+      <template v-else>
+        <v-autocomplete
           v-model="newRequirement.objectTypeId"
           label="Object Type"
           :items="companyObjectTypes"
           item-value="objectTypeId"
           item-text="objectType"
           @input="[resetNewObjectType(), getAvailableFields()]"
-      />
+        />
 
-      <v-autocomplete
+        <v-autocomplete
           v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 4"
           v-model="newRequirement.processStepId"
           label="Process Step"
@@ -43,9 +61,9 @@
           item-value="processStepId"
           item-text="processStepName"
           @input="[resetNewProcessStep(), calculateAvailableFields()]"
-      />
+        />
 
-      <v-autocomplete
+        <v-autocomplete
           v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId !== 4 && newRequirement.objectTypeId != null)"
           v-model="newRequirement.selectedField"
           label="Field"
@@ -57,9 +75,12 @@
             getOperators(newRequirement.selectedField.dataTypeId),
             getDataTypeRequirements(newRequirement.selectedField.dataTypeId),
             getProcessStepFieldData(),
-            checkSmartlistSystemList()
+            checkSmartlistSystemList(),
+            getContactOwners(),
+            getProcessStepOwners()
           ]"
-      />
+        />
+      </template>
 
       <v-autocomplete
         v-if="newRequirement.selectedField"
@@ -203,30 +224,43 @@
     <template #expanded-item="{headers}">
       <tr>
         <td :colspan="headers.length" class="text-left expanded-row">
-          <v-autocomplete
-            v-model="expandedRequirement"
-            :items="[expandedRequirement]"
-            label="Object Type"
-            item-text="objectType"
-            disabled
-          />
 
-          <v-autocomplete
-            v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 4"
-            v-model="expandedRequirement"
-            :items="[expandedRequirement]"
-            label="Process Step"
-            item-text="processStepName"
-            disabled
-          />
+          <template v-if="isProjectDetails === true">
+            <v-autocomplete
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Field"
+              item-text="name"
+              disabled
+            />
+          </template>
 
-          <v-autocomplete
-            v-model="expandedRequirement"
-            :items="[expandedRequirement]"
-            label="Field"
-            item-text="name"
-            disabled
-          />
+          <template v-else>
+            <v-autocomplete
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Object Type"
+              item-text="objectType"
+              disabled
+            />
+
+            <v-autocomplete
+              v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 4"
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Process Step"
+              item-text="processStepName"
+              disabled
+            />
+
+            <v-autocomplete
+              v-model="expandedRequirement"
+              :items="[expandedRequirement]"
+              label="Field"
+              item-text="name"
+              disabled
+            />
+          </template>
 
           <v-autocomplete
             v-model="expandedRequirement.operatorTypeId"
@@ -353,6 +387,14 @@ export default {
     canEdit: {
       type: Boolean,
       default: false
+    },
+    isProjectDetails: {
+      type: Boolean,
+      default: false
+    },
+    projectDetailsColumns: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
@@ -409,7 +451,7 @@ export default {
       return this.newRequirement.selectedField.hasListValues || this.newRequirement.selectedField.customFieldSqlKey !== null || this.newRequirement.selectedField.companySystemListId !== null
     },
     isExpandedListField () {
-      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null
+      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null || this.expandedRequirement.availableListOfValues != null
     },
     expandedRequirementArray: {
       get: function () {
@@ -464,6 +506,32 @@ export default {
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process step data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getContactOwners () {
+      if (this.newRequirement.objectTypeId === 2) {
+        try {
+          const {data} = await getRequest(`/contact/owners`)
+          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+          this.newRequirement.selectedField.hasListValues = true
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
+    async getProcessStepOwners () {
+      if (this.newRequirement.processStepId !== null) {
+        try {
+          const {data} = await getRequest(`/processStep/${this.newRequirement.processStepId}/owners`)
+          this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
+          this.newRequirement.selectedField.hasListValues = true
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching contact owners')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }

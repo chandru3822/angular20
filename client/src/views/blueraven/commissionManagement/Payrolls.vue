@@ -26,9 +26,21 @@
                 :format="'MMMM DD, YYYY'"
                 label="End Date"
             />
-            <v-text-field text
-                          label="Sales Rep"
-                          v-model="payrollSearch.salesRep"></v-text-field>
+            <v-autocomplete ref="repAutocomplete"
+                            v-model="payrollSearch.salesRepId"
+                            :items="reps"
+                            :loading="repsLoading"
+                            :search-input.sync="repSearch"
+                            label="Sales Rep..."
+                            clearable
+                            item-text="name"
+                            item-value="userId"
+                            type="search"
+                            @click:clear="reps = []"
+            ></v-autocomplete>
+<!--            <v-text-field text-->
+<!--                          label="Sales Rep"-->
+<!--                          v-model="payrollSearch.salesRep"></v-text-field>-->
             <div class="text-left">
               <v-btn color="primaryCustom" dark @click="getPayrollData">Search</v-btn>
               <v-btn class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
@@ -80,7 +92,14 @@
   import {AppMutations} from '@/stores/AppStore'
 
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {
+    getRequest,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    getSnackbar,
+    getRequestWithParams
+  } from '@/helpers/helpers'
 
   export default {
     name: 'Payroll',
@@ -91,10 +110,23 @@
     created() {
       this.getPayrollData()
     },
+    watch: {
+      repSearch (val) {
+        if(!val) {
+          this.reps = []
+          return
+        }
+        this.reps = []
+        this.getRepsDebounced(val)
+      }
+    },
     data() {
       return {
         snackbar: {},
         payrollSearch: {},
+        reps: [],
+        repSearch: null,
+        repsLoading: false,
         dataLoading: false,
         timezone: this.$store.state.user.details.timezone.value,
         headers: [
@@ -126,7 +158,29 @@
       },
       async viewDetails (item) {
         this.$router.push({name: 'payrollReview', params: { id: item.id }})
-      }
+      },
+      getRepsDebounced(val) {
+        clearTimeout(this._repTimerId)
+        this._repTimerId = setTimeout(() => {
+          this.getReps(val)
+        }, 500) /* 500ms throttle */
+      },
+      async getReps(query) {
+        this.repsLoading = true
+        try {
+          let params = {
+            query,
+            size: 10
+          }
+          const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
+          this.reps = data
+          this.repsLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sales Reps')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
     }
   }
 </script>

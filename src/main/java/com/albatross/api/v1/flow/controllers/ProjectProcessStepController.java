@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -24,6 +27,7 @@ public class ProjectProcessStepController {
   private final ProjectProcessStepService projectProcessStepService;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
+  private final ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
@@ -130,6 +134,22 @@ public class ProjectProcessStepController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), new RuntimeException());
+    }
+  }
+
+  //i created a new one for this because where i am canceling from I don't know the companyStatusTypeId and stuff
+  @PostMapping(value = "/{projectProcessStepId}/cancel", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> cancelProjectProcessStepStatus(@PathVariable Long projectProcessStepId,
+                                                          @RequestBody Project project) {
+    try {
+      //get the company's cancelled status then call the existing function
+      Optional<CompanyProcessStepStatusType> type = processStepStatusService.getCancelledType(project.getCompanyId());
+      if(type.isPresent()) {
+        projectProcessStepService.setStatus(projectProcessStepId, ProcessStepStatusType.CANCELLED.id, type.get().getId());
+      }
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (RuntimeException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), new RuntimeException());
     }
   }
 }

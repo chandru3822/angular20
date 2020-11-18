@@ -38,6 +38,12 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.autoTriggers.enabled:false}")
     private boolean autoTriggers;
 
+    @Value(value = "${app.cron.cacheAvailability.enabled:false}")
+    private boolean runCachedAvailability;
+
+    @Value(value = "${app.cron.refreshUserPositionOrgs.enabled:false}")
+    private boolean refreshUserPositionOrgs;
+
     private final SMSService smsService;
     private final AvailabilityService availabilityService;
     private final ProjectProcessStepService projectProcessStepService;
@@ -58,6 +64,16 @@ public class ScheduledConfig implements SchedulingConfigurer {
             // method will rollback the db transaction which contains very important information
             // about outbound texts
             smsService.processTwilioWebhookPayloads();
+        }
+    }
+
+    //    every  day at 1 am
+    @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+    public void cacheAvailability() {
+        if (runCachedAvailability) {
+            log.info("*** CRON: start cache availability ***");
+            availabilityService.cacheAvailability();
+            log.info("*** CRON: end cache availability ***");
         }
     }
 

@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.MobileAttachment;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
@@ -135,14 +136,14 @@ public class AttachmentService {
      * @param attachmentTypeId ID of the attachmentType
      * @return
      */
-    public List<Attachment> getAttachmentsByType(String bucket, Long attachmentTypeId) {
+    public List<Attachment> getAttachmentsByType(Long attachmentTypeId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("attachmentTypeId", attachmentTypeId);
 
         List<Attachment> attachments = sqlCache.query("attachment.getAttachmentsByType", params, Attachment.class);
         attachments.forEach(attachment -> {
-            setAttachmentUrl(bucket, attachment);
-            setAttachmentPresignedUrl(bucket, attachment);
+            setAttachmentUrl(storageBucket, attachment);
+            setAttachmentPresignedUrl(storageBucket, attachment);
         });
 
         return attachments;
@@ -239,11 +240,10 @@ public class AttachmentService {
     /**
      * Find Attachment by ID, using a custom S3 bucket name.
      *
-     * @param bucket Name of S3 bucket where the attachment is expected to reside.
      * @param id     ID of the Attachment to find.
      * @return
      */
-    public Attachment findById(String bucket, Long id) {
+    public Attachment findById(Long id) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("id", id);
 
@@ -252,8 +252,8 @@ public class AttachmentService {
             return null;
         }
         Attachment attachment = attachments.get(0);
-        setAttachmentUrl(bucket, attachment);
-        setAttachmentPresignedUrl(bucket, attachment);
+        setAttachmentUrl(storageBucket, attachment);
+        setAttachmentPresignedUrl(storageBucket, attachment);
         return attachment;
     }
 
@@ -266,7 +266,7 @@ public class AttachmentService {
     public String getAttachmentUrl(Long id) {
         User currentUser = securityService.getCurrentUser();
 
-        Attachment attachment = findById(currentUser.getAwsBucket(), id);
+        Attachment attachment = findById(id);
 
         String url = s3.getUrl(currentUser.getAwsBucket(), attachment.getS3Key()).toExternalForm();
         return url;
@@ -346,7 +346,7 @@ public class AttachmentService {
         //add to join
         addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
 
-        return findById(storageBucket, attachmentId);
+        return findById(attachmentId);
     }
 
     public void addToJoinTable(Long attachmentId, Long sourceId, Long attachmentTypeId, boolean deleteFirst) {
@@ -360,5 +360,36 @@ public class AttachmentService {
         params.put("attachmentTypeId", attachmentTypeId);
 
         sqlCache.update("attachment.addToJoinTable", params);
+    }
+
+    public void showOrHideAttachment(Attachment attachment) {
+        User currentUser = securityService.getCurrentUser();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", attachment.getId());
+        params.put("show", attachment.getShow());
+        params.put("userId", currentUser.getId());
+
+        sqlCache.update("attachment.showOrHideAttachment", params);
+    }
+
+    //endpoint for automating mobile build uploads
+    public Attachment insertAttachmentRecord(MobileAttachment ma) throws IOException {
+
+        if (null == ma || null == ma.getAttachment()) {
+            throw new RuntimeException("Attachment cannot be null");
+        }
+
+        String key = String.format(ma.getKeyPattern(), ma.getAttachment().getS3Key());
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("filename", ma.getAttachment().getFilename());
+        params.put("contentType", ma.getAttachment().getContentType());
+        params.put("size", ma.getAttachment().getSize());
+        params.put("key", key);
+
+        Long id = sqlCache.updateReturningId("attachment.insertAttachmentRecord", params, "id").longValue();
+
+        return findById(id);
     }
 }
