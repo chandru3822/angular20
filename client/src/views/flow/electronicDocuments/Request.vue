@@ -78,7 +78,7 @@
                                     v-model="selectedDocIds"
                                     :items="documents"
                                     multiple
-                                    autocomplete="new-password"
+                                    autocomplete="off"
                                     no-data-text="No documents found"
                                     item-text="name"
                                     item-value="id"

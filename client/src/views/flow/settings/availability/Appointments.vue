@@ -398,9 +398,6 @@
         }
       },
       recurrenceCallback(recurrenceString, endDate, count, endsType) {
-        console.log('string', recurrenceString)
-        console.log('randaLogger', endsType)
-        console.log('wtf', endDate)
         if(endsType === 'fixed' && count > 100) {
           this.newSaveError = true
           this.newSaveErrorMsg = 'Cannot exceed 100 repetitions'

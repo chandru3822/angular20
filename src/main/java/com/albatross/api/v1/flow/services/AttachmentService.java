@@ -12,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -127,6 +129,31 @@ public class AttachmentService {
             return attachment;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Find latest mobile build
+     *
+     * @param sourceId ID of the source
+     * @return
+     */
+    public Attachment getLatestAppBySourceIdAndType(Long sourceId, Long attachmentTypeId) {
+        //this is an endpoint for mobile to determine if a user is using the most current app
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("sourceId", sourceId);
+        params.put("attachmentTypeId", attachmentTypeId);
+
+        Optional<Attachment> result = sqlCache.get("attachment.getLatestAppBySourceIdAndType", params, Attachment.class);
+
+        if(result.isPresent()){
+            Attachment attachment = result.get();
+            setAttachmentUrl(storageBucket, attachment);
+            setAttachmentPresignedUrl(storageBucket, attachment);
+
+            return attachment;
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No App Found", new Exception());
         }
     }
 

@@ -51,15 +51,15 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addUser" class="square-card text-left pa-5">
-          <v-select v-model="selectedUser"
+          <v-autocomplete v-model="selectedUser"
                     :items="users"
                     label="Select a User..."
                     :loading="usersLoading"
                     item-text="fullName"
-                    item-value="id"
+                          item-value="userPositionId"
                     return-object
-                    autocomplete="new-password">
-          </v-select>
+                    autocomplete="off">
+          </v-autocomplete>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser)"
                  :disabled="!selectedUser.id">
             Add
@@ -87,7 +87,7 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.fullName}}</td>
+              <td class="text-left">{{item.fullName}} - {{item.position}}</td>
               <td>
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
                   <template v-slot:activator="{ on }">
@@ -144,15 +144,15 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addScheduler" class="square-card text-left pa-5">
-          <v-select v-model="selectedScheduler"
+          <v-autocomplete v-model="selectedScheduler"
                     :items="schedulers"
                     label="Select a User..."
                     :loading="schedulersLoading"
                     item-text="fullName"
-                    item-value="id"
+                    item-value="userPositionId"
                     return-object
-                    autocomplete="new-password">
-          </v-select>
+                          autocomplete="off">
+          </v-autocomplete>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
                  :disabled="!selectedScheduler.id">
             Add
@@ -180,7 +180,7 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.fullName}}</td>
+              <td class="text-left">{{item.fullName}} - {{item.position}}</td>
               <td>
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
                   <template v-slot:activator="{ on }">

@@ -291,7 +291,7 @@
                             label="Search for a user..."
                             item-text="name"
                             item-value="userId"
-                            autocomplete="new-password">
+                            autocomplete="off">
             </v-autocomplete>
             <v-text-field text
                           type="number"
@@ -436,7 +436,7 @@
                                 label="Search for a user..."
                                 item-text="name"
                                 item-value="userId"
-                                autocomplete="new-password"
+                                autocomplete="off"
                                 @input="getUserHistory(newAssignedUser.userId)"
                 >
                   <template slot='item' slot-scope='{ item }'>

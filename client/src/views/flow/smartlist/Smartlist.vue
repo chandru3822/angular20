@@ -145,10 +145,50 @@
                 </v-col>
 
                 <v-col cols="6" md="3">
-                  <v-checkbox
-                    v-model="smartlist.projectDetails"
-                    label="Project Details"
-                  />
+
+
+                  <v-dialog
+                    v-model="showToggleDialog"
+                    width="500"
+                    v-if="smartlist.id && canEdit"
+                  >
+                    <template #activator="{on}">
+                      <v-checkbox
+                        v-model="smartlist.projectDetails"
+                        label="Project Details"
+                        v-on="on"
+                      />
+                    </template>
+
+                    <v-card>
+                      <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Toggling project details will reset your smartlist, are you sure you want to continue?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="[showToggleDialog = false, smartlist.projectDetails = !smartlist.projectDetails]">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="[showToggleDialog = false, toggleSmartlistType()]">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -421,6 +461,7 @@ export default {
       ],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       showDeleteDialog: false,
+      showToggleDialog: false,
       projectDetailsColumns: []
     }
   },
@@ -720,6 +761,21 @@ export default {
     validateForm () {
       if (this.$refs.smartlistForm.validate()) {
         this.smartlist.id ? this.updateSmartlist() : this.addSmartlist()
+      }
+    },
+    async toggleSmartlistType () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await putRequest(`/smartlist/${this.smartlist.id}/toggleType`)
+        this.assignedFields = []
+        this.requirements = []
+      } catch (e) {
+        logError(e)
+        this.smartlist.projectDetails = !this.smartlist.projectDetails
+        this.snackbar = getSnackbar('ERROR', 'Error updating smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
     // **************************** smartlist logic on hold until smartlist v2 ***************************

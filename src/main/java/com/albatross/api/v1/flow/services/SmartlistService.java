@@ -76,6 +76,11 @@ public class SmartlistService {
   public void updateSmartlist(Smartlist smartlist) {
 
     Smartlist existingSmartlist = this.getSmartlist(smartlist.getId());
+
+    if (existingSmartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to find given smartlist", new RuntimeException());
+    }
+
     final boolean updatingName = !existingSmartlist.getName().trim().toLowerCase().equals(smartlist.getName().trim().toLowerCase());
 
     if (updatingName && !this.isNameUnique(smartlist.getName())) {
@@ -90,6 +95,20 @@ public class SmartlistService {
 
   public void deleteSmartlist(Long smartlistId) {
     sqlCache.update("smartlist.delete", Map.of("id", smartlistId, "userId", securityService.getCurrentUser().getId()));
+  }
+
+  @Transactional
+  public void toggleType(Long smartlistId) {
+    Smartlist smartlist = this.getSmartlist(smartlistId);
+
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to find given smartlist", new RuntimeException());
+    }
+
+    smartlist.setProjectDetails(!smartlist.isProjectDetails());
+    this.updateSmartlist(smartlist);
+
+    sqlCache.update("smartlist.clearFieldsAndRequirements", Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
   }
 
   public boolean isNameUnique(String name) {
@@ -321,6 +340,16 @@ public class SmartlistService {
 
     if (!requirements.isEmpty()) {
       query.append("\nwhere");
+    }
+
+    // If user is in a parent company, get all rows. else if user is the child, limit rows to that company
+    User user = securityService.getCurrentUser();
+    boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    if (inParentCompany) {
+      query.append(String.format("\nbrs.project_details.company_id = any(select id from flow.company c where (c.id = %s or c.parent_company_id = %s) and c.archived is not true) and ", user.getCompanyId(), user.getCompanyId()));
+    } else {
+      query.append(String.format("\nbrs.project_details.company_id = %s and ", user.getCompanyId()));
     }
 
     for (SmartlistRequirement r: requirements) {
@@ -618,12 +647,14 @@ public class SmartlistService {
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), joinAlias, joinAlias, f.getPpsTable(), joinAlias, f.getCustomFieldGroupAssignmentId()));
               } else {
                 final String ppscfvUUID = UUID.randomUUID().toString();
+                f.setValueReferenceTable(ppscfvUUID);
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), ppscfvUUID, ppscfvUUID, f.getPpsTable(), ppscfvUUID, f.getCustomFieldGroupAssignmentId()));
                 query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, ppscfvUUID));
               }
             } else {
               if (f.getCustomFieldSqlKey() != null) {
                 final String ppscfvUUID = UUID.randomUUID().toString();
+                f.setValueReferenceTable(ppscfvUUID);
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), ppscfvUUID, ppscfvUUID, f.getPpsTable(), ppscfvUUID, f.getCustomFieldGroupAssignmentId()));
                 query.append(String.format("\nleft join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, ppscfvUUID));
               } else {

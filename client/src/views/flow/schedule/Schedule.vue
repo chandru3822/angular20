@@ -78,7 +78,7 @@
                             prepend-icon="search"
                             text
                             label="Search for project..."
-                            autocomplete="new-password"
+                            autocomplete="off"
                             :loading="searchProjectsLoading"
                             item-value="id"
                             return-object
@@ -252,7 +252,7 @@
             </template>
 
             <template #item.start="{ item }">
-              {{item.start | formatDate('date')}}
+              {{item.start | formatDate('timestamp', 'MM/DD/YYYY')}}
             </template>
 
             <template #item.projectName="{ item }">

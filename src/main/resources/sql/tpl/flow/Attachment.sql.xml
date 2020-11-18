@@ -64,6 +64,29 @@
     LIMIT 1
   ]]></attachment.getAttachmentBySourceAndType>
 
+  <attachment.getLatestAppBySourceIdAndType><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.archived,
+      src.source_id,
+      a.date_created,
+      a.date_modified,
+      a.show
+    FROM flow.attachment a
+      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+    WHERE src.source_id = :sourceId
+      AND a.attachment_type_id = :attachmentTypeId
+      AND a.archived IS NOT TRUE
+        and a.show is true
+    order by a.date_created
+    LIMIT 1
+  ]]></attachment.getLatestAppBySourceIdAndType>
+
   <attachment.getAttachmentsBySourceIdAndType><![CDATA[
     SELECT
       a.id,
@@ -155,5 +178,10 @@
                 modified_by_id = :userId
         WHERE id = :id
     ]]></attachment.showOrHideAttachment>
+
+  <attachment.insertAttachmentRecord><![CDATA[
+        INSERT INTO flow.attachment (filename, content_type, s3_key, size, date_created)
+        VALUES (:filename, :contentType, :key, :size, now())
+    ]]></attachment.insertAttachmentRecord>
 
 </sql>

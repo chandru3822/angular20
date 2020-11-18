@@ -85,6 +85,7 @@
                             v-model="currentPayroll.description"></v-text-field>
               <div class="text-left">
                 <v-btn color="primaryCustom" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
+                <v-btn color="primaryCustom" class="ml-3" dark @click="exportAccountingReview()">Export</v-btn>
               </div>
             </v-card>
           </v-col>
@@ -101,7 +102,7 @@
                               clearable
                               item-text="fullName"
                               item-value="id"
-                              autocomplete="new-password"
+                              autocomplete="off"
                               type="search"
                               @click:clear="customers = []"
               ></v-autocomplete>
@@ -255,6 +256,21 @@
                 <td class="text-left">{{item.remaining_value_overrides || 0 | currency('$', 2) }}</td>
               </tr>
             </template>
+
+            <template v-slot:body.append="{headers}">
+              <tr>
+                <td v-for="(header,i) in headers" :key="i" class="font-weight-bold">
+
+                  <div v-if="header.value === 'closer'">
+                    Total Pay:
+                  </div>
+                  <div v-if="header.value === 'current_pay'">
+                    {{ totalPay | currency('$', 2) }}
+                  </div>
+
+                </td>
+              </tr>
+            </template>
           </v-data-table>
         </v-card>
       </v-col>
@@ -271,7 +287,8 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import Vue2Filters from "vue2-filters";
   import constants from "@/helpers/constants";
-  import debounce from "lodash.debounce";
+  import sumBy from "lodash.sumby";
+  import { saveAs } from 'file-saver'
 
   export default {
     name: 'Accounting',
@@ -369,12 +386,13 @@
         //   itemsPerPage: 10
         // },
         footerProps: {
-          'items-per-page-options': [25, 50, 100],
+          'items-per-page-options': [25, 50, 100, 500, 1000],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         currentPayroll: {},
         payrollStatus: {},
-        accountingSearch: {}
+        accountingSearch: {},
+        totalPay: null,
       }
     },
     methods: {
@@ -400,7 +418,6 @@
         const val = await this.saveChangesToPayroll(true)
         //dont submit for approval if the save changes request failed
         if(val) {
-          console.log('randaLogger', val)
           let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
           let params = {
             payDate: this.payDate
@@ -563,6 +580,8 @@
             d.selected = !!this.currentPayroll.selectedProjectIds?.includes(d.project_id)
           })
           this.accountingData = data
+          this.totalPay = sumBy(this.accountingData, 'current_pay')
+
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -597,7 +616,6 @@
       debounceSearch () {
         clearTimeout(this._textSearchTimerId)
         this._textSearchTimerId = setTimeout(() => {
-          console.log('randaLogger', this.search)
           this.debouncedSearch = this.search
         }, 700)
 
@@ -622,6 +640,57 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sales Reps')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
+      async exportAccountingReview () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let filename = 'Accounting Review';
+          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
+          csvData += '\n';
+
+          this.accountingData.forEach(p => {
+            csvData +=
+            p.project_id + ',' +
+            p.customer_name + ',' +
+            p.system_size + ',' +
+            p.closer + ',' +
+            p.current_pay + ',' +
+            p.source_name + ',' +
+            p.cancelled_date + ',' +
+            p.installation_agreement_signed_date + ',' +
+            p.final_design_signed_date + ',' +
+            p.agreement_signed_date + ',' +
+            p.utility_bill_verified_date + ',' +
+            p.percent_of_cash_deposit + ',' +
+            p.proof_of_homeowners_insurance_obtained_date + ',' +
+            p.proof_of_howmeowners_insurance_required + ',' +
+            p.substantial_completion_date + ',' +
+            p.commission_plan + ',' +
+            p.commission_earned + ',' +
+            p.commission_paid_to_date + ',' +
+            p.commission_adjustments + ',' +
+            p.current_pay_commissions + ',' +
+            p.remaining_value_commissions + ',' +
+            p.override_plan + ',' +
+            p.override_earned + ',' +
+            p.overrides_paid_to_date + ',' +
+            p.current_pay_overrides + ',' +
+            p.remaining_value_overrides
+            csvData += '\n';
+          })
+
+          let blob = new Blob([csvData], {
+            type: 'text/csv;charset=utf-8'
+          });
+
+          saveAs(blob, filename);
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Exporting Accounting Review')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
     }
