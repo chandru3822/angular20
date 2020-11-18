@@ -330,12 +330,10 @@ public class ProjectProcessStepService {
       this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
     }
 
-    Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
-
     performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, false);
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, false);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
       }
