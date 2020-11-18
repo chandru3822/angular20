@@ -414,6 +414,7 @@ public class AttachmentService {
         params.put("contentType", ma.getAttachment().getContentType());
         params.put("size", ma.getAttachment().getSize());
         params.put("companyId", ma.getAttachment().getCompanyId());
+        params.put("attachmentTypeId", ma.getAttachmentTypeId());
         params.put("key", key);
 
         Long id = sqlCache.updateReturningId("attachment.insertAttachmentRecord", params, "id").longValue();

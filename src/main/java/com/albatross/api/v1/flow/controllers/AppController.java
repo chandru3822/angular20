@@ -50,7 +50,7 @@ public class AppController {
         Attachment newRecord = attachmentService.insertAttachmentRecord(mobileAttachment);
 
         //add to the join table
-        attachmentService.addToJoinTable(newRecord.getId(), mobileAttachment.getSourceId(), mobileAttachment.getAttachmentSourceTypeId(), false);
+        attachmentService.addToJoinTable(newRecord.getId(), mobileAttachment.getSourceId(), mobileAttachment.getAttachmentTypeId(), false);
 
         return newRecord;
     }

@@ -6,5 +6,5 @@ import lombok.Data;
 public class MobileAttachment {
     private Attachment attachment;
     private String keyPattern;
-    private Long sourceId, attachmentSourceTypeId;
+    private Long sourceId, attachmentTypeId;
 }
