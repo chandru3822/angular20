@@ -299,7 +299,8 @@ public class ProjectProcessStepService {
                       List<ProjectProcessStepRequirement> reqs = pps.getAutoTriggeredActionRequirements().stream()
                           .filter(r -> reqIds.contains(r.getId()))
                           .collect(Collectors.toList());
-                      if (this.canPerformAction(action, pps, reqs)) {
+                    ProjectProcessStepAction actionResult = this.canPerformAction(action, pps, reqs);
+                      if (actionResult.getCanPerform()) {
                           this.performAction(action, pps);
                       }
                   } catch (Exception e) {
@@ -342,29 +343,33 @@ public class ProjectProcessStepService {
     sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(), "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.getId()));
   }
 
-  public boolean canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
-
+  public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
     // Allow actions to be triggered only once per PPS
     if (action.getAlreadyTriggered()) {
-        return false;
+        action.setCanPerform(false);
+        return action;
     }
 
     // Only perform actions on active project process steps
     if (pps.getProcessStepStatusTypeId() != 1) {
-        return false;
+      action.setCanPerform(false);
+      return action;
     }
 
     if (action.getAlwaysEnabled()) {
-      return true;
+      action.setCanPerform(true);
+      return action;
     }
 
     if (action.getProcessStepLogicList().isEmpty()) {
-      return false;
+      action.setCanPerform(false);
+      return action;
     }
 
     // If there are not any requirements, then it can be completed
     if (requirements.isEmpty()) {
-      return true;
+      action.setCanPerform(true);
+      return action;
     }
 
     // Check to if individual requirements are fulfilled
@@ -395,9 +400,11 @@ public class ProjectProcessStepService {
       // @TODO: humes, This is for debugging purposes
       final String tempString = logicString.toString().replaceAll("AND", "&&").replaceAll("OR", "||");
       log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
-      return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
+      action.setCanPerform(parser.parseExpression(logicString.toString()).getValue(Boolean.class));
+      return action;
     } else {
-      return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
+      action.setCanPerform(requirements.stream().allMatch(ProcessStepRequirement::getFulfilled));
+      return action;
     }
   }
 
