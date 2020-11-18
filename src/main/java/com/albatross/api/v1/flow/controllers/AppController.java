@@ -29,6 +29,11 @@ public class AppController {
         return attachmentService.getAttachmentsByType(AttachmentType.APP_DOWNLOAD.id);
     }
 
+    @GetMapping(value = "/latest/{sourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Attachment getLastestBuild(@PathVariable Long sourceId) {
+        return attachmentService.getLatestAppBySourceIdAndType(sourceId, AttachmentType.APP_DOWNLOAD.id);
+    }
+
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteApp(@PathVariable Long id) {
         attachmentService.delete(id);

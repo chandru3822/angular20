@@ -131,6 +131,31 @@ public class AttachmentService {
     }
 
     /**
+     * Find latest mobile build
+     *
+     * @param sourceId ID of the source
+     * @return
+     */
+    public Attachment getLatestAppBySourceIdAndType(Long sourceId, Long attachmentTypeId) {
+        //this is an endpoint for mobile to determine if a user is using the most current app
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("sourceId", sourceId);
+        params.put("attachmentTypeId", attachmentTypeId);
+
+        Optional<Attachment> result = sqlCache.get("attachment.getLatestAppBySourceIdAndType", params, Attachment.class);
+
+        if(result.isPresent()){
+            Attachment attachment = result.get();
+            setAttachmentUrl(storageBucket, attachment);
+            setAttachmentPresignedUrl(storageBucket, attachment);
+
+            return attachment;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Find Attachments by source Id and source type Id, using a custom S3 bucket name.
      *
      * @param attachmentTypeId ID of the attachmentType
