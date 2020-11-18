@@ -647,12 +647,14 @@ public class SmartlistService {
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), joinAlias, joinAlias, f.getPpsTable(), joinAlias, f.getCustomFieldGroupAssignmentId()));
               } else {
                 final String ppscfvUUID = UUID.randomUUID().toString();
+                f.setValueReferenceTable(ppscfvUUID);
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), ppscfvUUID, ppscfvUUID, f.getPpsTable(), ppscfvUUID, f.getCustomFieldGroupAssignmentId()));
                 query.append(String.format("\nleft join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, ppscfvUUID));
               }
             } else {
               if (f.getCustomFieldSqlKey() != null) {
                 final String ppscfvUUID = UUID.randomUUID().toString();
+                f.setValueReferenceTable(ppscfvUUID);
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), ppscfvUUID, ppscfvUUID, f.getPpsTable(), ppscfvUUID, f.getCustomFieldGroupAssignmentId()));
                 query.append(String.format("\nleft join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, ppscfvUUID));
               } else {
