@@ -172,4 +172,15 @@ public class SmartlistController {
     }
     return new ResponseEntity<>(smartlistService.getSharedByType(objectTypeId), HttpStatus.OK);
   }
+
+  @PutMapping(value = "/{smartlistId}/toggleType")
+  public ResponseEntity<Void> updateSmartlistType(@PathVariable Long smartlistId) {
+    User user = securityService.getCurrentUser();
+    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("EDIT", "ADMIN"))) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    smartlistService.toggleType(smartlistId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
 }
