@@ -233,8 +233,6 @@
         }
 
         if (this.rrule.endsType === 'date' && null != this.rrule.endDate) {
-          console.log('randaLogger', this.rrule.endDate)
-          console.log('until', new Date(this.rrule.endDate))
           opts.until = new Date(this.rrule.endDate)
         } else if(this.rrule.endsType !== 'date') {
           //unset if not date

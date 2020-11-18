@@ -944,7 +944,6 @@
           this.errorMessages.push('The Rate per kW cannot be zero.')
         }
         //sum of m1 and m2 payment = rate per kw
-        console.log('randaLogger', this.commission.milestones)
         let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
         if(sum !== this.commission.total) {
           this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')

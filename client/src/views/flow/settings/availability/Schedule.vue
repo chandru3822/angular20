@@ -470,7 +470,6 @@
               this.$store.commit(AppMutations.SET_LOADING, true)
               try {
                 let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
-                // console.log('randaLogger', formattedTimestamps)
                 formattedTimestamps.forEach(ft => {
                   ft.startTime = ft.startTime != null ? moment.utc(ft.startTime, 'hh:mm:ss').format('HH:mm:ss') : null
                   ft.endTime = ft.endTime != null ? moment.utc(ft.endTime, 'hh:mm:ss').format('HH:mm:ss') : null

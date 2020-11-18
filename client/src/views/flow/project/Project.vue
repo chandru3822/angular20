@@ -226,7 +226,6 @@ export default {
         }
         const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
         this.tabs = data
-        console.log('randaLogger', this.tabs[0])
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
       } catch (e) {
         logError(e)

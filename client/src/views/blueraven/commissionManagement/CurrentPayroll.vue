@@ -400,7 +400,6 @@
         const val = await this.saveChangesToPayroll(true)
         //dont submit for approval if the save changes request failed
         if(val) {
-          console.log('randaLogger', val)
           let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
           let params = {
             payDate: this.payDate
@@ -597,7 +596,6 @@
       debounceSearch () {
         clearTimeout(this._textSearchTimerId)
         this._textSearchTimerId = setTimeout(() => {
-          console.log('randaLogger', this.search)
           this.debouncedSearch = this.search
         }, 700)
 

@@ -130,7 +130,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if(this.positionId) {
-            // console.log('randaLogger', this.position.companyFeatures[0])
             const {data} = await putRequest(`/position/`, this.position)
             this.position = data
             this.accessControlKey++

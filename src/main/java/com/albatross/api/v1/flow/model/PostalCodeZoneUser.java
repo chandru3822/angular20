@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class PostalCodeZoneUser {
 
   private Long id, postalCodeZoneId, userId, userPositionId;
-  private String firstName, lastName, fullName;
+  private String firstName, lastName, fullName, position;
   private Boolean archived, schedulable, scheduler;
 }
