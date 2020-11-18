@@ -38,7 +38,7 @@
                           label="Select a Plan to Add"
                           item-text="name"
                           item-value="id"
-                          autocomplete="new-password"
+                          autocomplete="off"
           />
           <DatetimePickerInput
               v-model="newCommissionPlan.startDate"
@@ -160,7 +160,7 @@
                           label="Select a Plan to Add This User"
                           item-text="name"
                           item-value="id"
-                          autocomplete="new-password"
+                          autocomplete="off"
           />
           <DatetimePickerInput
             v-model="newOverridePlan.startDate"
@@ -291,7 +291,7 @@
                           item-text="name"
                           item-value="id"
                           return-object
-                          autocomplete="new-password"
+                          autocomplete="off"
           />
           <v-card flat v-if="cloneOverridePlan && cloneOverridePlan.id">
             <v-card-title>Receiving Users</v-card-title>

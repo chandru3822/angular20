@@ -13,7 +13,7 @@
                   label="Select an Organization..."
                   item-text="orgName"
                   item-value="id"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   @input="[userId = null, getApptLength()]">
         </v-autocomplete>
         <v-autocomplete v-model="userId"
@@ -23,7 +23,7 @@
                   label="Select a User..."
                   item-text="fullName"
                   item-value="id"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   @input="[orgId = null, getApptLength()]">
         </v-autocomplete>
         <v-toolbar flat class="app-toolbar mt-2" v-if="userId || orgId">

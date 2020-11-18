@@ -39,7 +39,7 @@
                           item-text="orgName"
                           item-value="id"
                           return-object
-                          autocomplete="new-password"
+                          autocomplete="off"
                           @input="saveUserOrgCalendars"
           />
           <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>

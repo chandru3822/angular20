@@ -114,6 +114,8 @@ import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams
 import Vue2Filters from "vue2-filters";
 import constants from '@/helpers/constants'
 
+const { VUE_APP_ENV } = process.env
+
 export default {
   name: 'AppDownloads',
   mixins: [Vue2Filters.mixin],
@@ -165,9 +167,14 @@ export default {
       }
     },
     getFilteredApps() {
-      let sourceId = this.isIos ? 1 : 3
+      let sourceId;
       //plist: 1 = prod, 2= uat
       //apk: 3 = prod, 4= uat
+      if(this.isIos) {
+        sourceId = VUE_APP_ENV === 'prod' ? 1 : 2
+      } else {
+        sourceId = VUE_APP_ENV === 'prod' ? 3 : 4
+      }
       return this.apps.filter(a => {
         return this.userCanEdit ? a.sourceId === sourceId && !a.archived : a.sourceId === sourceId && a.show && !a.archived
       })

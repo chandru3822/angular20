@@ -20,7 +20,7 @@
                         placeholder="Select a status..."
                         item-text="userStatusType"
                         item-value="id"
-                        autocomplete="new-password">
+                        autocomplete="off">
               </v-select>
               <v-text-field text
                             label="Phone"

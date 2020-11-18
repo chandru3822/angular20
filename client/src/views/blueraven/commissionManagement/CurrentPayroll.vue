@@ -102,7 +102,7 @@
                               clearable
                               item-text="fullName"
                               item-value="id"
-                              autocomplete="new-password"
+                              autocomplete="off"
                               type="search"
                               @click:clear="customers = []"
               ></v-autocomplete>

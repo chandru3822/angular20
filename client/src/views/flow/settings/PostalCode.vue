@@ -58,7 +58,7 @@
                     item-text="fullName"
                           item-value="userPositionId"
                     return-object
-                    autocomplete="new-password">
+                    autocomplete="off">
           </v-autocomplete>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser)"
                  :disabled="!selectedUser.id">
@@ -151,7 +151,7 @@
                     item-text="fullName"
                     item-value="userPositionId"
                     return-object
-                    autocomplete="new-password">
+                          autocomplete="off">
           </v-autocomplete>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
                  :disabled="!selectedScheduler.id">

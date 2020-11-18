@@ -29,7 +29,7 @@
                             v-model="user.city"></v-text-field>
               <v-autocomplete v-model="user.companyStateId"
                               :items="states"
-                              autocomplete="new-password"
+                              autocomplete="off"
                               label="State"
                               item-text="state"
                               item-value="id"/>
