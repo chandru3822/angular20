@@ -72,7 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/webhook/hubspot/**").permitAll()
         .antMatchers("/webhook/ricochet/**").permitAll()
           // export the endpoint for automating s3 uploads of mobile builds from fast lane
-          .antMatchers("/api/v1/apps/addAttachmentRecord").permitAll()
+          .antMatchers("/api/v1/flow/app/addAttachmentRecord").permitAll()
         .anyRequest().authenticated()
         .and()
         .exceptionHandling()
