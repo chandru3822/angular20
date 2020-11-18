@@ -817,7 +817,7 @@ public class SmartlistService {
                 if (r.getObjectTypeId() == 1 || r.getObjectTypeId() == 2) {
                   referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
                 } else if (r.getObjectTypeId() == 4) {
-                  String joinTable;
+                  String joinTable = null;
                   try {
                     joinTable = joinTables.stream()
                       .filter(t -> t.getProcessStepId() != null && r.getProcessStepId() != null && t.getProcessStepId().equals(r.getProcessStepId()))
@@ -825,16 +825,17 @@ public class SmartlistService {
                       .findFirst()
                       .orElse(null);
 
-                    if (joinTable == null) {
-                      joinTable = UUID.randomUUID().toString();
-                    }
                   } catch (NullPointerException e) {
+                    // noop
+                  }
+                  if (joinTable == null) {
                     joinTable = UUID.randomUUID().toString();
+                    additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinTable, joinTable, joinTable, r.getProcessStepId()));
+                    if (smartlist.isMainProcessSteps()) {
+                      additionalJoins.append(String.format("and \"%s\".main is true ", joinTable));
+                    }
                   }
-                  additionalJoins.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinTable, joinTable, joinTable, r.getProcessStepId()));
-                  if (smartlist.isMainProcessSteps()) {
-                    additionalJoins.append(String.format("and \"%s\".main is true ", joinTable));
-                  }
+
                   referenceLocation = String.format("\"%s\".%s", joinTable, r.getReferenceColumn());
                 }
               }
