@@ -220,23 +220,26 @@ order by name,
 ]]></smartlist.getAvailableFields>
 
 <smartlist.getAvailableProjectDetailsFields><![CDATA[
-select distinct field_to_update as project_details_column,
-                display_name as name,
-                case when field_to_update = 'ahj' then 8 else data_type_id end as data_type_id,
-                case when field_to_update = 'ahj' then true end as has_list_values,
-                case when field_to_update = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
-                case when field_to_update = 'ahj' then (
-                   select to_jsonb(array_agg(row_to_json(listOfValues)))
-                   from (
-                          select a.id,
-                                 a.name
-                          from brs.ahj a
-                          where archived is not true
-                          order by a.name
-                        ) listOfValues
+select distinct pdc.field_to_update as project_details_column,
+                pdc.display_name as name,
+                case when pdc.field_to_update = 'ahj' then 8 else pdc.data_type_id end as data_type_id,
+                case when pdc.field_to_update = 'ahj' then true end as has_list_values,
+                case when pdc.field_to_update = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+                case when pdc.field_to_update = 'ahj' then (
+                  select to_jsonb(array_agg(row_to_json(listOfValues)))
+                  from (
+                         select a.id,
+                                a.name
+                         from brs.ahj a
+                         where archived is not true
+                         order by a.name
+                       ) listOfValues
                 ) end as list_of_values
-from brs.project_details_config
-order by display_name
+from brs.project_details_config pdc
+left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+where (cfga.archived is not true or cfga.id is null) and
+      pdc.display_name is not null
+order by pdc.display_name
 ]]></smartlist.getAvailableProjectDetailsFields>
 
 <smartlist.getAssignedFields><![CDATA[
