@@ -899,7 +899,7 @@ export default new Router({
           meta: { title: 'Albatross - Finances'},
           component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/ViewPayments.vue'),
         },{
-          path: 'rebate/batches/:id',
+          path: 'rebate/viewPayments/:id',
           name: 'rebateDetails',
           meta: { title: 'Albatross - Finances'},
           component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/RebateDetails.vue'),

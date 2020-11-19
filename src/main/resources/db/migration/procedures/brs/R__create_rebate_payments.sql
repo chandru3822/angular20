@@ -9,7 +9,23 @@ DECLARE
 v_payment_nbr integer;
 BEGIN
 
---select brs.create_rebate_payments(84309,2294513,'01/15/2017',12000,12);
+    update flow.project_process_step_custom_field_value
+    set numeric_value = p_total_promotion_amount where id =
+    (select pscfv.id
+    from flow.project p
+             inner join flow.project_process_step pps
+                        on pps.project_id = p.id and pps.process_step_id = 4
+             inner join flow.project_process_step_custom_field_value pscfv
+                        on pps.id = pscfv.project_process_step_id
+             inner join flow.custom_field_group_assignment cfga
+                        on cfga.id = pscfv.custom_field_group_assignment_id
+             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+             inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+             inner join flow.data_type dt on dt.id = cdt.data_type_id
+    where cfga.custom_field_id = (select id from flow.custom_field where field_name='Total Promotion Amount'
+                                    and company_id = (select company_id from brs.project_details where project_id = p_project_id))
+      and p.id = p_project_id);
 
     update flow.project_process_step_custom_field_value
     set numeric_value = p_total_promotion_amount where id =
@@ -25,26 +41,9 @@ BEGIN
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
              inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
              inner join flow.data_type dt on dt.id = cdt.data_type_id
-    where cfga.custom_field_id = (select id from flow.custom_field where field_name='Total Promotion Amount')
+    where cfga.custom_field_id = (select id from flow.custom_field where field_name='Number of Promotion Payments'
+                                    and company_id = (select company_id from brs.project_details where project_id = p_project_id))
       and p.id = p_project_id);
-
-    update flow.project_process_step_custom_field_value
-    set numeric_value = p_number_of_promotion_payments where id =
-    (select pscfv.id
-    from flow.project p
-             inner join flow.project_process_step pps
-                        on pps.project_id = p.id and pps.process_step_id = 4
-             inner join flow.project_process_step_custom_field_value pscfv
-                        on pps.id = pscfv.project_process_step_id
-             inner join flow.custom_field_group_assignment cfga
-                        on cfga.id = pscfv.custom_field_group_assignment_id
-             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-             inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-             inner join flow.data_type dt on dt.id = cdt.data_type_id
-    where cfga.custom_field_id = (select id from flow.custom_field where field_name='Number of Promotion Payments')
-      and p.id = p_project_id);
-
 
 --Create an audit record
   insert into brs.project_rebate_payment_audit(project_id, audit, changed_date, changed_by_user_id) values
