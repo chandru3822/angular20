@@ -33,7 +33,7 @@
         and coalesce(upv.email, '') ILIKE '%' || :email || '%'
         and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
         and upv.user_status_type_id in (:statuses)
-        and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
+        and case when :primaryFlag is true then upv.primary_flag = true else 1=1 end
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
         and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
       union
@@ -120,9 +120,22 @@
           phone_number = :phone,
           modified_by_id = :modifiedById,
           date_modified = now()
-      where id = :id
+      where id = :id;
+      update flow.user_company uc
+          set home_page_company_feature_id = :homePageCompanyFeatureId
+      where uc.company_id = :companyId
+        and uc.user_id = :id
     ]]>
   </user.updateUser>
+
+  <user.saveUserHomePage>
+    <![CDATA[
+      update flow.user_company uc
+          set home_page_company_feature_id = :homePageCompanyFeatureId
+      where uc.company_id = :companyId
+        and uc.user_id = :userId
+    ]]>
+  </user.saveUserHomePage>
 
   <user.insertUser><![CDATA[
       insert into flow.user(first_name, last_name, created_by_id, phone_number, email, username, password)
@@ -143,6 +156,8 @@
              u.date_modified,
              u.default_company_id,
              ust.user_status_type,
+             uc.home_page_company_feature_id,
+             f.feature_path as home_page_path,
              ust.id as user_status_type_id,
              ust.has_access,
              coalesce((
@@ -164,6 +179,8 @@
         inner join flow.user_company uc on uc.user_id = u.id
         inner join flow.company_user_status cus on cus.user_id = u.id
         inner join flow.user_status_type ust on ust.company_id = uc.company_id and ust.id = cus.user_status_type_id
+        left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
+        left join flow.feature f on f.id = cf.feature_id
       where u.id = :id
         and uc.company_id = :companyId
         and uc.archived is not true
@@ -268,6 +285,8 @@
            and ust.company_id = uc.company_id
            ) as has_access,
        coalesce(u.default_company_id, uc.company_id) as company_id,
+       uc.home_page_company_feature_id,
+       f.feature_path as home_page_path,
        ( select parent_company_id
           from flow.company c
         where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
@@ -316,6 +335,8 @@
                            and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
     from flow.user u
          inner join flow.user_company uc on uc.user_id = u.id
+         left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
+         left join flow.feature f on f.id = cf.feature_id
     where case when :username::text is not null then lower(username) = lower(:username::text)
                else u.id = :userId::integer end
       and uc.is_default = true
@@ -452,8 +473,8 @@
   ]]></user.updateAdminDefault>
 
   <user.insertUserCompany><![CDATA[
-      insert into flow.user_company(company_id, user_id, is_default)
-      values (:companyId, :id, :isDefault)
+      insert into flow.user_company(company_id, user_id, is_default, home_page_company_feature_id)
+      values (:companyId, :id, :isDefault, :homePageCompanyFeatureId)
   ]]></user.insertUserCompany>
 
   <user.deleteUserCompany><![CDATA[

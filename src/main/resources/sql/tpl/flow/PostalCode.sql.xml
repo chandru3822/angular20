@@ -27,7 +27,8 @@
                                  u.last_name as "lastName",
                                  concat(u.first_name, ' ', u.last_name) AS "fullName",
                                  pczu.postal_code_zone_id as "postalCodeZoneId",
-                                 pczu.archived
+                                 pczu.archived,
+                                 p.position
                           from flow.postal_code_zone_user pczu
                             inner join flow.user_position up on up.id = pczu.user_position_id
                             inner join flow.user u on u.id = up.user_id
@@ -96,7 +97,8 @@
        p.schedulable,
        concat(u.first_name, ' ', u.last_name) AS full_name,
        pczu.user_position_id,
-       pczu.archived
+       pczu.archived,
+       p.position
     from flow.postal_code_zone_user pczu
         inner join flow.user_position up on up.id = pczu.user_position_id
         inner join flow.user u on u.id = up.user_id
@@ -146,19 +148,21 @@
       select distinct upv.user_id as id,
                 upv.user_position_id,
                 upv.first_name,
-                      upv.position_id,
+                upv.position_id,
                 upv.last_name,
-                concat(upv.first_name, ' ', upv.last_name) AS full_name,
+                concat(upv.first_name, ' ', upv.last_name, ' - ', upv.position) AS full_name,
                 concat(upv.first_name, ' ', upv.last_name) AS title
       from flow.user_positions_vw upv
       where case when :isParent and :isSchedulingTool
                      then array[upv.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
                  else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and case when :loadSchedulers is true
-            then upv.position_scheduler is true
-            else upv.position_schedulable is true end
+                     then upv.position_scheduler is true
+                 else upv.position_schedulable is true end
         and upv.user_archived is not true
+        and upv.company_id = :companyId
         and upv.start_date <= now()
+        and upv.primary_flag is true
         and (upv.end_date is null or upv.end_date >= now())
         and not exists (select pczu.user_position_id
                         from flow.postal_code_zone_user pczu

@@ -79,7 +79,6 @@
       this.getWorkQueueCategories()
       this.getWorkQueueOwners()
       this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
-      console.log('randaLogger', this.selectedWorkQueueCategory.id)
       if(this.selectedWorkQueueCategory.id) {
         this.getWorkQueues()
       }

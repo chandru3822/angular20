@@ -28,10 +28,15 @@ public class FeatureController {
     return featureService.getAllFeatures();
   }
 
-    @GetMapping(value = "/companyTools", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Feature> getCompanySpecificTools() {
-        return featureService.getCompanySpecificTools();
-    }
+  @GetMapping(value = "/companyTools", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Feature> getCompanySpecificTools() {
+      return featureService.getCompanySpecificTools();
+  }
+
+  @GetMapping(value = "/homePages", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Feature> getHomePagesForCompany() {
+    return featureService.getHomePagesForCompany();
+  }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteFeature(@PathVariable Long id) {

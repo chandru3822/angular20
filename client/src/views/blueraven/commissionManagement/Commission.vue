@@ -282,7 +282,7 @@
                     label="Select a Milestone..."
                     item-text="milestoneType"
                     item-value="id"
-                    autocomplete="new-password">
+                    autocomplete="off">
           </v-select>
           <v-text-field text
                         type="number"
@@ -420,7 +420,7 @@
                       label="Select a Source..."
                       item-text="sourceName"
                       item-value="id"
-                      autocomplete="new-password">
+                      autocomplete="off">
             </v-select>
             <v-text-field text
                           label="Fee Amount"
@@ -572,7 +572,7 @@
                               label="Search for a user..."
                               item-text="name"
                               item-value="userId"
-                              autocomplete="new-password"
+                              autocomplete="off"
                               @input="getUserHistory(newUser.userId)"
               >
                 <template slot='item' slot-scope='{ item }'>
@@ -944,7 +944,6 @@
           this.errorMessages.push('The Rate per kW cannot be zero.')
         }
         //sum of m1 and m2 payment = rate per kw
-        console.log('randaLogger', this.commission.milestones)
         let sum = this.commission?.milestones?.reduce((a, b) => a + b.allocation, 0)
         if(sum !== this.commission.total) {
           this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')

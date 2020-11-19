@@ -9,7 +9,7 @@
               :readonly="readonly"
               :disabled="readonly"
               @input="updateRecurrenceString"
-              autocomplete="new-password">
+              autocomplete="off">
     </v-select>
     <v-text-field text
                   type="number"
@@ -28,7 +28,7 @@
               :readonly="readonly"
               :disabled="readonly"
               @input="updateRecurrenceString"
-              autocomplete="new-password">
+              autocomplete="off">
     </v-select>
     <v-select v-model="rrule.daysOfWeek"
               :items="rruleConfig.daysOfWeek"
@@ -39,7 +39,7 @@
               :disabled="readonly"
               @input="updateRecurrenceString"
               multiple
-              autocomplete="new-password">
+              autocomplete="off">
     </v-select>
 
     <label>Ends</label>
@@ -233,8 +233,6 @@
         }
 
         if (this.rrule.endsType === 'date' && null != this.rrule.endDate) {
-          console.log('randaLogger', this.rrule.endDate)
-          console.log('until', new Date(this.rrule.endDate))
           opts.until = new Date(this.rrule.endDate)
         } else if(this.rrule.endsType !== 'date') {
           //unset if not date

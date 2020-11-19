@@ -68,7 +68,7 @@
                     label="Select Owner"
                     item-text="fullName"
                     return-object
-                    autocomplete="new-password"
+                    autocomplete="off"
                     @change="updateOwner"
           >
           </v-autocomplete>

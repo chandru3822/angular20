@@ -431,7 +431,7 @@
                               label="Search for a user..."
                               item-text="name"
                               item-value="userId"
-                              autocomplete="new-password"
+                              autocomplete="off"
                               @input="getUserHistory(newUser.userId)"
               >
                 <template slot='item' slot-scope='{ item }'>

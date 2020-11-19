@@ -160,7 +160,7 @@
                         label="Data Type"
                         item-text="companyDataType"
                         item-value="id"
-                        autocomplete="new-password"
+                        autocomplete="off"
                         return-object
                     ></v-autocomplete>
                     <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">

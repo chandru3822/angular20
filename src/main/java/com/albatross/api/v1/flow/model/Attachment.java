@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Data
 public class Attachment {
-    private Long id, size, sourceId, attachmentTypeId;
+    private Long id, size, sourceId, attachmentTypeId, companyId;
     private String filename, contentType, s3Key, url, presignedUrl;
     private Date dateCreated, dateModified;
     private Boolean archived, show;

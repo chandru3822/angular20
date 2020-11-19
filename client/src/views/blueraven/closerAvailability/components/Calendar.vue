@@ -536,7 +536,6 @@
         this.mapResourceEvents = this.mapResourceEvents.filter(r => {
           return selectedResourceIds.includes(r.id)
         })
-        console.log('randaLogger', this.mapResourceEvents)
       },
 
     }

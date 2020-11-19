@@ -28,10 +28,13 @@
         <v-col cols="6" class="pb-0">
             <v-file-input
               dense
+              ref="fileInput"
+              :show-size="error.error"
               outlined
-              label="Upload project document"
+              label="Upload document"
               @change="uploadDocument"
             />
+          <span class="error-text" v-if="error.error">{{error.errorMsg}}</span>
         </v-col>
         <v-row class="d-flex flex-wrap justify-start">
           <v-col
@@ -111,7 +114,8 @@ export default {
       attachments: [],
       displayType: null,
       typePath: null,
-      attachmentPath: null
+      attachmentPath: null,
+      error: {}
     }
   },
   props: {
@@ -166,18 +170,30 @@ export default {
     },
     uploadDocument: async function (file) {
       try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-        await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
-          file,
-          attachmentTypeId: this.displayType.attachmentTypeId,
-          projectId: this.projectId,
-          projectProcessStepId: this.projectProcessStepId,
-          callback: async (newAttachment) => {
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            this.attachments = [...this.attachments, newAttachment]
-          }
-        })
+        if(file && file.size > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          //reset error message when trying to upload new file
+          this.error = {}
+          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+          await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
+            file,
+            attachmentTypeId: this.displayType.attachmentTypeId,
+            projectId: this.projectId,
+            projectProcessStepId: this.projectProcessStepId,
+            callback: async (newAttachment, error) => {
+              if(error) {
+                this.error = error
+                this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$refs.fileInput.reset()
+              } else {
+                this.attachments = [...this.attachments, newAttachment]
+                this.$refs.fileInput.reset()
+              }
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
+          })
+        }
       } catch(e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)

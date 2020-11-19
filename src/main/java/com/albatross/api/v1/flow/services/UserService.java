@@ -54,7 +54,7 @@ public class UserService {
     params.put("statuses", search.getStatuses());
     params.put("positions", search.getPositions());
     params.put("orgs", search.getOrgs());
-    params.put("primaryFlag", search.getPrimaryFlag());
+    params.put("primaryFlag", null != search.getPrimaryFlag() ? search.getPrimaryFlag() : false);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
@@ -63,6 +63,17 @@ public class UserService {
 
     Page<User> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
     return page;
+  }
+
+  public void saveUserHomePage(Long homePageCompanyFeatureId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("companyId", user.getCompanyId());
+    params.put("homePageCompanyFeatureId", homePageCompanyFeatureId);
+
+    sqlCache.update("user.saveUserHomePage", params);
   }
 
   public boolean emailExists(String email, Long userId) {
@@ -105,6 +116,7 @@ public class UserService {
     params.put("email", user.getEmail());
     params.put("username", user.getUsername());
     params.put("companyId", currentUser.getCompanyId());
+    params.put("homePageCompanyFeatureId", user.getHomePageCompanyFeatureId());
 
     Long id;
 
@@ -147,7 +159,6 @@ public class UserService {
       //insert a row into user_status
       saveUserStatus(false, id, user.getUserStatusTypeId());
     }
-
     return getUser(id, userIsAlbatross);
   }
 

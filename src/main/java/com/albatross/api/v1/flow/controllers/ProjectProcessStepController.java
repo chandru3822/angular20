@@ -51,7 +51,7 @@ public class ProjectProcessStepController {
       ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
 
       if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
-          return new ResponseEntity<>(String.format("{\"canPerform\": %s}", false), HttpStatus.OK);
+          return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s}", false, null != action && action.getAlreadyTriggered()), HttpStatus.OK);
       }
 
       List<Long> requirementIds = action.getProcessStepLogicList().stream()
@@ -59,8 +59,8 @@ public class ProjectProcessStepController {
           .map(ProcessStepLogic::getProcessStepRequirementId)
           .collect(Collectors.toList());
       List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-      boolean canPerform = projectProcessStepService.canPerformAction(action, pps, requirements);
-      return new ResponseEntity<>(String.format("{\"canPerform\": %s}", canPerform), HttpStatus.OK);
+      ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, requirements);
+      return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s}", actionResult.getCanPerform(), actionResult.getAlreadyTriggered()), HttpStatus.OK);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
@@ -80,7 +80,8 @@ public class ProjectProcessStepController {
           .map(ProcessStepLogic::getProcessStepRequirementId)
           .collect(Collectors.toList());
       List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-      boolean canPerform = projectProcessStepService.canPerformAction(action, pps, requirements);
+      ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, requirements);
+      boolean canPerform = actionResult.getCanPerform();
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }

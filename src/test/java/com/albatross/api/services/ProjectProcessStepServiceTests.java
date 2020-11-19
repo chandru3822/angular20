@@ -92,7 +92,8 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     action.setAlwaysEnabled(true);
-    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    boolean passed = actionResult.getCanPerform();
     assertThat(passed).isTrue();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
@@ -106,7 +107,8 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     action.setProcessStepLogicList(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    boolean passed = actionResult.getCanPerform();
     assertThat(passed).isFalse();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
@@ -121,7 +123,8 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
+    boolean passed = actionResult.getCanPerform();
     assertThat(passed).isTrue();
 
     // @TODO: Would be nice to verify that r.setFulfilled isn't ever called (meaning the code returns early when it should),

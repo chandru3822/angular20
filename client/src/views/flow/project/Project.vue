@@ -72,7 +72,7 @@
 <!--                                label="Select Owner"-->
 <!--                                item-text="fullName"-->
 <!--                                return-object-->
-<!--                                autocomplete="new-password"-->
+<!--                                autocomplete="off"-->
 <!--                                @change="updateOwner"-->
 <!--                >-->
 <!--                </v-autocomplete>-->
@@ -226,7 +226,6 @@ export default {
         }
         const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
         this.tabs = data
-        console.log('randaLogger', this.tabs[0])
         this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
       } catch (e) {
         logError(e)
