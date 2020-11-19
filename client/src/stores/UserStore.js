@@ -63,12 +63,15 @@ export const UserStore = {
       //change context
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
-      // dont do this. the vuex store gets refreshed anyway on the href = '/'
       //update vuex store - user details
-      // await commit(UserMutations.SET_DETAILS, data)
+      await commit(UserMutations.SET_DETAILS, data)
 
-      //refresh entire app and go to home screen
-      window.location.href = '/'
+      //refresh entire app and go to users home page if they have one
+      if(data.homePagePath) {
+        window.location.href = data.homePagePath
+      } else {
+        window.location.href = '/'
+      }
     },
     [UserActions.LOGOUT]: () => {
       localStorage.removeItem('store')

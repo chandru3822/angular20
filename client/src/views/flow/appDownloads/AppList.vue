@@ -171,7 +171,6 @@ export default {
   },
   methods: {
     filterHeaders () {
-      console.log('randaLogger', this.headers)
       return this.headers.filter(header => header.show === true)
     },
     async deleteApp(item) {

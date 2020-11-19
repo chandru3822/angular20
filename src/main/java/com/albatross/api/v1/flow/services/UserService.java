@@ -301,7 +301,7 @@ public class UserService {
 
   public ResponseEntity changeContextNonAdmin(Long companyId) {
     User user = securityService.getCurrentUser();
-    Boolean match = false;
+    boolean match = false;
     // get list of companies the user has access to
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
@@ -319,8 +319,10 @@ public class UserService {
     if(match) {
       params.put("companyId", companyId);
       sqlCache.update("user.updateDefault", params);
-
-      return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
+      User newUserObj = findByUsernameIgnoreCase(null, user.getId());
+      List<FeatureAccessControl> results = securityService.getUserFeatureAccess(newUserObj.getId(), newUserObj.getCompanyId());
+      newUserObj.setFeatureAccess(results);
+      return ResponseEntity.ok(newUserObj);
     } else {
       return ResponseEntity.badRequest().body("Invalid Company For User");
     }

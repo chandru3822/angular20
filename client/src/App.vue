@@ -59,7 +59,6 @@
         'swUpdated', this.showRefreshUI, { once: true }
       );
       let userAgent = window.navigator.userAgent
-      console.log('randaLogger', userAgent)
       if(userAgent &&  ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))){
         this.showMobileBanner = true
       }
