@@ -253,11 +253,30 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async loadHomePageLogo () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          attachmentTypeId: this.homePageAttachmentTypeId,
+          sourceId: this.companyId,
+          callback: async (img) => {
+            this.homePageLogo = img
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      } catch(e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   },
   async created () {
     this.loadCompany()
     this.loadCompanyLogo()
+    this.loadHomePageLogo()
   }
 }
 </script>

@@ -99,10 +99,18 @@
     ]]></payroll.setStatus>
 
     <payroll.status><![CDATA[
-    SELECT p.payroll_status_id
-    FROM brs.payroll p
-    WHERE p.id = :payrollId
+        SELECT p.payroll_status_id
+        FROM brs.payroll p
+        WHERE p.id = :payrollId
     ]]></payroll.status>
+
+    <payroll.overridesOpen><![CDATA[
+        SELECT * FROM brs.get_all_users_overrides_earned_in_open_payroll(:payrollId::integer)
+    ]]></payroll.overridesOpen>
+
+    <payroll.overridesSnapshot><![CDATA[
+        SELECT * FROM brs.get_all_users_overrides_earned_in_payroll_snapshot(:payrollId::integer)
+    ]]></payroll.overridesSnapshot>
 
     <payroll.addActionHistory><![CDATA[
     INSERT INTO brs.payroll_action_history (payroll_id, payroll_action_type_id, action_date, note, user_id)

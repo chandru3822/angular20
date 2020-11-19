@@ -1,7 +1,17 @@
 <template>
-  <v-container>
+  <v-container class="pt-0">
     <v-row>
-      <v-col>
+      <v-col >
+        <v-btn color="primaryCustom" class="white--text"
+               :disabled="payrollSummary.length === 0"
+               @click="exportPayrollSummary">
+          Export
+        </v-btn>
+        <v-btn color="primaryCustom" class="white--text ml-3"
+               :disabled="!currentPayroll.id || payrollSummary.length === 0"
+               @click="exportAllOverrides">
+          Export All Overrides
+        </v-btn>
         <v-data-table
           :headers="headers"
           :items="payrollSummary"
@@ -10,7 +20,7 @@
           :items-per-page="25"
           :footer-props="footerProps"
           :loading="dataLoading"
-          class="elevation-1"
+          class="elevation-1 mt-2"
         >
           <template #no-data>
             No available summary data
@@ -20,14 +30,6 @@
             No available summary data
           </template>
 
-          <template #header.icons="{}">
-            <div class="text-right mr-2">
-              <v-btn text x-small @click="exportPayrollSummary">
-                <v-icon>download</v-icon>
-              </v-btn>
-            </div>
-          </template>
-
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.closer_user}}</td>
@@ -35,7 +37,6 @@
               <td class="text-left">{{item.total_overrides | currency('$', 2)}}</td>
               <td class="text-left">{{item.commission_adjustments | currency('$', 2)}}</td>
               <td class="text-left">{{item.current_pay | currency('$', 2)}}</td>
-              <td></td>
             </tr>
           </template>
         </v-data-table>
@@ -50,17 +51,20 @@
   import constants from "@/helpers/constants";
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import { saveAs } from 'file-saver'
+  import cloneDeep from "lodash.clonedeep";
 
   export default {
     name: 'Summary',
 
     created() {
       this.viewSummary()
+      this.getCurrentPayroll()
     },
     data() {
       return {
         snackbar: {},
         payrollSummary: [],
+        currentPayroll: {},
         dataLoading: false,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 500],
@@ -72,11 +76,23 @@
           { text: 'Total Overrides', value: 'total_overrides', show: true },
           { text: 'Adjustments', value: 'commission_adjustments', show: true },
           { text: 'Current Pay', value: 'current_pay', show: true },
-          { text: '', value: 'icons', show: true, width: 40 },
         ],
       }
     },
     methods: {
+      async getCurrentPayroll () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/payroll/current`, 'blueraven')
+          this.currentPayroll = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Current Payroll')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async viewSummary() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
@@ -84,6 +100,45 @@
           const {data} = await getRequest(`/payroll/current/summary`, 'blueraven')
           this.payrollSummary = data
           this.dataLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async exportAllOverrides () {
+        try {
+          const {data} = await getRequest(`/payroll/${this.currentPayroll.id}/overrides`, 'blueraven')
+
+          let filename = 'Overrides'
+          let csvData = 'Project ID, Customer Name, Closer, Override Plan Name, System Size, Overrides Earned, Prior Pay, Current Pay, User Allocation, Milestone 1 Percentage, Milestone 2 Percentage, Plan Total'
+          csvData += '\n'
+
+          data.forEach(p => {
+            csvData +=
+              p.projectId + ',' +
+              p.customerName + ',' +
+              p.closer + ',' +
+              p.overridePlanName + ',' +
+              p.systemSize + ',' +
+              p.overridesEarned + ',' +
+              p.priorPay + ',' +
+              p.currentPay + ',' +
+              p.userAllocation + ',' +
+              p.milestone1Percentage + ',' +
+              p.milestone2Percentage + ',' +
+              p.planTotal
+            csvData += '\n';
+          })
+
+          let blob = new Blob([csvData], {
+            type: 'text/csv;charset=utf-8'
+          });
+
+          saveAs(blob, filename);
+
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
