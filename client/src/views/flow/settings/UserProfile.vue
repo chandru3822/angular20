@@ -63,6 +63,16 @@
                         :rules="[passwordRule]"
                         label="Confirm Password">
           </v-text-field>
+          <v-autocomplete v-if="!userIsAlbatross"
+                          v-model="user.homePageCompanyFeatureId"
+                          :items="homePages"
+                          label="Default Home Page"
+                          clearable
+                          item-text="featureName"
+                          item-value="id"
+                          autocomplete="off"
+                          type="search"
+          ></v-autocomplete>
         </v-col>
       </v-row>
       <v-row>
@@ -132,6 +142,7 @@ export default {
       // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
       timeValue: moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'),
       user: {},
+      homePages: [],
       userIsAlbatross: false,
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
@@ -143,7 +154,17 @@ export default {
       profileImage: {}
     }
   },
-  computed: {
+  computed: {},
+  async created () {
+    if(this.$store.state.user.details.highestCompanyId === 1) {
+      //this was all super dumb because we can't load albatross users the same way as regular users
+      this.userIsAlbatross = true
+      this.getUser(this.userIsAlbatross)
+    } else {
+      this.getHomePages()
+      this.getUser(false)
+    }
+    this.loadProfileImage()
   },
   methods: {
     validate () {
@@ -160,6 +181,21 @@ export default {
         return 'Password Fields Must Match'
       } else {
         return true
+      }
+    },
+    async getHomePages () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/feature/homePages`)
+        this.homePages = data.filter(d => {
+          return this.$store.getters.userHasFeature(d.featureCode)
+        })
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Home Pages')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getUser (userIsAlbatross) {
@@ -252,16 +288,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
-  },
-  async created () {
-    if(this.$store.state.user.details.highestCompanyId === 1) {
-      //this was all super dumb because we can't load albatross users the same way as regular users
-      this.userIsAlbatross = true
-      this.getUser(this.userIsAlbatross)
-    } else {
-      this.getUser(false)
-    }
-    this.loadProfileImage()
   }
 }
 </script>

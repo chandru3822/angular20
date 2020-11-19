@@ -65,6 +65,17 @@ public class UserService {
     return page;
   }
 
+  public void saveUserHomePage(Long homePageCompanyFeatureId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("companyId", user.getCompanyId());
+    params.put("homePageCompanyFeatureId", homePageCompanyFeatureId);
+
+    sqlCache.update("user.saveUserHomePage", params);
+  }
+
   public boolean emailExists(String email, Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("email", email);
@@ -105,6 +116,7 @@ public class UserService {
     params.put("email", user.getEmail());
     params.put("username", user.getUsername());
     params.put("companyId", currentUser.getCompanyId());
+    params.put("homePageCompanyFeatureId", user.getHomePageCompanyFeatureId());
 
     Long id;
 
@@ -147,7 +159,6 @@ public class UserService {
       //insert a row into user_status
       saveUserStatus(false, id, user.getUserStatusTypeId());
     }
-
     return getUser(id, userIsAlbatross);
   }
 

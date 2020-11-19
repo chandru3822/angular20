@@ -47,6 +47,14 @@ public class FeatureService {
     return results;
   }
 
+  public List<Feature> getHomePagesForCompany() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<Feature> results = sqlCache.query("feature.getHomePagesForCompany", params, Feature.class);
+    return results;
+  }
+
   public Feature saveFeature(Feature f) {
     //this is used for adding/updating features to system
     User user = securityService.getCurrentUser();

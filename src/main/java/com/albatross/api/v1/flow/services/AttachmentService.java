@@ -402,7 +402,7 @@ public class AttachmentService {
 
     //endpoint for automating mobile build uploads
     public Attachment insertAttachmentRecord(MobileAttachment ma) throws IOException {
-
+        //todo: if used from within the app need to get companyId off of user in those cases
         if (null == ma || null == ma.getAttachment()) {
             throw new RuntimeException("Attachment cannot be null");
         }
@@ -413,6 +413,8 @@ public class AttachmentService {
         params.put("filename", ma.getAttachment().getFilename());
         params.put("contentType", ma.getAttachment().getContentType());
         params.put("size", ma.getAttachment().getSize());
+        params.put("companyId", ma.getAttachment().getCompanyId());
+        params.put("attachmentTypeId", ma.getAttachmentTypeId());
         params.put("key", key);
 
         Long id = sqlCache.updateReturningId("attachment.insertAttachmentRecord", params, "id").longValue();
