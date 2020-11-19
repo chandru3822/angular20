@@ -12,10 +12,12 @@
                         item-value="id"
                         autocomplete="off"
                         persistent-hint
-                        hint="* This will be used the next time you log in"
+                        hint="* This will be used the next time you log in and can be changed at any time under Settings - User Profile"
                         type="search"
         ></v-autocomplete>
-        <v-btn @click="saveUserHomePage" color="primaryCustom" class="mt-4 white--text">
+        <v-btn @click="saveUserHomePage"
+               v-if="!userIsAlbatross"
+               color="primaryCustom" class="mt-4 white--text">
           Save
         </v-btn>
       </v-card-text>
@@ -96,7 +98,7 @@ export default {
 }
 
 .home-background {
-  background-image: url(../assets/home.jpeg);
+  background-image: url(../assets/home.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
