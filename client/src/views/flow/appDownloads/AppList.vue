@@ -34,7 +34,7 @@
           <td>
             <v-btn text color="primaryCustom" small
                    v-if="isIos"
-                   :href="`itms-services://?action=download-manifest&url=https://7oaks-albatross.s3.amazonaws.com/{{item.s3Key}}`">
+                   :href="`itms-services://?action=download-manifest&url=https://7oaks-albatross.s3.amazonaws.com/${item.s3Key}`">
               <v-icon>download</v-icon>
             </v-btn>
             <v-btn text color="primaryCustom" small
