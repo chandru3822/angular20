@@ -9,7 +9,7 @@
       </v-toolbar-items>
     </v-toolbar>
 <!--    <v-toolbar v-if="showMobileBanner && $route.name !== 'login'">-->
-    <v-toolbar v-if="!dismissMobileToolbar && showMobileBanner && $route.name !== 'login' && $route.path !== '/apps'"
+    <v-toolbar v-if="!dismissMobileToolbar && showMobileBanner && $route.name !== 'login' && $route.name !== 'forgotPassword' && $route.path !== '/apps'"
                class="clickable"
                dense>
       <v-toolbar-title  @click="goToApps">
@@ -25,7 +25,7 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <AppNav v-if="$route.name !== 'login' && !hideHeader"/>
+    <AppNav v-if="$route.name !== 'login' && $route.name !== 'forgotPassword' && !hideHeader"/>
     <v-main>
       <v-container class="router-container">
         <router-view class="router-view" />

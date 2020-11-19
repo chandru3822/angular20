@@ -15,7 +15,8 @@ export const UserMutations = {
   INIT: 'storeInt',
   SET_DETAILS: 'setDetails',
   SET_USER_IMAGE: 'setUserImage',
-  SET_COMPANIES: 'setCompanies'
+  SET_COMPANIES: 'setCompanies',
+  RESET_STATE: 'resetState'
 }
 
 export const UserStore = {
@@ -32,6 +33,14 @@ export const UserStore = {
     [UserMutations.SET_DETAILS]: (state, details) => (state.details = details),
     [UserMutations.SET_USER_IMAGE]: (state, image) => (state.userImage = image),
     [UserMutations.SET_COMPANIES]: (state, companies) => (state.companies = companies),
+    [UserMutations.RESET_STATE]: (state) => (Object.assign(state, {
+      authorized: false,
+      jwt: null,
+      loginError: null,
+      details: {},
+      userImage: {},
+      companies: []
+    })),
   },
   actions: {
     [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {
@@ -73,8 +82,9 @@ export const UserStore = {
         window.location.href = '/'
       }
     },
-    [UserActions.LOGOUT]: () => {
+    [UserActions.LOGOUT]: ({ commit }) => {
       localStorage.removeItem('store')
+      commit(UserMutations.RESET_STATE)
     }
   },
   getters: {
