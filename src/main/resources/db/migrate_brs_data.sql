@@ -10944,3 +10944,64 @@ where id in (
     from set_time_based_to_true
 );
 
+
+-- update all closers to have a default home page of /closerDashboard
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 14 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position in ('Closer', 'Closer Manager', 'Closer Regional'))
+           -- there are no other companies with the closer dashboard feature so we can limit this here
+           and p.company_id = 3
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+-- update all setters to have a default home page of /setterDashboard
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 15 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position in ('Setter', 'Setter Manager', 'Setter Regional'))
+           -- there are no other companies with the setter dashboard feature so we can limit this here
+           and p.company_id = 3
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+-- update all closers not in child id = 3 to /projects
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 11 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position in ('Closer', 'Closer Manager', 'Closer Regional'))
+           -- there are no other companies with the closer dashboard feature so we can limit this here
+           and p.company_id != 3
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+-- update all other non-closers and non-setters to be /companyDashboard (currently the feature only exists in BR corp)
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 24 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position not in ('Closer', 'Closer Manager', 'Closer Regional', 'Setter', 'Setter Manager', 'Setter Regional'))
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+
+

@@ -111,7 +111,7 @@ BEGIN
                         select lv.id,
                                lv.name
                         from flow.list_of_value lv
-                        where array[lv.id] <@ array[psr.list_of_value_ids]
+                        where lv.id = any (psr.list_of_value_ids)
                       ) lov), '[]') AS list_of_values,
       coalesce(cdt.data_type_id, df.return_data_type_id) as data_type_id,
       cdt.has_list_values,

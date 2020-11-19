@@ -19,7 +19,7 @@ BEGIN
         select coalesce(sum(pcl.paid_to_date),0)
         from brs.project_commission_ledger pcl
           inner join flow.project p on p.id = pcl.project_id
-        WHERE array[pcl.project_id] <@ p_project_ids::integer[]  and
+        WHERE pcl.project_id = any(p_project_ids::integer[])  and
               pcl.ledger_type_id = 3
         and pcl.closer_id = p_user_id
                    and  pcl.payroll_id < p_payroll_id

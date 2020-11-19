@@ -36,7 +36,7 @@ select u.id as user_id,
       up.id as user_position_id,
       p.position
 from positions
-inner join flow.user_position up on array[up.position_id] <@ positions.position_ids
+inner join flow.user_position up on up.position_id = any( positions.position_ids)
 inner join flow.user u on u.id = up.user_id
 inner join flow.position p on p.id = up.position_id
 inner join flow.user_status_type ust on ust.company_id = p.company_id

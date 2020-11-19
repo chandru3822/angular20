@@ -130,7 +130,7 @@ BEGIN
         elsif v_data_type_id = 7 then
             case when new.int_array_value is null then select 'null' into v_value; else select quote_literal(string_agg(lov.name, ', '))
                                                                                         from flow.list_of_value lov
-                                                                                        where array [lov.id] <@ new.int_array_value::integer[]
+                                                                                        where  lov.id = any(new.int_array_value::integer[])
                                                                                         into v_value; end case;
             v_value = v_value || '::text';
         end if;
