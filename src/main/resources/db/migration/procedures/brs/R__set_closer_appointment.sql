@@ -173,9 +173,9 @@ BEGIN
 
     if v_user_id is not null then
 
-        select into v_user_full_name, v_user_email
-               first_name || ' ' || last_name,
+        select first_name || ' ' || last_name,
                 email
+        into v_user_full_name, v_user_email
         from flow."user"
         where id = v_user_id;
 

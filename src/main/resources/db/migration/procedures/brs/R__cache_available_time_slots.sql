@@ -12,11 +12,13 @@ BEGIN
     from (
              with active_users as (
                  select u.id,u.first_name,u.last_name,up.position_id,
-                        date_trunc('day', now() AT TIME ZONE o.time_zone_abbreviation) AT TIME ZONE o.time_zone_abbreviation as start_time,
-                        (date_trunc('day', now() AT TIME ZONE o,time_zone_abbreviation) AT TIME ZONE o.time_zone_abbreviation) + interval '1 day' - interval '1 second' as end_time
+                        date_trunc('day', now()) AT TIME ZONE t.timezone as start_time,
+                        (date_trunc('day', now()) AT TIME ZONE t.timezone) + interval '1 day' - interval '1 second' as end_time
                  from flow.user u
                           inner join flow.user_position up on up.user_id = u.id
                           inner join flow.org o on o.id = up.org_id
+                          inner join flow.company_timezone ct on ct.id = o.company_timezone_id
+                          inner join flow.timezone t on t.id = ct.timezone_id
                           inner join flow.company_user_status cus on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = o.company_id
                      and up.position_id in (1,2,3)

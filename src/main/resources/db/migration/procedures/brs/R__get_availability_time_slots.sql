@@ -75,7 +75,7 @@ BEGIN
                                                        when rsa.end_time > rsa.start_time
                                                            then $$'$$ || p_available_date || $$'$$
                                                        else $$'$$ || p_available_date + 1 || $$'$$ end ||
-                                                   rsa.end_time)::timestamp, interval '30 min')                 available_times,
+                                                   rsa.end_time)::timestamp, interval '30 min')  -(rsa.end_time - (default_appointment_length || ' minutes')::interval)  available_times,
                                           uc.default_appointment_length,
                                           (rsa.end_time - (default_appointment_length || ' minutes')::interval) closer_end_time
                                    from flow.project p
@@ -94,7 +94,7 @@ BEGIN
                                             p_available_date::date between rs.start_date and rs.end_date
                                          else
                                              p_available_date::date >= rs.start_date end) as foo) as foo1
-                 where foo1.scheduled_start_time::time <= foo1.scheduled_end_time::time and foo1.scheduled_start_time > now()) as foo2
+                 where foo1.scheduled_start_time > now()  + interval '30 minutes') as foo2
         where foo2.available is true
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;
