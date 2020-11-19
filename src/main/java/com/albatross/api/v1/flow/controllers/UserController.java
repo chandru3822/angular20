@@ -42,6 +42,11 @@ public class UserController {
         return new ResponseEntity<>(userService.searchUsers(search, pageable), HttpStatus.OK);
     }
 
+    @PutMapping(value="/homePage/{homePageCompanyFeatureId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void saveUserHomePage(@PathVariable Long homePageCompanyFeatureId) {
+        userService.saveUserHomePage(homePageCompanyFeatureId);
+    }
+
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity saveUser(@RequestParam(required = false) Boolean userIsAlbatross,
                                    @RequestBody User user) {

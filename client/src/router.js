@@ -4,6 +4,7 @@ import Login from './views/Login.vue'
 import ForgotPassword from './views/ForgotPassword.vue'
 import PasswordReset from './views/PasswordReset.vue'
 import store from './store'
+import router from './router'
 import { UserMutations } from './stores/UserStore'
 import { getRequest } from '@/helpers/helpers'
 
@@ -55,7 +56,13 @@ export default new Router({
               next('/login')
             }
           } else {
-            next()
+            if(store.state.user.details.homePagePath) {
+              router.push({path: store.state.user.details.homePagePath})
+              // next(store.state.user.details.homePagePath)
+            } else {
+              next()
+            }
+            // next()
           }
         }
       }

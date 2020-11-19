@@ -26,6 +26,22 @@
     order by cf.feature_name
   ]]></feature.getCompanyTools>
 
+  <feature.getHomePagesForCompany><![CDATA[
+    select cf.id,
+           cf.feature_name,
+           f.feature_code,
+           f.feature_path,
+           f.is_system,
+           cf.archived
+    from flow.company_feature cf
+             inner join flow.feature f on f.id = cf.feature_id
+    where company_id = :companyId
+      and cf.archived is not true
+      and f.archived is not true
+      and cf.home_page is true
+    order by cf.feature_name
+  ]]></feature.getHomePagesForCompany>
+
   <feature.getAllForCompany><![CDATA[
     select cf.id,
            cf.feature_name,
