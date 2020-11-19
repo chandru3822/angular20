@@ -1,16 +1,16 @@
 <template>
   <v-container>
     <v-toolbar flat class="app-toolbar">
-      <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Apps</v-toolbar-title>
+      <v-toolbar-title class="app-title">Apps</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
       </v-toolbar-items>
     </v-toolbar>
     <v-row>
-      <v-col cols="12" sm="6">
+      <v-col cols="12" md="6">
         <AppList :apps="apps" :user-can-edit="userCanEdit" :is-ios="true"></AppList>
       </v-col>
-      <v-col cols="12" sm="6">
+      <v-col cols="12" md="6">
         <AppList :apps="apps" :user-can-edit="userCanEdit" :is-ios="false"></AppList>
       </v-col>
     </v-row>

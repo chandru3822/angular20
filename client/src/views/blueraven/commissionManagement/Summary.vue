@@ -7,8 +7,9 @@
           :items="payrollSummary"
           :fixed-header="true"
           disable-sort
+          :items-per-page="25"
+          :footer-props="footerProps"
           :loading="dataLoading"
-          hide-default-footer
           class="elevation-1"
         >
           <template #no-data>
@@ -34,6 +35,7 @@
               <td class="text-left">{{item.total_overrides | currency('$', 2)}}</td>
               <td class="text-left">{{item.commission_adjustments | currency('$', 2)}}</td>
               <td class="text-left">{{item.current_pay | currency('$', 2)}}</td>
+              <td></td>
             </tr>
           </template>
         </v-data-table>
@@ -45,8 +47,9 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
+  import constants from "@/helpers/constants";
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { saveAs } from 'file-saver'
 
   export default {
     name: 'Summary',
@@ -59,13 +62,17 @@
         snackbar: {},
         payrollSummary: [],
         dataLoading: false,
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 500],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
         headers: [
           { text: 'Sales Rep', value: 'closer_user', show: true },
           { text: 'Total Commission', value: 'total_commission', show: true },
           { text: 'Total Overrides', value: 'total_overrides', show: true },
           { text: 'Adjustments', value: 'commission_adjustments', show: true },
           { text: 'Current Pay', value: 'current_pay', show: true },
-          { text: '', value: 'icons', show: true },
+          { text: '', value: 'icons', show: true, width: 40 },
         ],
       }
     },

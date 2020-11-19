@@ -127,8 +127,6 @@
 
     <payroll.getCurrentSummary><![CDATA[
         SELECT brs.get_commission_summary()
-        FROM brs.payroll p
-        WHERE p.current is true
     ]]></payroll.getCurrentSummary>
 
     <payroll.getSummary><![CDATA[
