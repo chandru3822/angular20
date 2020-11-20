@@ -126,12 +126,19 @@ public class ContactService {
 
     if(null != contact.getId()) {
       id = contact.getId();
+
+      Contact existingContact = getContact(id);
+
       params.put("ownerUserPositionId", contact.getOwner() != null ? contact.getOwner().getUserPositionId() : null);
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       //add update when we add that to the UI
-       sqlCache.update("contact.updateContact", params);
+      sqlCache.update("contact.updateContact", params);
+
+      if (!existingContact.getProjects().isEmpty() && !existingContact.getProjects().get(0).getProjectName().equals(contact.getFirstName() + " " + contact.getLastName())) {
+        sqlCache.update("project.updateNameByContactId", Map.of("contactId", id, "name", contact.getFirstName() + " " + contact.getLastName(), "userId", currentUser.getId()));
+      }
     } else {
       UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
       params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
