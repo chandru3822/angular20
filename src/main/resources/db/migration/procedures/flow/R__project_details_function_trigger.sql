@@ -140,7 +140,15 @@ BEGIN
         execute v_sql;
 
         if v_second_field_to_update is not null then
-            if v_list_of_value_id is not null then
+            if v_field_to_update = 'proposal_number_id' then
+                case when new.int_value is null then select 'null' into v_value;
+                    else
+                        select quote_literal(proposal_nbr)
+                        into v_value
+                        from brs.proposal_log_history
+                        where id = new.int_value;
+                    end case;
+            elsif v_list_of_value_id is not null then
             case when new.int_value is null then select 'null' into v_value;
                 else
                     select quote_literal(name)
