@@ -342,7 +342,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
                                                                     where d.id = d2.id and up.position_id in (67,43,44,114,42) and introduction_call_completed_by is not null limit 1)
-                 when p.custom_field_group_assignment_id = 13593 then d2.proposal_nbr::integer
+                 when p.custom_field_group_assignment_id = 13593 (select plh.id from brs.proposal_log_history plh
+                                                                    inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
+                                                                    where d2.id = d3.id and plh.project_id =d2.id limit 1)
 --                  when p.custom_field_group_assignment_id = 14 then (select id from flow.list_of_value where parent_id = 140
 --                                                                                                         and name = d2.introduction_call)
                  when p.custom_field_group_assignment_id = 13840 then (select id from flow.list_of_value where parent_id = 1652
@@ -423,7 +425,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
                                                                     where d.id = d2.id and up.position_id in (67,43,44,114,42) and introduction_call_completed_by is not null limit 1)
-                 when p.custom_field_group_assignment_id = 13593 then d2.proposal_nbr::integer
+                 when p.custom_field_group_assignment_id = 13593 (select plh.id from brs.proposal_log_history plh
+                                                                    inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
+                                                                    where d2.id = d3.id and plh.project_id =d2.id limit 1)
                 --                  when p.custom_field_group_assignment_id = 14 then (select id from flow.list_of_value where parent_id = 140
 --                                                                                                         and name = d2.introduction_call)
                  when p.custom_field_group_assignment_id = 13840 then (select id from flow.list_of_value where parent_id = 81
@@ -903,6 +907,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             case when p.custom_field_group_assignment_id =10122 then (select id from flow.list_of_value where parent_id = 1977
                                                                                                         and name = d2.base_product)
+                 when p.custom_field_group_assignment_id =11396 then (select plh.id from brs.proposal_log_history plh
+                                                                                             inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
+                                                                                             where d2.id = d3.id and plh.project_id =d2.id limit 1)
                  when p.custom_field_group_assignment_id =10811 then (select id from flow.list_of_value where parent_id = 1782
                                                                                                         and name = d2.inverter_brand)
                  when p.custom_field_group_assignment_id =9823 then d2.number_of_promotion_payments
@@ -980,6 +987,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             case when p.custom_field_group_assignment_id =10122 then (select id from flow.list_of_value where parent_id = 1977
                                                                                                         and name = d2.base_product)
+                 when p.custom_field_group_assignment_id =11396 then (select plh.id from brs.proposal_log_history plh
+                                                                     inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
+                                                                     where d2.id = d3.id and plh.project_id =d2.id limit 1)
                  when p.custom_field_group_assignment_id =10811 then (select id from flow.list_of_value where parent_id = 1782
                                                                                                         and name = d2.inverter_brand)
                  when p.custom_field_group_assignment_id =9823 then d2.number_of_promotion_payments
@@ -1644,8 +1654,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
        (with deals as (
             SELECT d.id,permit_packet_submitted_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_packet_submitted_date) as start_time,
-                   coalesce(dce2.end_time,permit_packet_submitted_date) as end_time
+                   coalesce(dce2.start_time,(permit_packet_submitted_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_packet_submitted_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -1716,8 +1726,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,d.permit_pack_revision_submittal_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_pack_revision_submittal_date) as start_time,
-                   coalesce(dce2.end_time,permit_pack_revision_submittal_date) as end_time
+                   coalesce(dce2.start_time,(permit_pack_revision_submittal_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_pack_revision_submittal_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -1789,8 +1799,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,d.permit_revision_b_submittal_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_revision_b_submittal_date) as start_time,
-                   coalesce(dce2.end_time,permit_revision_b_submittal_date) as end_time
+                   coalesce(dce2.start_time,(permit_revision_b_submittal_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_revision_b_submittal_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -1861,8 +1871,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_revision_c_submittal_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_revision_c_submittal_date) as start_time,
-                   coalesce(dce2.end_time,permit_revision_c_submittal_date) as end_time
+                   coalesce(dce2.start_time,(permit_revision_c_submittal_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_revision_c_submittal_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -3271,8 +3281,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_permit_submittal_date complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,in_house_mpu_permit_submittal_date) as start_time,
-                   coalesce(dce2.end_time,in_house_mpu_permit_submittal_date) as end_time
+                   coalesce(dce2.start_time,(in_house_mpu_permit_submittal_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(in_house_mpu_permit_submittal_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -3544,8 +3554,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,d.permit_pick_up_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_pick_up_date) as start_time,
-                   coalesce(dce2.end_time,permit_pick_up_date) as end_time
+                   coalesce(dce2.start_time,(permit_pick_up_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_pick_up_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -3605,8 +3615,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_pack_revision_pickup_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_pack_revision_pickup_date) as start_time,
-                   coalesce(dce2.end_time,permit_pack_revision_pickup_date) as end_time
+                   coalesce(dce2.start_time,(permit_pack_revision_pickup_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_pack_revision_pickup_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -3666,8 +3676,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_revision_b_pickup_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_revision_b_pickup_date) as start_time,
-                   coalesce(dce2.end_time,permit_revision_b_pickup_date) as end_time
+                   coalesce(dce2.start_time,(permit_revision_b_pickup_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_revision_b_pickup_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -3727,8 +3737,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,permit_revision_c_pickup_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,permit_revision_c_pickup_date) as start_time,
-                   coalesce(dce2.end_time,permit_revision_c_pickup_date) as end_time
+                   coalesce(dce2.start_time,(permit_revision_c_pickup_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(permit_revision_c_pickup_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -3826,8 +3836,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,fl_noc_application_signature_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,fl_noc_application_signature_date) as start_time,
-                   coalesce(dce2.end_time,fl_noc_application_signature_date) as end_time
+                   coalesce(dce2.start_time,(fl_noc_application_signature_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(fl_noc_application_signature_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -4117,8 +4127,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,installation_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,installation_date) as start_time,
-                   coalesce(dce2.end_time,installation_date) as end_time
+                   coalesce(dce2.start_time,(installation_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(installation_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -4300,8 +4310,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,installation_closeout_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,installation_closeout_date) as start_time,
-                   coalesce(dce2.end_time,installation_closeout_date) as end_time
+                   coalesce(dce2.start_time,(installation_closeout_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(installation_closeout_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -4805,8 +4815,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_inspection_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,ahj_inspection_date) as start_time,
-                   coalesce(dce2.end_time,ahj_inspection_date) as end_time
+                   coalesce(dce2.start_time,(ahj_inspection_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(ahj_inspection_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -5415,8 +5425,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,system_service_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,system_service_date) as start_time,
-                   coalesce(dce2.end_time,system_service_date) as end_time
+                   coalesce(dce2.start_time,(system_service_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(system_service_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -6892,8 +6902,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,in_house_mpu_date) as start_time,
-                   coalesce(dce2.end_time,in_house_mpu_date) as end_time
+                   coalesce(dce2.start_time,(in_house_mpu_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(in_house_mpu_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -7075,8 +7085,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -7340,8 +7350,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_inspection_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,ahj_inspection_work_date) as start_time,
-                   coalesce(dce2.end_time,ahj_inspection_work_date) as end_time
+                   coalesce(dce2.start_time,(ahj_inspection_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(ahj_inspection_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -7411,7 +7421,8 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
      where originator_id = 2 and utility_meter_set_date IS NOT NULL AND energized_date IS NULL and energization_visit_requested_date is null
-       and energization_visit_scheduled_date is null)returning *),
+       and energization_visit_scheduled_date is null
+       )returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -7524,8 +7535,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,energization_visit_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,energization_visit_date) as start_time,
-                   coalesce(dce2.end_time,energization_visit_date) as end_time
+                   coalesce(dce2.start_time,(energization_visit_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(energization_visit_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -11604,8 +11615,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -11786,8 +11797,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,in_house_mpu_date) as start_time,
-                   coalesce(dce2.end_time,in_house_mpu_date) as end_time
+                   coalesce(dce2.start_time,(in_house_mpu_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(in_house_mpu_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -11968,8 +11979,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -12149,8 +12160,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -12330,8 +12341,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -12509,8 +12520,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -12689,8 +12700,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -12867,8 +12878,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,non_standard_installation_work_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,non_standard_installation_work_date) as start_time,
-                   coalesce(dce2.end_time,non_standard_installation_work_date) as end_time
+                   coalesce(dce2.start_time,(non_standard_installation_work_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(non_standard_installation_work_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -13248,8 +13259,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_work_type_id,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_reinspection_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,ahj_reinspection_date) as start_time,
-                   coalesce(dce2.end_time,ahj_reinspection_date) as end_time
+                   coalesce(dce2.start_time,(ahj_reinspection_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(ahj_reinspection_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -14078,8 +14089,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_mid_point_inspection_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,ahj_mid_point_inspection_date) as start_time,
-                   coalesce(dce2.end_time,ahj_mid_point_inspection_date) as end_time
+                   coalesce(dce2.start_time,(ahj_mid_point_inspection_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(ahj_mid_point_inspection_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -14347,8 +14358,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,ahj_inspection_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,ahj_inspection_date) as start_time,
-                   coalesce(dce2.end_time,ahj_inspection_date) as end_time
+                   coalesce(dce2.start_time,(ahj_inspection_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(ahj_inspection_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -14527,8 +14538,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,additional_ahj_inspection_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,additional_ahj_inspection_date) as start_time,
-                   coalesce(dce2.end_time,additional_ahj_inspection_date) as end_time
+                   coalesce(dce2.start_time,(additional_ahj_inspection_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(additional_ahj_inspection_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -14707,8 +14718,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_permit_pickup_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,in_house_mpu_permit_pickup_date) as start_time,
-                   coalesce(dce2.end_time,in_house_mpu_permit_pickup_date) as end_time
+                   coalesce(dce2.start_time,(in_house_mpu_permit_pickup_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(in_house_mpu_permit_pickup_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -15987,8 +15998,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,asbuilt_permit_pack_submittal_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,asbuilt_permit_pack_submittal_date) as start_time,
-                   coalesce(dce2.end_time,asbuilt_permit_pack_submittal_date) as end_time
+                   coalesce(dce2.start_time,(asbuilt_permit_pack_submittal_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(asbuilt_permit_pack_submittal_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -16331,8 +16342,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,as_built_permit_pickup_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,as_built_permit_pickup_date) as start_time,
-                   coalesce(dce2.end_time,as_built_permit_pickup_date) as end_time
+                   coalesce(dce2.start_time,(as_built_permit_pickup_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(as_built_permit_pickup_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
@@ -17781,8 +17792,8 @@ with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date,migrated_created_date,migrated_org_id,migrated_start_time,migrated_end_time)
         (with deals as (
             SELECT d.id,in_house_mpu_inspection_scheduled_date as complete_date,dce2.org_id,
-                   coalesce(dce2.start_time,in_house_mpu_inspection_scheduled_date) as start_time,
-                   coalesce(dce2.end_time,in_house_mpu_inspection_scheduled_date) as end_time
+                   coalesce(dce2.start_time,(in_house_mpu_inspection_scheduled_date + interval '18 hours')) as start_time,
+                   coalesce(dce2.end_time,(in_house_mpu_inspection_scheduled_date + interval '18 hours')) as end_time
             FROM flow.project
                      INNER JOIN blueraven.deal d
                                 ON project.id = d.id
