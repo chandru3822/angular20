@@ -975,7 +975,7 @@
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td>{{ item.state ? item.state : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td>{{ item.deal_id ? item.deal_id : '' }}</td>
+                <td>{{ item.project_id ? item.project_id : '' }}</td>
                 <td :class="item.source_name_class">{{ item.source_name ? item.source_name : '' }}</td>
                 <td :class="item.system_size_class">{{ item.system_size ? item.system_size : '' }}</td>
                 <td :class="item.financier_class">{{ item.financier ? item.financier : '' }}</td>
@@ -1084,7 +1084,6 @@
   import orderBy from 'lodash.orderby'
   import $ from 'jquery'
   import moment from 'moment'
-
   import constants from '@/helpers/constants'
   import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
@@ -1092,7 +1091,6 @@
 
   export default {
     name: 'closerDashboard',
-
     data: () => ({
       snackbar: {},
       constants,
@@ -1104,7 +1102,7 @@
       headers: [
         { text: '', value: '', show: true, sortable: false },
         { text: 'Name', value: 'customer_name', show: true },
-        { text: 'Deal ID', value: 'id', show: true },
+        { text: 'Project ID', value: 'id', show: true },
         { text: 'Source', value: 'source_name', show: true },
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'FD Signed Date', value: 'final_design_signed_date', show: true },
@@ -1220,7 +1218,7 @@
         { text: 'Employee ID', value: 'employee_id', show: true, width: 115, optional: false },
         { text: 'State', value: 'state', show: true, width: 75, optional: false },
         { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false },
-        { text: 'Deal ID', value: 'deal_id', show: true, width: 85, optional: false },
+        { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false },
         { text: 'Source', value: 'source_name', show: true, width: 85, optional: false },
         { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false },
         { text: 'Financier', value: 'financier', show: true, width: 95, optional: false },
