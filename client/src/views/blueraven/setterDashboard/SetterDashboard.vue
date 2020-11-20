@@ -184,7 +184,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="milestoneDialog = false">
+                 @click="closeMilestoneDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -811,7 +811,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="funnelDrilldownDialog = false">
+                 @click="closeFunnelDrilldownDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -1315,6 +1315,13 @@
             row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
           }
         })
+      },
+
+      closeMilestoneDialog () {
+        this.milestoneDialog = false
+
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       },
       /* IRONMAN-RELATED CODE END */
 
@@ -2180,6 +2187,13 @@
       filteredFunnelDrilldownItems (filteredItems) {
         this.filteredFunnelDrilldownData = filteredItems
         this.funnelDrilldownRowCount = filteredItems.length
+      },
+
+      closeFunnelDrilldownDialog () {
+        this.funnelDrilldownDialog = false
+
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       }
       /* FUNNEL-RELATED CODE END */
     },

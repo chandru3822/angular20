@@ -190,7 +190,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="milestoneDialog = false">
+                 @click="closeMilestoneDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -1065,7 +1065,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="funnelDrilldownDialog = false">
+                 @click="closeFunnelDrilldownDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -1649,6 +1649,13 @@
             row.first_cash_payment_paid_date_formatted = moment(row.first_cash_payment_paid_date).format('MMM D, YYYY')
           }
         })
+      },
+
+      closeMilestoneDialog () {
+        this.milestoneDialog = false
+
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       },
       /* IRONMAN-RELATED CODE END */
 
@@ -2708,6 +2715,13 @@
             this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
           }
         })
+      },
+
+      closeFunnelDrilldownDialog () {
+        this.funnelDrilldownDialog = false
+
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       }
       /* FUNNEL-RELATED CODE END */
     },
