@@ -887,7 +887,11 @@ public class SmartlistService {
           }
 
           if (r.getDataTypeId() == 7) {
-            whereClause.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+            if (r.getDataTypeRequirementId() != null) {
+              whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
+            } else {
+              whereClause.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+            }
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null)) {
             whereClause.append(String.format("\n%s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
