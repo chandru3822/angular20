@@ -258,6 +258,7 @@ export default {
       try {
       // save contact
         const {data} = await postRequest(`/contact`, this.contact)
+        this.contact.projects = data.projects
       // save dirty custom field values
         await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
         this.dirtyCfvs = []
