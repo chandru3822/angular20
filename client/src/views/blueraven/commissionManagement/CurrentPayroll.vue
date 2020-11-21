@@ -405,7 +405,6 @@
         } else {
           this.currentPayroll.selectedProjectIds = []
         }
-        console.log('randaLogger', this.currentPayroll.selectedProjectIds)
       },
       toggleSingleSelect(item) {
         if(item.selected) {
