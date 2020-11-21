@@ -35,6 +35,10 @@ update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id =
 update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 29;
 update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 30;
 update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 31;
+update blueraven.custom_dropdown_field set custom_field_group_id = 17 where id = 32;
+-- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 33;  -- not needed because these are on the safety form that is not being migrated
+-- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 34;  -- not needed because these are on the safety form that is not being migrated
+-- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 35;  -- not needed because these are on the safety form that is not being migrated
 
 
 -- create the data types
@@ -1290,6 +1294,45 @@ from (
      ) as v
 where id = cfv_id;
 
+
+with parent as (
+    insert into brs.list_of_value( name, parent_id, display_order, date_created, created_by_id, archived)
+        values('Interconnection Application Signature',null,1,now(),99999999,false)
+        returning id ),
+     lov as ( insert into brs.list_of_value( name, parent_id, show_other, display_order, date_created, created_by_id, archived)
+         ( select a.name,(select p.id from parent p), case when a.name = 'Other' then true else false end,1,now(),2350555, not a.active
+           from blueraven.ahj_interconnection_application_signature_type a)),
+     cf as (insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
+         ( select p.id, 'Interconnection Application Signature', 7, now(), 99999999, false from parent p) returning id),
+     cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
+         (select 8, cf.id, 2, false, now(), 99999999 from cf) returning id)
+insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
+    (select insp.id,
+            (select id from cfga),
+            null, -- there was no 'other' type for this one
+            null,
+            now(),
+            99999999
+     from blueraven.ahj_utility insp
+     where insp.signature_requested_at_type_id is not null
+    )
+;
+update brs.custom_field_value
+set int_value = v.lov_id
+from (
+         select lov.id as lov_id,
+                cfv.id as cfv_id
+         from brs.custom_field_value cfv
+                  inner join blueraven.ahj_utility a on a.id = cfv.source_id
+                  inner join blueraven.ahj_interconnection_application_signature_type hit on hit.id = a.interconnection_application_signature_type_id
+                  inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
+     ) as v
+where id = cfv_id;
+
+
+
 with parent as (
     insert into brs.list_of_value( name, parent_id, display_order, date_created, created_by_id, archived)
         values('Site Access Required',null,1,now(),99999999,false)
@@ -2030,50 +2073,50 @@ where id = cfv_id;
 
 -- these are the fields for
 -- ADD INTERCONNECTION APPLICATION SIGNATURE CUSTOM FIELD AND LIST OF VALUES
-insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
-select 'Interconnection Application Signature', 'INTERCONNECTION_APPLICATION_SIGNATURE', null, 1, 2350555
-where not exists (
-        select id
-        from brs.list_of_value
-        where code = 'INTERCONNECTION_APPLICATION_SIGNATURE'
-    )
-;
-insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
-select 'Before Submission', 'IAS_BEFORE_SUBMISSION', (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE' ), 2, 2350555
-where not exists (
-        select id
-        from brs.list_of_value
-        where code = 'IAS_BEFORE_SUBMISSION'
-    )
-;
-insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
-select 'After Submission', 'IAS_AFTER_SUBMISSION', (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE' ), 3, 2350555
-where not exists (
-        select id
-        from brs.list_of_value
-        where code = 'IAS_AFTER_SUBMISSION'
-    )
-;
-insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
-select 'Before and After Submission', 'IAS_BEFORE_AND_AFTER_SUBMISSION', (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE' ), 4, 2350555
-where not exists (
-        select id
-        from brs.list_of_value
-        where code = 'IAS_BEFORE_AND_AFTER_SUBMISSION'
-    )
-;
-insert into brs.custom_field(list_of_value_id, field_name, field_code, data_type_id, created_by_id)
-select (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE'), 'Interconnection Application Signature', 'INTERCONNECTION_APPLICATION_SIGNATURE', 7, 2350555
-where not exists (
-        select id
-        from brs.custom_field
-        where field_code = 'INTERCONNECTION_APPLICATION_SIGNATURE'
-    )
-;
-insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, created_by_id)
-select 8, (select id from brs.custom_field where field_code = 'INTERCONNECTION_APPLICATION_SIGNATURE'), 3, 2350555
-where not exists (
-        select id
-        from brs.custom_field_group_assignment
-        where custom_field_id = (select id from brs.custom_field where field_code = 'INTERCONNECTION_APPLICATION_SIGNATURE')
-    );
+-- insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
+-- select 'Interconnection Application Signature', 'INTERCONNECTION_APPLICATION_SIGNATURE', null, 1, 2350555
+-- where not exists (
+--         select id
+--         from brs.list_of_value
+--         where code = 'INTERCONNECTION_APPLICATION_SIGNATURE'
+--     )
+-- ;
+-- insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
+-- select 'Before Submission', 'IAS_BEFORE_SUBMISSION', (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE' ), 2, 2350555
+-- where not exists (
+--         select id
+--         from brs.list_of_value
+--         where code = 'IAS_BEFORE_SUBMISSION'
+--     )
+-- ;
+-- insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
+-- select 'After Submission', 'IAS_AFTER_SUBMISSION', (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE' ), 3, 2350555
+-- where not exists (
+--         select id
+--         from brs.list_of_value
+--         where code = 'IAS_AFTER_SUBMISSION'
+--     )
+-- ;
+-- insert into brs.list_of_value(name, code, parent_id, display_order, created_by_id)
+-- select 'Before and After Submission', 'IAS_BEFORE_AND_AFTER_SUBMISSION', (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE' ), 4, 2350555
+-- where not exists (
+--         select id
+--         from brs.list_of_value
+--         where code = 'IAS_BEFORE_AND_AFTER_SUBMISSION'
+--     )
+-- ;
+-- insert into brs.custom_field(list_of_value_id, field_name, field_code, data_type_id, created_by_id)
+-- select (select id from brs.list_of_value where code = 'INTERCONNECTION_APPLICATION_SIGNATURE'), 'Interconnection Application Signature', 'INTERCONNECTION_APPLICATION_SIGNATURE', 7, 2350555
+-- where not exists (
+--         select id
+--         from brs.custom_field
+--         where field_code = 'INTERCONNECTION_APPLICATION_SIGNATURE'
+--     )
+-- ;
+-- insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, created_by_id)
+-- select 8, (select id from brs.custom_field where field_code = 'INTERCONNECTION_APPLICATION_SIGNATURE'), 3, 2350555
+-- where not exists (
+--         select id
+--         from brs.custom_field_group_assignment
+--         where custom_field_id = (select id from brs.custom_field where field_code = 'INTERCONNECTION_APPLICATION_SIGNATURE')
+--     );
