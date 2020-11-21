@@ -19,7 +19,7 @@ BEGIN
                            inner join brs.project_override po on po.project_id = p1.id
                            inner join brs.override_plan op on op.id = po.override_plan_id
                            inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
-                  WHERE  p1.id = any(p_project_ids::integer[])
+                  WHERE  p1.id = any(p_project_ids)
                     and user_id = p_user_id
                   group by cancelled_date, system_size) as foo) +
            (select sum(total)
@@ -40,7 +40,7 @@ BEGIN
                            inner join brs.override_plan op on op.id = po.override_plan_id
                            inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
 
-                  WHERE  p1.id = any(p_project_ids::integer[])
+                  WHERE  p1.id = any(p_project_ids)
                     and user_id = p_user_id
                   group by pd.cancelled_date, pd.system_size) as foo)
     into v_total;

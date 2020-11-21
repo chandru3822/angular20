@@ -159,7 +159,7 @@ BEGIN
             elsif  v_data_type_id = 2 and v_second_data_type_id = 1 then
                 case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
                 v_value = '(' ||v_value || '::timestamp at time zone '||quote_literal('UTC') ||' at time zone '||quote_literal('US/Mountain')||')::date';
-                raise notice 'value = %',v_value;
+               -- raise notice 'value = %',v_value;
             end if;
             v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
