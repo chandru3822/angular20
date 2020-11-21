@@ -141,15 +141,10 @@ BEGIN
                            FROM brs.project_commission_ledger dcl3
                                   INNER JOIN flow.project d ON d.id = dcl3.project_id
                                   INNER JOIN flow.user u ON u.id = dcl3.closer_id
---                                   left join lateral (select * from flow.get_value_for_custom_field(4 ,
---                                                                                                    58,
---                                                                                                    p.id,
---                                                                                                    4)as employee_id) as employee_id on true
+                                  inner join brs.payroll p  on p.id = dcl3.payroll_id
                            WHERE dcl3.ledger_type_id = 3
                              AND dcl3.payroll_id = 0
-                             AND d.id = any (SELECT selected_project_ids::integer[]
-                                                            FROM brs.payroll
-                                                            WHERE id = p_payroll_id)
+                             AND d.id = any(p.selected_project_ids)
                              AND dcl3.closer_id NOT IN (SELECT dcs1.closer_id
                                                         FROM brs.project_commission_ledger dcs1
                                                         WHERE dcs1.payroll_id = p_payroll_id

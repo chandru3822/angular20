@@ -1,13 +1,12 @@
 
 
-create temp table appointment_dates as
-with one_record as (
-    select resource_id,max(appointment_id) as appointment_id
-    from base_mysql.appointment_contexts
-    group by resource_id)
-select or1.resource_id,a.start_date,a.end_date
-from  base_mysql.appointments a
-          inner join one_record or1 on or1.appointment_id = a.id;
+create temp table appointment_dates as (
+    select resource_id,
+           ((start_date at time zone  'UTC') at time zone 'US/Mountain') as start_time,
+           ((end_date at time zone  'UTC') at time zone 'US/Mountain') as end_time
+    from base_mysql.appointment_contexts ac
+             inner join base_mysql.appointments a on a.id = ac.appointment_id
+);
 
 create index appointment_dates_resource_id_idx
     on appointment_dates(resource_id);
@@ -44,14 +43,19 @@ with active_step as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, timestamp_value,
                                                          int_value,boolean_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1647 then coalesce(ad.start_date,d2.appointment_date)
-                 when p.custom_field_group_assignment_id = 1920 then coalesce(ad.end_date,d2.appointment_date) else null end,
+            case when p.custom_field_group_assignment_id = 1647 then (SELECT coalesce(start_time,(d2.appointment_date + interval '18 hours'))
+                                                                      from appointment_dates ad
+                                                                      where resource_id = d2.deal_base_oid
+                                                                      ORDER BY abs(start_time::date -  d2.appointment_date))
+                 when p.custom_field_group_assignment_id = 1920 then (SELECT coalesce(end_time,(d2.appointment_date + interval '18 hours'))
+                                                                      from appointment_dates ad
+                                                                      where resource_id = d2.deal_base_oid
+                                                                      ORDER BY abs(end_time::date -  d2.appointment_date)) else null end,
             --    when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             case when p.custom_field_group_assignment_id = 1660 then blueraven.get_user_position_for_closer(d2.id::integer,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date) else null end,
             case when p.custom_field_group_assignment_id = 11916 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
               inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
@@ -86,14 +90,19 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id, timestamp_value,
                                                          int_value,boolean_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1647 then coalesce(ad.start_date,d2.appointment_date)
-                 when p.custom_field_group_assignment_id = 1920 then coalesce(ad.end_date,d2.appointment_date) else null end,
+            case when p.custom_field_group_assignment_id = 1647 then (SELECT coalesce(start_time,(d2.appointment_date + interval '18 hours'))
+                                                                      from appointment_dates ad
+                                                                      where resource_id = d2.deal_base_oid
+                                                                      ORDER BY abs(start_time::date -  d2.appointment_date))
+                 when p.custom_field_group_assignment_id = 1920 then (SELECT coalesce(end_time,(d2.appointment_date + interval '18 hours'))
+                                                                      from appointment_dates ad
+                                                                      where resource_id = d2.deal_base_oid
+                                                                      ORDER BY abs(end_time::date -  d2.appointment_date)) else null end,
             --   when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             case when p.custom_field_group_assignment_id = 1600 then blueraven.get_user_position_for_closer(d2.id::integer,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date) else null end,
             case when p.custom_field_group_assignment_id = 11917 then d2.remote_appointment else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
               inner join process_step1 p1 on p1.project_id = d2.id
               cross join p
     );
@@ -425,7 +434,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                             inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
                                                                                             inner join flow.user_position up on up.user_id = u.id
                                                                       where d.id = d2.id and up.position_id in (67,43,44,114,42) and introduction_call_completed_by is not null limit 1)
-                 when p.custom_field_group_assignment_id = 13594 (select plh.id from brs.proposal_log_history plh
+                 when p.custom_field_group_assignment_id = 13594 then (select plh.id from brs.proposal_log_history plh
                                                                         inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
                                                                     where d2.id = d3.id and plh.project_id =d2.id limit 1)
                 --                  when p.custom_field_group_assignment_id = 14 then (select id from flow.list_of_value where parent_id = 140

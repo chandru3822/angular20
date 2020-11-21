@@ -2076,6 +2076,4 @@ where not exists (
         select id
         from brs.custom_field_group_assignment
         where custom_field_id = (select id from brs.custom_field where field_code = 'INTERCONNECTION_APPLICATION_SIGNATURE')
-    )
-;
-
+    );

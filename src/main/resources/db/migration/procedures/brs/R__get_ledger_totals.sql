@@ -21,7 +21,7 @@ BEGIN
       (
         SELECT coalesce(sum(amount), 0)
         FROM brs.project_commission_ledger pcl
-        WHERE pcl.project_id = any(p_project_ids::integer[])
+        WHERE pcl.project_id = any(p_project_ids)
               AND pcl.ledger_type_id = p_ledger_type_id
              )
     into v_total;

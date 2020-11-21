@@ -7,7 +7,7 @@ begin
     with all_project_ids as (
         select array_agg(DISTINCT pd.closer_user_id) as user_ids,array_agg(DISTINCT p.id) v_all_projects,pay.id
         from brs.payroll pay
-                 inner join flow.project p on p.id = any(pay.selected_project_ids::integer[])
+                 inner join flow.project p on p.id = any(pay.selected_project_ids)
                  inner join brs.project_details pd on pd.project_id = p.id
         where  current is true
         group by pay.id
@@ -20,7 +20,7 @@ begin
                        inner join brs.project_override po on po.override_plan_id = op.id
                             INNER JOIN flow.project p2 ON p2.id = po.project_id
                             INNER JOIN brs.payroll p
-                                       ON p2.id = any( p.selected_project_ids::integer[]) and current is true
+                                       ON p2.id = any( p.selected_project_ids) and current is true
                             inner join all_project_ids a on a.id = p.id
                    WHERE  not (opru.user_id = any(user_ids))
                    GROUP BY opru.user_id,p.id,a.v_all_projects
@@ -33,12 +33,12 @@ begin
                     coalesce(brs.get_total_overrides(pay.id, a.v_all_projects, pd.closer_user_id),0) as total_overrides,
                     coalesce(brs.get_ledger_adjustment_current_totals(pay.id, array_agg(DISTINCT p.id), 1),0) as ledger_adjustments
              FROM brs.payroll pay
-                      INNER JOIN flow.project p ON p.id = any(pay.selected_project_ids::integer[])
+                      INNER JOIN flow.project p ON p.id = any(pay.selected_project_ids)
                       inner join brs.project_details pd on pd.project_id = p.id
                       inner join all_project_ids a on a.id = pay.id
              WHERE  pay.current is true
              GROUP BY pd.closer_user_id,pay.id,a.v_all_projects
-         )
+         )select * from commission_users;
     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
     FROM (
     SELECT u3.id,
