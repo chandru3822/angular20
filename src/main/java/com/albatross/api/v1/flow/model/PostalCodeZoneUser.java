@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostalCodeZoneUser {
 
-  private Long id, postalCodeZoneId, userId, userPositionId;
+  private Long id, postalCodeZoneId, userId, userPositionId, postalCodeZoneUserTypeId;
   private String firstName, lastName, fullName, position;
   private Boolean archived, schedulable, scheduler;
 }

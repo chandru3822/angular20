@@ -27,6 +27,7 @@
                                  u.last_name as "lastName",
                                  concat(u.first_name, ' ', u.last_name) AS "fullName",
                                  pczu.postal_code_zone_id as "postalCodeZoneId",
+                                 pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
                                  pczu.archived,
                                  p.position
                           from flow.postal_code_zone_user pczu
@@ -35,8 +36,31 @@
                             inner join flow.position p on p.id = up.position_id
                           where pczu.postal_code_zone_id = pcz.id
                             and pczu.archived is not true
+                          and pczu.postal_code_zone_user_type_id = 1
                           order by u.first_name, u.last_name
-                      ) AS users), '[]') AS users,
+                      ) AS users), '[]') AS scheduleToUsers,
+          coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
+                 FROM (
+                          select pczu.id,
+                                 p.scheduler,
+                                 p.schedulable,
+                                 pczu.user_position_id as "userPositionId",
+                                 u.first_name as "firstName",
+                                 u.last_name as "lastName",
+                                 concat(u.first_name, ' ', u.last_name) AS "fullName",
+                                 pczu.postal_code_zone_id as "postalCodeZoneId",
+                                 pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
+                                 pczu.archived,
+                                 p.position
+                          from flow.postal_code_zone_user pczu
+                            inner join flow.user_position up on up.id = pczu.user_position_id
+                            inner join flow.user u on u.id = up.user_id
+                            inner join flow.position p on p.id = up.position_id
+                          where pczu.postal_code_zone_id = pcz.id
+                            and pczu.archived is not true
+                            and pczu.postal_code_zone_user_type_id = 2
+                          order by u.first_name, u.last_name
+                      ) AS users), '[]') AS scheduleByUsers,
        coalesce((SELECT array_to_json(array_agg(row_to_json(postalCodes)))
                  FROM (
                           select pc.id,
@@ -76,8 +100,8 @@
   ]]></postalCode.deleteZone>
 
   <postalCode.insertZoneUser><![CDATA[
-    insert into flow.postal_code_zone_user(postal_code_zone_id, date_created, created_by_id, user_position_id)
-    values (:postalCodeZoneId, now(), :createdById, :userPositionId)
+    insert into flow.postal_code_zone_user(postal_code_zone_id, date_created, created_by_id, user_position_id, postal_code_zone_user_type_id)
+    values (:postalCodeZoneId, now(), :createdById, :userPositionId, :postalCodeZoneUserTypeId)
   ]]></postalCode.insertZoneUser>
 
   <postalCode.deleteZoneUser><![CDATA[
@@ -97,6 +121,7 @@
        p.schedulable,
        concat(u.first_name, ' ', u.last_name) AS full_name,
        pczu.user_position_id,
+       pczu.postal_code_zone_user_type_id,
        pczu.archived,
        p.position
     from flow.postal_code_zone_user pczu
