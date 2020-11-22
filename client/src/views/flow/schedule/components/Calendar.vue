@@ -329,8 +329,8 @@
       },
     },
     created() {
-      this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
-      this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
+      // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
+      // this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
@@ -634,8 +634,8 @@
         })
       },
       async getEvents(isOrgs, reload) {
-        localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
-        localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
+        // localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
+        // localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
         if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
