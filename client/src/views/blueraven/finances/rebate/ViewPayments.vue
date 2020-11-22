@@ -65,7 +65,7 @@
             <td class="text-left" v-if="status === 'invalid' || status === 'approval'"><a v href="" @click="goToDetails(it)"> {{ it.projectName ? it.projectName : '' }}</a></td>
             <td class="text-left" v-else>{{ it.projectName ? it.projectName : '' }}</td>
             <td class="text-left">
-              <a :href="'https://app.futuresimple.com/sales/deals/' + it.projectId" target="_blank">{{it.projectId}}</a>
+              <router-link :to="`/project/${it.projectId}/details`">{{ it.projectId}}</router-link>
             </td>
             <td class="text-left">{{ it.sc ? it.sc : '' }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>

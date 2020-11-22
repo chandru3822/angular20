@@ -60,7 +60,7 @@
                     return-object
                     autocomplete="off">
           </v-autocomplete>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser)"
+          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedUser, true)"
                  :disabled="!selectedUser.id">
             Add
           </v-btn>
@@ -153,7 +153,7 @@
                     return-object
                           autocomplete="off">
           </v-autocomplete>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
+          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone(selectedScheduler, false)"
                  :disabled="!selectedScheduler.id">
             Add
           </v-btn>
@@ -357,10 +357,10 @@
     },
     methods: {
       filterUsers () {
-        return this.zone.users?.length ? this.zone.users.filter(pczu => { return !pczu.archived && pczu.schedulable}) : []
+        return this.zone?.scheduleToUsers?.filter(pczu => { return !pczu.archived})
       },
       filterSchedulers () {
-        return this.zone.users?.length ? this.zone.users.filter(pczu => { return !pczu.archived && pczu.scheduler}) : []
+        return this.zone?.scheduleByUsers?.filter(pczu => { return !pczu.archived})
       },
       filterPostalCodes () {
         return this.zone.postalCodes?.length ? this.zone.postalCodes.filter(pc => { return !pc.archived}) : []
@@ -407,15 +407,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async addUserToZone (selected) {
+      async addUserToZone (selected, scheduleTo) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
             postalCodeZoneId: this.zoneId,
             userPositionId: selected.userPositionId,
           }
-          const {data} = await postRequest(`/postalCode/zone/saveUser`, params)
-          this.zone.users.push(data)
+          let url = scheduleTo ? `/postalCode/zone/saveScheduleToUser` : `/postalCode/zone/saveScheduleByUser`
+          const {data} = await postRequest(url, params)
+          if(scheduleTo) {
+            this.zone.scheduleToUsers.push(data)
+          } else {
+            this.zone.scheduleByUsers.push(data)
+          }
           this.addUser = false
           this.addScheduler = false
           this.selectedUser = {}

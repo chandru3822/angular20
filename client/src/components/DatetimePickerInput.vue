@@ -20,6 +20,9 @@
       :disabled="readonly"
       v-on="!readonly && on"
       @click:clear="clearInput"
+      :hide-details="hideDetails"
+      :dense="dense"
+      :outlined="outlined"
     />
   </template>
   <v-date-picker
@@ -63,6 +66,9 @@ export default {
     minDate: String,
     maxDate: String,
     hidePrependIcon: Boolean,
+    hideDetails: Boolean,
+    dense: String,
+    outlined: String,
     customClass: String,
     showAppendIcon: Boolean,
     changeCallback: Function,

@@ -182,7 +182,29 @@ export default new Router({
           return accessDenied()
         }
       }
-    },{
+    }, {
+      path: '/companyDashboard',
+      name: 'companyDashboard',
+      meta: { title: 'Albatross - Company Dashboard'},
+      component: () => {
+        if(store.getters.userHasFeature('COMPANY_DASHBOARD')) {
+          return import (/* webpackChunkName: "companyDashboard" */ './views/blueraven/companyDashboard/CompanyDashboard.vue')
+        } else {
+          return accessDenied()
+        }
+      }
+    }, {
+      path: '/companyDashboardTargets',
+      name: 'companyDashboardTargets',
+      meta: { title: 'Albatross - Company Dashboard Targets'},
+      component: () => {
+        if(store.getters.userHasFeature('ADMIN')) {
+          return import (/* webpackChunkName: "companyDashboardTargets" */ './views/blueraven/companyDashboard/CompanyDashboardTargets.vue')
+        } else {
+          return accessDenied()
+        }
+      }
+    }, {
       path: '/closerAvailability',
       name: 'closerAvailability',
       meta: { title: 'Albatross - Closer Availability'},
@@ -899,7 +921,7 @@ export default new Router({
           meta: { title: 'Albatross - Finances'},
           component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/ViewPayments.vue'),
         },{
-          path: 'rebate/batches/:id',
+          path: 'rebate/viewPayments/:id',
           name: 'rebateDetails',
           meta: { title: 'Albatross - Finances'},
           component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/RebateDetails.vue'),

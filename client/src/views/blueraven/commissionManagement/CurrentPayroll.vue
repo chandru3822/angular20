@@ -401,7 +401,7 @@
           ad.selected = this.selectAll
         })
         if(this.selectAll) {
-          this.currentPayroll.selectedProjectIds = this.masterSelectedPayrollIds.concat(this.accountingData.map(ad => ad.id))
+          this.currentPayroll.selectedProjectIds = this.accountingData.map(ad => ad.project_id)
         } else {
           this.currentPayroll.selectedProjectIds = []
         }
@@ -579,6 +579,9 @@
           data.forEach(d => {
             d.selected = !!this.currentPayroll.selectedProjectIds?.includes(d.project_id)
           })
+          if(this.currentPayroll?.selectedProjectIds?.length === data.length) {
+            this.selectAll = true
+          }
           this.accountingData = data
           this.totalPay = sumBy(this.accountingData, 'current_pay')
 

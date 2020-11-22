@@ -56,8 +56,9 @@
             :items="payrollData"
             :fixed-header="true"
             disable-sort
+            :items-per-page="25"
+            :footer-props="footerProps"
             :loading="dataLoading"
-            hide-default-footer
             class="elevation-1"
         >
           <template #no-data>
@@ -90,7 +91,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
+  import constants from "@/helpers/constants";
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {
     getRequest,
@@ -124,6 +125,10 @@
       return {
         snackbar: {},
         payrollSearch: {},
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 500],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
         reps: [],
         repSearch: null,
         repsLoading: false,

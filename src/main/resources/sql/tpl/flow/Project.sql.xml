@@ -419,4 +419,12 @@
            time_zone = :timeZone
     where id = :id
   ]]></project.updateTimeZone>
+
+<project.updateNameByContactId><![CDATA[
+update flow.project
+set project_name = :name,
+    modified_by_id = :userId,
+    date_modified = now()
+where contact_id = :contactId
+]]></project.updateNameByContactId>
 </sql>

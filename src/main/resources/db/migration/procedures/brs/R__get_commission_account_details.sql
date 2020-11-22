@@ -224,6 +224,7 @@ BEGIN
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
                                           left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.source_id = pd.source
+                                                and cpsa.milestone_id = 1
                                  WHERE p1.id = p.id ),0) + coalesce(
                                 (SELECT case when pd.cancelled_date is not null THEN
                                                  0::NUMERIC

@@ -16,7 +16,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col>
+      <v-col cols="6">
         <table>
           <tr>
             <td class="text-left pr-3"><strong>Payroll ID #</strong></td>
@@ -36,6 +36,9 @@
           </tr>
         </table>
       </v-col>
+      <v-col cols="6" class="text-right">
+        <v-btn color="primaryCustom" @click="exportPayrollReview" class="white--text">Export</v-btn>
+      </v-col>
     </v-row>
     <v-divider></v-divider>
     <v-row>
@@ -46,7 +49,8 @@
           :fixed-header="true"
           disable-sort
           :loading="dataLoading"
-          hide-default-footer
+          :items-per-page="25"
+          :footer-props="footerProps"
           class="elevation-1"
         >
           <template #no-data>
@@ -66,7 +70,8 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-
+  import { saveAs } from 'file-saver'
+  import constants from "@/helpers/constants";
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
@@ -78,6 +83,10 @@
         payroll: {},
         dataLoading: false,
         payrollSnapshot: [],
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 500],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
         payrollSummary: [],
         payrollStatus: {},
         payrollId: this.$route.params.id,
@@ -181,7 +190,56 @@
           default:
             this.payrollStatus = {}
         }
-      }
+      },
+      async exportPayrollReview () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let filename = 'Payroll Review'
+          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
+          csvData += '\n'
+
+          this.payrollSnapshot.forEach(p => {
+            csvData +=
+              p.projectId + ',' +
+              p.customerName + ',' +
+              p.systemSize + ',' +
+              p.salesRep + ',' +
+              p.source + ',' +
+              p.stage + ',' +
+              p.cancelled + ',' +
+              p.installAgreementSigned + ',' +
+              p.finalDesignSigned + ',' +
+              p.financialAgreementSent + ',' +
+              p.percentOfCashDeposit + ',' +
+              p.sc + ',' +
+              p.commissionPlan + ',' +
+              p.commissionsEarned + ',' +
+              p.commissionPaidToDate + ',' +
+              p.commissionAdjustment + ',' +
+              p.currentPayCommissions + ',' +
+              p.remainingValueCommissions + ',' +
+              p.overridePlan + ',' +
+              p.overrideEarned + ',' +
+              p.overridesPaidToDate + ',' +
+              p.currentPayOverrides + ',' +
+              p.remainingValueOverrides + ',' +
+              p.currentPay
+            csvData += '\n';
+          })
+
+          let blob = new Blob([csvData], {
+            type: 'text/csv;charset=utf-8'
+          });
+
+          saveAs(blob, filename);
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Exporting Payroll Review')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
   }
 </script>

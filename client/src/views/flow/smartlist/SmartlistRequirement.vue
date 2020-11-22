@@ -153,7 +153,7 @@
       <v-btn
         text
         class="text-left"
-        :disabled="shouldDisableAddRequirementButton"
+        :disabled="isSaveNewRequirementDisabled"
         @click="addNewRequirement"
       >
         <v-icon>save</v-icon>
@@ -331,6 +331,7 @@
 
           <v-btn
             text
+            :disabled="isSaveExpandedRequirementDisabled"
             @click="updateRequirement(expandedRequirement)"
           >
             <v-icon>save</v-icon>
@@ -351,17 +352,19 @@ import constants from '@/helpers/constants'
 
 const newRequirementStructure = {
   selectedField: null,
-    objectTypeId: null,
-    processStepId: null,
-    operatorTypeId: null,
-    dataTypeRequirementId: null,
-    secondaryRequirement: null,
-    secondaryRequirementValue: null,
-    isCustomValue: null,
-    allowMultiple: null,
-    customFieldSqlKey: null,
-    companySystemListId: null,
-    availableListOfValues: [],
+  objectTypeId: null,
+  processStepId: null,
+  operatorTypeId: null,
+  dataTypeRequirementId: null,
+  secondaryRequirement: null,
+  secondaryRequirementValue: null,
+  isCustomValue: null,
+  allowMultiple: null,
+  customFieldSqlKey: null,
+  companySystemListId: null,
+  availableListOfValues: [],
+  listOfValueId: null,
+  listOfValueIds: []
 }
 
 export default {
@@ -402,7 +405,7 @@ export default {
       constants,
       snackbar: {},
       showNewRequirementForm: false,
-      newRequirement: Object.assign(newRequirementStructure, {}),
+      newRequirement: Object.assign({}, newRequirementStructure),
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
@@ -439,11 +442,6 @@ export default {
     }
   },
   computed: {
-    shouldDisableAddRequirementButton () {
-      // @TODO humes: update this to account for new fields
-      return false
-      // return !this.newRequirement.dataTypeRequirementId && (!this.dataTypeRequirements.find(r => r.id === this.newRequirement.dataTypeRequirementId)?.secondaryRequirement || !this.newRequirement?.secondaryRequirementValue)
-    },
     shouldShowEditFormValueInput () {
       return this.expandedRequirement.dataTypeRequirement?.secondaryRequirement
     },
@@ -459,6 +457,12 @@ export default {
       },
       // Throw away the value vuetify gives back because we don't want to update the expanded row's main row when editing (only upon saving)
       set: () => {}
+    },
+    isSaveNewRequirementDisabled () {
+      return this.newRequirement.dataTypeRequirementId === null && this.newRequirement.listOfValueId === null && this.newRequirement.listOfValueIds.length === 0
+    },
+    isSaveExpandedRequirementDisabled () {
+      return this.expandedRequirement.dataTypeRequirementId === null && this.expandedRequirement.listOfValueId === null && this.expandedRequirement.listOfValueIds.length === 0
     }
   },
   methods: {
@@ -511,7 +515,8 @@ export default {
       }
     },
     async getContactOwners () {
-      if (this.newRequirement.objectTypeId === 2) {
+      // @TODO It's bad this checks for the field name since it might change. Make better
+      if (this.newRequirement.objectTypeId === 2 && this.newRequirement.selectedField.name === 'Contact Owner') {
         try {
           const {data} = await getRequest(`/contact/owners`)
           this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
@@ -524,7 +529,8 @@ export default {
       }
     },
     async getProcessStepOwners () {
-      if (this.newRequirement.processStepId !== null) {
+      // @TODO It's bad this checks for the field name since it might change. Make better
+      if (this.newRequirement.processStepId !== null && this.newRequirement.selectedField.name === 'Process Step Owner') {
         try {
           const {data} = await getRequest(`/processStep/${this.newRequirement.processStepId}/owners`)
           this.newRequirement.selectedField.listOfValues = data.map(o => ({id: o.userPositionId, name: o.fullName}))
@@ -567,7 +573,7 @@ export default {
     },
     resetRequirementForm () {
       this.showNewRequirementForm = false
-      this.newRequirement = Object.assign(newRequirementStructure, {})
+      this.newRequirement = Object.assign({}, newRequirementStructure)
       this.$emit('form-reset', true)
     },
     resetNewObjectType () {

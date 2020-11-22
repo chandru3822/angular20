@@ -352,7 +352,7 @@
           { text: 'Last Name', value: 'lastName', show: true, width: '125px' },
           { text: 'Email', value: 'email', show: true, width: '275px' },
           { text: 'Phone', value: 'phone', show: true, width: '115px' },
-          { text: 'Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
+          { text: 'User Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
           { text: 'Position', value: 'position', positionFilter: true, show: true, width: '175px' },
         ],
         // search: '',

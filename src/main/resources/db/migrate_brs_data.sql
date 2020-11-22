@@ -2788,7 +2788,8 @@ insert into brs.expense_budget(id, user_id, budget_type_id, amount, archived, da
 
 SELECT setval('brs.expense_budget_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.expense_budget), 1), false);
 
-
+delete from flow.attachment_source;
+delete from flow.attachment;
 INSERT INTO flow.attachment(id, filename, content_type, s3_key, size, archived, date_created, date_modified,attachment_type_id, company_id)
     (select a.id, filename, content_type, s3_key, size, deleted, created, updated,as1.attachment_source_type_id, (select id from flow.company where company_name = 'Blue Raven Solar')
      from blueraven.attachment a
@@ -2870,20 +2871,14 @@ from blueraven.associated_org;
 SELECT setval('flow.associated_org_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.associated_org), 1), false);
 
 
-delete from flow.attachment_source where id = 1;
-delete from flow.attachment_source where id = 2;
-delete from flow.attachment_source where id = 3;
 
 
 insert into flow.attachment_source(id,attachment_id,source_id)
 select id,attachment_id,source_id
 from blueraven.attachment_source;
 
-SELECT setval('flow.attachment_source_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.attachment_source), 1), false);
 
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 75503, 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 75504, 3);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 13315, 2350555);
+SELECT setval('flow.attachment_source_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.attachment_source), 1), false);
 
 insert into brs.ahj(id, name, archived, date_created, created_by_id, date_modified, modified_by_id)
     (select id, name, archived, created, created_by_id, updated, updated_by_id
@@ -10916,5 +10911,97 @@ with position_features as (
 insert into flow.user_feature_access_control( company_feature_id, access_control_id, user_id, enabled)
     (select p.company_feature_id,p.access_control_id,id,p.enabled from positions p );
 
-insert into brs.company_dashboard_targets(target_date, appointments_created_brs, appointments_created_partner, planned_appointments_brs, planned_appointments_partner, pitches_brs, pitches_partner, bookings_brs, bookings_partner, site_surveys_verified_brs, site_surveys_verified_partner, final_designs_qad_brs, final_designs_qad_partner, final_designs_sent_brs, final_designs_sent_partner, final_designs_approved_brs, final_designs_approved_partner, plan_sets_created_brs, plan_sets_created_partner, permit_packs_created_brs, permit_packs_created_partner, permits_submitted_brs, permits_submitted_partner, permits_approved_brs, permits_approved_partner, installations_scheduled_brs, installations_scheduled_partner, planned_installations_brs, planned_installations_partner, substantial_completions_brs, substantial_completions_partner, inspections_scheduled_brs, inspections_scheduled_partner, planned_inspections_brs, planned_inspections_partner, inspections_passed_brs, inspections_passed_partner, inspections_submitted_brs, inspections_submitted_partner, final_completions_brs, final_completions_partner)
-(select target_date, appointments_created_brs, appointments_created_partner, planned_appointments_brs, planned_appointments_partner, pitches_brs, pitches_partner, bookings_brs, bookings_partner, site_surveys_verified_brs, site_surveys_verified_partner, final_designs_qad_brs, final_designs_qad_partner, final_designs_sent_brs, final_designs_sent_partner, final_designs_approved_brs, final_designs_approved_partner, plan_sets_created_brs, plan_sets_created_partner, permit_packs_created_brs, permit_packs_created_partner, permits_submitted_brs, permits_submitted_partner, permits_approved_brs, permits_approved_partner, installations_scheduled_brs, installations_scheduled_partner, planned_installations_brs, planned_installations_partner, substantial_completions_brs, substantial_completions_partner, inspections_scheduled_brs, inspections_scheduled_partner, planned_inspections_brs, planned_inspections_partner, inspections_passed_brs, inspections_passed_partner, inspections_submitted_brs, inspections_submitted_partner, final_completions_brs, final_completions_partner from blueraven.company_dashboard_targets);
+insert into brs.company_dashboard_targets(target_date, bookings_brs, bookings_partner, final_designs_approved_brs, final_designs_approved_partner, substantial_completions_brs, substantial_completions_partner, final_completions_brs, final_completions_partner)
+(select target_date, bookings_brs, bookings_partner, final_designs_approved_brs, final_designs_approved_partner, substantial_completions_brs, substantial_completions_partner, final_completions_brs, final_completions_partner from blueraven.company_dashboard_targets);
+
+
+WITH orgs as (
+    select id
+    from flow.org
+    where org_type_id in (6,8,14,7,19,)
+)
+
+update flow.org
+set available_to_children = TRUE
+where id in (
+    select id
+    from orgs
+);
+
+
+with set_time_based_to_true as
+         (
+             select psa.id
+             from flow.process_step_action psa
+                      inner join flow.process_step ps on ps.id = psa.process_step_id
+             where ps.process_step_name ILIKE ANY(ARRAY['%Pending%','%Holding%']) and psa.trigger_automatically is true and psa.archived is false and ps.archived is false
+               and psa.time_based_trigger is false)
+
+update flow.process_step_action
+set time_based_trigger = TRUE
+where id in (
+    select id
+    from set_time_based_to_true
+);
+
+
+-- update all closers to have a default home page of /closerDashboard
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 14 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position in ('Closer', 'Closer Manager', 'Closer Regional'))
+           -- there are no other companies with the closer dashboard feature so we can limit this here
+           and p.company_id = 3
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+-- update all setters to have a default home page of /setterDashboard
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 15 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position in ('Setter', 'Setter Manager', 'Setter Regional'))
+           -- there are no other companies with the setter dashboard feature so we can limit this here
+           and p.company_id = 3
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+-- update all closers not in child id = 3 to /projects
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 11 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position in ('Closer', 'Closer Manager', 'Closer Regional'))
+           -- there are no other companies with the closer dashboard feature so we can limit this here
+           and p.company_id != 3
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+-- update all other non-closers and non-setters to be /companyDashboard (currently the feature only exists in BR corp)
+update flow.user_company as uc set
+    home_page_company_feature_id = c.column_c
+from (
+         select up.user_id,
+                p.company_id,
+                (select cf2.id from flow.company_feature cf2 where cf2.feature_id = 24 and cf2.company_id = p.company_id)
+         from flow.user_position up
+                  inner join flow.position p on up.position_id = p.id
+         where p.id in (select p2.id from flow.position p2 where p2.company_id = p.company_id and p2.position not in ('Closer', 'Closer Manager', 'Closer Regional', 'Setter', 'Setter Manager', 'Setter Regional'))
+     ) as c(column_a, column_b, column_c)
+where c.column_a = uc.user_id
+  and c.column_b = uc.company_id;
+
+
