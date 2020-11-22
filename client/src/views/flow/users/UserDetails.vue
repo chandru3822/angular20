@@ -23,6 +23,18 @@
                         autocomplete="off">
               </v-select>
               <v-text-field text
+                            label="First Name"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            placeholder=" "
+                            v-model="user.firstName"></v-text-field>
+              <v-text-field text
+                            label="Last Name"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            placeholder=" "
+                            v-model="user.lastName"></v-text-field>
+              <v-text-field text
                             label="Phone"
                             :readonly="!userCanEdit"
                             :disabled="!userCanEdit"

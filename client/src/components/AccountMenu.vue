@@ -186,7 +186,11 @@
       getFirstName () {
         if (this.$store.state.user.details) {
           const firstName = this.$store.state.user.details.firstName
-          return firstName.substring(firstName.length - 1).toLowerCase() === 's' ? firstName + '\'' : firstName + '\'s'
+          if(firstName) {
+            return firstName.substring(firstName.length - 1).toLowerCase() === 's' ? firstName + '\'' : firstName + '\'s'
+          } else {
+            return ''
+          }
         } else {
           return 'Unknown'
         }

@@ -73,18 +73,7 @@ public class CustomFieldValueController {
       if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
           for (Long ppsId : ppsIds) {
-              Instant start = Instant.now();
-              boolean autoTriggersRan = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-//              try {
-//                  future.get();
-//              } catch (Exception e) {
-//                  log.error(e.getMessage());
-//              }
-              Instant end = Instant.now();
-              log.info("");
-              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-              log.info("");
+              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
       }
 
@@ -115,18 +104,7 @@ public class CustomFieldValueController {
       if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
           for (Long ppsId : ppsIds) {
-              Instant start = Instant.now();
-              boolean autoTriggersRan = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-//              try {
-//                  future.get();
-//              } catch (Exception e) {
-//                  log.error(e.getMessage());
-//              }
-              Instant end = Instant.now();
-              log.info("");
-              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-              log.info("");
+              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
       }
 
@@ -139,18 +117,7 @@ public class CustomFieldValueController {
                                                                           @PathVariable Long projectProcessStepId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
-    Instant start = Instant.now();
-    boolean autoTriggersRan = projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
-//    try {
-//        future.get();
-//    } catch (Exception e) {
-//        log.error(e.getMessage());
-//    }
-    Instant end = Instant.now();
-    log.info("");
-    log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-    log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-    log.info("");
+    projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
 
 
     // grab all PPS where the updated fields are ancillary and perform auto triggers there
@@ -160,20 +127,9 @@ public class CustomFieldValueController {
     if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
         for (Long ppsId : ppsIds) {
-//            Don't re-check the ppsId we just previously did
+            // Don't re-check the ppsId we just previously did
             if (!ppsId.equals(projectProcessStepId)) {
-                start = Instant.now();
-                autoTriggersRan = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-//                try {
-//                    future.get();
-//                } catch (Exception e) {
-//                    log.error(e.getMessage());
-//                }
-                end = Instant.now();
-                log.info("");
-                log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-                log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-                log.info("");
+                projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
             }
         }
     }

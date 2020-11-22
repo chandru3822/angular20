@@ -184,7 +184,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="milestoneDialog = false">
+                 @click="closeMilestoneDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -781,7 +781,7 @@
                 <td>{{ item.setter_name ? item.setter_name : '' }}</td>
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td>{{ item.deal_id ? item.deal_id : '' }}</td>
+                <td>{{ item.project_id ? item.project_id : '' }}</td>
                 <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
                 <td>{{ item.owner_name ? item.owner_name : '' }}</td>
                 <td>{{ item.verified_setter_lead ? item.verified_setter_lead : '' }}</td>
@@ -811,7 +811,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="funnelDrilldownDialog = false">
+                 @click="closeFunnelDrilldownDialog">
             Close
           </v-btn>
         </v-card-actions>
@@ -827,7 +827,6 @@
   import cloneDeep from 'lodash.clonedeep'
   import $ from 'jquery'
   import moment from 'moment'
-
   import constants from '@/helpers/constants'
   import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
@@ -835,7 +834,6 @@
 
   export default {
     name: 'setterDashboard',
-
     data: () => ({
       snackbar: {},
       constants,
@@ -847,7 +845,7 @@
       headers: [
         { text: '', value: '', show: true, sortable: false },
         { text: 'Name', value: 'customer_name', show: true },
-        { text: 'Deal ID', value: 'id', show: true },
+        { text: 'Project ID', value: 'id', show: true },
         { text: 'Source', value: 'source_name', show: true },
         { text: 'Appointment Date', value: 'appointment_date', show: true },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
@@ -932,7 +930,7 @@
         { text: 'Setter', value: 'setter_name', show: true, width: 90 },
         { text: 'Employee ID', value: 'employee_id', show: true, width: 120 },
         { text: 'Name', value: 'customer_name', show: true, width: 90 },
-        { text: 'Deal ID', value: 'deal_id', show: true, width: 95 },
+        { text: 'Project ID', value: 'project_id', show: true, width: 95 },
         { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 150 },
         { text: 'Closer', value: 'owner_name', show: true, width: 90 },
         { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
@@ -1317,6 +1315,13 @@
             row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
           }
         })
+      },
+
+      closeMilestoneDialog () {
+        this.milestoneDialog = false
+
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       },
       /* IRONMAN-RELATED CODE END */
 
@@ -2182,6 +2187,13 @@
       filteredFunnelDrilldownItems (filteredItems) {
         this.filteredFunnelDrilldownData = filteredItems
         this.funnelDrilldownRowCount = filteredItems.length
+      },
+
+      closeFunnelDrilldownDialog () {
+        this.funnelDrilldownDialog = false
+
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       }
       /* FUNNEL-RELATED CODE END */
     },

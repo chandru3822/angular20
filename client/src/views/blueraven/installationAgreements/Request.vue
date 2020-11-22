@@ -87,19 +87,19 @@
                       </v-col>
                       <v-col>
                           <v-select label="Proposal Number"
-                                        v-model="requestItem.proposal_nbr"
-                                        :items="requestItem.proposal_nbrs"
+                                        v-model="requestItem.proposalNbr"
+                                        :items="requestItem.proposalNbrs"
                                         item-text="proposalNbr"
                                         item-value="proposalNbr"
                           ></v-select>
                           <v-checkbox label="Send English Installation Agreement"
-                                      v-model="requestItem.send_installation_agreement"
+                                      v-model="requestItem.sendInstallationAgreement"
                           ></v-checkbox>
                           <v-checkbox label="Send Spanish Installation Agreement"
                                       v-model="requestItem.isSpanish"
                           ></v-checkbox>
                           <v-checkbox label="Send Loan Docs (LoanPal Only)"
-                                      v-model="requestItem.send_loanpal_docs"
+                                      v-model="requestItem.sendLoanpalDocs"
                           ></v-checkbox>
                       </v-col>
                   </v-row>
@@ -160,12 +160,12 @@
       requestItem: {
           customer_name: '',
           email: '',
-          proposal_nbr: '',
-          proposal_nbrs: [],
-          send_loanpal_docs: true,
-          send_installation_agreement: false,
+          proposalNbr: '',
+          proposalNbrs: [],
+          sendLoanpalDocs: true,
+          sendInstallationAgreement: false,
           isSpanish: false,
-          project_id: ''
+          projectId: ''
       },
       currentEmail: '',
       editEmail: false
@@ -216,17 +216,17 @@
           this.requestItem.customer_name = it.customer_name
           this.requestItem.email = it.email
           this.currentEmail = it.email
-          this.requestItem.project_id = it.project_id
+          this.requestItem.projectId = it.project_id
 
           // get proposal numbers
           try {
               const {data} = await getRequest('/install-agreement/getProposalNumbers/'+it.project_id, 'blueraven')
               if (data == null) {
-                  this.requestItem.proposal_nbrs = ['No Logs Found For Project']
-                  this.requestItem.proposal_nbr = 'No Logs Found For Project'
+                  this.requestItem.proposalNbrs = ['No Logs Found For Project']
+                  this.requestItem.proposalNbr = 'No Logs Found For Project'
               }
               else {
-                  this.requestItem.proposal_nbrs = data;
+                  this.requestItem.proposalNbrs = data;
               }
 
               this.$store.commit(AppMutations.SET_LOADING, false)
@@ -253,7 +253,7 @@
       async submitRequest() {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
-              if (!this.requestItem.proposal_nbr) {
+              if (!this.requestItem.proposalNbr) {
                   console.error('*** ERROR ***', 'Error saving installation agreement request: No Proposal Number selected')
                   this.snackbar = getSnackbar('ERROR', 'Unable to save installation agreement request without Proposal Number')
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -275,13 +275,13 @@
       },
       async openLoanpalApp() {
           try {
-              if (!this.requestItem.proposal_nbr) {
+              if (!this.requestItem.proposalNbr) {
                   console.error('*** ERROR ***', 'Error: Unable to generate LonaPal application without Proposal Number')
                   this.snackbar = getSnackbar('ERROR', 'Unable to generate LonaPal application without Proposal Number')
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
                   return
               }
-              const {data} = await getRequest('/install-agreement/generate/'+this.requestItem.project_id+'/'+this.requestItem.proposal_nbr, 'blueraven')
+              const {data} = await getRequest('/install-agreement/generate/'+this.requestItem.projectId+'/'+this.requestItem.proposalNbr, 'blueraven')
               window.open(data);
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
@@ -293,7 +293,7 @@
       async updateEmail(it) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
-              await putRequest('/install-agreement/updateEmailAddress/'+this.requestItem.project_id, {
+              await putRequest('/install-agreement/updateEmailAddress/'+this.requestItem.projectId, {
                   email: this.requestItem.email
               }, 'blueraven')
 

@@ -15,11 +15,12 @@ BEGIN
     create temp table excluded_appointments as (
         select ra.user_id, ra.start_time as start_time, ra.end_time as end_time
         from flow.resource_appointment ra
-                 inner join flow.postal_code_zone_user pczu on pczu.user_id = ra.user_id
+                 inner join flow.user_position up on up.user_id = ra.user_id
+                 inner join flow.postal_code_zone_user pczu on pczu.user_position_id = up.id
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
                  inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id
                  inner join flow.project p on p.postal_code = pc.postal_code
-        where pczu.user_id = p_user_id
+        where up.user_id = p_user_id
           and start_time >= p_start_time
           and end_time <= p_end_time
     );
@@ -60,7 +61,9 @@ BEGIN
                                                           rsa.day_of_week_id = extract(dow from p_available_date::date)
                                             inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
                                    where rs.user_id = p_user_id
-                                     and p_available_date::date between rs.start_date and rs.end_date) as foo) as foo1
+                                     and p_available_date::date >= rs.start_date and
+                                         case when rs.end_date is not null then p_available_date <=rs.end_date
+                                        else 1=1 end) as foo) as foo1
                  where foo1.scheduled_start_time::time <= foo1.scheduled_end_time::time) as foo2
         where foo2.available is true
         group by foo2.scheduled_start_time

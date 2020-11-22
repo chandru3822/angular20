@@ -38,7 +38,7 @@ BEGIN
             where ( upv.company_id = p_company_id OR upv.company_id = (select parent_company_id
                                                                        from flow.company c
                                                                        where c.id = p_company_id) )
-              and ARRAY[upv.org_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
+              and upv.org_id = any(p_system_list_option_ids )
               and upv.has_access is true
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
@@ -74,7 +74,7 @@ BEGIN
                                                                      from flow.company c
                                                                      where c.id = p_company_id) )
               and upv.has_access is true
-              and ARRAY[upv.position_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
+              and upv.position_id = any ( p_system_list_option_ids)
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
             union
@@ -105,7 +105,7 @@ BEGIN
              where ( o.company_id = p_company_id OR o.company_id = (select parent_company_id
                                                                       from flow.company c
                                                                       where c.id = p_company_id) )
-               and ARRAY[o.org_type_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
+               and o.org_type_id = any ( p_system_list_option_ids)
                and o.active_flag is true
              union
                 select o.id,

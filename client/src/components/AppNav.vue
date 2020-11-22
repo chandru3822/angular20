@@ -67,7 +67,7 @@ export default {
       snackbar: {},
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
-      companyName: this.$store.state.user.details.companyName,
+      companyName: this.$store.state.user?.details?.companyName,
       selectedCompany: {},
       menuOpen: false,
       companies: [],
@@ -103,8 +103,10 @@ export default {
   },
   created () {
 		this.loadComplete = true
-    this.getCompanies()
-    this.getCompanyTools()
+    if(this.$store.state.user?.details?.id) {
+      this.getCompanies()
+      this.getCompanyTools()
+    }
 	},
   computed: {
     displayedTabs () {
@@ -133,7 +135,7 @@ export default {
         const {data} = await getRequest(url)
         this.companies = data
         this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
-        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user.details.companyId)
+        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

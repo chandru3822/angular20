@@ -78,6 +78,8 @@ declare
     v_value                  character varying;
     v_user_id                integer;
     v_cfga_id                integer;
+    v_second_data_type_id    integer;
+    v_list_of_value_id       integer;
 BEGIN
 
     select pps.project_id
@@ -94,9 +96,11 @@ BEGIN
       and cf.field_name = 'Closer Appointment Resource'
     limit 1;
 
-    select pdc.id, field_to_update, data_type_id, pdc.second_field_to_update
-    into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update
+    select pdc.id, field_to_update, data_type_id, pdc.second_field_to_update,pdc.second_data_type_id, cf.list_of_value_id
+    into v_config_id,v_field_to_update,v_data_type_id,v_second_field_to_update,v_second_data_type_id,v_list_of_value_id
     from brs.project_details_config pdc
+    left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+    left join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.list_of_value_id is not null
     where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
       and case
               when v_cfga_id is not null then
@@ -126,7 +130,7 @@ BEGIN
         elsif v_data_type_id = 7 then
             case when new.int_array_value is null then select 'null' into v_value; else select quote_literal(string_agg(lov.name, ', '))
                                                                                         from flow.list_of_value lov
-                                                                                        where array [lov.id] <@ new.int_array_value::integer[]
+                                                                                        where  lov.id = any(new.int_array_value::integer[])
                                                                                         into v_value; end case;
             v_value = v_value || '::text';
         end if;
@@ -136,6 +140,15 @@ BEGIN
         execute v_sql;
 
         if v_second_field_to_update is not null then
+            if v_field_to_update = 'proposal_number_id' then
+                case when new.int_value is null then select 'null' into v_value;
+                    else
+                        select quote_literal(proposal_nbr)
+                        into v_value
+                        from brs.proposal_log_history
+                        where id = new.int_value;
+                    end case;
+            elsif v_list_of_value_id is not null then
             case when new.int_value is null then select 'null' into v_value;
                 else
                     select quote_literal(name)
@@ -143,6 +156,11 @@ BEGIN
                     from flow.list_of_value
                     where id = new.int_value;
                 end case;
+            elsif  v_data_type_id = 2 and v_second_data_type_id = 1 then
+                case when new.timestamp_value is null then select 'null' into v_value; else select quote_literal(new.timestamp_value) into v_value; end case;
+                v_value = '(' ||v_value || '::timestamp at time zone '||quote_literal('UTC') ||' at time zone '||quote_literal('US/Mountain')||')::date';
+               -- raise notice 'value = %',v_value;
+            end if;
             v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
             execute v_sql;

@@ -1,6 +1,13 @@
 <template>
 <div>
     <v-toolbar class="elevation-1" width="100%">
+        <v-text-field
+          v-model="search"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
         <v-spacer />
         <v-btn
             text
@@ -21,6 +28,8 @@
         :footer-props="footerProps"
         fixed-header
         :options.sync="options"
+        :search="search"
+        multi-sort
     >
         <template #no-data>
             No available report data
@@ -82,7 +91,8 @@ export default {
                 'items-per-page-options': [25, 50, 100],
                 'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
             },
-            showConfirmDialog: false
+            showConfirmDialog: false,
+            search: ''
         }
     },
     watch: {

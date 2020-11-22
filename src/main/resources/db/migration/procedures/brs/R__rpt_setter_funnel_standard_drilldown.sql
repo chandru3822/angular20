@@ -15,7 +15,7 @@ BEGIN
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
-                       pd.project_id as deal_id,
+                       pd.project_id,
                        pd.closer_appointment_start::date as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
@@ -47,7 +47,7 @@ BEGIN
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
-                       pd.project_id as deal_id,
+                       pd.project_id,
                        pd.closer_appointment_start::date as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
@@ -80,7 +80,7 @@ BEGIN
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
-                       pd.project_id as deal_id,
+                       pd.project_id,
                        pd.closer_appointment_start::date as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
@@ -101,7 +101,7 @@ BEGIN
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 6 --Setter Gen
                     and p.date_created::date between p_start_date and p_end_date
-                order by setter_name, deal_id
+                order by setter_name, project_id
             ) as funnel_rows;
         end case;
     else
@@ -112,7 +112,7 @@ BEGIN
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
-                       pd.project_id as deal_id,
+                       pd.project_id,
                        pd.closer_appointment_start::date as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
@@ -147,7 +147,7 @@ BEGIN
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
-                       pd.project_id as deal_id,
+                       pd.project_id,
                        pd.closer_appointment_start::date as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
@@ -183,7 +183,7 @@ BEGIN
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
-                       pd.project_id as deal_id,
+                       pd.project_id,
                        pd.closer_appointment_start::date as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
@@ -207,7 +207,7 @@ BEGIN
                     and su.id is not null
                     and Array[su.id]::integer[] && p_user_ids
                     and Array[su.id]::integer[] && brs.limit_by_org_for_setters(Array[su.id]::integer[],p_org_ids,p.date_created::date)
-                order by setter_name, deal_id
+                order by setter_name, project_id
             ) as funnel_rows;
 
         end case;

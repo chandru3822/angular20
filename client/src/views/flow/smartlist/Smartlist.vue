@@ -150,13 +150,12 @@
                   <v-dialog
                     v-model="showToggleDialog"
                     width="500"
-                    v-if="smartlist.id && canEdit"
                   >
                     <template #activator="{on}">
                       <v-checkbox
                         v-model="smartlist.projectDetails"
                         label="Project Details"
-                        v-on="on"
+                        v-on="smartlist.id && on"
                       />
                     </template>
 
@@ -761,6 +760,9 @@ export default {
     validateForm () {
       if (this.$refs.smartlistForm.validate()) {
         this.smartlist.id ? this.updateSmartlist() : this.addSmartlist()
+        if (this.smartlist.projectDetails && this.projectDetailsColumns.length === 0) {
+          this.getProjectDetailsColumns()
+        }
       }
     },
     async toggleSmartlistType () {

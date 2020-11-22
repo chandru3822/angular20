@@ -140,10 +140,10 @@ public class RebateService {
 
     User currentUser = securityService.getCurrentUser();
 
-    String sqlQuery = "select blueraven.deal_rebate_payments_add_extra_payment(:dealId::integer, :userId::integer, :paymentAmount::NUMERIC)";
+    String sqlQuery = "select brs.project_rebate_payments_add_extra_payment(:projectId::integer, :userId::integer, :paymentAmount::NUMERIC)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("dealId", rebatePayment.getProjectId());
+    parameters.addValue("projectId", rebatePayment.getProjectId());
     parameters.addValue("userId", currentUser.getId());
     parameters.addValue("paymentAmount", rebatePayment.getPaymentAmount());
 
@@ -202,7 +202,7 @@ public class RebateService {
 
     User currentUser = securityService.getCurrentUser();
 
-    String sqlQuery = "select blueraven.delete_rebate_payment(:paymentId::integer, :userId::integer)";
+    String sqlQuery = "select brs.delete_rebate_payment(:paymentId::integer, :userId::integer)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("paymentId", paymentId);

@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.v1.flow.enums.PostalCodeZoneUserType;
 import com.albatross.api.v1.flow.model.PostalCode;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import com.albatross.api.v1.flow.model.PostalCodeZoneUser;
@@ -46,9 +47,14 @@ public class PostalCodeController {
         postalCodeService.deleteZone(id);
     }
 
-    @PostMapping(value = "/zone/saveUser", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PostalCodeZoneUser insertUser(@RequestBody PostalCodeZoneUser user) {
-        return postalCodeService.insertUser(user);
+    @PostMapping(value = "/zone/saveScheduleToUser", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostalCodeZoneUser insertScheduleToUser(@RequestBody PostalCodeZoneUser user) {
+        return postalCodeService.insertUser(user, PostalCodeZoneUserType.SCHEDULE_TO.id);
+    }
+
+    @PostMapping(value = "/zone/saveScheduleByUser", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostalCodeZoneUser insertScheduleByUser(@RequestBody PostalCodeZoneUser user) {
+        return postalCodeService.insertUser(user, PostalCodeZoneUserType.SCHEDULE_BY.id);
     }
 
     @DeleteMapping(value = "/zone/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

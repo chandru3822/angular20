@@ -6,9 +6,7 @@
 
       <dt class="left-align">Project ID:</dt>
       <dd>
-        <a target="_blank" :href="'https://app.futuresimple.com/sales/deals/' + rebateDetails.project_id">
-          {{rebateDetails.project_id}}
-        </a>
+        <router-link :to="`/project/${rebateDetails.project_id}/details`">{{rebateDetails.project_id}}</router-link>
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>
@@ -191,74 +189,46 @@
                   {{item.void_note}}
                 </td>
                 <td class="text-left" style="color: red">
-                  <a v-if="item.payment_state_id === 3" @click="voidDialog = true">Void</a>
+                  <a v-if="item.payment_state_id === 3" @click="openVoidDialog(item)">Void</a>
                 </td>
-                <td>
-                  <v-dialog v-model="voidDialog" max-width="600px" v-if="userCanEdit">
-                    <v-card class="pt-4 pb-2">
-                      <v-card-title class="flex-display justify-space-between pt-0 px-4">
-                        <span class="font-weight-bold">Confirm</span>
-                      </v-card-title>
-
-                      <template>
-                        <v-card-text>
-                          <v-row>
-                            <v-col>
-                              Are you sure you want to void this payment?
-                              <v-text-field v-model="item.void_note" outlined auto-grow>
-                              </v-text-field>
-                            </v-col>
-                          </v-row>
-                        </v-card-text>
-                      </template>
-
-                      <v-card-actions class="flex-display justify-end px-4 pt-0">
-                        <v-btn @click="voidPayment(item)">Yes</v-btn>
-                        <v-btn @click="voidDialog = false">Close</v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-
-                  <v-dialog
-                    v-model="item.deleteConfirm"
-                    v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
-                    width="500">
-                    <template v-slot:activator="{ on }">
-                      <v-btn small text class="clickable" v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                        class="headline grey lighten-2"
-                        primary-title
-                      >
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Are you sure you want to delete this payment?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                          color="primaryCustom"
-                          text
-                          @click="deletePayment(item)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </td>
+                  <td>
+                      <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
+                          @click="openDeleteDialog(item)" text><v-icon>delete</v-icon></v-btn>
+                  </td>
               </tr>
+            </template>
+          </v-data-table>
+
+          <v-dialog v-model="deleteConfirm" width="500">
+                <v-card>
+                  <v-card-title
+                    class="headline grey lighten-2"
+                    primary-title
+                  >
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text>
+                    Are you sure you want to delete this payment?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="deleteConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="deletePayment()">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
 
               <v-dialog v-model="notesDialog" max-width="600px">
                 <v-card class="pt-4 pb-2">
@@ -270,7 +240,7 @@
                   <v-card-text>
                     <v-row>
                       <v-col>
-                        <v-text-field v-model="item.void_note" outlined auto-grow rows="5">
+                        <v-text-field v-model="notesItem.void_note" outlined auto-grow rows="5">
                         </v-text-field>
                       </v-col>
                     </v-row>
@@ -278,13 +248,37 @@
                   </template>
 
                   <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn v-if="userCanEdit" @click="updatePaymentNote(item)">Confirm</v-btn>
-                    <v-btn v-if="userCanEdit" @click="cancelNotesDialog(item)">Close</v-btn>
+                    <v-btn v-if="userCanEdit" @click="updatePaymentNote()">Confirm</v-btn>
+                    <v-btn v-if="userCanEdit" @click="cancelNotesDialog()">Close</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-            </template>
-          </v-data-table>
+
+            <v-dialog v-model="voidDialog" max-width="600px" v-if="userCanEdit">
+                <v-card class="pt-4 pb-2">
+                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
+                    <span class="font-weight-bold">Confirm</span>
+                  </v-card-title>
+
+                  <template>
+                    <v-card-text>
+                      <v-row>
+                        <v-col>
+                          Are you sure you want to void this payment?
+                          <v-text-field v-model="notesItem.void_note" outlined auto-grow>
+                          </v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-card-text>
+                  </template>
+
+                  <v-card-actions class="flex-display justify-end px-4 pt-0">
+                    <v-btn @click="voidPayment(notesItem)">Yes</v-btn>
+                    <v-btn @click="cancelVoidDialog()">Close</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+
         </v-col>
       </v-row>
 
@@ -362,6 +356,10 @@
         editMailing: false,
         notesDialog: false,
         voidDialog: false,
+        deleteConfirm: false,
+        notesItem: {
+            void_note: ''
+        },
         voidConfirmMsg: '',
         notesValue: '',
         editTotalPromotionAmount: false,
@@ -477,12 +475,27 @@
         this.editMailing = false;
       },
       openNotesDialog(item) {
-        this.notesDialog = true
-        this.notesValue = item.void_note
+          this.notesDialog = true
+          this.notesValue = item.void_note
+          this.notesItem = item
       },
-      cancelNotesDialog(item){
+      openVoidDialog(item) {
+          this.notesValue = item.void_note
+          this.notesItem = item
+          this.voidDialog = true;
+      },
+      openDeleteDialog(item) {
+        this.deleteItem = item;
+        this.deleteConfirm = true;
+      },
+      cancelNotesDialog(){
         this.notesDialog = false
-        item.void_note = this.notesValue
+        this.notesItem.void_note = this.notesValue
+        this.notesValue = ''
+      },
+      cancelVoidDialog() {
+        this.voidDialog = false
+        this.notesItem.void_note = this.notesValue
         this.notesValue = ''
       },
       async updateTotalPromotionAmount() {
@@ -515,12 +528,12 @@
         this.getTotals()
         this.maxPaymentNumber++
       },
-      async deletePayment(item) {
+      async deletePayment() {
         // If row already existed
-        if (item.id) {
+        if (this.deleteItem.id) {
           try {
-            const {data} = await deleteRequest('/rebate/deletePayment' + item.id, 'blueraven')
-            this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== item.payment_nbr)
+            const {data} = await deleteRequest('/rebate/deletePayment/' + this.deleteItem.id, 'blueraven')
+            this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== this.deleteItem.payment_nbr)
             this.editMailing = false;
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -528,11 +541,11 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         } else {
-          this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== item.payment_nbr)
+          this.rebateDetails.payment_history = this.rebateDetails.payment_history.filter(ph => ph.payment_nbr !== this.deleteItem.payment_nbr)
         }
 
         this.getTotals()
-        item.deleteConfirm = false
+          this.deleteConfirm = false
       },
       async savePaymentHistoryChanges() {
         for (const ph of this.rebateDetails.payment_history) {
@@ -569,11 +582,11 @@
         })
         this.remainingBalance = this.sumOfNonCanceledPayments - parseFloat(this.rebateDetails.totalpromotionamount)
       },
-      async updatePaymentNote(item) {
+      async updatePaymentNote() {
         try {
           let params = {
-            paymentId: item.id,
-            voidNote: item.void_note
+            paymentId: this.notesItem.id,
+            voidNote: this.notesItem.void_note
           }
 
           const {data} = await postRequest(`/rebate/updateNote`, params, 'blueraven')
@@ -593,6 +606,7 @@
           }
 
           const {data} = await postRequest(`/rebate/voidPayment`, params, 'blueraven')
+          item.void_note = '';
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error voiding payment')
@@ -600,6 +614,7 @@
         }
 
         this.voidDialog = false;
+        await this.fetchPayments();
       },
       async getStates () {
           try {
