@@ -38,7 +38,7 @@ begin
                       inner join all_project_ids a on a.id = pay.id
              WHERE  pay.current is true
              GROUP BY pd.closer_user_id,pay.id,a.v_all_projects
-         )select * from commission_users;
+         )
     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
     FROM (
     SELECT u3.id,

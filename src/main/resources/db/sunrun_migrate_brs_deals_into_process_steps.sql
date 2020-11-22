@@ -28,7 +28,6 @@ with active_step as (
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where appointment_date is null  AND originator_id = 7
-           and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]'))
         )returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id

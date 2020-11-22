@@ -16,7 +16,7 @@ BEGIN
         select ra.user_id, ra.start_time as start_time, ra.end_time as end_time
         from flow.resource_appointment ra
                  inner join flow.user_position up on up.user_id = ra.user_id
-                 inner join flow.postal_code_zone_user pczu on pczu.user_position_id = up.id
+                 inner join flow.postal_code_zone_user pczu on pczu.user_position_id = up.id and pczu.postal_code_zone_user_type_id = 1
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
                  inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id
                  inner join flow.project p on p.postal_code = pc.postal_code
