@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
@@ -11,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 public class TimeSlot {
 
-  private String scheduledStartTime;
+  private Date scheduledStartTime;
   private List<Integer> users;
 }
