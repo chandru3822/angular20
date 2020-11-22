@@ -211,7 +211,7 @@
         postalCodeZoneUsers: [],
         postalCodeZoneUserValuesChanged: false,
         countSelected: 0,
-        maxSelectionAllowed: 1,
+        maxSelectionAllowed: 10,
         countErrorMessage: 'Maximum Selection Reached',
         selectedPostalCodeZoneUsers: [],
         postalCodeZoneUsersLoading: true,
@@ -411,7 +411,7 @@
         return userPositionIds
       },
       async getEvents(reload) {
-        localStorage.setItem('caUsers', JSON.stringify(this.selectedPostalCodeZoneUsers))
+        // localStorage.setItem('caUsers', JSON.stringify(this.selectedPostalCodeZoneUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
         if(reload || (this.selectedPostalCodeZoneUsers?.length > 0 && (this.postalCodeZoneUserValuesChanged || this.calendarInitialRender))) {
