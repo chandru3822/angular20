@@ -775,7 +775,8 @@ export default {
         if (this.selectAll(field)) {
           field.whiteListedPositions = []
         } else {
-          this.$set(field, 'whiteListedPositions', this.positions.map(p => p.id))
+          field.whiteListedPositions = cloneDeep(this.positions)
+          field.positionsChanged = true
         }
       })
     },

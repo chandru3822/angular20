@@ -1,8 +1,7 @@
 <template>
-<v-row>
+<v-main>
 
 <!--  screen header -->
-  <v-col cols="12" class="py-0">
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
@@ -51,8 +50,7 @@
         </v-btn>
       </v-col>
     </v-row>
-  </v-col>
-
+<v-row>
   <v-col class="text-left px-5 py-0">
     <v-btn
       class="back-btn"
@@ -289,8 +287,8 @@
     </v-row>
   </v-col>
 
-
 </v-row>
+</v-main>
 </template>
 
 <script>

@@ -291,15 +291,6 @@
                                     </v-list-item-action>
                                     <v-list-item-title>Select All</v-list-item-title>
                                   </v-list-item>
-                                  <v-list-item
-                                    slot="prepend-item"
-                                    ripple
-                                  >
-                                    <v-list-item-action>
-                                      <v-icon>{{ icon(cf) }}</v-icon>
-                                    </v-list-item-action>
-                                    <v-list-item-title>Select All</v-list-item-title>
-                                  </v-list-item>
                                   <v-divider
                                     slot="prepend-item"
                                     class="mt-2"
@@ -832,8 +823,10 @@
         this.$nextTick(() => {
           if (this.selectAll(field)) {
             field.whiteListedPositions = []
+            field.positionsChanged = true
           } else {
-            this.$set(field, 'whiteListedPositions', this.positions.map(p => p.id))
+            field.whiteListedPositions = cloneDeep(this.positions)
+            field.positionsChanged = true
           }
         })
       },
