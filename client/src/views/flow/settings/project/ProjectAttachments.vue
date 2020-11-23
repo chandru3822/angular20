@@ -28,6 +28,7 @@
                 {{a.attachmentType}}
               </v-list-item-content>
               <v-dialog
+                v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                 v-model="a.deleteConfirm"
                 width="500">
                 <template v-slot:activator="{ on }">

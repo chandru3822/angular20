@@ -949,7 +949,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': actions.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <v-btn text icon small class="handle">
+                    <v-btn text v-if="userCanEdit" icon small class="handle">
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
