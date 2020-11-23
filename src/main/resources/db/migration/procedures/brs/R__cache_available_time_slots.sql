@@ -12,8 +12,8 @@ BEGIN
     from (
              with active_users as (
                  select u.id,u.first_name,u.last_name,up.position_id,
-                        date_trunc('day', now()) AT TIME ZONE t.timezone as start_time,
-                        (date_trunc('day', now()) AT TIME ZONE t.timezone) + interval '1 day' - interval '1 second' as end_time
+                        date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone as start_time,
+                        (date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone) + interval '1 day' - interval '1 second' as end_time
                  from flow.user u
                           inner join flow.user_position up on up.user_id = u.id
                           inner join flow.org o on o.id = up.org_id

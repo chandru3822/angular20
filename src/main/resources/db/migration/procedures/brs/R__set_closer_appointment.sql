@@ -28,11 +28,19 @@ BEGIN
     if array_length(p_users, 1) < 2 then
         select p_users[1]
         into v_user_id;
+        insert into flow.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available)
+        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true);
     else
 
      --   select p_users[1]
      --   into v_user_id;
-        with round_robin_users as (
+        insert into flow.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
+                                                      distance_from_actual_to_target, appointment_start_date,
+                                                      total_lead_allocation, actual_lead_allocation, score,
+                                                      lead_gen_num, lead_gen_den, self_gen, total_avail,
+                                                      appointment_count_with_interval, appointment_count
+                                                      )
+        (with round_robin_users as (
             select up.user_id, pcz.distribution_time_frame_days
             from flow.project p
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code
@@ -115,14 +123,32 @@ BEGIN
                  from round_robin_users rru
                  left join brs.cached_appointment ca  on rru.user_id = ca.user_id
                 )
-        select foo3.user_id
-        into v_user_id
+        select p_project_id,foo3.user_id,p_project_process_step_id,
+               foo3.distance_from_actual_to_target,p_appointment_start_time,
+               foo3.total_lead_allocation,foo3.acutal_lead_allocation,foo3.score,
+               foo3.lead_gen_num,foo3.lead_gen_den,foo3.self_gen,foo3.avail,
+               foo3.appointment_count_with_interval,foo3.appointment_count_with_interval
         from (
-                 select foo2.user_id, acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target
+                 select foo2.user_id, acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target,
+                        foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
+                        foo2.lead_gen_num,
+                        foo2.lead_gen_den,
+                        foo2.self_gen,
+                        foo2.avail,
+                        foo2.appointment_count_with_interval,
+                        foo2.appointment_count
                  from (
                           select foo1.user_id,
                                  round(score / sum(score) over (), 2) as total_lead_allocation,
-                                 round(acutal_lead_allocation, 2)     as acutal_lead_allocation
+                                 round(acutal_lead_allocation, 2)     as acutal_lead_allocation,
+                                 foo1.score,
+                                 foo1.lead_gen_num,
+                                 foo1.lead_gen_den,
+                                 foo1.self_gen,
+                                 foo1.avail,
+                                 foo1.appointment_count_with_interval,
+                                 foo1.appointment_count
+
                           from (
                                    select foo.user_id,
                                           case when lead_gen_den is null or lead_gen_den = 0 then
@@ -135,7 +161,13 @@ BEGIN
                                               when sum(appointment_count_with_interval) over () = 0 then
                                                   0
                                               else appointment_count_with_interval /
-                                                   sum(appointment_count_with_interval) over () end as acutal_lead_allocation
+                                                   sum(appointment_count_with_interval) over () end as acutal_lead_allocation,
+                                          foo.lead_gen_num,
+                                          foo.lead_gen_den,
+                                          foo.self_gen,
+                                          foo.avail,
+                                          foo.appointment_count_with_interval,
+                                          foo.appointment_count
                                    from (
                                             select up2.user_id,
                                                    coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
@@ -164,8 +196,20 @@ BEGIN
                                             foo.appointment_count,
                                             foo.avail, foo.appointment_count_with_interval) as foo1) as foo2
                  where foo2.user_id = any (p_users)
-                 group by foo2.user_id, foo2.acutal_lead_allocation, foo2.total_lead_allocation
-                 order by distance_from_actual_to_target) as foo3
+                 group by foo2.user_id, foo2.acutal_lead_allocation, foo2.total_lead_allocation,
+                          foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
+                          foo2.lead_gen_num,
+                          foo2.lead_gen_den,
+                          foo2.self_gen,
+                          foo2.avail,
+                          foo2.appointment_count_with_interval,
+                          foo2.appointment_count) as foo3);
+
+        select user_id
+        into v_user_id
+        from flow.set_closer_appointment_audit
+        where project_process_step_id = p_project_process_step_id
+        order by distance_from_actual_to_target
         limit 1;
     end if;
 
