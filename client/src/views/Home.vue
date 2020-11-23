@@ -115,13 +115,14 @@ export default {
 <style scoped lang="scss">
 .home-page {
   height: 100%;
-  padding-top: 0;
+  padding-top: 50px;
 }
 
 .home-card {
-  height: 225px;
+  height: 235px;
   width: 50%;
-  margin: 50px auto;
+  min-width: 300px;
+  margin: auto;
   padding-top: 15px;
 }
 
