@@ -3,10 +3,10 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">States</v-toolbar-title>
+          <v-toolbar-title class="app-title">States</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, selectedState = {}]">
+            <v-btn text v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -79,11 +79,12 @@
                 <input type="checkbox" v-model="item.active" disabled readonly>
               </td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <v-btn small text v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
                 <v-dialog
+                    v-if="userCanDelete"
                     v-model="item.deleteConfirm"
                     width="500">
                   <template #activator="{ on }">
@@ -150,6 +151,9 @@
         companyStates: [],
         selectedState: {},
         states: [],
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
         selectedCompanyStateId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,

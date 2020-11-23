@@ -286,6 +286,11 @@ export default new Router({
       component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
       children: [
         {
+          path: 'states',
+          meta: { title: 'Albatross - Settings'},
+          component: () => import (/* webpackChunkName: "states" */ './views/flow/settings/States.vue'),
+        },
+        {
           path: 'userProfile',
           meta: { title: 'Albatross - Settings'},
           component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
@@ -761,9 +766,6 @@ export default new Router({
         }, {
           path: 'orgLevels',
           component: () => import (/* webpackChunkName: "orgLevels" */ './views/flow/admin/OrgLevels.vue'),
-        }, {
-          path: 'states',
-          component: () => import (/* webpackChunkName: "states" */ './views/flow/admin/States.vue'),
         }, {
           path: 'features',
           component: () => import (/* webpackChunkName: "features" */ './views/flow/admin/Features.vue'),
