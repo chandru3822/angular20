@@ -29,8 +29,13 @@ public class LinkController {
     return linkService.getLinksForCompany();
   }
 
+  @PutMapping(value = "/updateOrderInProcessStep", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateOrderInProcessStep(@RequestBody List<ProcessStepLink> links) {
+    linkService.updateOrderInProcessStep(links);
+  }
+
   @GetMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Link> getLinksForProcessStep (@PathVariable Long id) {
+  public List<ProcessStepLink> getLinksForProcessStep (@PathVariable Long id) {
     return linkService.getLinksForProcessStep(id);
   }
 

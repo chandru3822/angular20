@@ -56,12 +56,15 @@
                                           psl.link_id as "linkId",
                                           psl.created_by_id as "createdById",
                                           psl.modified_by_id as "modifiedById",
+                                          psl.display_order as "displayOrder",
                                           l.link,
                                           l.url,
                                           psl.archived
                                    FROM flow.process_step_link psl
                                             inner join flow.link l on l.id = psl.link_id
-                                   WHERE psl.process_step_id = ps.id AND psl.archived is not true) links), '[]') AS "links",
+                                   WHERE psl.process_step_id = ps.id
+                                     AND psl.archived is not true
+                                order by psl.display_order ) links), '[]') AS "links",
              coalesce((
                           SELECT array_to_json(array_agg(row_to_json(attachmentTypes)))
                           FROM (

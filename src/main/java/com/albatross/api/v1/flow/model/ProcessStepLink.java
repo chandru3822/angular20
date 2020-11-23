@@ -13,7 +13,7 @@ import java.util.Date;
 @Setter
 public class ProcessStepLink extends Link {
 
-  private Long linkId, createdById, modifiedById, processStepId;
+  private Long linkId, createdById, modifiedById, processStepId, displayOrder;
   private Date dateCreated, dateModified;
 }
 
