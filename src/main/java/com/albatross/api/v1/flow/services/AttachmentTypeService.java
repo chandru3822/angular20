@@ -40,11 +40,11 @@ public class AttachmentTypeService {
 
   public void updateOrderInProcessStep(List<ProcessStepAttachmentType> attachmentTypes) {
     for(ProcessStepAttachmentType at : attachmentTypes){
-      updateTypeOrder(at);
+      updateTypeOrderInProcessStep(at);
     }
   }
 
-  public void updateTypeOrder(ProcessStepAttachmentType attachmentType) {
+  public void updateTypeOrderInProcessStep(ProcessStepAttachmentType attachmentType) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -53,6 +53,23 @@ public class AttachmentTypeService {
     params.put("displayOrder", attachmentType.getDisplayOrder());
 
     sqlCache.update("attachmentType.updateTypeOrderInProcessStep", params);
+  }
+
+  public void updateOrderInProject(List<ProjectAttachmentType> attachmentTypes) {
+    for(ProjectAttachmentType at : attachmentTypes){
+      updateTypeOrderInProject(at);
+    }
+  }
+
+  public void updateTypeOrderInProject(ProjectAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", attachmentType.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("displayOrder", attachmentType.getDisplayOrder());
+
+    sqlCache.update("attachmentType.updateTypeOrderInProject", params);
   }
 
   public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {

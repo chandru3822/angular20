@@ -13,7 +13,7 @@ import java.util.Date;
 @Setter
 public class ProjectAttachmentType {
 
-  private Long id, attachmentTypeId, createdById, modifiedById, companyId;
+  private Long id, attachmentTypeId, createdById, modifiedById, companyId, displayOrder;
   private String attachmentType;
   private Boolean archived;
   private Date dateCreated, dateModified;

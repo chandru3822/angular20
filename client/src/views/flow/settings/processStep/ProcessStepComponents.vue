@@ -671,7 +671,7 @@
           })
           // save them here
           if(typesToSave.length > 0) {
-            await putRequest(`/attachmentType/updateOrder`, typesToSave)
+            await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
           }
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -682,7 +682,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-
       },
     }
 
