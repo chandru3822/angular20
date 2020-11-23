@@ -767,7 +767,10 @@ export default new Router({
         }, {
           path: 'features',
           component: () => import (/* webpackChunkName: "features" */ './views/flow/admin/Features.vue'),
-        }
+        }, {
+          path: 'statusTypes',
+          component: () => import (/* webpackChunkName: "statusTypes" */ './views/flow/admin/CompanyUserStatus.vue'),
+        },
       ]
     },
     {
