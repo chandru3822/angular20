@@ -451,7 +451,6 @@ export default {
     // whenever objectTypeId changes, this function will run
     '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
       // reset the selected group when the object type changes
-      console.log('route changed', this.$route.params.id)
       this.typeId = this.$route.params.id ?? this.$route.query.companyObjectTypeid
       this.availableCustomFields = []
       this.getCustomFieldGroups()

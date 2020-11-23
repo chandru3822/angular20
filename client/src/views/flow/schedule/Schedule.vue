@@ -380,7 +380,6 @@
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
-      console.log('router', this.$route)
       if(this.$route.query && this.$route.query.projectProcessStepId) {
         //projectId, eventTypeId, processStepStatusTypeId
         this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
@@ -439,6 +438,7 @@
         }
       },
       resourceMapCallback (newValue) {
+        console.log('testing', newValue)
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {

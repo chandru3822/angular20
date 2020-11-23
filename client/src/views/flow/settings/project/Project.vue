@@ -58,7 +58,6 @@
     computed: {
     },
     async created () {
-      console.log('this.$route.query.companyObjectTypeId', this.$route.query.companyObjectTypeId)
     },
     methods: {}
 
