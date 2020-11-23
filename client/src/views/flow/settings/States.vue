@@ -134,7 +134,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
 
-  import {getStates} from '@/services/stateService'
+  import {getAvailableStates, getStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
@@ -215,7 +215,7 @@
       async getStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
+          const {data} = await getAvailableStates()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

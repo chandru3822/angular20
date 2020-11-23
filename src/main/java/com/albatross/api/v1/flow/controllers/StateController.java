@@ -27,6 +27,11 @@ public class StateController {
     return stateService.getAllStates();
   }
 
+  @GetMapping(value = "/available", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyState> getAvailableStates() {
+    return stateService.getAvailableStates();
+  }
+
   @GetMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyState> getAllCompanyStates(@RequestParam(required = false) Long companyId) {
     return stateService.getAllCompanyStates(companyId);

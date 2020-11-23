@@ -10,6 +10,23 @@
     order by s.state
   ]]></state.getAllStates>
 
+  <state.getAvailableStates><![CDATA[
+    select s.id,
+           s.state,
+           s.abbreviation,
+           s.map_latitude,
+           s.map_longitude,
+           s.map_zoom
+    from flow.state s
+    where not exists (
+        select state_id
+        from flow.company_state cs
+        where company_id = :companyId
+        and s.id = cs.state_id
+    )
+    order by s.state
+  ]]></state.getAvailableStates>
+
   <state.getAllCompanyStates><![CDATA[
     select cs.id,
        s.state,
