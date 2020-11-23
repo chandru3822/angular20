@@ -130,7 +130,7 @@ where
 ]]></projectProcessStep.getIdsByAutoTriggerActionsAndReqs>
 
 <projectProcessStep.getTimeBasedAutoTriggerPps><![CDATA[
-select pps.id as ppsId, ps.company_id as companyId
+select distinct pps.id as ppsId, ps.company_id as companyId
 from flow.project_process_step pps
 inner join flow.process_step ps on ps.id = pps.process_step_id
 inner join flow.process_step_action psa on psa.process_step_id = ps.id
