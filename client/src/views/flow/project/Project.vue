@@ -238,6 +238,7 @@ export default {
       try {
         const {data} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        window.document.title = `Project Details - ${this.project.projectName}`
         this.projectLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

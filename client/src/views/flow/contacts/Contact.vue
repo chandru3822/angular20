@@ -298,7 +298,7 @@ export default {
         const {data} = await getRequest(`/contact/${this.contactId}`)
         this.contact = data
         this.contactLoading = false
-
+        window.document.title = `Contact - ${this.contact.fullName}`
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
