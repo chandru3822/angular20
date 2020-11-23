@@ -36,7 +36,7 @@
         <template #item="{item: smartlist}">
           <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
             <td class="text-left">{{smartlist.name}}</td>
-            <td class="text-left">{{smartlist.objectType}}</td>
+            <td class="text-left">{{smartlist.viewObjectType}}</td>
             <td class="text-left">{{smartlist.owner}}</td>
             <td class="text-left">{{smartlist.shared ? 'Yes' : 'No'}}</td>
           </tr>
