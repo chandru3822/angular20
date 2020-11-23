@@ -290,6 +290,7 @@
   <schedule.searchProjectsByName><![CDATA[
         select c.first_name as contact_first_name,
                c.last_name as contact_last_name,
+               c.id as contact_id,
                concat(c.first_name, ' ', c.last_name) as contact_full_name,
                p.project_name,
                p.id as project_id
@@ -299,7 +300,8 @@
           and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
             else c.company_id = :companyId end
-          and concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
+          and (concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
+                  OR p.id::text = :search)
         order by c.first_name, c.last_name
   ]]></schedule.searchProjectsByName>
 
