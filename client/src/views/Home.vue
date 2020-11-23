@@ -127,7 +127,6 @@ export default {
 }
 
 .home-background {
-  //background-image: url(../assets/home.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
