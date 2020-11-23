@@ -123,6 +123,10 @@ export default {
         title: 'Company',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/states',
+        title: 'States',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/postalCodes',
         title: 'Round Robins',
         show: this.hasSettingsAccess

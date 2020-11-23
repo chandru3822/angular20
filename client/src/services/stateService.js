@@ -9,6 +9,15 @@ export async function getStates() {
   }
 }
 
+export async function getAvailableStates() {
+  try {
+    const {data, status} = await getRequest(`/state/available`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 export async function getCompanyStates(companyId) {
   try {
     let params = {
