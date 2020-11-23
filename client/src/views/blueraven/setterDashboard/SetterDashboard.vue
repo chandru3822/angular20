@@ -545,7 +545,8 @@
                       multiple
                       dense
                       return-object
-                      @input="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2)">
+                      @input="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2, false)"
+                      :menu-props="{closeOnContentClick: true}">
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ repModel.length }} Checked
@@ -1725,7 +1726,7 @@
           this.funnelStats = []
 
           if (this.repModel.length > 0) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           }
         })
 
@@ -1788,20 +1789,41 @@
           {user_id: -1, name: 'All Reps', active: true}
         ]
 
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
-      async pipelineLoad (targetInstallations, start, end) {
+      async pipelineLoad (targetInstallations, start, end, useRepDataInstead) {
         let reps = []
         let orgs = []
 
-        if (this.repModel.length === 0) {
+        if ((this.repModel.length === 0 && !useRepDataInstead) || (useRepDataInstead && this.repData.length === 0)) {
           this.funnelStats = []
           return
         }
 
-        this.repModel.forEach(rep => reps.push(rep.user_id))
         this.officeModel.forEach(org => orgs.push(org.org_id))
+
+        if (useRepDataInstead) {
+          this.repData.forEach((rep, index) => {
+            reps.push(rep.user_id)
+
+            if (index === this.repData.length - 1) {
+              this.districtModel = []
+              this.regionModel = []
+              this.officeModel = []
+
+              this.repModel = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+
+              this.repData = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+            }
+          })
+        } else {
+          this.repModel.forEach(rep => reps.push(rep.user_id))
+        }
 
         const requestBody = {
           targetInstallations: targetInstallations,
@@ -1910,13 +1932,13 @@
 
       updateInstalls (installs) {
         this.expectedInstalls = installs
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       updatePipelineCalendar () {
         this.pipeline_menu1 = false
         this.pipeline_menu2 = false
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       yesterday () {
@@ -1973,7 +1995,7 @@
         let expectedInstalls = this.expectedInstalls
         if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
         this.expectedInstalls = expectedInstalls
-        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       viewSelected (view) {
@@ -1982,7 +2004,7 @@
 
           if ((this.districtModel.length > 0 && this.regionModel.length > 0 && this.officeModel.length > 0 && this.repModel.length > 0) || this.repModel[0]?.user_id === -1) {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           }
         }
       },
@@ -2084,8 +2106,8 @@
             this.repModel = []
             this.funnelStats = []
           } else {
-            this.repModel = cloneDeep(this.repData)
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, true)
           }
         })
       },
