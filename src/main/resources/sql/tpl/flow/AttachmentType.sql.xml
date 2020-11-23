@@ -9,6 +9,14 @@
     and at.is_system is not true
   ]]></attachmentType.getTypesForCompany>
 
+  <attachmentType.updateTypeOrderInProcessStep><![CDATA[
+    update flow.process_step_attachment_type
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></attachmentType.updateTypeOrderInProcessStep>
+
   <attachmentType.getAvailableTypesForProcessStep><![CDATA[
     select at.*
       from flow.attachment_type at
@@ -49,6 +57,7 @@
        psat.created_by_id as "createdById",
        psat.process_step_id as "processStepId",
        psat.modified_by_id as "modifiedById",
+       psat.display_order as "displayOrder",
        at.attachment_type as "attachmentType",
        psat.archived
     FROM flow.process_step_attachment_type psat
@@ -57,8 +66,8 @@
   ]]></attachmentType.getProcessStepType>
 
   <attachmentType.insertProcessStepType><![CDATA[
-    insert into flow.process_step_attachment_type (attachment_type_id, process_step_id, created_by_id, date_created)
-    values (:attachmentTypeId, :processStepId, :createdById, now())
+    insert into flow.process_step_attachment_type (attachment_type_id, process_step_id, created_by_id, date_created, display_order)
+    values (:attachmentTypeId, :processStepId, :createdById, now(), (select coalesce(max(display_order) + 1, 0) from flow.process_step_attachment_type where process_step_id = :processStepId and archived is not true))
   ]]></attachmentType.insertProcessStepType>
 
   <attachmentType.deleteProcessStepType>
@@ -170,5 +179,6 @@
     where
       psat.process_step_id = :processStepId and
       psat.archived is not true
+    order by psat.display_order
   ]]></attachmentType.getProcessStepTypes>
 </sql>

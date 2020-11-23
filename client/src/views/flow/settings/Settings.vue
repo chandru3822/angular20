@@ -119,8 +119,11 @@ export default {
         title: 'User Profile',
         show: true
       }, {
+        header: 'Company',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/company',
-        title: 'Company',
+        title: 'Defaults',
         show: this.hasSettingsAccess
       }, {
         path: '/settings/states',

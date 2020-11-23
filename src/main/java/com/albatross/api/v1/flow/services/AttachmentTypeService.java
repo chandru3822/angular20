@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
-import com.albatross.api.v1.flow.model.AttachmentType;
-import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
-import com.albatross.api.v1.flow.model.ProjectAttachmentType;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +36,23 @@ public class AttachmentTypeService {
 
     List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getTypesForCompany", params, AttachmentType.class);
     return attachmentTypes;
+  }
+
+  public void updateOrderInProcessStep(List<ProcessStepAttachmentType> attachmentTypes) {
+    for(ProcessStepAttachmentType at : attachmentTypes){
+      updateTypeOrder(at);
+    }
+  }
+
+  public void updateTypeOrder(ProcessStepAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", attachmentType.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("displayOrder", attachmentType.getDisplayOrder());
+
+    sqlCache.update("attachmentType.updateTypeOrderInProcessStep", params);
   }
 
   public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {
