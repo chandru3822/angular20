@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newZone = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newZone = {}]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -55,7 +55,7 @@
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-dialog
-                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      v-if="userCanDelete"
                       v-model="item.deleteConfirm"
                       width="500">
                       <template v-slot:activator="{ on }">
@@ -122,6 +122,9 @@
         search: '',
         newZone: {},
         selectedZoneId: null,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
         postalCodeZones: [],

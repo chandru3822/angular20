@@ -43,7 +43,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit" @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
+            <v-btn text v-if="userCanAdd" @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -89,7 +89,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.fullName}} - {{item.position}}</td>
               <td>
-                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
+                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
                     <v-btn text v-on="on">
                       <v-icon>delete</v-icon>
@@ -136,7 +136,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit" @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
+            <v-btn text v-if="userCanAdd" @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
               <v-icon v-if="addScheduler">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -182,7 +182,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.fullName}} - {{item.position}}</td>
               <td>
-                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
+                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
                     <v-btn text v-on="on">
                       <v-icon>delete</v-icon>
@@ -229,7 +229,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit" @click="[addCode = !addCode, newCode = '']">
+            <v-btn text v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -270,7 +270,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.postalCode}}</td>
               <td>
-                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
+                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
                     <v-btn text v-on="on">
                       <v-icon>delete</v-icon>
@@ -325,7 +325,9 @@
         snackbar: {},
         editZone: false,
         zone: {},
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
         zoneId: this.$route.params.id,
         dataLoading: true,
         selectedScheduler: {},

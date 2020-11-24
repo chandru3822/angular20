@@ -306,9 +306,9 @@ export default new Router({
           },
         }, {
           path: 'postalCodes',
-          meta: { title: 'Albatross - Settings'},
+          meta: { title: 'Albatross - Round Robin'},
           component: () => {
-            if(store.getters.userHasFeature('SETTINGS')) {
+            if(store.getters.userHasFeature('ROUND_ROBIN')) {
               return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCodes.vue')
             } else  {
               return accessDenied()
