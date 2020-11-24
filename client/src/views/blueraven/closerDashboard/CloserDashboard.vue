@@ -700,7 +700,8 @@
                     dense
                     hide-details
                     return-object
-                    @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2)">
+                    @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2, false)"
+                    :menu-props="{closeOnContentClick: true}">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ repModel.length }} Checked
@@ -1864,7 +1865,7 @@
       viewSelected (view) {
         if (this.viewSelect !== view) {
           this.viewSelect = view
-          this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+          this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
         }
       },
 
@@ -2005,7 +2006,7 @@
           {user_id: -1, name: 'All Reps', active: true}
         ]
 
-        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
       },
 
       loadSources () {
@@ -2071,17 +2072,35 @@
         }
       },
 
-      async apptsToFdcPipelineLoad (start, end) {
+      async apptsToFdcPipelineLoad (start, end, useRepDataInstead) {
         let reps = []
         let orgs = []
 
-        if (this.repModel.length === 0) {
+        if ((this.repModel.length === 0 && !useRepDataInstead) || (useRepDataInstead && this.repData.length === 0)) {
           this.apptsToFdcPipelineData = []
           return
         }
 
-        this.repModel.forEach(rep => reps.push(rep.user_id))
         this.officeModel.forEach(org => orgs.push(org.org_id))
+
+        if (useRepDataInstead) {
+          this.repData.forEach((rep, index) => {
+            reps.push(rep.user_id)
+            if (index === this.repData.length - 1) {
+              this.districtModel = []
+              this.regionModel = []
+              this.officeModel = []
+              this.repModel = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+              this.repData = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+            }
+          })
+        } else {
+          this.repModel.forEach(rep => reps.push(rep.user_id))
+        }
 
         const requestBody = {
           users: reps,
@@ -2290,7 +2309,7 @@
           this.apptsToFdcPipelineData = []
 
           if (this.repModel.length > 0) {
-            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
           }
         })
 
@@ -2306,7 +2325,7 @@
       updateApptsToFdcPipelineCalendar () {
         this.appts_to_fdc_pipeline_menu1 = false
         this.appts_to_fdc_pipeline_menu2 = false
-        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
       },
 
       yesterday (pipelineName) {
@@ -2711,8 +2730,8 @@
             this.repModel = []
             this.funnelStats = []
           } else {
-            this.repModel = cloneDeep(this.repData)
-            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
           }
         })
       },
@@ -2752,9 +2771,6 @@
     padding: 0;
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
-  }
-  #closer-dash-btn-toggle {
-
   }
 
   #closer-dash-toolbar-container {

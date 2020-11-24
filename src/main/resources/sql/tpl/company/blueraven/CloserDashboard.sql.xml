@@ -229,22 +229,24 @@
 
   <closerDashboard.getBrsProvidedSources>
     <![CDATA[
-      SELECT distinct pd.source as source_id,
-             lov.name as source_name
+      SELECT DISTINCT pd.source source_id,
+             lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
-      WHERE pd.source NOT IN (7, 484, 8) -- ('Closer Gen', 'Events - Closer Gen', 'Referral')
+      WHERE pd.source NOT IN (523, 530, 524) -- (Closer Gen, Events - Closer Gen, Referral)
+        AND lov.parent_id = 520
       ORDER BY source_name
     ]]>
   </closerDashboard.getBrsProvidedSources>
 
   <closerDashboard.getSelfGenSources>
     <![CDATA[
-      SELECT distinct pd.source as source_id,
-             lov.name as source_name
+      SELECT DISTINCT pd.source source_id,
+             lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
-      WHERE pd.source IN (7, 484, 8) -- ('Closer Gen', 'Events - Closer Gen', 'Referral')
+      WHERE pd.source IN (523, 530, 524) -- (Closer Gen, Events - Closer Gen, Referral)
+        AND lov.parent_id = 520
       ORDER BY source_name
     ]]>
   </closerDashboard.getSelfGenSources>
