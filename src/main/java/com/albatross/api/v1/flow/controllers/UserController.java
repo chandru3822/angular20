@@ -86,6 +86,11 @@ public class UserController {
         return userService.getCompanyUserStatuses(companyId);
     }
 
+    @PutMapping(value = "/statusType", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void saveUserStatusType(@RequestBody UserStatusType userStatusType) {
+        userService.saveUserStatusType(userStatusType);
+    }
+
     @Data
     public static class NewUserCompanyRequest {
         private Long companyId, companyUserStatusTypeId, userId;

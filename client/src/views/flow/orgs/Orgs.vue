@@ -155,9 +155,6 @@
         this.$router.push({name: 'org', params: {id}})
       },
       filterResults(value, search, item) {
-        console.log('we got here', value)
-        console.log('we got here', search)
-        console.log('we got here', item)
       },
       async getOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)

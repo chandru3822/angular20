@@ -412,6 +412,14 @@
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
 
+  <user.saveUserStatusType><![CDATA[
+      update flow.user_status_type
+          set has_access = :hasAccess,
+              modified_by_id = :modifiedById,
+              date_modified = now()
+      where id = :id
+  ]]></user.saveUserStatusType>
+
   <user.archiveUserStatus><![CDATA[
     update flow.company_user_status cus
       set archived = true,

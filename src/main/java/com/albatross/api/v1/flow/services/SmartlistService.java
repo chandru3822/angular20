@@ -468,27 +468,34 @@ public class SmartlistService {
         if (f.getSmartlistSystemListId() == 1 || f.getSmartlistSystemListId() == 3) {
           location = String.format("(select name from (%s) \"%s\" where \"%s\".id = %s.%s)", smartlistSystemListSubquery, tempAlias, tempAlias, f.getJoinTable(), f.getJoinColumn());
         } else if (f.getSmartlistSystemListId() == 2) {
-          String ppsTable;
-          try {
-            ppsTable = joinTables.stream()
-              .filter(t -> t.getProcessStepId() != null && f.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
-              .map(t -> {
-                if (t.getPpsTable() != null) {
-                  return t.getPpsTable();
-                } else {
-                  return t.getReferenceTable();
-                }
-              })
-              .findFirst()
-              .orElse(null);
 
-            if (ppsTable == null) {
+          if (smartlist.getObjectTypeId() == 4) {
+            location = String.format("(select name from (%s) \"%s\" where \"%s\".id = flow.project_process_step.%s)", smartlistSystemListSubquery, tempAlias, tempAlias, f.getJoinColumn());
+          } else {
+            String ppsTable;
+
+            try {
+              ppsTable = joinTables.stream()
+                .filter(t -> t.getProcessStepId() != null && f.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
+                .map(t -> {
+                  if (t.getPpsTable() != null) {
+                    return t.getPpsTable();
+                  } else {
+                    return t.getValueReferenceTable();
+                  }
+                })
+                .findFirst()
+                .orElse(null);
+
+              if (ppsTable == null) {
+                ppsTable = UUID.randomUUID().toString();
+              }
+            } catch (NullPointerException e) {
               ppsTable = UUID.randomUUID().toString();
             }
-        } catch (NullPointerException e) {
-          ppsTable = UUID.randomUUID().toString();
-        }
-          location = String.format("(select name from (%s) \"%s\" where \"%s\".id = \"%s\".%s)", smartlistSystemListSubquery, tempAlias, tempAlias, ppsTable, f.getJoinColumn());
+
+            location = String.format("(select name from (%s) \"%s\" where \"%s\".id = \"%s\".%s)", smartlistSystemListSubquery, tempAlias, tempAlias, ppsTable, f.getJoinColumn());
+          }
         }
       }
       // If field is custom, else it's system
@@ -663,6 +670,34 @@ public class SmartlistService {
             }
           }
         }
+      } else if (f.getSmartlistSystemListId() == 2) {
+        String joinTable;
+        try {
+          joinTable = joinTables.stream()
+            .filter(t -> t.getProcessStepId() != null && f.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
+            .map(t -> {
+              if (t.getPpsTable() != null) {
+                return t.getPpsTable();
+              } else {
+                return t.getValueReferenceTable();
+              }
+            })
+            .findFirst()
+            .orElse(null);
+
+          if (joinTable == null) {
+            joinTable = UUID.randomUUID().toString();
+          }
+        } catch (NullPointerException e) {
+          joinTable = UUID.randomUUID().toString();
+        }
+
+        if (query.indexOf("left join flow.project_process_step \"" + joinTable) == -1) {
+          query.append(String.format("\nleft join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", joinTable, joinTable, joinTable, f.getProcessStepId()));
+          if (smartlist.isMainProcessSteps()) {
+            query.append(String.format("and \"%s\".main is true ", joinTable));
+          }
+        }
       }
     }
 
@@ -689,7 +724,7 @@ public class SmartlistService {
                     if (t.getPpsTable() != null) {
                       return t.getPpsTable();
                     } else {
-                      return t.getReferenceTable();
+                      return t.getValueReferenceTable();
                     }
                   })
                   .findFirst()

@@ -9,6 +9,11 @@
         <VCard flat>
           {{m.contactFirstName}} {{m.contactLastName}}<br/>
           {{m.processStepName}}
+          <span v-if="null != m.street1 || null != m.city || null != m.postalCode">
+            <br/>
+            {{m.street1}}<br/>
+            {{m.city}}, {{m.stateAbbreviation}} {{m.postalCode}}
+          </span>
         </VCard>
       </MglPopup>
     </MglMarker>
@@ -19,6 +24,11 @@
         <VCard flat>
           {{m.projectName}}<br/>
           {{m.processStepName}}
+          <span v-if="null != m.street1 || null != m.city || null != m.postalCode">
+            <br/>
+            {{m.street1}}<br/>
+            {{m.city}}, {{m.stateAbbreviation}} {{m.postalCode}}
+          </span>
         </VCard>
       </MglPopup>
     </MglMarker>

@@ -68,7 +68,6 @@
         this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, true)
       },
       async goToApps() {
-        console.log('we got here')
         this.$router.push('/apps')
       },
       async refreshPage() {

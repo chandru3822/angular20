@@ -95,8 +95,8 @@
                              FROM flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
                                       inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
                                       inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
+                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cfg2.company_object_type_id
                                       left join flow.process_step ps on cfg2.process_step_id = ps.id
                              WHERE cfga.custom_field_group_id = cfg.id
                                AND cfot.archived is not true

@@ -7,7 +7,7 @@
 
                 <v-spacer />
 
-                <v-select
+                <v-autocomplete
                     v-if="$store.getters.userHasFeature('SMARTLIST')"
                     v-model="selectedSmartlistId"
                     :items="smartlists"

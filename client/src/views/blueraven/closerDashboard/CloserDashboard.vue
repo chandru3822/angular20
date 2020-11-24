@@ -35,8 +35,8 @@
     <v-row v-if="showDashboard" class="mb-6" justify="center" no-gutters>
       <v-col cols="12" id="ironman-container">
         <v-card id="ironman-component" class="mb-4 pb-4">
-          <img id="ironman-banner-mobile" src="../../../assets/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
-          <img id="ironman-banner" src="../../../assets/ironman_banner.png" alt="Desktop version of Ironman competition banner">
+          <img id="ironman-banner-mobile" src="../../../assets/blueraven/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
+          <img id="ironman-banner" src="../../../assets/blueraven/ironman_banner.png" alt="Desktop version of Ironman competition banner">
           <div id="milestones-container">
             <div id="swim-phase" class="milestone" :class="{'active-milestone': is_q1}"
                  @click="milestoneDrilldown(1)">
@@ -51,7 +51,7 @@
                     {{ q1_points === 1 ? q1_points + ' Point' : q1_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_swim_icon.png" alt="A person swimming">
+                <img src="../../../assets/blueraven/ironman_swim_icon.png" alt="A person swimming">
               </div>
               <span v-if="is_q1" class="milestone-bottom-label">{{ q1_lower_label }}</span>
             </div>
@@ -69,7 +69,7 @@
                     {{ q2_points === 1 ? q2_points + ' Point' : q2_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_bike_icon.png" alt="A person riding a bike">
+                <img src="../../../assets/blueraven/ironman_bike_icon.png" alt="A person riding a bike">
               </div>
               <span v-if="is_q2" class="milestone-bottom-label">{{ q2_lower_label }}</span>
             </div>
@@ -87,7 +87,7 @@
                     {{ q3_points === 1 ? q3_points + ' Point' : q3_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_run_icon.png" alt="A person running">
+                <img src="../../../assets/blueraven/ironman_run_icon.png" alt="A person running">
               </div>
               <span v-if="is_q3" class="milestone-bottom-label">{{ q3_lower_label }}</span>
             </div>
@@ -105,7 +105,7 @@
                     {{ q4_points === 1 ? q4_points + ' Point' : q4_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_finish_icon.png" alt="A person crossing a finish line">
+                <img src="../../../assets/blueraven/ironman_finish_icon.png" alt="A person crossing a finish line">
               </div>
               <span v-if="is_q4" class="milestone-bottom-label">{{ q4_lower_label }}</span>
             </div>
@@ -122,9 +122,9 @@
               <div id="sixth-segment" class="progress-bar-segment"></div>
               <div id="seventh-segment" class="progress-bar-segment"></div>
               <div id="eighth-segment" class="progress-bar-segment">
-                <img v-if="!progressBarIsFull" src="../../../assets/progress_bar_icon_blue.png"
+                <img v-if="!progressBarIsFull" src="../../../assets/blueraven/progress_bar_icon_blue.png"
                      alt="Blue Raven Solar logo in blue">
-                <img v-if="progressBarIsFull" src="../../../assets/progress_bar_icon_white.png"
+                <img v-if="progressBarIsFull" src="../../../assets/blueraven/progress_bar_icon_white.png"
                      alt="Blue Raven Solar logo in white">
               </div>
               <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '5px' : '5px 0 0 5px'}"></div>
@@ -247,7 +247,7 @@
               <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
               <img v-else class="placeholder-img"
-                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
+                   src="../../../assets/flow/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.closerName }}</td>
             <td class="center-text">{{ row.leadGenFdc }}%</td>
@@ -286,7 +286,7 @@
               <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
               <img v-else class="placeholder-img"
-                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
+                   src="../../../assets/flow/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
@@ -377,7 +377,7 @@
               <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
               <img v-else class="placeholder-img"
-                   src="../../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
+                   src="../../../assets/flow/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="left-text">{{ row.officeName }}</td>
@@ -393,7 +393,7 @@
               <img v-if="userRow.userImageUrl" class="ranking-table-img"
                    :src="userRow.userImageUrl" :alt="userRow.userImageAltText">
               <img v-else class="placeholder-img"
-                   src="../../../assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
+                   src="../../../assets/flow/user_img_placeholder.png" :alt="userRow.userImageAltText">
             </td>
             <td class="left-text">{{ userRow.name }}</td>
             <td class="left-text">{{ userRow.officeName }}</td>

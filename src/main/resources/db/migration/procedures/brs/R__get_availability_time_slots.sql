@@ -19,7 +19,7 @@ BEGIN
             from flow.project p
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
-                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
+                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1
                      inner join flow.user_position up on up.id = pczu.user_position_id and primary_flag is true
                      inner join flow.position p1 on p1.id = up.position_id and p1.schedulable is true
             where p.id = p_project_id
@@ -40,7 +40,7 @@ BEGIN
         select ra.user_id,null as id, ra.start_time as start_time, ra.end_time as end_time
         from flow.resource_appointment ra
                  inner join flow.user_position up on up.user_id = ra.user_id and up.primary_flag is true
-                 inner join flow.postal_code_zone_user pczu on pczu.user_position_id  = up.id
+                 inner join flow.postal_code_zone_user pczu on pczu.user_position_id  = up.id and pczu.postal_code_zone_user_type_id = 1
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
                  inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id
                  inner join flow.project p on p.postal_code = pc.postal_code
@@ -73,28 +73,31 @@ BEGIN
                                                   ($$'$$ || p_available_date || $$'$$ || rsa.start_time)::timestamp,
                                                   (case
                                                        when rsa.end_time > rsa.start_time
-                                                           then $$'$$ || p_available_date || $$'$$
-                                                       else $$'$$ || p_available_date + 1 || $$'$$ end ||
-                                                   rsa.end_time)::timestamp, interval '30 min')  -(rsa.end_time - (default_appointment_length || ' minutes')::interval)  available_times,
+                                                           then $$'$$ || p_available_date::date || $$'$$
+                                                       else $$'$$ || p_available_date::date + 1 || $$'$$ end ||
+                                                   rsa.end_time)::timestamp, interval '30 min')    available_times,
                                           uc.default_appointment_length,
                                           (rsa.end_time - (default_appointment_length || ' minutes')::interval) closer_end_time
                                    from flow.project p
                                             inner join flow.postal_code pc on pc.postal_code = p.postal_code
                                             inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
-                                            inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
+                                            inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1
                                             inner join flow.user_position up on up.id = pczu.user_position_id and primary_flag is true
                                             inner join flow.resource_schedule rs on rs.user_id = up.user_id
                                             inner join flow.resource_schedule_availability rsa
                                                        on rsa.resource_schedule_id = rs.id
-                                                           and
-                                                          rsa.day_of_week_id = extract(dow from p_available_date::date)
+                                                           and rsa.day_of_week_id = extract(dow from p_available_date::date)
                                             inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
                                    where p.id = p_project_id
                                      and case when rs.end_date is not null then
                                             p_available_date::date between rs.start_date and rs.end_date
                                          else
                                              p_available_date::date >= rs.start_date end) as foo) as foo1
-                 where foo1.scheduled_start_time > now()  + interval '30 minutes') as foo2
+                 where foo1.scheduled_start_time > now()  + interval '30 minutes' and
+                     case when foo1.scheduled_start_time::date = p_available_date::date + 1 then
+                                  foo1.scheduled_start_time <= ($$'$$ || p_available_date::date + 1 || $$'$$ || foo1.closer_end_time)::timestamp
+                          else 1=1
+                         end) as foo2
         where foo2.available is true
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;

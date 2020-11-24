@@ -4,7 +4,7 @@
       <v-row>
         <v-col cols="12" class="pb-0">
           <v-row class="project-header">
-            <v-col cols="10" class="text-left pl-5">
+            <v-col cols="6" class="text-left pl-5">
               <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
               <div class="project-title">
                 <router-link v-if="$store.getters.userHasFeature('CONTACTS')"
@@ -50,38 +50,41 @@
                 </v-btn>
               </div>
             </v-col>
-            <v-col cols="2" class="lead-owner pb-2 text-right">
-<!--   todo: do we actually allow a project_owner anymore? i thought we took it out -->
-<!--              <div v-if="!displayChangeOwner">-->
-<!--                <div v-if="project.owner && project.owner.userId">-->
-<!--                  <v-avatar-->
-<!--                    :tile="false"-->
-<!--                    :size="25"-->
-<!--                    color="grey lighten-4"-->
-<!--                    class="account-img mr-2"-->
-<!--                  >-->
-<!--                    <img name="accountImg" src="../../../assets/user_img_placeholder.png">-->
-<!--                  </v-avatar>-->
-<!--                  {{project.owner.fullName}}<br/>-->
-<!--                  {{project.owner.position}}-->
-<!--                </div>-->
-<!--              </div>-->
-<!--              <div v-if="displayChangeOwner">-->
-<!--                <v-autocomplete v-model="project.owner"-->
-<!--                                :items="availableOwners"-->
-<!--                                label="Select Owner"-->
-<!--                                item-text="fullName"-->
-<!--                                return-object-->
-<!--                                autocomplete="off"-->
-<!--                                @change="updateOwner"-->
-<!--                >-->
-<!--                </v-autocomplete>-->
-<!--              </div>-->
-<!--              <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">-->
-<!--                <span v-if="displayChangeOwner">cancel</span>-->
-<!--                <span v-else-if="project.owner && project.owner.userId">change</span>-->
-<!--                <span v-else>add owner</span>-->
-<!--              </v-btn>-->
+            <v-col cols="3" class="lead-owner pb-2 text-right">
+              <div v-if="!displayChangeOwner">
+                <div v-if="project.owner && project.owner.userId">
+                  <v-avatar
+                    :tile="false"
+                    :size="25"
+                    color="grey lighten-4"
+                    class="account-img mr-2"
+                  >
+                    <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
+                  </v-avatar>
+                  {{project.owner.fullName}}<br/>
+                  {{project.owner.position}}
+                </div>
+              </div>
+              <div v-if="displayChangeOwner && !project.projectOwnerReadonly">
+                <v-autocomplete v-model="project.owner"
+                                :items="availableOwners"
+                                label="Select Owner"
+                                item-text="fullName"
+                                return-object
+                                autocomplete="off"
+                                @change="updateOwner"
+                >
+                </v-autocomplete>
+              </div>
+              <v-btn text x-small class="change-owner-button"
+                     v-if="!project.projectOwnerReadonly"
+                     @click="[displayChangeOwner = !displayChangeOwner, getOwners()]">
+                <span v-if="displayChangeOwner">cancel</span>
+                <span v-else-if="project.owner && project.owner.userId">change</span>
+                <span v-else>add owner</span>
+              </v-btn>
+            </v-col>
+            <v-col cols="3" class="pb-2 text-right">
               <v-select
                 v-model="project.companyProjectStatusTypeId"
                 :items="statuses"
@@ -238,6 +241,7 @@ export default {
       try {
         const {data} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        window.document.title = `Project Details - ${this.project.projectName}`
         this.projectLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -250,7 +254,7 @@ export default {
       this.displayChangeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await postRequest(`/project/${this.projectId}/owner`, this.project.owner)
+        await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
@@ -324,6 +328,20 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getOwners: async function () {
+      console.log('hello')
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/project/owners`)
+        this.availableOwners = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

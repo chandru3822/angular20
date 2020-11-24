@@ -623,7 +623,6 @@
       },
       limiter(e) {
         this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
-        console.log('count', this.countSelected)
         this.orgs.forEach(o => {
           let match = this.selectedOrgs.find(so => so.id === o.id)
           o.disabled = !match && this.countSelected >= this.maxSelectionAllowed
@@ -639,7 +638,7 @@
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
         if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
-          if (!this.calendarInitialRender) {
+          if (reload || !this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
           }
           this.calendarInitialRender = false
@@ -747,6 +746,10 @@
                 id: resource.id,
                 projectName: re.projectName,
                 processStepName: re.processStepName,
+                city: re.city,
+                stateAbbreviation: re.stateAbbreviation,
+                postalCode: re.postalCode,
+                street1: re.street1,
                 color: resource.extendedProps.color,
                 coordinates: [ re.longitude, re.latitude]
               }
@@ -757,6 +760,7 @@
               return r.id !== renderInfo.resource?.id
             })
           }
+          console.log('randaLogger', this.mapResourceEvents)
           this.callback(this.mapResourceEvents)
         }
 

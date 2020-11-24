@@ -13,8 +13,9 @@ public class Project {
   private String projectName, processName, projectStatusType, state, timeZone, country, street1, street2, city, postalCode, stateAbbreviation;
   Double latitude, longitude;
   private LocalDate dateCreated;
-
+  private Owner owner;
   private Contact contact;
+  private Boolean projectOwnerReadonly;
 
   //tells server to update geolocation
   private Boolean reloadCoordinates = false;

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-select
+            <v-autocomplete
               v-if="$store.getters.userHasFeature('SMARTLIST')"
               v-model="selectedSmartlistId"
               :items="smartlists"

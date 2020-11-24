@@ -76,6 +76,11 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
+    Boolean viewDownline = false;
+
+    if(!viewAll) {
+      viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
@@ -86,8 +91,11 @@ public class ProjectService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    String searchSqlKey = viewAll ? "project.search" : "project.searchByOwner";
-    String countSqlKey = viewAll ? "project.searchCount" : "project.searchCountByOwner";
+    String searchSqlKey = viewAll ? "project.search" : viewDownline ? "project.searchDownline" : "project.searchByOwner";
+    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
+
+    log.info("SQL KEY USED {}", searchSqlKey);
+    log.info("SQL COUNT KEY USED {}", countSqlKey);
 
     List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
     Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
@@ -104,6 +112,18 @@ public class ProjectService {
                       "isParent", isParent,
                       "parentCompanyId", user.getHighestParentCompanyId()),
       new ProjectMapper<>(Project.class, om));
+  }
+
+  public List<Owner> getOwners() {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    return sqlCache.query("project.getOwners",
+      ImmutableMap.of(
+                      "companyId", user.getCompanyId(),
+                      "isParent", isParent,
+                      "parentCompanyId", user.getHighestParentCompanyId()),
+      Owner.class);
   }
 
   public void updateProject(Project project) {
@@ -124,6 +144,17 @@ public class ProjectService {
     if(null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
       getProjectCoordinates(project, project.getId());
     }
+  }
+
+  public void updateProjectOwner(Long projectId, Owner owner) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", projectId);
+    params.put("modifiedById", currentUser.getId());
+    params.put("ownerUserPositionId", owner.getUserPositionId());
+
+    sqlCache.update("project.updateOwner", params);
   }
 
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
@@ -298,6 +329,10 @@ public class ProjectService {
     protected void initBeanWrapper(BeanWrapper bw) {
         TypeReference<Contact> contactRef = new TypeReference<>() {};
         bw.registerCustomEditor(Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
+
+        TypeReference<Owner> ownerRef = new TypeReference<>() {};
+        bw.registerCustomEditor(Object.class, "owner",
+          new JsonCollectionDeserializer(ownerRef, objectMapper));
     }
   }
 

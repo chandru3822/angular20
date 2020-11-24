@@ -10918,7 +10918,7 @@ insert into brs.company_dashboard_targets(target_date, bookings_brs, bookings_pa
 WITH orgs as (
     select id
     from flow.org
-    where org_type_id in (6,8,14,7,19,)
+    where org_type_id in (6,8,14,7,19)
 )
 
 update flow.org
@@ -11005,3 +11005,17 @@ where c.column_a = uc.user_id
   and c.column_b = uc.company_id;
 
 
+update flow.user_company set default_appointment_length = 90;
+
+insert into flow.company_feature (feature_name, company_id, feature_id, home_page)
+values ('Smartlists', 2, 19, true);
+
+
+
+with owners as (
+    select d.id,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date as added_on
+    from blueraven.deal d)
+update flow.project p
+set user_position_id = blueraven.get_user_position_for_closer(o.id::integer,o.added_on)
+from owners o
+where o.id = p.id;

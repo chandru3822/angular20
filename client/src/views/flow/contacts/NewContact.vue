@@ -107,7 +107,6 @@ export default {
     }
   },
   created () {
-    console.log('paramamsmsmam', this.$route.query.cid)
     //todo: use only for testing
     if(VUE_APP_ENV === 'local') {
       this.setFakeContact()

@@ -955,6 +955,33 @@ set text_value = un.note
 from update_notes un
 where un.id = ppscfv2.id;
 
+insert into flow.project_process_step_action(project_process_step_id, process_step_action_id,
+                                             triggered_automatically, date_created, created_by_id)
+    (with process_data as (
+        select ps.id pps_id,ps.process_step_name,
+               psa.id as action_id,
+               psa.id,psa.action_name,
+               psacp.process_step_id,
+               ps2.process_step_name as child_process_step_name
+        from flow.process_step ps
+                 inner join flow.process_step_action psa on ps.id = psa.process_step_id
+                 inner join flow.process_step_action_child_process psacp on psacp.process_step_action_id = psa.id
+                 inner join flow.process_step ps2  on ps2.id = psacp.process_step_id
+        where psa.trigger_automatically is true
+          and psa.archived is false and ps.archived is false
+        order by ps.id)
+     select pps.id,action_id,true,now(),2350555
+     from flow.project_process_step pps
+              inner join process_data pd on pd.pps_id = pps.process_step_id
+     where pps.main is true and pps.process_step_complete_date is null
+       and exists(select id
+                  from flow.project_process_step pps2
+                  where pps2.process_step_id = pd.process_step_id and
+                      pps2.process_step_complete_date is null and
+                      pps2.main is true
+                    and pps.project_id = pps2.project_id)
+     order by pps_id);
+
 
 drop trigger if exists contact_audit_trg ON flow.contact_custom_field_value;
 drop trigger if exists project_audit_trg ON flow.project_custom_field_value;
