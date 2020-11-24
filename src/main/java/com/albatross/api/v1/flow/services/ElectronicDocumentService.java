@@ -32,6 +32,9 @@ public class ElectronicDocumentService {
   @Autowired
   private SecurityService securityService;
 
+  private final int PERMITTING_DOC_TYPE = 0;
+  private final int UTILITY_DOC_TYPE = 1;
+
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", List.of("VIEW_ALL"));
@@ -52,19 +55,23 @@ public class ElectronicDocumentService {
     return page;
   }
 
-  public String getDocuments(Long projectId, boolean isPermitting) {
+  public String getDocuments(Long projectId, int docType) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       Optional<String> queryStr;
       JSONArray pandaDocs = new JSONArray();
 
-      if (isPermitting) {
+      if (docType == PERMITTING_DOC_TYPE) {
           // Get the permitting document templates
           queryStr = sqlCache.get("electronicDocument.getAhjQueryStr", params, new SingleColumnRowMapper<>(String.class));
       }
-      else {
+      else if (docType == UTILITY_DOC_TYPE) {
           // Get the utility document templates
           queryStr = sqlCache.get("electronicDocument.getUtilityQueryStr", params, new SingleColumnRowMapper<>(String.class));
+      }
+      else {
+          // Get the change order document templates
+          queryStr = sqlCache.get("electronicDocument.getChangeOrderQueryStr", params, new SingleColumnRowMapper<>(String.class));
       }
 
       if (queryStr.isPresent()) {

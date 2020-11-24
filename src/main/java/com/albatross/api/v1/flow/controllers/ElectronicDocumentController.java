@@ -25,12 +25,17 @@ public class ElectronicDocumentController {
 
   @GetMapping(value = "/getPermittingDocuments/{projectId}")
   public String getPermittingDocuments(@PathVariable Long projectId) {
-      return electronicDocumentService.getDocuments(projectId, true);
+      return electronicDocumentService.getDocuments(projectId, 0);
   }
 
   @GetMapping(value = "/getUtilityDocuments/{projectId}")
   public String getUtilityDocuments(@PathVariable Long projectId) {
-      return electronicDocumentService.getDocuments(projectId, false);
+      return electronicDocumentService.getDocuments(projectId, 1);
+  }
+
+  @GetMapping(value = "/getChangeOrderDocuments/{projectId}")
+  public String getChangeOrderDocuments(@PathVariable Long projectId) {
+      return electronicDocumentService.getDocuments(projectId, 2);
   }
 
   @GetMapping(value = "/generate/{projectId}/{templateIdsIn}")
