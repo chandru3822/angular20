@@ -146,6 +146,22 @@ where cpsst.process_step_status_type_id = 1 and
       psa.time_based_trigger is true
 ]]></projectProcessStep.getTimeBasedAutoTriggerPps>
 
+<projectProcessStep.getInitialAutoTriggerPps><![CDATA[
+select distinct pps.id as ppsId, ps.company_id as companyId
+from flow.project_process_step pps
+inner join flow.process_step ps on ps.id = pps.process_step_id
+inner join flow.process_step_action psa on psa.process_step_id = ps.id
+inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+left join flow.project_process_step_action ppsa on ppsa.project_process_step_id = pps.id and ppsa.process_step_action_id = psa.id
+where cpsst.process_step_status_type_id = 1 and
+      ppsa.id is null and
+      pps.main is true and
+      pps.archived is not true and
+      ps.archived is not true and
+      psa.archived is not true and
+      psa.trigger_automatically is true
+]]></projectProcessStep.getInitialAutoTriggerPps>
+
   <projectProcessStep.getCompanyId><![CDATA[
     select ps.company_id
     from flow.project_process_step pps

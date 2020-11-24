@@ -267,6 +267,27 @@ public class ProjectProcessStepService {
   }
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
+  public List<Long> performInitialAutoTriggers() {
+
+    User cronUser = new User();
+    cronUser.setId(SystemSettings.USER.getId());
+
+    final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getInitialAutoTriggerPps", null, new ColumnMapRowMapper());
+
+    List<Long> createdPpsIds = new ArrayList<>();
+
+    for(Map<String, Object> result: results) {
+      cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
+      List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
+      if (!newPpsIds.isEmpty()) {
+        createdPpsIds.addAll(newPpsIds);
+      }
+    }
+
+    log.info("PPSs created by initial auto triggers: " + createdPpsIds.size());
+    return createdPpsIds;
+  }
+
   public void performTimeBasedAutoTriggers() {
 
     User cronUser = new User();
@@ -274,18 +295,27 @@ public class ProjectProcessStepService {
 
     final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getTimeBasedAutoTriggerPps", null, new ColumnMapRowMapper());
 
+    List<Long> createdPpsIds = new ArrayList<>();
+
     for(Map<String, Object> result: results) {
       cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
-      performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
+      List<Long> newPpsIds = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
+      if (!newPpsIds.isEmpty()) {
+        createdPpsIds.addAll(newPpsIds);
+      }
     }
+
+    log.info("PPS created by time based auto triggers: " + createdPpsIds.size());
   }
 
   @Transactional
-  public boolean performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
+  public List<Long> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
       // Set the security context so we have user details in the async downline
       securityService.setCurrentUserDetails(userDetails);
 
       ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
+
+      ArrayList<Long> createdPpsIds = new ArrayList<>();
 
       if (pps.getProcessStepStatusTypeId() == 1) {
           pps.getActions().forEach(action -> {
@@ -301,7 +331,10 @@ public class ProjectProcessStepService {
                           .collect(Collectors.toList());
                     ProjectProcessStepAction actionResult = this.canPerformAction(action, pps, reqs);
                       if (actionResult.getCanPerform()) {
-                          this.performAction(action, pps);
+                          List<Long> newPpsIds = this.performAction(action, pps);
+                          if (!newPpsIds.isEmpty()) {
+                            createdPpsIds.addAll(newPpsIds);
+                          }
                       }
                   } catch (Exception e) {
                       log.error(String.format("Unable to automatically trigger action ID: %s, with project process step ID: %s",  action.getId(), ppsId));
@@ -309,11 +342,11 @@ public class ProjectProcessStepService {
               }
           });
       }
-      return true;
+      return createdPpsIds;
   }
 
   @Transactional
-  public void performAction(ProcessStepAction action, ProjectProcessStep pps) {
+  public List<Long> performAction(ProcessStepAction action, ProjectProcessStep pps) {
     /*
      **High level pseudo logic:**
 
@@ -333,14 +366,19 @@ public class ProjectProcessStepService {
 
     performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());
 
+    ArrayList<Long> createdPpsIds = new ArrayList<>();
+
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
       Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, false);
+      createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
       }
     });
 
     sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(), "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.getId()));
+
+    return createdPpsIds;
   }
 
   public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
