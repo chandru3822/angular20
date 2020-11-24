@@ -213,7 +213,7 @@
                            @start="drag=true" @end="drag=false">
                   <v-list class="grab" v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
                           :key="index">
-                    <v-list-item :class="{'shaded-row': index % 2}">
+                    <v-list-item dense :class="{'shaded-row': index % 2}">
                       <v-list-item-action>
                         <v-icon>drag_handle</v-icon>
                       </v-list-item-action>
