@@ -10,6 +10,7 @@ DECLARE
     v_clean_name_search_term    VARCHAR;
     v_clean_phone_search_term   VARCHAR;
     v_clean_email_search_term   VARCHAR;
+    v_clean_id_search_term   VARCHAR;
     v_clean_address_search_term VARCHAR;
     v_company_ids               INTEGER[];
     v_count                     bigint;
@@ -17,6 +18,7 @@ BEGIN
     v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
     v_clean_phone_search_term = trim(translate(p_searchterm, '-(). ', ''));
     v_clean_email_search_term = lower(trim(p_searchterm));
+    v_clean_id_search_term = trim(p_searchterm);
     v_clean_address_search_term = trim(lower(translate(p_searchterm, '.,', '')));
     if p_is_parent then
         select array(select f.id from flow.company_hierarchy_filter_down(p_company_id) f)
@@ -69,9 +71,15 @@ BEGIN
                 FROM flow.project p
                          inner join flow.contact c on c.id = p.contact_id
                 WHERE c.company_id = ANY (v_company_ids)
-                  AND lower(trim(c.email)) LIKE '%' || v_clean_email_search_term || '%'
+                  AND p.id::text LIKE '%' || v_clean_id_search_term || '%'
                 union
                 SELECT p.id, 3 as rank
+                FROM flow.project p
+                         inner join flow.contact c on c.id = p.contact_id
+                WHERE c.company_id = ANY (v_company_ids)
+                  AND lower(trim(c.email)) LIKE '%' || v_clean_email_search_term || '%'
+                union
+                SELECT p.id, 4 as rank
                 FROM flow.project p
                          inner join flow.contact c on c.id = p.contact_id
                 WHERE c.company_id = ANY (v_company_ids)
@@ -81,7 +89,7 @@ BEGIN
                    or (trim(translate(c.mobile, '()-+. ', '')) LIKE
                        '%' || v_clean_phone_search_term || '%')
                 union
-                SELECT p.id, 4 as rank
+                SELECT p.id, 5 as rank
                 FROM flow.project p
                          inner join flow.contact c on c.id = p.contact_id
                 WHERE c.company_id = ANY (v_company_ids)

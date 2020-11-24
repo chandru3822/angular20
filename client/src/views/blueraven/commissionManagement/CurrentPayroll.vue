@@ -109,7 +109,7 @@
 
               <div class="text-left">
                 <v-btn color="primaryCustom" dark @click="getAccountingData()">Search</v-btn>
-                <v-btn class="ml-3" @click="accountingSearch = {}">Reset</v-btn>
+                <v-btn class="ml-3" @click="[accountingSearch = {}, getAccountingData()]">Reset</v-btn>
               </div>
             </v-card>
           </v-col>
