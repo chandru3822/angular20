@@ -132,7 +132,7 @@ export default {
       }, {
         path: '/settings/postalCodes',
         title: 'Round Robins',
-        show: this.hasSettingsAccess
+        show: this.$store.getters.userHasFeature('ROUND_ROBIN')
       }, {
         header: 'User Management',
         show: this.hasSettingsAccess
