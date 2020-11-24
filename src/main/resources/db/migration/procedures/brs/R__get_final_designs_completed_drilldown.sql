@@ -39,14 +39,13 @@ BEGIN
                    pd.financial_agreement_signed_date,
                    pd.utility_bill_verified_date,
                    pd.first_cash_payment_paid_date,
-                   lov2.name as financier
+                   pd.primary_financier_name financier
             from flow.project p
                 inner join flow.contact c on c.id = p.contact_id
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user u on u.id = pd.closer_user_id
                 inner join flow.user_position up on up.user_id = u.id
                 left join flow.list_of_value lov on lov.id = pd.source
-                left join flow.list_of_value lov2 on lov2.id = pd.primary_financier
             where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
                 and case when p_quarter in (3,4) then pd.utility_bill_verified_date is not null

@@ -26,7 +26,7 @@ BEGIN
               else p.date_created::date >= upv.start_date
               end
         and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
-        and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
+        and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
         and o.id != 171
       group by o.id, o.org_name || ' (' || metro_area.metro_area || ')'
     )
