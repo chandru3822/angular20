@@ -2765,6 +2765,10 @@
     #closer-dash-toolbar {
       padding: 0;
 
+      header {
+        background-color: #fff !important;
+      }
+
       .v-toolbar {
         margin-top: -12px;
 
