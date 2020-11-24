@@ -34,8 +34,8 @@
   ]]></project.searchDownline>
 
   <project.searchDownlineCount><![CDATA[
-      select count(1)
-      from flow.search_projects_with_down_line(:query::character varying, :companyId::int,
+      select *
+      from flow.search_projects_with_down_line_count(:query::character varying, :companyId::int,
                                                               :userId::int,
                                                               :isParent::boolean)
     ]]></project.searchDownlineCount>
@@ -43,29 +43,21 @@
   <project.search><![CDATA[
     select *
     from flow.search_all_projects(:query::character varying, :companyId::int,
-                                             :isParent::boolean,
-                                             :limit::int, :offset::int)
+                              :isParent::boolean,:limit::int, :offset::int)
   ]]></project.search>
 
   <project.searchCount><![CDATA[
-    select count(1)
-    from flow.search_all_projects(:query::character varying, :companyId::int,
-                                             :isParent::boolean)
+    select * from flow.search_all_projects_count(:query::character varying, :companyId::int, :isParent::boolean)
   ]]></project.searchCount>
 
   <project.searchByOwner><![CDATA[
     select *
     from flow.search_projects_by_user(:query::character varying, :companyId::int,
-                                         :userId::int,
-                                         :isParent::boolean,
-                                         :limit::int, :offset::int)
+                                 :userId::int,  :isParent::boolean,:limit::int, :offset::int)
   ]]></project.searchByOwner>
 
   <project.searchByOwnerCount><![CDATA[
-    select *
-    from flow.search_projects_by_user(:query::character varying, :companyId::int,
-                                         :userId::int,
-                                         :isParent::boolean)
+    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::int, :userId::int, :isParent::boolean)
   ]]></project.searchByOwnerCount>
 
   <project.generateReport><![CDATA[

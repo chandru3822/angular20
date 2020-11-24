@@ -205,8 +205,8 @@
            p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
         else p.company_state_id = :companyStateId end
         and cfg.archived is not true
-        and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::date else 1=1 end
-        and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::date else 1=1 end
+        and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::timestamp else 1=1 end
+        and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::timestamp else 1=1 end
         and ARRAY[coalesce(cfg.event_type_id,-1)] <@ ARRAY[ :eventTypeIds ]::INTEGER[]
         and cpsst.process_step_status_type_id = :processStepStatusTypeId
       order by start, p.project_name
