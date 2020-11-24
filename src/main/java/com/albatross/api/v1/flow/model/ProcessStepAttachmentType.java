@@ -13,7 +13,7 @@ import java.util.Date;
 @Setter
 public class ProcessStepAttachmentType {
 
-  private Long id, attachmentTypeId, createdById, modifiedById, processStepId;
+  private Long id, attachmentTypeId, createdById, modifiedById, processStepId, displayOrder;
   private String attachmentType;
   private Boolean archived;
   private Date dateCreated, dateModified;

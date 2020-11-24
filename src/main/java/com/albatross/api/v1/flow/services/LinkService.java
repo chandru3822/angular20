@@ -39,11 +39,28 @@ public class LinkService {
     return links;
   }
 
-  public List<Link> getLinksForProcessStep(Long processStepId) {
+  public void updateOrderInProcessStep(List<ProcessStepLink> links) {
+    for(ProcessStepLink l : links){
+      updateTypeOrderInProcessStep(l);
+    }
+  }
+
+  public void updateTypeOrderInProcessStep(ProcessStepLink link) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", link.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("displayOrder", link.getDisplayOrder());
+
+    sqlCache.update("link.updateOrderInProcessStep", params);
+  }
+
+  public List<ProcessStepLink> getLinksForProcessStep(Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
 
-    List<Link> links = sqlCache.query("link.getLinksForProcessStep", params, Link.class);
+    List<ProcessStepLink> links = sqlCache.query("link.getLinksForProcessStep", params, ProcessStepLink.class);
     return links;
   }
 

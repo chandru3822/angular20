@@ -35,8 +35,8 @@
     <v-row v-if="showDashboard" class="mb-6" justify="center" no-gutters>
       <v-col cols="12" id="ironman-container">
         <v-card id="ironman-component" class="mb-4 pb-4">
-          <img id="ironman-banner-mobile" src="../../../assets/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
-          <img id="ironman-banner" src="../../../assets/ironman_banner.png" alt="Desktop version of Ironman competition banner">
+          <img id="ironman-banner-mobile" src="../../../assets/blueraven/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
+          <img id="ironman-banner" src="../../../assets/blueraven/ironman_banner.png" alt="Desktop version of Ironman competition banner">
           <div id="milestones-container">
             <div id="swim-phase" class="milestone" :class="{'active-milestone': is_q1}"
                  @click="milestoneDrilldown(1)">
@@ -51,7 +51,7 @@
                     {{ q1_points === 1 ? q1_points + ' Point' : q1_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_swim_icon.png" alt="A person swimming">
+                <img src="../../../assets/blueraven/ironman_swim_icon.png" alt="A person swimming">
               </div>
               <span v-if="is_q1" class="milestone-bottom-label">{{ q1_lower_label }}</span>
             </div>
@@ -69,7 +69,7 @@
                     {{ q2_points === 1 ? q2_points + ' Point' : q2_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_bike_icon.png" alt="A person riding a bike">
+                <img src="../../../assets/blueraven/ironman_bike_icon.png" alt="A person riding a bike">
               </div>
               <span v-if="is_q2" class="milestone-bottom-label">{{ q2_lower_label }}</span>
             </div>
@@ -87,7 +87,7 @@
                     {{ q3_points === 1 ? q3_points + ' Point' : q3_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_run_icon.png" alt="A person running">
+                <img src="../../../assets/blueraven/ironman_run_icon.png" alt="A person running">
               </div>
               <span v-if="is_q3" class="milestone-bottom-label">{{ q3_lower_label }}</span>
             </div>
@@ -105,7 +105,7 @@
                     {{ q4_points === 1 ? q4_points + ' Point' : q4_points + ' Points' }}
                   </span>
                 </div>
-                <img src="../../../assets/ironman_finish_icon.png" alt="A person crossing a finish line">
+                <img src="../../../assets/blueraven/ironman_finish_icon.png" alt="A person crossing a finish line">
               </div>
               <span v-if="is_q4" class="milestone-bottom-label">{{ q4_lower_label }}</span>
             </div>
@@ -122,9 +122,9 @@
               <div id="sixth-segment" class="progress-bar-segment"></div>
               <div id="seventh-segment" class="progress-bar-segment"></div>
               <div id="eighth-segment" class="progress-bar-segment">
-                <img v-if="!progressBarIsFull" src="../../../assets/progress_bar_icon_blue.png"
+                <img v-if="!progressBarIsFull" src="../../../assets/blueraven/progress_bar_icon_blue.png"
                      alt="Blue Raven Solar logo in blue">
-                <img v-if="progressBarIsFull" src="../../../assets/progress_bar_icon_white.png"
+                <img v-if="progressBarIsFull" src="../../../assets/blueraven/progress_bar_icon_white.png"
                      alt="Blue Raven Solar logo in white">
               </div>
               <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '5px' : '5px 0 0 5px'}"></div>
@@ -328,7 +328,7 @@
               <td>
                 <img class="ranking-table-img"
                      :class="{'round-img': rep.userImageUrl, 'default-img': !rep.userImageUrl}"
-                     :src="rep.userImageUrl ? rep.userImageUrl : '../../assets/user_img_placeholder.png'"
+                     :src="rep.userImageUrl ? rep.userImageUrl : '../../../assets/flow/user_img_placeholder.png'"
                      :alt="rep.userImageAltText ? rep.userImageAltText : 'User photo placeholder'">
               </td>
               <td class="left-text">{{ rep.name }}</td>
@@ -545,7 +545,8 @@
                       multiple
                       dense
                       return-object
-                      @input="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2)">
+                      @input="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2, false)"
+                      :menu-props="{closeOnContentClick: true}">
               <template v-slot:selection="{ item, index }">
                 <span v-if="index === 0" class="grey--text caption">
                   {{ repModel.length }} Checked
@@ -1725,7 +1726,7 @@
           this.funnelStats = []
 
           if (this.repModel.length > 0) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           }
         })
 
@@ -1788,20 +1789,41 @@
           {user_id: -1, name: 'All Reps', active: true}
         ]
 
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
-      async pipelineLoad (targetInstallations, start, end) {
+      async pipelineLoad (targetInstallations, start, end, useRepDataInstead) {
         let reps = []
         let orgs = []
 
-        if (this.repModel.length === 0) {
+        if ((this.repModel.length === 0 && !useRepDataInstead) || (useRepDataInstead && this.repData.length === 0)) {
           this.funnelStats = []
           return
         }
 
-        this.repModel.forEach(rep => reps.push(rep.user_id))
         this.officeModel.forEach(org => orgs.push(org.org_id))
+
+        if (useRepDataInstead) {
+          this.repData.forEach((rep, index) => {
+            reps.push(rep.user_id)
+
+            if (index === this.repData.length - 1) {
+              this.districtModel = []
+              this.regionModel = []
+              this.officeModel = []
+
+              this.repModel = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+
+              this.repData = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+            }
+          })
+        } else {
+          this.repModel.forEach(rep => reps.push(rep.user_id))
+        }
 
         const requestBody = {
           targetInstallations: targetInstallations,
@@ -1910,13 +1932,13 @@
 
       updateInstalls (installs) {
         this.expectedInstalls = installs
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       updatePipelineCalendar () {
         this.pipeline_menu1 = false
         this.pipeline_menu2 = false
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       yesterday () {
@@ -1973,7 +1995,7 @@
         let expectedInstalls = this.expectedInstalls
         if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
         this.expectedInstalls = expectedInstalls
-        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       viewSelected (view) {
@@ -1982,7 +2004,7 @@
 
           if ((this.districtModel.length > 0 && this.regionModel.length > 0 && this.officeModel.length > 0 && this.repModel.length > 0) || this.repModel[0]?.user_id === -1) {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           }
         }
       },
@@ -2084,8 +2106,8 @@
             this.repModel = []
             this.funnelStats = []
           } else {
-            this.repModel = cloneDeep(this.repData)
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, true)
           }
         })
       },

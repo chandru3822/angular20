@@ -313,7 +313,6 @@
     methods: {
       limiter(e) {
         this.countSelected = this.selectedPostalCodeZoneUsers?.length
-        console.log('count', this.countSelected)
         this.postalCodeZoneUsers.forEach(u => {
           let match = this.selectedPostalCodeZoneUsers.find(su => su.id === u.id)
           u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
@@ -502,7 +501,6 @@
         checkbox.setAttribute('class', 'mr-2')
 
         checkbox.onchange = (event) => {
-          console.log('it happened', event)
           if(event.target.checked) {
             let resource = renderInfo.resource
             let self = this

@@ -234,6 +234,15 @@ public class UserService {
     return results;
   }
 
+  public void saveUserStatusType(UserStatusType userStatusType) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", userStatusType.getId());
+    params.put("hasAccess", userStatusType.getHasAccess());
+    params.put("modifiedById", user.getId());
+    sqlCache.update("user.saveUserStatusType", params);
+  }
+
   public List<Company> removeFromCompany(UserController.NewUserCompanyRequest req) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

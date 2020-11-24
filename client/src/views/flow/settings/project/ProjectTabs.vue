@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Tabs</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newTab ={}]">
+            <v-btn text @click="[addNew = !addNew, newTab ={}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -43,7 +43,7 @@
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': tabs.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text icon small class="handle">
+                  <v-btn text v-if="userCanEdit" icon small class="handle">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -53,11 +53,12 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text>
+                    <v-btn class="clickable" small text v-if="userCanEdit">
                       <v-icon v-if="selectedTabId === item.id" @click="saveTab(item)">save</v-icon>
                       <v-icon v-else @click="selectedTabId = item.id">edit</v-icon>
                     </v-btn>
                     <v-dialog
+                        v-if="userCanEdit"
                         v-model="item.deleteConfirm"
                         width="500">
                       <template v-slot:activator="{ on }">
@@ -159,6 +160,8 @@
         selectedTabId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         expanded: [],
         headers: [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },

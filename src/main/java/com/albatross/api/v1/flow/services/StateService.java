@@ -33,6 +33,14 @@ public class StateService {
     return states;
   }
 
+  public List<CompanyState> getAvailableStates() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<CompanyState> states = sqlCache.query("state.getAvailableStates", params, CompanyState.class);
+    return states;
+  }
+
   public List<CompanyState> getActiveStatesByCompany() {
     User user = securityService.getCurrentUser();
 

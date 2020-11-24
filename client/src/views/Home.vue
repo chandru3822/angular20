@@ -1,5 +1,7 @@
 <template>
-  <v-container class="home-page home-background">
+  <v-container v-if="logoLoaded" class="home-page home-background"
+    :style="{'background-image': null != homePageLogo.presignedUrl
+                  ? `url(${homePageLogo.presignedUrl})` : ''}">
     <v-card color="white" class="home-card">
       <v-card-title>Welcome to Albatross!</v-card-title>
       <v-card-text>
@@ -29,6 +31,7 @@
 
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
+import {Actions} from "@/store";
 
 export default {
   name: 'home',
@@ -36,7 +39,12 @@ export default {
   data () {
     return {
       snackbar: {},
+      logoLoaded: false,
       homePages: [],
+      homePageLogo: {},
+      //todo: 333 = home page logo - do this on backend?
+      homePageAttachmentTypeId: 333,
+      companyId: this.$store.state.user.details.companyId,
       userIsAlbatross: this.$store.state.user.details.highestCompanyId === 1,
       user: this.$store.state.user.details,
 
@@ -44,6 +52,7 @@ export default {
   },
   created () {
     //on context switching had to turn off the spinner
+    this.loadHomePageLogo()
     this.getHomePages()
     this.$store.commit(AppMutations.SET_LOADING, false)
 	},
@@ -77,6 +86,25 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async loadHomePageLogo () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          attachmentTypeId: this.homePageAttachmentTypeId,
+          sourceId: this.companyId,
+          callback: async (img) => {
+            this.homePageLogo = img
+            this.logoLoaded = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      } catch(e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Background Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
 }
 </script>
@@ -87,18 +115,18 @@ export default {
 <style scoped lang="scss">
 .home-page {
   height: 100%;
-  padding-top: 0;
+  padding-top: 50px;
 }
 
 .home-card {
-  height: 225px;
+  height: 235px;
   width: 50%;
-  margin: 50px auto;
+  min-width: 300px;
+  margin: auto;
   padding-top: 15px;
 }
 
 .home-background {
-  background-image: url(../assets/home.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;

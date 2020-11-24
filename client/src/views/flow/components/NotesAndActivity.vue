@@ -318,7 +318,6 @@ export default {
       try {
         this.savingNote = true
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
-        console.log('NOTE_HERE', n)
         let url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
         const {data} = await postRequest(url, {
           primaryId: this.primaryId,

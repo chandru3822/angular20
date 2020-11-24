@@ -55,6 +55,10 @@
         c.last_name as contact_last_name,
         p.latitude,
         p.longitude,
+        p.street1,
+        p.city,
+        p.postal_code,
+        s.abbreviation as state_abbreviation,
         case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
         p.project_name,
         ps.process_step_name,
@@ -164,6 +168,10 @@
        ps.process_step_name,
        p.company_state_id,
        s.state,
+       p.street1,
+       p.city,
+       p.postal_code,
+       s.abbreviation as state_abbreviation,
        pps.company_process_step_status_type_id,
        cpsst.process_step_status_type,
        cpsst.process_step_status_type_id
@@ -197,8 +205,8 @@
            p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
         else p.company_state_id = :companyStateId end
         and cfg.archived is not true
-        and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::date else 1=1 end
-        and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::date else 1=1 end
+        and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::timestamp else 1=1 end
+        and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::timestamp else 1=1 end
         and ARRAY[coalesce(cfg.event_type_id,-1)] <@ ARRAY[ :eventTypeIds ]::INTEGER[]
         and cpsst.process_step_status_type_id = :processStepStatusTypeId
       order by start, p.project_name
@@ -239,6 +247,10 @@
            c.last_name as contact_last_name,
            p.latitude,
            p.longitude,
+           p.street1,
+           p.city,
+           p.postal_code,
+           s.abbreviation as state_abbreviation,
            case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
            p.project_name,
            ps.process_step_name,
@@ -290,6 +302,7 @@
   <schedule.searchProjectsByName><![CDATA[
         select c.first_name as contact_first_name,
                c.last_name as contact_last_name,
+               c.id as contact_id,
                concat(c.first_name, ' ', c.last_name) as contact_full_name,
                p.project_name,
                p.id as project_id
@@ -299,7 +312,8 @@
           and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
             else c.company_id = :companyId end
-          and concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
+          and (concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
+                  OR p.id::text = :search)
         order by c.first_name, c.last_name
   ]]></schedule.searchProjectsByName>
 

@@ -221,6 +221,7 @@
                 <v-col  cols="12" justify="center"  class="px-3 py-0" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
                   <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
+                             :disabled="!userCanEdit"
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                     <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
@@ -450,7 +451,6 @@ export default {
     // whenever objectTypeId changes, this function will run
     '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
       // reset the selected group when the object type changes
-      console.log('route changed', this.$route.params.id)
       this.typeId = this.$route.params.id ?? this.$route.query.companyObjectTypeid
       this.availableCustomFields = []
       this.getCustomFieldGroups()

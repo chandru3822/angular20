@@ -80,10 +80,14 @@
                             label="Search for project..."
                             autocomplete="off"
                             :loading="searchProjectsLoading"
-                            item-value="id"
+                            item-value="projectId"
+                            item-key="projectId"
                             return-object
                             >
-
+              <template slot="item" slot-scope="data">
+                <!-- HTML that describe how select should render items when the select is open -->
+                {{ data.item.projectName }} - {{ data.item.projectId }}
+              </template>
             </v-autocomplete>
             <v-select v-model="searchEventType"
                       :items="eventTypes"
@@ -376,7 +380,6 @@
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
-      console.log('router', this.$route)
       if(this.$route.query && this.$route.query.projectProcessStepId) {
         //projectId, eventTypeId, processStepStatusTypeId
         this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
@@ -435,6 +438,7 @@
         }
       },
       resourceMapCallback (newValue) {
+        console.log('testing', newValue)
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {

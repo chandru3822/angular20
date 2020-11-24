@@ -56,7 +56,7 @@
                 color="grey lighten-4"
                 class="account-img mr-2"
             >
-              <img name="accountImg" src="../../../assets/user_img_placeholder.png">
+              <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
             </v-avatar>
             {{contact.owner.fullName}}<br/>
             {{contact.owner.position}}
@@ -298,7 +298,7 @@ export default {
         const {data} = await getRequest(`/contact/${this.contactId}`)
         this.contact = data
         this.contactLoading = false
-
+        window.document.title = `Contact - ${this.contact.fullName}`
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

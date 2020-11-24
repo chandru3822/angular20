@@ -20,7 +20,8 @@ public class ScheduleEvent {
     //this is annoying but in order to make loading events work for multiple userPositions for the same user we need to pass back the userId. or i am dumb and cant figure it out otherwise.
     userId;
   private String resourceName, groupName, contactFirstName, contactLastName, contactFullName, projectName, processStepName,
-      state, processStepStatusType, startFieldName, endFieldName, resourceFieldName, eventType;
+      state, processStepStatusType, startFieldName, endFieldName, resourceFieldName, eventType,
+      street1, city, stateAbbreviation, postalCode;
   private Boolean archived, startFieldReadOnly, endFieldReadOnly, resourceFieldReadOnly;
 
   private Double latitude, longitude;

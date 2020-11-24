@@ -196,7 +196,6 @@
 
         this.rrule.interval = rrule.options.interval || 1
 
-        console.log('should not have been here', rrule)
         if (rrule.options.count) {
           this.rrule.endsType = 'fixed';
           this.rrule.count = rrule.options.count;
@@ -222,8 +221,6 @@
           freq: this.rrule.frequency.id,
           interval: this.rrule.interval
         }
-
-        console.log('real ender', this.rrule.endsType)
 
         if (this.rrule.endsType === 'fixed') {
           opts.count = this.rrule.count
