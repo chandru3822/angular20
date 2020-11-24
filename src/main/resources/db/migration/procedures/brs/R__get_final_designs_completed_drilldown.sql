@@ -32,7 +32,7 @@ BEGIN
         from (
             select concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
-                   lov.name as source_name,
+                   pd.source_name,
                    concat(u.first_name, ' ', u.last_name) as owner_name,
                    pd.system_size,
                    pd.final_design_signed_date,
@@ -45,7 +45,6 @@ BEGIN
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user u on u.id = pd.closer_user_id
                 inner join flow.user_position up on up.user_id = u.id
-                left join flow.list_of_value lov on lov.id = pd.source
             where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
                 and case when p_quarter in (3,4) then pd.utility_bill_verified_date is not null
@@ -72,7 +71,7 @@ BEGIN
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > v_end_date))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = p_user_id
-            group by customer_name, p.id, source_name, owner_name, pd.system_size, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.utility_bill_verified_date, pd.first_cash_payment_paid_date, financier
+            group by customer_name, p.id, pd.source_name, owner_name, pd.system_size, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.utility_bill_verified_date, pd.first_cash_payment_paid_date, financier
             order by customer_name
         ) as sub_rows;
 
