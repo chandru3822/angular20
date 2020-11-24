@@ -228,7 +228,7 @@
             <v-autocomplete
               v-model="newField.projectDetailsColumn"
               label="Field"
-              :items="projectDetailsColumns"
+              :items="filteredProjectDetailsColumns"
               item-value="projectDetailsColumn"
               item-text="name"
             />
@@ -342,7 +342,7 @@
       :disabled="!smartlist.id"
       :can-edit="canEdit"
       :is-project-details="smartlist.projectDetails"
-      :project-details-columns="projectDetailsColumns"
+      :project-details-columns="filteredProjectDetailsRequirements"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -481,6 +481,14 @@ export default {
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+    },
+    filteredProjectDetailsColumns () {
+      const columnNames = this.assignedFields.map(f => f.projectDetailsColumn)
+      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
+    },
+    filteredProjectDetailsRequirements () {
+      const columnNames = this.requirements.map(r => r.projectDetailsColumn)
+      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
     }
   },
   methods: {
