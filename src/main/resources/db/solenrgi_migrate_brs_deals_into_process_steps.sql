@@ -45,11 +45,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1646 then (SELECT coalesce(start_time,(d2.appointment_date + interval '18 hours'))
                                                                       from appointment_dates ad
                                                                       where resource_id = d2.deal_base_oid
-                                                                      ORDER BY abs(start_time::date -  d2.appointment_date))
+                                                                      ORDER BY abs(start_time::date -  d2.appointment_date) limit 1)
                  when p.custom_field_group_assignment_id = 1919 then (SELECT coalesce(end_time,(d2.appointment_date + interval '18 hours'))
                                                                       from appointment_dates ad
                                                                       where resource_id = d2.deal_base_oid
-                                                                      ORDER BY abs(end_time::date -  d2.appointment_date)) else null end,
+                                                                      ORDER BY abs(end_time::date -  d2.appointment_date) limit 1) else null end,
              --    when p.custom_field_group_assignment_id = 25 then proposal_appoi((proposal_appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')ntment_date else null end,
             case when p.custom_field_group_assignment_id = 1659 then blueraven.get_user_position_for_closer(d2.id::integer,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date) else null end,
             case when p.custom_field_group_assignment_id = 11916 then d2.remote_appointment else null end,
@@ -92,11 +92,11 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 1646 then (SELECT coalesce(start_time,(d2.appointment_date + interval '18 hours'))
                                                                       from appointment_dates ad
                                                                       where resource_id = d2.deal_base_oid
-                                                                      ORDER BY abs(start_time::date -  d2.appointment_date))
+                                                                      ORDER BY abs(start_time::date -  d2.appointment_date) limit 1)
                  when p.custom_field_group_assignment_id = 1919 then (SELECT coalesce(end_time,(d2.appointment_date + interval '18 hours'))
                                                                       from appointment_dates ad
                                                                       where resource_id = d2.deal_base_oid
-                                                                      ORDER BY abs(end_time::date -  d2.appointment_date)) else null end,
+                                                                      ORDER BY abs(end_time::date -  d2.appointment_date) limit 1) else null end,
              --   when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             case when p.custom_field_group_assignment_id = 1659 then blueraven.get_user_position_for_closer(d2.id::integer,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date) else null end,
             case when p.custom_field_group_assignment_id = 11916 then d2.remote_appointment else null end,
@@ -590,7 +590,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
      where originator_id = 2 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
-            d.site_survey_scheduled_date is not null and site_survey_completed_date is not null and site_survey_uploaded_date is null)returning *),
+            d.site_survey_scheduled_date is not null and site_survey_completed_date is not null and site_survey_verified_date is null)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -604,7 +604,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1542 then ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1542 then ((site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -620,13 +620,13 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Solenrgi')) AS process_step_status_id,
                 2350555 as created_by_id,
                 coalesce(((site_survey_completed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now()),
-                ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
+                ((site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')
          ,now()
 FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
-             site_survey_uploaded_date is not null
+             site_survey_verified_date is not null
            and originator_id = 2)
         returning *),
      p as (
@@ -642,7 +642,7 @@ FROM flow.project
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 1542 then ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 1542 then ((site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id

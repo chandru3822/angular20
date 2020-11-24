@@ -28,13 +28,13 @@ BEGIN
     if array_length(p_users, 1) < 2 then
         select p_users[1]
         into v_user_id;
-        insert into flow.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available)
+        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available)
         values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true);
     else
 
      --   select p_users[1]
      --   into v_user_id;
-        insert into flow.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
+        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
                                                       distance_from_actual_to_target, appointment_start_date,
                                                       total_lead_allocation, actual_lead_allocation, score,
                                                       lead_gen_num, lead_gen_den, self_gen, total_avail,
@@ -205,9 +205,9 @@ BEGIN
                           foo2.appointment_count_with_interval,
                           foo2.appointment_count) as foo3);
 
-        select user_id
+        select scau.user_id
         into v_user_id
-        from flow.set_closer_appointment_audit
+        from brs.set_closer_appointment_audit scau
         where project_process_step_id = p_project_process_step_id
         order by distance_from_actual_to_target
         limit 1;

@@ -746,7 +746,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
      where originator_id = 1 and (d.financier IS NULL OR (d.financier != '["One Roof Energy"]' and d.financier != '["Dividend Solar"]')) and
-            d.site_survey_scheduled_date is not null and site_survey_completed_date is not null and site_survey_uploaded_date is null)returning *),
+            d.site_survey_scheduled_date is not null and site_survey_completed_date is not null and site_survey_verified_date is null)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
@@ -760,7 +760,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 20 then ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 20 then ((site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join active_step p1 on p1.project_id = d2.id
@@ -776,13 +776,13 @@ with process_step1 as (
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
                 coalesce(((site_survey_completed_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),now()),
-                ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),
+                ((site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'),
                 now()
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
-             site_survey_uploaded_date is not null
+             site_survey_verified_date is not null
            and originator_id = 1)
         returning *),
      p as (
@@ -798,7 +798,7 @@ with process_step1 as (
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 20 then ((site_survey_uploaded_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
+            case when p.custom_field_group_assignment_id = 20 then ((site_survey_verified_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
