@@ -21,7 +21,7 @@
               color="grey lighten-4"
               class="account-img mr-2"
             >
-              <img name="accountImg" src="src/assets/flow/user_img_placeholder.png">
+              <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
             </v-avatar>
             {{processStep.owner.fullName}}<br/>
             {{processStep.owner.position}}

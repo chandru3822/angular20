@@ -21,12 +21,12 @@
                           class="clickable account-img mr-3"
                 >
                   <v-img name="userImg" alt="user-image" v-if="loadComplete && userImage && userImage.presignedUrl && !imageFailed" v-on:error="onImgError()" :src="userImage.presignedUrl"></v-img>
-                  <img name="userImg" v-else src="src/assets/flow/user_img_placeholder.png">
+                  <img name="userImg" v-else src="../../../assets/flow/user_img_placeholder.png">
                 </v-avatar>
               </template>
               <v-card class="user-image-hover-container">
                 <v-img name="userImg" v-if="loadComplete && userImage && userImage.presignedUrl" :src="userImage.presignedUrl"></v-img>
-                <img name="userImg" v-else src="src/assets/flow/user_img_placeholder.png">
+                <img name="userImg" v-else src="../../../assets/flow/user_img_placeholder.png">
               </v-card>
             </v-tooltip>
             <form enctype="multipart/form-data" novalidate v-if="changePhoto">

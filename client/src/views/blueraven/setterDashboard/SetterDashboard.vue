@@ -328,7 +328,7 @@
               <td>
                 <img class="ranking-table-img"
                      :class="{'round-img': rep.userImageUrl, 'default-img': !rep.userImageUrl}"
-                     :src="rep.userImageUrl ? rep.userImageUrl : 'src/assets/flow/user_img_placeholder.png'"
+                     :src="rep.userImageUrl ? rep.userImageUrl : '../../../assets/flow/user_img_placeholder.png'"
                      :alt="rep.userImageAltText ? rep.userImageAltText : 'User photo placeholder'">
               </td>
               <td class="left-text">{{ rep.name }}</td>
