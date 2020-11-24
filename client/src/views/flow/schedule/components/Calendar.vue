@@ -638,7 +638,7 @@
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
         if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
-          if (!this.calendarInitialRender) {
+          if (reload || !this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
           }
           this.calendarInitialRender = false
