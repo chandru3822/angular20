@@ -560,6 +560,16 @@
     from flow.contact
     where id = :sourceId
   ]]></customFieldValues.contact.getCompanyId>
-
+  <customFieldValue.project.updateValueUsingCfId><![CDATA[
+      update flow.project_custom_field_value
+        set
+            int_value = :intValue,
+            date_value = :dateValue,
+            timestamp_value = :timestampValue::timestamp
+      where project_id = :projectId and
+            custom_field_group_assignment_id = (select cfga.id from flow.custom_field_group_assignment cfga
+                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                where cf.id = :customFieldId)
+  ]]></customFieldValue.project.updateValueUsingCfId>
 
 </sql>

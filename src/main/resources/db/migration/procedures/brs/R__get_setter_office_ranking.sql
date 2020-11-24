@@ -53,13 +53,13 @@ BEGIN
                 inner join flow.user u on u.id = upv.user_id
                 inner join flow.org o on (o.id = upv.org_id and o.active_flag is true)
                 left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
-            where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
+            where pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and case when upv.end_date is not null
                     then p.date_created::date between upv.start_date and upv.end_date
                     else p.date_created::date >= upv.start_date
                     end
                 and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
-                and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
+                and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                 and o.id != 171
             group by o.id, o.org_name || ' (' || metro_area.metro_area || ')'
             limit p_limit

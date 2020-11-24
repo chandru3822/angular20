@@ -28,7 +28,7 @@ BEGIN
                  inner join flow.contact c on c.id = p.contact_id
                  inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                  inner join flow.user u on u.id = upv.user_id
-             where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
+             where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and pd.closer_appointment_start between p_start_date and p_end_date
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
                  and u.id = any(v_setter_ids)
@@ -39,9 +39,9 @@ BEGIN
                  inner join flow.contact c on c.id = p.contact_id
                  inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                  inner join flow.user u on u.id = upv.user_id
-             where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
+             where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and pd.closer_appointment_start between p_start_date and p_end_date
-                 and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
+                 and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                  and u.id = any(v_setter_ids)
             ) as total_pitches
         ) rpt

@@ -125,6 +125,16 @@ public class CustomFieldValueService {
     return fieldGroups;
   }
 
+  public void updateProjectCustomFieldValue(CustomFieldValue cfv, Long projectId, Long customFieldId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("customFieldId", customFieldId);
+    params.put("intValue", cfv.getIntValue());
+    params.put("timestampValue", cfv.getTimestampValue());
+    params.put("dateValue", cfv.getDateValue());
+    sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
+  }
+
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

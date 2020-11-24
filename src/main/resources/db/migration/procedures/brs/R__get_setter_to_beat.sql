@@ -42,9 +42,9 @@ BEGIN
                       inner join flow.company_user_status cus on cus.user_id = u.id
                       inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
                   where ust.user_status_type = 'Active'
-                      and pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
+                      and pd.source in (525, 526) --(Setter Gen, Retargeted)
                       and pd.closer_appointment_start between p_start_date and p_end_date
-                      and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
+                      and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                       and u.id is not null
                       and u.id not in (2354810, 2390159)
                   group by setter_user_id, name
