@@ -132,7 +132,7 @@ public class CustomFieldValueService {
     params.put("intValue", cfv.getIntValue());
     params.put("timestampValue", cfv.getTimestampValue());
     params.put("dateValue", cfv.getDateValue());
-    sqlCache.update("customFieldValue.project.updateValueUsingCfgaId", params);
+    sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
