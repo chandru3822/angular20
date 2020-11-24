@@ -585,6 +585,14 @@ export default {
       if (this.newField.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
       }
+
+      this.availableFields = this.availableFields.filter(f => {
+        if (f.customFieldGroupAssignmentId !== null) {
+          return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
+        } else {
+          return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+        }
+      })
     },
     async addSmartlist () {
       try {
