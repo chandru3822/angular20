@@ -39,7 +39,7 @@ public class AvailabilityController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResourceSchedule saveSchedule(@RequestBody ResourceSchedule resourceAvailability) {
+  public List<ResourceSchedule> saveSchedule(@RequestBody ResourceSchedule resourceAvailability) {
     return availabilityService.saveSchedule(resourceAvailability);
   }
 
