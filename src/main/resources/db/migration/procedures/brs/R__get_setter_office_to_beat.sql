@@ -47,6 +47,8 @@ BEGIN
                         then p.date_created::date between upv.start_date and upv.end_date
                         else p.date_created::date >= upv.start_date
                         end
+                    and upv.primary_flag is true
+                    and upv.position_level = 0
                     and pd.closer_appointment_start between p_start_date and p_end_date
                     and pd.closer_appointment_outcome = 2 --Pitched
                     and o.id != 171

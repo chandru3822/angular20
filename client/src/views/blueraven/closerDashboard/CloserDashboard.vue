@@ -1119,7 +1119,6 @@
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
       showFunnel: false,
-      ironmanLoaded: false,
       rankingTablesLoaded: false,
       dashboardWasLoaded: false,
       funnelsWereLoaded: false,
@@ -1411,8 +1410,9 @@
           default: // Dashboard tab
             this.showDashboard = true
             this.showFunnel = false
+            await this.loadIronman()
+
             if (!this.dashboardWasLoaded) {
-              await this.loadIronman()
               await this.loadRoundRobins()
               this.dashboardWasLoaded = true
             }
@@ -1445,8 +1445,6 @@
 
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
-        this.ironmanLoaded = false
-
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           getRequest('/closerDashboard/getIronmanFdcCounts', 'blueraven').then(res => {
@@ -1497,14 +1495,12 @@
             this.progressBarIsFull = this.percentAchieved === 100
             $('#progress-bar-fill').css('width', this.percentAchieved + '%')
 
-            this.ironmanLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           })
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Ironman data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.ironmanLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

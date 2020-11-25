@@ -31,6 +31,8 @@ BEGIN
                  and u.id is not null
                  and u.id not in (2354810, 2390159)
                  and u.id = p_user_id
+                 and upv.primary_flag is true
+                 and upv.position_level = 0
             ) as total_appointments,
             (select count(1)::bigint
              from flow.project p
@@ -44,6 +46,8 @@ BEGIN
                  and u.id is not null
                  and u.id not in (2354810, 2390159)
                  and u.id = p_user_id
+                 and upv.primary_flag is true
+                 and upv.position_level = 0
             ) as total_pitches
         ) rpt
     ) as sub_rows;
