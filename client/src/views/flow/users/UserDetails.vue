@@ -201,6 +201,7 @@
         companies: [],
         dirtyCfvs: [],
         user: {},
+        fieldsSaving: false,
         customFieldGroups: [],
         notes: [],
         owners: [],
