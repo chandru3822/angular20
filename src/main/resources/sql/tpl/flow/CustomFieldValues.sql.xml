@@ -543,15 +543,15 @@
     where id = :sourceId
   ]]></customFieldValues.contact.getCompanyId>
   <customFieldValue.project.updateValueUsingCfId><![CDATA[
-      update flow.project_custom_field_value
-        set
-            int_value = :intValue,
-            date_value = :dateValue,
-            timestamp_value = :timestampValue::timestamp
-      where project_id = :projectId and
-            custom_field_group_assignment_id = (select cfga.id from flow.custom_field_group_assignment cfga
-                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                where cf.id = :customFieldId)
+      insert into flow.project_custom_field_value (project_id, date_value, custom_field_group_assignment_id, timestamp_value, int_value, created_by_id)
+        values (:projectId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :intValue, :userId)
+        ON CONFLICT (project_id, custom_field_group_assignment_id)
+        do update
+          set date_value = :dateValue::date,
+          timestamp_value = :timestampValue::timestamp,
+          int_value = :intValue,
+          modified_by_id = :userId,
+          date_modified = now()
   ]]></customFieldValue.project.updateValueUsingCfId>
 
 </sql>
