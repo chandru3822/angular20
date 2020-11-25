@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.DbFunction;
-import com.albatross.api.v1.flow.model.DbFunctionParam;
-import com.albatross.api.v1.flow.model.DbFunctionType;
-import com.albatross.api.v1.flow.model.ParameterType;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -76,9 +73,15 @@ public class DbFunctionService {
     params.put("dbFunctionId", dbFunctionParam.getDbFunctionId());
     params.put("dataTypeId", dbFunctionParam.getDataTypeId());
     params.put("parameterTypeId", dbFunctionParam.getParameterTypeId());
+    params.put("systemValueId", dbFunctionParam.getSystemValueId());
 
     sqlCache.update("dbFunction.insertParam", params);
     return getDbFunction(dbFunctionParam.getDbFunctionId());
+  }
+
+  public List<SystemValue> getSystemValues() {
+    List<SystemValue> results = sqlCache.query("dbFunction.getSystemValues", Collections.emptyMap(), SystemValue.class);
+    return results;
   }
 
   public static class DbFunctionMapper<T> extends BeanPropertyRowMapper<T> {

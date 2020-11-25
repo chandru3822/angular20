@@ -11,7 +11,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newParam = {}, getDataTypes(), getParameterTypes()]">
+            <v-btn text @click="[addNew = !addNew, newParam = {}, getDataTypes(), getParameterTypes(), getSystemValues()]">
               {{addNew ? 'Cancel' : 'Add New Param'}}
             </v-btn>
           </v-toolbar-items>
@@ -45,10 +45,19 @@
               item-text="parameterType"
               item-value="id"
             ></v-select>
+            <v-select
+              v-if="newParam.parameterTypeId === 1"
+              v-model="newParam.systemValueId"
+              :items="systemValues"
+              label="System Value"
+              item-text="systemValue"
+              item-value="id"
+            ></v-select>
           </div>
-          <v-btn :disabled="!newParam || !newParam.parameterName || !newParam.dataTypeId || !newParam.parameterTypeId"
+          <v-btn :disabled="!newParam || !newParam.parameterName || !newParam.dataTypeId
+                    || !newParam.parameterTypeId || (newParam.parameterTypeId === 1 && !newParam.systemValueId)"
                  color="primaryCustom" class="white--text mr-2"
-                 @click="addParam()">
+                 @click="[addNew = false, addParam()]">
             Save
           </v-btn>
           <v-btn @click="[addNew = !addNew, newParam = {}]">Cancel</v-btn>
@@ -83,6 +92,9 @@
               <td class="text-left">
                 {{item.parameterType}}
               </td>
+              <td class="text-left">
+                {{item.systemValue}}
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -110,12 +122,14 @@
         newParam: {},
         dataTypes: [],
         parameterTypes: [],
+        systemValues: [],
         functionId: parseInt(this.$route.params.id),
         headers: [
           {text: 'ID', value: 'id', show: true},
           {text: 'Parameter Name', value: 'parameterName', show: true},
           {text: 'Data Type', value: 'dataType', show: true},
-          {text: 'Parameter Type', value: 'parameterType', show: true}
+          {text: 'Parameter Type', value: 'parameterType', show: true},
+          {text: 'System Value', value: 'systemValue', show: true}
         ],
         breadcrumbs: [
           {
@@ -180,12 +194,28 @@
           this.newParam.dbFunctionId = this.functionId
           const {data} = await postRequest(`/dbFunction/param`, this.newParam)
           this.dbFunction = data
+          this.newParam = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Function Param')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getSystemValues () {
+        if(this.systemValues.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/dbFunction/systemValues`)
+            this.systemValues = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
     }

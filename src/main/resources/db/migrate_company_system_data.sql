@@ -261,11 +261,11 @@ insert into flow.company_function(company_function_name, db_function_id, archive
     where c.id not in (1,2,3,9));
 
 insert into flow.company_function_param(company_function_id,
-                                        archived, system_value_id, db_function_param_id, created_by_id,
+                                        archived, db_function_param_id, created_by_id,
                                         date_created, modified_by_id, date_modified)
 (select (select id from flow.company_function cf where cfp.company_function_id = cf.migrated_original_id
                                         and cf.company_id = c.id),
-        archived, system_value_id, db_function_param_id, cfp.created_by_id,
+        archived, db_function_param_id, cfp.created_by_id,
         cfp.date_created, cfp.modified_by_id, cfp.date_modified
  from flow.company_function_param cfp
           cross join flow.company c

@@ -33,6 +33,8 @@
                        select dfp.id,
                               dfp.db_function_id as "dbFunctionId",
                               dfp.display_order as "displayOrder",
+                              dfp.system_value_id as "systemValueId",
+                              sv.system_value as "systemValue",
                               dfp.parameter_name as "parameterName",
                               dfp.data_type_id as "dataTypeId",
                               dfp.parameter_type_id as "parameterTypeId",
@@ -41,6 +43,7 @@
                        from flow.db_function_param dfp
                         inner join flow.data_type dt on dfp.data_type_id = dt.id
                         inner join flow.parameter_type pt on dfp.parameter_type_id = pt.id
+                        left join flow.system_value sv on sv.id = dfp.system_value_id
                         where dfp.archived is not true
                         and dfp.db_function_id = df.id
                         order by display_order
@@ -57,9 +60,12 @@
   ]]></dbFunction.insertFunction>
 
   <dbFunction.insertParam><![CDATA[
-     insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id)
-        values(:dbFunctionId, :parameterName, (select coalesce(max(display_order) + 1, 0) from flow.db_function_param where db_function_id = :dbFunctionId), :dataTypeId, :parameterTypeId)
+     insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+        values(:dbFunctionId, :parameterName, (select coalesce(max(display_order) + 1, 0) from flow.db_function_param where db_function_id = :dbFunctionId), :dataTypeId, :parameterTypeId, :systemValueId)
   ]]></dbFunction.insertParam>
 
-
+  <dbFunction.getSystemValues><![CDATA[
+    select *
+    from flow.system_value
+  ]]></dbFunction.getSystemValues>
 </sql>

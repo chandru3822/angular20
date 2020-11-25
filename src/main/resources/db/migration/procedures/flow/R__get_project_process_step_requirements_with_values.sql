@@ -146,11 +146,11 @@ BEGIN
                                ppscfv.boolean_value as "booleanValue",
                                ppscfv.numeric_value as "numericValue",
                                ppscfv.int_value as "intValue",
-                               cfp.system_value_id as "systemValueId",
+                               dfp.system_value_id as "systemValueId",
                                rpdv.dynamic_value as "dynamicValue"
                         from flow.db_function_param dfp
                                left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
-                               left join flow.system_value sv on sv.id = cfp.system_value_id
+                               left join flow.system_value sv on sv.id = dfp.system_value_id
                                left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
                                left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
                         where dfp.db_function_id = df.id

@@ -3,7 +3,10 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CompanyFunction;
+import com.albatross.api.v1.flow.model.CompanyFunctionParam;
+import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -111,12 +113,6 @@ public class CompanyFunctionService {
     params.put("id", id);
     Optional<CompanyFunctionParam> result = sqlCache.get("companyFunction.getCompanyParam", params, CompanyFunctionParam.class);
     return result.orElse(null);
-  }
-
-  public List<SystemValue> getSystemValues() {
-//    todo: add archived check to query
-    List<SystemValue> results = sqlCache.query("companyFunction.getSystemValues", Collections.emptyMap(), SystemValue.class);
-    return results;
   }
 
   public static class CompanyFunctionMapper<T> extends BeanPropertyRowMapper<T> {

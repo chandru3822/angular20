@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 public class DbFunctionParam {
 
-  private Long id, dbFunctionId, displayOrder, dataTypeId, parameterTypeId;
-  private String parameterName, dataType, parameterType;
+  private Long id, dbFunctionId, displayOrder, dataTypeId, parameterTypeId, systemValueId;
+  private String parameterName, dataType, parameterType, systemValue;
   private Boolean archived;
 }
 

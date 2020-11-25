@@ -4,7 +4,6 @@ import com.albatross.api.v1.flow.enums.FunctionType;
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
-import com.albatross.api.v1.flow.model.SystemValue;
 import com.albatross.api.v1.flow.services.CompanyFunctionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,12 +59,6 @@ public class CompanyFunctionController {
   public CompanyFunctionParam saveParams (@PathVariable("id") Long functionId,
                           @RequestBody CompanyFunctionParam param) {
     return companyFunctionService.saveFunctionParams(functionId, param);
-  }
-
-  // this could be in a system value controller but i dont think it will be needed outside of functions??
-  @GetMapping(value = "/systemValues", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<SystemValue> getSystemValues () {
-    return companyFunctionService.getSystemValues();
   }
 
 }

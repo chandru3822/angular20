@@ -1,9 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.DbFunction;
-import com.albatross.api.v1.flow.model.DbFunctionParam;
-import com.albatross.api.v1.flow.model.DbFunctionType;
-import com.albatross.api.v1.flow.model.ParameterType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.DbFunctionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +52,11 @@ public class DbFunctionController {
   @PostMapping(value = "/param", produces = MediaType.APPLICATION_JSON_VALUE)
   public DbFunction insertDbFunctionParam (@RequestBody DbFunctionParam dbFunctionParam) {
     return dbFunctionService.insertDbFunctionParam(dbFunctionParam);
+  }
+
+  @GetMapping(value = "/systemValues", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<SystemValue> getSystemValues () {
+    return dbFunctionService.getSystemValues();
   }
 
 }
