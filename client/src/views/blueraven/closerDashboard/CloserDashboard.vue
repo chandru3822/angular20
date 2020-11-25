@@ -733,7 +733,7 @@
             </template>
           </v-select>
 
-          <v-btn id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
+          <v-btn v-if="!isCloser && !isCloserMgrOrRegional" id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
         </div>
       </div>
 

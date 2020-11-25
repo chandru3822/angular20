@@ -570,7 +570,7 @@
               </template>
             </v-select>
 
-            <v-btn id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
+            <v-btn v-if="!isSetter && !isSetterMgr" id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
           </div>
         </div>
       </div>
@@ -835,6 +835,7 @@
       milestoneDialog: false,
       funnelDrilldownDialog: false,
       currentUserId: null,
+      isSetter: false,
       isSetterMgr: false,
       selectedQuarter: 1,
       headers: [
