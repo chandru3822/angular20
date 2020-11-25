@@ -118,7 +118,11 @@
       WHERE up.user_id = :userId
         AND pczu.archived IS FALSE
         AND pcz.archived IS FALSE
-        AND p.schedulable IS TRUE
+        -- postal_code_zone_user_type_id = 1 means schedule to (2 = schedule by)
+        AND pczu.postal_code_zone_user_type_id = 1
+        AND up.archived IS NOT TRUE
+        AND up.start_date <= now()
+        AND (up.end_date is null or up.end_date >= now())
     ]]>
   </closerDashboard.getRoundRobins>
 

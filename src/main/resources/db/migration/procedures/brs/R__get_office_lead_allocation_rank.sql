@@ -20,7 +20,7 @@ BEGIN
                      inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
                      inner join flow.user u on u.id = up.user_id
             where pcz.id = p_postal_code_zone_id
-              and p.schedulable is true),
+              and pczu.postal_code_zone_user_type_id = 1),
              lead_gen_num as (
                  select rru.user_id, rru.closer_name, count(1) as lead_gen_num
                  from brs.project_details pd
@@ -144,7 +144,7 @@ BEGIN
                                    left join total_avail ta on ta.user_id = up.user_id
                                    left join appointment_count_with_interval acwi on acwi.user_id = up.user_id
                           where pcz.id = p_postal_code_zone_id
-                            and p.schedulable is true
+                            and pczu.postal_code_zone_user_type_id = 1
                           group by up.user_id, concat(u.first_name, ' ', u.last_name), lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                    ac.appointment_count,
                                    pcz.distribution_time_frame_days, ta.avail,
