@@ -8,7 +8,8 @@
               <v-toolbar-title>Summary</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="saveUser" v-if="userCanEdit">Save</v-btn>
+                <v-btn text :disabled="fieldsSaving"
+                       @click="[fieldsSaving = true, saveUser()]" v-if="userCanEdit">Save</v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
@@ -233,12 +234,14 @@
             this.dirtyCfvs = []
             this.user.newPassword = null
             this.customFieldGroups = data
+            this.fieldsSaving = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
             this.snackbar = getSnackbar('ERROR', errorMsg)
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
