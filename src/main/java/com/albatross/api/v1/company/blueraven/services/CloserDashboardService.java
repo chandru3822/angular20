@@ -99,7 +99,7 @@ public class CloserDashboardService {
   }
 
   public Map<Long, String> getUserImages(List<Long> userIds) {
-    return attachmentService.getAttachmentPresignedUrlForUserList(bucket, userIds, 9L);
+    return attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
   }
 
   public String getUserImages(String[] keys, JSONObject closerDashboardData) {
@@ -112,7 +112,7 @@ public class CloserDashboardService {
       }
     }
 
-    Map<Long, String> userImageUrls = attachmentService.getAttachmentPresignedUrlForUserList(bucket, userIds, 9L);
+    Map<Long, String> userImageUrls = attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
 
     for (String key : keys) {
       for (Object row : closerDashboardData.getJSONArray(key)) {

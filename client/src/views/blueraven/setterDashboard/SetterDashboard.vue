@@ -1459,8 +1459,7 @@
           const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
-          if (this.reps.length > 0 && this.officeRankingData.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
-            this.userOffice = this.officeRankingData.filter(row => row.userId === this.currentUserId)[0].officeName
+          if (this.reps.length > 0) {
             let userIds = []
 
             this.reps.forEach(rep => {
@@ -1470,18 +1469,19 @@
             })
 
             if (userIds.length > 0) {
-              const {attachmentUrlData} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlForUserList',
-                {
-                  params: {
-                    sourceIds: userIds,
-                    attachmentSourceTypeId: 9
-                  }
-                }, 'blueraven')
+              userIds = encodeURI(userIds)
 
-              if (attachmentUrlData) {
+              let params = {
+                sourceIds: userIds,
+                attachmentTypeId: 9
+              }
+
+              const {data} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})
+
+              if (data) {
                 this.reps.forEach(rep => {
-                  if (rep.user_id && attachmentUrlData[rep.user_id]) {
-                    rep.userImageUrl = attachmentUrlData[rep.user_id]
+                  if (rep.user_id && data[rep.user_id]) {
+                    rep.userImageUrl = data[rep.user_id]
                   }
 
                   if (rep.userImageUrl && rep.name) {

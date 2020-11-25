@@ -227,20 +227,19 @@ public class AttachmentService {
      * @param sourceIds ID of the source
      * @return
      */
-    public Map<Long, String> getAttachmentPresignedUrlForUserList(String bucket, List<Long> sourceIds, Long attachmentTypeId) {
+    public Map<Long, String> getAttachmentPresignedUrlsForUserList(List<Long> sourceIds, Long attachmentTypeId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("sourceIds", sourceIds);
         params.put("attachmentTypeId", attachmentTypeId);
 
         List<Attachment> attachments = sqlCache.query("attachment.getAttachmentBySourceAndTypeForUserList", params, Attachment.class);
 
-
         Map<Long, String> preSignedUrls = new HashMap<>();
 
         if(!attachments.isEmpty()){
             attachments.stream().forEach(a -> {
 
-                setAttachmentPresignedUrl(bucket, a);
+                setAttachmentPresignedUrl(storageBucket, a);
 
                 preSignedUrls.put(a.getSourceId(), a.getPresignedUrl());
             });
