@@ -46,3 +46,6 @@ HELP.md
 /nbdist/
 /.nb-gradle/
 /build/
+
+### local props files ###
+src/main/resources/application-local.properties
