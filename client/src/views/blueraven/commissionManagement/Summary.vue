@@ -112,7 +112,7 @@
         try {
           const {data} = await getRequest(`/payroll/${this.currentPayroll.id}/overrides`, 'blueraven')
 
-          let filename = 'Overrides'
+          let filename = 'Overrides.csv'
           let csvData = 'Project ID, Customer Name, Closer, Override Plan Name, System Size, Overrides Earned, Prior Pay, Current Pay, User Allocation, Milestone 1 Percentage, Milestone 2 Percentage, Plan Total'
           csvData += '\n'
 
@@ -150,7 +150,7 @@
       async exportPayrollSummary () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          let filename = 'Payroll Summary'
+          let filename = 'Payroll Summary.csv'
           let csvData = 'Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay'
           csvData += '\n'
 
