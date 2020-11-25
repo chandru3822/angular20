@@ -1,8 +1,92 @@
 <template>
   <v-container>
     <v-row>
-      function details
-      {{dbFunction}}
+      <v-col class="shrink" cols="12">
+        <v-toolbar color="white" flat>
+          <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
+        </v-toolbar>
+        <v-toolbar flat class="app-toolbar">
+          <v-toolbar-title class="app-title">
+            {{dbFunction.functionName}}
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="[addNew = !addNew, newParam = {}, getDataTypes(), getParameterTypes()]">
+              {{addNew ? 'Cancel' : 'Add New Param'}}
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-list>
+          <v-list-item>
+            <v-list-item-title>Function Return Data Type: <strong>{{dbFunction.returnDataType}}</strong></v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-title>Function Type: <strong>{{dbFunction.functionType}}</strong></v-list-item-title>
+          </v-list-item>
+        </v-list>
+        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
+          <h3>Add New Param</h3>
+          <div class="mb-3">
+            <v-text-field text label="Parameter Name"
+                          v-model="newParam.parameterName"
+                          hint="* This should be a UI friendly name"
+                          persistent-hint></v-text-field>
+            <v-select
+              v-model="newParam.dataTypeId"
+              :items="dataTypes"
+              label="Data Type"
+              item-text="dataType"
+              item-value="id"
+            ></v-select>
+            <v-select
+              v-model="newParam.parameterTypeId"
+              :items="parameterTypes"
+              label="Parameter Type"
+              item-text="parameterType"
+              item-value="id"
+            ></v-select>
+          </div>
+          <v-btn :disabled="!newParam || !newParam.parameterName || !newParam.dataTypeId || !newParam.parameterTypeId"
+                 color="primaryCustom" class="white--text mr-2"
+                 @click="addParam()">
+            Save
+          </v-btn>
+          <v-btn @click="[addNew = !addNew, newParam = {}]">Cancel</v-btn>
+        </v-card>
+        <h3 class="pt-3">Params</h3>
+        <h5>System Params must be added to Company Function Params</h5>
+        <v-data-table
+          :headers="headers"
+          :items="dbFunction.dbFunctionParams"
+          :fixed-header="true"
+          hide-default-footer
+          class="elevation-1 mt-3"
+        >
+          <template #no-data>
+            No available params
+          </template>
+          <template #no-results>
+            No available params
+          </template>
+
+          <template #item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left">
+                {{item.id}}
+              </td>
+              <td class="text-left">
+                {{item.parameterName}}
+              </td>
+              <td class="text-left">
+                {{item.dataType}}
+              </td>
+              <td class="text-left">
+                {{item.parameterType}}
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-col>
     </v-row>
 
   </v-container>
@@ -21,8 +105,26 @@
       return {
         constants,
         snackbar: {},
+        addNew: false,
         dbFunction: {},
-        functionId: parseInt(this.$route.params.id)
+        newParam: {},
+        dataTypes: [],
+        parameterTypes: [],
+        functionId: parseInt(this.$route.params.id),
+        headers: [
+          {text: 'ID', value: 'id', show: true},
+          {text: 'Parameter Name', value: 'parameterName', show: true},
+          {text: 'Data Type', value: 'dataType', show: true},
+          {text: 'Parameter Type', value: 'parameterType', show: true}
+        ],
+        breadcrumbs: [
+          {
+            text: 'Back',
+            disabled: false,
+            exact: true,
+            to: `/admin/functions`
+          },
+        ]
       }
     },
     async created () {
@@ -41,7 +143,51 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async getDataTypes() {
+        if(this.dataTypes.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/dataType/getSystem`)
+            this.dataTypes = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Data Types')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async getParameterTypes() {
+        if(this.dataTypes.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/dbFunction/parameterTypes`)
+            this.parameterTypes = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Parameter Types')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async addParam() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.newParam.dbFunctionId = this.functionId
+          const {data} = await postRequest(`/dbFunction/param`, this.newParam)
+          this.dbFunction = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Function Param')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
   }
 </script>

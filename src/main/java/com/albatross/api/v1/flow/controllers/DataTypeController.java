@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CompanyDataType;
+import com.albatross.api.v1.flow.model.DataType;
 import com.albatross.api.v1.flow.model.DataTypeRequirement;
 import com.albatross.api.v1.flow.services.DataTypeService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,11 @@ public class DataTypeController {
 
   @Autowired
   private DataTypeService dataTypeService;
+
+  @GetMapping(value = "/getSystem", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<DataType> getSystemDataTypes() {
+    return dataTypeService.getSystemDataTypes();
+  }
 
   @GetMapping(value = "/getCompanyDataTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyDataType> getCompanyDataTypes() {

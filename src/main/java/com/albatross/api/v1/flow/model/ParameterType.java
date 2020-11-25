@@ -9,10 +9,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class DbFunctionParam {
+public class ParameterType {
 
-  private Long id, dbFunctionId, displayOrder, dataTypeId, parameterTypeId;
-  private String parameterName, dataType, parameterType;
+  private Long id;
+  private String parameterType;
   private Boolean archived;
 }
 

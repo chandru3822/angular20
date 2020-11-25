@@ -5,6 +5,8 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.DbFunction;
 import com.albatross.api.v1.flow.model.DbFunctionParam;
+import com.albatross.api.v1.flow.model.DbFunctionType;
+import com.albatross.api.v1.flow.model.ParameterType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +47,38 @@ public class DbFunctionService {
   public DbFunction getDbFunction(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<DbFunction> result = sqlCache.get("dbFunction.getOne", params, DbFunction.class);
+    Optional<DbFunction> result = sqlCache.get("dbFunction.getOne", params, new DbFunctionMapper<>(DbFunction.class, om));
     return result.orElse(null);
+  }
+
+  public List<DbFunctionType> getDbFunctionTypes() {
+    List<DbFunctionType> results = sqlCache.query("dbFunction.getTypes", Collections.emptyMap(), DbFunctionType.class);
+    return results;
+  }
+
+  public List<ParameterType> getParameterTypes() {
+    List<ParameterType> results = sqlCache.query("dbFunction.getParameterTypes", Collections.emptyMap(), ParameterType.class);
+    return results;
+  }
+
+  public DbFunction insertDbFunction(DbFunction dbFunction) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("functionName", dbFunction.getFunctionName());
+    params.put("returnDataTypeId", dbFunction.getReturnDataTypeId());
+    params.put("dbFunctionTypeId", dbFunction.getDbFunctionTypeId());
+
+    Long id = sqlCache.updateReturningId("dbFunction.insertFunction", params, "id").longValue();
+    return getDbFunction(id);
+  }
+  public DbFunction insertDbFunctionParam(DbFunctionParam dbFunctionParam) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("parameterName", dbFunctionParam.getParameterName());
+    params.put("dbFunctionId", dbFunctionParam.getDbFunctionId());
+    params.put("dataTypeId", dbFunctionParam.getDataTypeId());
+    params.put("parameterTypeId", dbFunctionParam.getParameterTypeId());
+
+    sqlCache.update("dbFunction.insertParam", params);
+    return getDbFunction(dbFunctionParam.getDbFunctionId());
   }
 
   public static class DbFunctionMapper<T> extends BeanPropertyRowMapper<T> {

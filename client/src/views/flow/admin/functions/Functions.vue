@@ -6,8 +6,40 @@
           <v-toolbar-title class="app-title">Functions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn text @click="[addNew = !addNew, newFunction = {}, getDataTypes(), getFunctionTypes()]">
+              {{addNew ? 'Cancel' : 'Add New'}}
+            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
+          <h3>Add New Function</h3>
+          <div class="mb-3">
+            <v-text-field text label="Function Name"
+                      v-model="newFunction.functionName"
+                      hint="* This MUST match the function name in the procedure files"
+                      persistent-hint></v-text-field>
+            <v-select
+              v-model="newFunction.returnDataTypeId"
+              :items="dataTypes"
+              label="Return Data Type"
+              item-text="dataType"
+              item-value="id"
+            ></v-select>
+            <v-select
+              v-model="newFunction.dbFunctionTypeId"
+              :items="dbFunctionTypes"
+              label="Function Type"
+              item-text="functionType"
+              item-value="id"
+            ></v-select>
+          </div>
+          <v-btn :disabled="!newFunction || !newFunction.functionName || !newFunction.dbFunctionTypeId || !newFunction.returnDataTypeId"
+                 color="primaryCustom" class="white--text mr-2"
+                 @click="addFunction()">
+            Save
+          </v-btn>
+          <v-btn @click="[addNew = !addNew, newFunction = {}]">Cancel</v-btn>
+        </v-card>
         <v-data-table
             :headers="headers"
             :items="filterFunctions()"
@@ -22,13 +54,14 @@
           </template>
 
           <template #no-results>
-            No parameters exist for this function
+            No data
           </template>
 
 
           <template #item="{ item }">
             <tr  class="text-left" :class="{'shaded-row': functions.indexOf(item) % 2}">
               <td class="text-left">{{ item.functionName }}</td>
+              <td class="text-left">{{ item.functionType }}</td>
               <td>
                 <v-btn small text @click="goToFunction(item.id)">
                   <v-icon>edit</v-icon>
@@ -58,15 +91,15 @@
       return {
         constants,
         snackbar: {},
-        isCompanyRoot: this.$store.getters.isCompanyRoot(this.$store.state.user.details.companyId),
         addNew: false,
-        levels: [],
         functions: [],
-        selectedFunction: {},
-        selectedFunctionId: null,
+        dbFunctionTypes: [],
+        dataTypes: [],
+        newFunction: {},
         userId: this.$store.state.user.details.id,
         headers: [
           { text: 'Function', value: 'functionName', show: true },
+          { text: 'Type', value: 'functionType', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
         expanded: []
@@ -81,6 +114,49 @@
         try {
           const {data} = await getRequest(`/dbFunction`)
           this.functions = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getDataTypes() {
+        if(this.dataTypes.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/dataType/getSystem`)
+            this.dataTypes = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Data Types')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async getFunctionTypes() {
+        if(this.dbFunctionTypes.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/dbFunction/types`)
+            this.dbFunctionTypes = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async addFunction() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/dbFunction`, this.newFunction)
+          this.goToFunction(data.id)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
