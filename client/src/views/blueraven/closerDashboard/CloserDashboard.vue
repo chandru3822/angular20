@@ -199,14 +199,14 @@
     <!-- IRONMAN END -->
 
     <!-- RANKING TABLES FIRST HEADER START -->
-    <div v-if="showDashboard"
+    <div v-if="showDashboard && (isCloser || isCloserMgrOrRegional)"
          class="ranking-tables-section-header">
       Your Office Ranking
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
 
     <!-- RANKING TABLES TOP ROW START -->
-    <div v-if="showDashboard"
+    <div v-if="showDashboard && (isCloser || isCloserMgrOrRegional)"
          class="ranking-tables-section">
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
@@ -487,6 +487,7 @@
                         outlined
                         background-color="white"
                         dense
+                        return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="grey--text caption">
@@ -517,6 +518,7 @@
                         outlined
                         background-color="white"
                         dense
+                        return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="grey--text caption">
@@ -1099,6 +1101,7 @@
       funnelDrilldownDialog: false,
       currentUserId: null,
       isCloser: false,
+      isCloserMgrOrRegional: false,
       selectedQuarter: 1,
       headers: [
         { text: '', value: '', show: true, sortable: false },
@@ -1666,9 +1669,9 @@
           // if there's only one Round Robin for the current user, this auto-selects it
           if (this.roundRobins?.length === 1) {
             this.selectedRoundRobin = this.roundRobins[0]?.id
-            await this.loadRankingTables()
           }
 
+          await this.loadRankingTables()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1696,7 +1699,7 @@
             break
         }
 
-        if (this.selectedRoundRobin) {
+        if (this.selectedRoundRobin || (!this.isCloser && !this.isCloserMgrOrRegional)) {
           this.loadRankingTables()
         }
       },
@@ -1708,8 +1711,10 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
-          await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
+          if (this.isCloser || this.isCloserMgrOrRegional) {
+            const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
+            await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
+          }
 
           const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params: {timeInterval: this.timeInterval}}, 'blueraven')
 
@@ -1981,7 +1986,7 @@
         }
 
         if (this.apptsToFdcPipelineData?.length === 0) {
-          if (this.isCloser) {
+          if (this.isCloser || this.isCloserMgrOrRegional) {
             this.districtLoad(true)
           } else {
             this.districtLoad(false)
@@ -2028,17 +2033,20 @@
       },
 
       async apptsCreatedPipelineLoad (start, end) {
-        let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
-        let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
+        let brsProvidedSources = []
+        let selfGenSources = []
 
-        if (brsProvidedSources.length === 0 && selfGenSources.length === 0) {
-          this.apptsCreatedPipelineData = [
-            {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-            {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-            {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
-          ]
-          return
-        }
+        this.brsProvidedSourceModel.forEach(brsProvidedSource => {
+          if (brsProvidedSource.sourceId) {
+            brsProvidedSources.push(brsProvidedSource.sourceId)
+          }
+        })
+
+        this.selfGenSourceModel.forEach(selfGenSource => {
+          if (selfGenSource.sourceId) {
+            selfGenSources.push(selfGenSource.sourceId)
+          }
+        })
 
         const requestBody = {
           brsProvidedSources: brsProvidedSources,
@@ -2053,7 +2061,7 @@
             this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
           })
 
-          if (this.isCloser) {
+          if (this.isCloser || this.isCloserMgrOrRegional) {
             if (this.apptsToFdcPipelineData.length > 0) {
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
@@ -2653,6 +2661,7 @@
         this.$nextTick(() => {
           if (this.selectAllBrsProvidedSources) {
             this.brsProvidedSourceModel = []
+            this.apptsCreatedPipelineData[0] = {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
           } else {
             this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
             this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
@@ -2664,6 +2673,7 @@
         this.$nextTick(() => {
           if (this.selectAllSelfGenSources) {
             this.selfGenSourceModel = []
+            this.apptsCreatedPipelineData[1] = {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
           } else {
             this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
             this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
@@ -2745,6 +2755,10 @@
       if (this.$store.state.user.details.userPositions?.length > 0) {
         this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
           return (position.position === 'Closer' && !position.endDate && !position.archived && position.primaryFlag)
+        }).length > 0
+
+        this.isCloserMgrOrRegional = this.$store.state.user.details.userPositions.filter(position => {
+          return ((position.position === 'Closer Manager' || position.position === 'Closer Regional') && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
       }
 
