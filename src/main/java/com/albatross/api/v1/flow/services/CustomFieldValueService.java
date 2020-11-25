@@ -122,12 +122,15 @@ public class CustomFieldValueService {
   }
 
   public void updateProjectCustomFieldValue(CustomFieldValue cfv, Long projectId, Long customFieldId) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("customFieldId", customFieldId);
+    params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
     params.put("intValue", cfv.getIntValue());
     params.put("timestampValue", cfv.getTimestampValue());
     params.put("dateValue", cfv.getDateValue());
+    params.put("userId", user.getId());
     sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
 
