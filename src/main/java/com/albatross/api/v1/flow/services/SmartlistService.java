@@ -293,6 +293,10 @@ public class SmartlistService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
       }
 
+      if (!smartlist.isProjectDetails()) {
+        fields.forEach(f -> f.setName((f.getObjectTypeId() == 4) ? String.format("%s (%s)", f.getName(), f.getProcessStepId()) : f.getName()));
+      }
+
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
@@ -329,10 +333,13 @@ public class SmartlistService {
 
     // Remove comma and space from last select field
     query.deleteCharAt(query.length() - 1);
-    query.deleteCharAt(query.length() - 1);
+
+    query.append("\nflow.project.id as project_id,");
+    query.append("\nflow.project.contact_id as contact_id");
 
     // @TODO: Eventually de-hardcode brs schema
     query.append("\nfrom brs.project_details");
+    query.append("\ninner join flow.project on flow.project.id = brs.project_details.project_id");
 
     if (ahjCount > 0) {
       query.append("\nleft join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
@@ -517,19 +524,21 @@ public class SmartlistService {
         }
       }
 
+      final String fieldAlias = (f.getObjectTypeId() == 4) ? String.format("%s (%s)", f.getName(), f.getProcessStepId()) : f.getName();
+
       if (f.getDataTypeId() == 1) {
-        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, fieldAlias));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, fieldAlias));
       } else if (f.getDataTypeId() == 7) {
-          query.append(String.format(" \n(select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
+          query.append(String.format(" \n(select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, fieldAlias));
       } else if (f.getDataTypeId() == 9) {
           final String tempUuid = UUID.randomUUID().toString();
           final String subQuery = String.format("select * from flow.get_system_list_option_value(%s::int, \"%s\".int_value)", f.getCompanySystemListId(), f.getValueReferenceTable());
-          final String sql = String.format(" \n(select \"%s\".name from (%s) as \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", tempUuid, subQuery, tempUuid, tempUuid, f.getValueReferenceTable(), f.getName());
+          final String sql = String.format(" \n(select \"%s\".name from (%s) as \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", tempUuid, subQuery, tempUuid, tempUuid, f.getValueReferenceTable(), fieldAlias);
           query.append(sql);
       } else {
-        query.append(String.format(" \n%s as \"%s\", ", location, f.getName()));
+        query.append(String.format(" \n%s as \"%s\", ", location, fieldAlias));
       }
 
       if (f.getCustomFieldSqlKey() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
@@ -549,9 +558,11 @@ public class SmartlistService {
         }
     }
 
-    // Remove comma and space from last select field
+    // Remove comma from last select field
     query.deleteCharAt(query.length() - 1);
-    query.deleteCharAt(query.length() - 1);
+
+    query.append("\nflow.project.id as project_id,");
+    query.append("\nflow.project.contact_id as contact_id");
 
     final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
 
@@ -973,6 +984,8 @@ public class SmartlistService {
 //      for (String field : dateFields) {
 //        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
 //      }
+      r.remove("project_id");
+      r.remove("contact_id");
       data.set(i, r);
     }
 

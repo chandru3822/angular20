@@ -135,7 +135,7 @@ public class SmartlistController {
   }
 
   @GetMapping(value = "/{smartlistId}/data", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> getSmartlistDataById(@PathVariable Long smartlistId) {
+  public ResponseEntity<SmartlistResult> getSmartlistDataById(@PathVariable Long smartlistId) {
       return new ResponseEntity<>(smartlistService.getSmartlistResults(smartlistId), HttpStatus.OK);
   }
 
