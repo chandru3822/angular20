@@ -347,7 +347,8 @@ export default {
         let params = {
           ...this.newPosition,
           userId: userId,
-          orgId: this.newPosition?.hierarchy[0]?.orgId
+          orgId: this.newPosition?.hierarchy[0]?.orgId,
+          primaryFlag: true
         }
 
         await postRequest(`/userPosition`, params)
