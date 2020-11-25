@@ -140,7 +140,6 @@
       and up.start_date <= now()
       and (up.end_date is null or up.end_date >= now())
       and cf.company_id = :companyId
-      and NOT EXISTS (SELECT 1 FROM t);
   ]]></feature.getAccessForUser>
 
   <feature.upsertUserFeatureAccessControl><![CDATA[

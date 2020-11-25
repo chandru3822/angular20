@@ -51,6 +51,7 @@
                 fixed-header
                 :options.sync="options"
                 disable-sort
+                :mobile-breakpoint="0"
                 :footer-props="footerProps"
                 :server-items-length="totalProjects"
                 :loading="isProjectsLoading"
