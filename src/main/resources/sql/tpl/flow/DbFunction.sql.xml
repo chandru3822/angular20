@@ -1,0 +1,17 @@
+<sql>
+
+  <dbFunction.getAll><![CDATA[
+     select df.*
+      from flow.db_function df
+      where df.archived is not true
+      order by df.function_name
+  ]]></dbFunction.getAll>
+
+  <dbFunction.getOne><![CDATA[
+     select df.*
+      from flow.db_function df
+      where df.id = :id
+  ]]></dbFunction.getOne>
+
+
+</sql>

@@ -772,7 +772,13 @@ export default new Router({
         }, {
           path: 'statusTypes',
           component: () => import (/* webpackChunkName: "statusTypes" */ './views/flow/admin/CompanyUserStatus.vue'),
-        },
+        }, {
+          path: 'functions',
+          component: () => import (/* webpackChunkName: "dbFunctions" */ './views/flow/admin/functions/Functions.vue'),
+        }, {
+          path: 'function/:id',
+          component: () => import (/* webpackChunkName: "dbFunctions" */ './views/flow/admin/functions/Function.vue'),
+        }
       ]
     },
     {
