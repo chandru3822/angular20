@@ -14896,8 +14896,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16831 then inspection_fail_feedback
                  else null end,
-            case when p.custom_field_group_assignment_id = 10981 then (select id from flow.list_of_value where parent_id = 9
-                                                                                                           and name = d2.ahj_inspection_fail_reason)
+            case when p.custom_field_group_assignment_id = 10981 then (select array_agg(id)
+                                                                       from flow.list_of_value
+                                                                       where parent_id = 1575 and
+                                                                               name in (
+                                                                               select  * from
+                                                                                   json_array_elements_text((select d2.ahj_inspection_fail_reason::json from blueraven.deal
+                                                                                                             where ahj_inspection_fail_reason is not null and
+                                                                                                                     id = d2.id))))
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -14937,8 +14943,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16831 then inspection_fail_feedback
                  else null end,
-            case when p.custom_field_group_assignment_id = 10981 then (select id from flow.list_of_value where parent_id = 9
-                                                                                                           and name = d2.ahj_inspection_fail_reason)
+            case when p.custom_field_group_assignment_id = 10981 then (select array_agg(id)
+                                                                       from flow.list_of_value
+                                                                       where parent_id = 1575 and
+                                                                               name in (
+                                                                               select  * from
+                                                                                   json_array_elements_text((select d2.ahj_inspection_fail_reason::json from blueraven.deal
+                                                                                                             where ahj_inspection_fail_reason is not null and
+                                                                                                                     id = d2.id))))
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -17220,8 +17232,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             case when p.custom_field_group_assignment_id = 16675 then d2.inspection_fail_feedback
                  else null end,
-            case when p.custom_field_group_assignment_id = 16662 then (select id from flow.list_of_value where parent_id = 1575
-                                                                                                           and name = d2.ahj_inspection_fail_reason)
+            case when p.custom_field_group_assignment_id = 16662 then (select array_agg(id)
+                                                                       from flow.list_of_value
+                                                                       where parent_id = 1575 and
+                                                                               name in (
+                                                                               select  * from
+                                                                                   json_array_elements_text((select d2.ahj_inspection_fail_reason::json from blueraven.deal
+                                                                                                             where ahj_inspection_fail_reason is not null and
+                                                                                                                     id = d2.id))))
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -17263,8 +17281,14 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             case when p.custom_field_group_assignment_id = 16675 then d2.inspection_fail_feedback
                  else null end,
-            case when p.custom_field_group_assignment_id = 16662 then (select id from flow.list_of_value where parent_id = 1575
-                                                                                                           and name = d2.ahj_inspection_fail_reason)
+            case when p.custom_field_group_assignment_id = 16662 then (select array_agg(id)
+                                                                       from flow.list_of_value
+                                                                       where parent_id = 1575 and
+                                                                               name in (
+                                                                               select  * from
+                                                                                   json_array_elements_text((select d2.ahj_inspection_fail_reason::json from blueraven.deal
+                                                                                                             where ahj_inspection_fail_reason is not null and
+                                                                                                                     id = d2.id))))
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
