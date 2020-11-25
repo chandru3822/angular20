@@ -199,14 +199,14 @@
     <!-- IRONMAN END -->
 
     <!-- RANKING TABLES FIRST HEADER START -->
-    <div v-if="showDashboard && (isCloser || isCloserMgrOrRegional)"
+    <div v-if="showDashboard && (isCloser || isCloserMgr || isCloserRegional)"
          class="ranking-tables-section-header">
       Your Office Ranking
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
 
     <!-- RANKING TABLES TOP ROW START -->
-    <div v-if="showDashboard && (isCloser || isCloserMgrOrRegional)"
+    <div v-if="showDashboard && (isCloser || isCloserMgr || isCloserRegional)"
          class="ranking-tables-section">
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
@@ -733,7 +733,9 @@
             </template>
           </v-select>
 
-          <v-btn v-if="!isCloser && !isCloserMgrOrRegional" id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
+          <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps">
+            All Reps
+          </v-btn>
         </div>
       </div>
 
@@ -1101,7 +1103,8 @@
       funnelDrilldownDialog: false,
       currentUserId: null,
       isCloser: false,
-      isCloserMgrOrRegional: false,
+      isCloserMgr: false,
+      isCloserRegional: false,
       selectedQuarter: 1,
       headers: [
         { text: '', value: '', show: true, sortable: false },
@@ -1699,7 +1702,7 @@
             break
         }
 
-        if (this.selectedRoundRobin || (!this.isCloser && !this.isCloserMgrOrRegional)) {
+        if (this.selectedRoundRobin || (!this.isCloser && !this.isCloserMgr && !this.isCloserRegional)) {
           this.loadRankingTables()
         }
       },
@@ -1711,7 +1714,7 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if (this.isCloser || this.isCloserMgrOrRegional) {
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
             await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
           }
@@ -1986,7 +1989,7 @@
         }
 
         if (this.apptsToFdcPipelineData?.length === 0) {
-          if (this.isCloser || this.isCloserMgrOrRegional) {
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             this.districtLoad(true)
           } else {
             this.districtLoad(false)
@@ -2061,7 +2064,7 @@
             this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
           })
 
-          if (this.isCloser || this.isCloserMgrOrRegional) {
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             if (this.apptsToFdcPipelineData.length > 0) {
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
@@ -2217,7 +2220,7 @@
           this.officeData = []
           this.repModel = []
           this.repData = []
-          this.funnelStats = []
+          this.apptsToFdcPipelineData = []
 
           if (districts?.length === 0) return
         }
@@ -2255,7 +2258,7 @@
           this.officeData = []
           this.repModel = []
           this.repData = []
-          this.funnelStats = []
+          this.apptsToFdcPipelineData = []
 
           if (regions?.length === 0) return
         }
@@ -2297,7 +2300,7 @@
         if (!this.selectAllOffices) {
           this.repModel = []
           this.repData = []
-          this.funnelStats = []
+          this.apptsToFdcPipelineData = []
 
           if (offices?.length === 0) return
         }
@@ -2691,7 +2694,7 @@
             this.officeModel = []
             this.repData = []
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
             this.districtModel = cloneDeep(this.districtData)
             this.repModel = [] // in case the user previously clicked the 'All Reps' button
@@ -2708,7 +2711,7 @@
             this.officeModel = []
             this.repData = []
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
             this.regionModel = cloneDeep(this.regionData)
             this.officeLoad(false)
@@ -2722,7 +2725,7 @@
             this.officeModel = []
             this.repData = []
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
             this.officeModel = cloneDeep(this.officeData)
             this.repLoad(false)
@@ -2734,10 +2737,16 @@
         this.$nextTick(() => {
           if (this.selectAllReps) {
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+
+            if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+              this.repModel = cloneDeep(this.repData)
+              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+            } else {
+              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+            }
           }
         })
       },
@@ -2754,11 +2763,15 @@
       this.currentUserId = this.$store.state.user.details.id
       if (this.$store.state.user.details.userPositions?.length > 0) {
         this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
-          return (position.position === 'Closer' && !position.endDate && !position.archived && position.primaryFlag)
+          return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
 
-        this.isCloserMgrOrRegional = this.$store.state.user.details.userPositions.filter(position => {
-          return ((position.position === 'Closer Manager' || position.position === 'Closer Regional') && !position.endDate && !position.archived && position.primaryFlag)
+        this.isCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
+          return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
+        }).length > 0
+
+        this.isCloserRegional = this.$store.state.user.details.userPositions.filter(position => {
+          return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
       }
 
