@@ -158,15 +158,9 @@
                 <td class="text-left">{{ index + 1 }}</td>
                 <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td class="text-left">{{ item.id ? item.id : '' }}</td>
-                <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
-                <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
-                <td class="text-left">
-                  {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
-                </td>
-                <td class="text-left">
-                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
-                </td>
-                <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
+                <td class="text-left">{{ item.source ? item.source : '' }}</td>
+                <td class="text-left">{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td class="text-left">{{ item.appointment_outcome ? item.appointment_outcome : '' }}</td>
               </tr>
             </template>
 
@@ -325,11 +319,11 @@
             <tr v-for="rep in reps" :key="rep.user_id"
                 :class="{'highlight-user-row': rep.user_id === currentUserId}">
               <td class="center-text">{{ rep.rank }}</td>
-              <td>
-                <img class="ranking-table-img"
-                     :class="{'round-img': rep.userImageUrl, 'default-img': !rep.userImageUrl}"
-                     :src="rep.userImageUrl ? rep.userImageUrl : '../../../assets/flow/user_img_placeholder.png'"
-                     :alt="rep.userImageAltText ? rep.userImageAltText : 'User photo placeholder'">
+              <td class="user-img-col">
+                <img v-if="rep.userImageUrl" class="ranking-table-img"
+                     :src="rep.userImageUrl" :alt="rep.userImageAltText">
+                <img v-else class="placeholder-img"
+                     src="../../../assets/flow/user_img_placeholder.png" :alt="rep.userImageAltText">
               </td>
               <td class="left-text">{{ rep.name }}</td>
               <td class="center-text">{{ rep.pitches }}</td>
@@ -858,7 +852,6 @@
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
       showFunnel: false,
-      ironmanLoaded: false,
       performanceDataLoaded: false,
       rankingTablesLoaded: false,
       dashboardWasLoaded: false,
@@ -1028,7 +1021,7 @@
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
       '$store.state.app.loading': function () {
-        if (!this.ironmanLoaded || !this.performanceDataLoaded || !this.rankingTablesLoaded) {
+        if (!this.performanceDataLoaded || !this.rankingTablesLoaded) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
       },
@@ -1058,8 +1051,9 @@
           default: // Dashboard tab
             this.showDashboard = true
             this.showFunnel = false
+            await this.loadIronman()
+
             if (!this.dashboardWasLoaded) {
-              await this.loadIronman()
               await this.loadRankingTables('MTD') // MTD is the default
               this.dashboardWasLoaded = true
             }
@@ -1069,8 +1063,6 @@
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        this.ironmanLoaded = false
-
         try {
           const params = {
             isSetterMgr: this.isSetterMgr,
@@ -1125,13 +1117,11 @@
             this.progressBarIsFull = this.percentAchieved === 100
             $('#progress-bar-fill').css('width', this.percentAchieved + '%')
 
-            this.ironmanLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Ironman data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.ironmanLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1174,13 +1164,13 @@
       calcPointsForQuarter (pitchCount) {
         if (!this.isSetterMgr) {
           switch (true) {
-            case pitchCount >= 10 && pitchCount < 12:
+            case pitchCount >= 48 && pitchCount < 60:
               return 1 // Bronze
-            case pitchCount >= 12 && pitchCount < 15:
+            case pitchCount >= 60 && pitchCount < 72:
               return 2 // Silver
-            case pitchCount >= 15 && pitchCount < 18:
+            case pitchCount >= 72 && pitchCount < 84:
               return 3 // Gold
-            case pitchCount >= 18:
+            case pitchCount >= 84:
               return 4 // Platinum
             default:
               return 0 // Unranked
@@ -1438,10 +1428,9 @@
 
       async getRepToBeatImage (repToBeatId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
-          const params = {sourceId: repToBeatId, attachmentSourceTypeId: 9}
-          const {data} = await getRequestWithParams('/attachment/', {params}, 'blueraven')
+          const params = {sourceId: repToBeatId, attachmentTypeId: 9}
+          const {data} = await getRequestWithParams('/attachment/', {params})
 
           if (data && data[0] && data[0].presignedUrl) {
             this.rankBoxData.imageUrl = data[0].presignedUrl
@@ -1470,8 +1459,8 @@
           const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
-          if (this.reps.length > 0 && data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
-            this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
+          if (this.reps.length > 0 && this.officeRankingData.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
+            this.userOffice = this.officeRankingData.filter(row => row.userId === this.currentUserId)[0].officeName
             let userIds = []
 
             this.reps.forEach(rep => {
@@ -1525,6 +1514,13 @@
             }, 'blueraven')
           this.offices = data
 
+          // removes empty parentheses from missing metro areas
+          this.offices.forEach(office => {
+            if (office.name.includes(' ()')) {
+              office.name = office.name.substr(0, office.name.length - 3)
+            }
+          })
+
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1544,6 +1540,12 @@
               }
             }, 'blueraven')
           this.officeRankingData = data
+
+          this.officeRankingData.forEach(office => {
+            if (office.org.includes(' ()')) {
+              office.org = office.org.substr(0, office.org.length - 3)
+            }
+          })
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -2865,15 +2867,16 @@
     color: #fff;
   }
 
-  .ranking-table-img {
+  .ranking-table-img,
+  .placeholder-img {
+    border-radius: 50%;
+    padding: 1px;
     width: 28px;
     height: 28px;
   }
 
-  .default-img {
+  .placeholder-img {
     background-color: #e9e9e9;
-    padding : 1px;
-    border-radius: 50%;
   }
 
   #funnel-background {
@@ -3527,7 +3530,8 @@
       padding: 0 5px;
     }
 
-    .ranking-table-img {
+    .ranking-table-img,
+    .placeholder-img {
       width: 40px;
       height: 40px;
     }
@@ -3924,7 +3928,6 @@
 
     .ranking-table td {
       font-size: 12px;
-      height: 55px;
     }
 
     .ranking-tables-no-data {

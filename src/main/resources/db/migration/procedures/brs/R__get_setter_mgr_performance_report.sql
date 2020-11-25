@@ -32,6 +32,7 @@ BEGIN
                  and pd.closer_appointment_start between p_start_date and p_end_date
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
                  and u.id = any(v_setter_ids)
+                 and upv.primary_flag is true
             ) as total_appointments,
             (select count(1)::bigint
              from flow.project p
@@ -43,6 +44,7 @@ BEGIN
                  and pd.closer_appointment_start between p_start_date and p_end_date
                  and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                  and u.id = any(v_setter_ids)
+                 and upv.primary_flag is true
             ) as total_pitches
         ) rpt
     ) as sub_rows;

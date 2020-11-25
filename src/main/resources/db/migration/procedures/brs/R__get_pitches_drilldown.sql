@@ -28,7 +28,7 @@ BEGIN
             select row_number() over (order by (concat(c.first_name, ' ', c.last_name))::bytea),
                    concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
-                   pd.source as source_name,
+                   pd.source_name as source,
                    pd.closer_appointment_start as appointment_date,
                    pd.closer_appointment_outcome_name as appointment_outcome
             from flow.project p
@@ -40,6 +40,7 @@ BEGIN
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                 and upv.primary_flag is true
+                and upv.position_level = 0
                 and case when p_is_setter_mgr is true then upv.org_id = p_setter_mgr_office_id
                     else u.id = p_user_id
                     end

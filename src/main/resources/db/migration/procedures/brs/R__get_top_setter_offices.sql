@@ -9,7 +9,7 @@ BEGIN
   RETURN QUERY
     with top_orgs as (
       select o.id as org_id,
-             o.org_name || ' (' || metro_area.metro_area || ')' as org,
+             concat(o.org_name, ' (', metro_area.metro_area, ')') as org,
              count(1) pitches,
              rank() over (order by count(1) desc) as rank
       from flow.project p
@@ -25,10 +25,12 @@ BEGIN
               then p.date_created::date between upv.start_date and upv.end_date
               else p.date_created::date >= upv.start_date
               end
+        and upv.primary_flag is true
+        and upv.position_level = 0
         and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
         and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
         and o.id != 171
-      group by o.id, o.org_name || ' (' || metro_area.metro_area || ')'
+      group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')
     )
     select array_to_json(array_agg(row_to_json(sub_rows)))
     from (

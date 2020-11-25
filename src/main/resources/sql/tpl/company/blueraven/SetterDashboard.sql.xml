@@ -23,6 +23,7 @@
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
+                    and upv.position_level = 0
                   end
              ) as "q1",
              (select count(1)
@@ -37,6 +38,7 @@
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
+                    and upv.position_level = 0
                   end
              ) as "q2",
              (select count(1)
@@ -51,6 +53,7 @@
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
+                    and upv.position_level = 0
                   end
              ) as "q3",
              (select count(1)
@@ -65,6 +68,7 @@
                 and upv.primary_flag is true
                 and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
                   else u.id = :currentUserId
+                    and upv.position_level = 0
                   end
              ) as "q4"
       ]]>
