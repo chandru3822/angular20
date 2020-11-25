@@ -131,7 +131,7 @@
   <closerDashboard.getCloserTableScores>
     <![CDATA[
       SELECT u.id,
-            concat(u.first_name, ' ', u.last_name) AS name,
+             concat(u.first_name, ' ', u.last_name) AS name,
              ust.user_status_type,
              o.org_name as officeName,
              o2.org_name as region,
@@ -144,7 +144,7 @@
                  and pd.utility_bill_verified_date is not null
                  and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
                  and case
-                   when pd.primary_financier = 721 --Cash then
+                   when pd.primary_financier = 721 then --Cash
                      pd.first_cash_payment_paid_date is not null and
                      greatest(final_design_signed_date, financial_agreement_signed_date,
                               first_cash_payment_paid_date, utility_bill_verified_date,
