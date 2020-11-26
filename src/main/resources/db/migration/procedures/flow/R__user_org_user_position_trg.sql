@@ -58,19 +58,29 @@ $BODY$
 declare
     v_user_id integer;
     v_user_ids integer[];
+    v_count bigint;
 BEGIN
 
     IF (TG_OP = 'DELETE') THEN
         v_user_id = old.user_id;
 
+        select count(1)
+        into v_count
+        from flow.user_position up
+        where up.id != old.id;
 
     ELSIF (TG_OP = 'UPDATE' or TG_OP = 'INSERT') then
         v_user_id = new.user_id;
-
+        v_count = 1;
     end if;
-    select array_agg(v_user_id)
-    into v_user_ids;
-    perform flow.update_user_org_user_position(v_user_ids);
+    if v_count > 0 then
+        select array_agg(v_user_id)
+        into v_user_ids;
+        perform flow.update_user_org_user_position(v_user_ids);
+    else
+        delete from flow.user_positions_vw where user_id = old.user_id;
+        delete from flow.user_position_hierarchy_vw where user_id = old.user_id;
+    end if;
     RETURN NEW;
 END;
 $BODY$
@@ -145,7 +155,7 @@ $BODY$
 
 drop trigger if exists user_view_trg on flow.user;
 CREATE TRIGGER user_view_trg
-    AFTER INSERT OR UPDATE OR DELETE
+    AFTER UPDATE OR DELETE
     ON flow.user
     FOR EACH ROW
 EXECUTE PROCEDURE flow.refresh_user_records();

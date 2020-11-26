@@ -9075,7 +9075,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
 
-INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT c.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Referral Follow-up' and cf.company_id = c.company_id) as custom_field_id,
             needs_final_referral_followup_date,
@@ -9084,7 +9084,8 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
          inner join flow.project p on p.id= d.id
          inner join blueraven.customer c1 on c1.id = d.customer_id
           inner join flow.contact c on c.id = c1.id
-     WHERE needs_final_referral_followup_date IS NOT NULL);
+     WHERE needs_final_referral_followup_date IS NOT NULL
+        limit 1);
 
 
 
@@ -9829,16 +9830,16 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
               inner join flow.contact c on c.id = p.contact_id
      WHERE ancillary_expense_estimated_price_3 is not null
        );
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
-    (SELECT d.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Annual Utility Usage (kWh)' and cf.company_id = c.company_id),
-            d.annual_utility_usage::integer,
-            2350555 as created_by_id
-     FROM blueraven.deal d
-              inner join flow.project p on p.id = d.id
-              inner join flow.contact c on c.id = p.contact_id
-     WHERE annual_utility_usage is not null
-      );
+-- INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+--     (SELECT d.id,
+--             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Annual Utility Usage (kWh)' and cf.company_id = c.company_id),
+--             d.annual_utility_usage::integer,
+--             2350555 as created_by_id
+--      FROM blueraven.deal d
+--               inner join flow.project p on p.id = d.id
+--               inner join flow.contact c on c.id = p.contact_id
+--      WHERE annual_utility_usage is not null
+--       );
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT d.id,
@@ -10760,9 +10761,9 @@ insert into  flow.user_org_access(org_id, user_id, date_created,
                                   created_by_id
 )
 with all_org_calendars as (
-    select distinct  unnest(calendar_org_ids) as org_id
-    from blueraven."user"
-    where id = 2350555
+    select distinct  id as org_id
+    from blueraven.org
+    where has_calendar is true
 ) select  distinct org_id,user_id,now(),2350555
 from blueraven.role_permission rp
          inner join blueraven.role r on r.id = rp.role_id
@@ -11007,10 +11008,6 @@ where c.column_a = uc.user_id
 
 update flow.user_company set default_appointment_length = 90;
 
-insert into flow.company_feature (feature_name, company_id, feature_id, home_page)
-values ('Smartlists', 2, 19, true);
-
-
 
 with owners as (
     select d.id,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date as added_on
@@ -11019,3 +11016,118 @@ update flow.project p
 set user_position_id = blueraven.get_user_position_for_closer(o.id::integer,o.added_on)
 from owners o
 where o.id = p.id;
+
+
+with insert_availability as (
+    insert into flow.resource_schedule(company_id, user_id, start_date,
+                                       end_date, date_created,
+                                       created_by_id,migrated_user_id)
+        (select 3,u.id,'2020-11-01',null,now(),2350555,ac.user_id
+         from blueraven.user u
+                  inner join base_mysql.availability_configurations ac on (ac.user_id = u.user_base_oid or ac.user_id = u.user_base_setter_oid)
+         where ac.local_deleted = 0
+           and (monday !='[]' or tuesday != '[]' or wednesday != '[]' or
+                thursday != '[]' or friday != '[]' or saturday != '[]'))returning *)
+
+insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time,
+                                                day_of_week_id, date_created,
+                                                created_by_id
+)
+(select foo.id,(('2020-01-01 ' ||min(foo.from_time))::timestamp at time zone foo.timezone at time zone 'UTC')::time,(('2020-01-01 ' ||max(foo.to_time))::timestamp at time zone foo.timezone at time zone 'UTC')::time,foo.day_of_week,now(),2350555
+from (
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,1 as day_of_week,
+                         ac1 ->> 'from' as from_time,ac1 ->> 'to' as to_time
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.monday::jsonb) ac1
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,2 as day_of_week,
+                         ac2 ->> 'from' as tuesday_from,ac2 ->> 'to' as tuesday_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.tuesday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,3 as day_of_week,
+                         ac2 ->> 'from' as wed_from,ac2 ->> 'to' as wed_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.wednesday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,4 as day_of_week,
+                         ac2 ->> 'from' as thurs_from,ac2 ->> 'to' as thurs_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.thursday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,5 as day_of_week,
+                         ac2 ->> 'from' as friday_from,ac2 ->> 'to' as friday_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.friday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,6 as day_of_week,
+                         ac2 ->> 'from' as sat_from,ac2 ->> 'to' as sat_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.saturday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0) as foo
+group by id,day_of_week, foo.timezone);
