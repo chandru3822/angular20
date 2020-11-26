@@ -218,7 +218,7 @@
         LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
       WHERE CASE WHEN :officeFdcRank IS TRUE
         THEN -- Office FDC Rank table
-          up.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived is false and primary_flag is true)
+          up.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived is false and up.primary_flag is true)
         ELSE -- Company Ranking (2nd row of tables)
           up.position_id = 1
           AND up.archived IS FALSE
