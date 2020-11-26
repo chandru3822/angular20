@@ -1366,8 +1366,16 @@
                     officeToBeat = tiedOffices[Math.floor(Math.random() * tiedOffices.length)]
                   }
 
+                  if (officeToBeat.name.includes(' ()')) {
+                    officeToBeat.name = officeToBeat.name.substr(0, officeToBeat.name.length - 3)
+                  }
+
                   this.rankBoxData.setter_office_to_beat_name = officeToBeat.name
                   this.rankBoxData.pitches_to_go = 1
+                }
+              } else {
+                if (this.rankBoxData.setter_office_to_beat_name.includes(' ()')) {
+                  this.rankBoxData.setter_office_to_beat_name = this.rankBoxData.setter_office_to_beat_name.substr(0, this.rankBoxData.setter_office_to_beat_name.length - 3)
                 }
               }
             }

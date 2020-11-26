@@ -40,10 +40,9 @@ BEGIN
                          then p2.date_created::date between upv2.start_date and upv2.end_date
                          else p2.date_created::date >= upv2.start_date
                          end
-                     and upv2.primary_flag is true
                      and upv2.position_level = 0
-                     and pd2.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date - 1)
-                     and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date - 1))
+                     and pd2.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
+                     and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date))
                      and o2.id = o.id
                 ) as total_appointments,
                 count(1)::bigint as pitches,
@@ -60,7 +59,6 @@ BEGIN
                     then p.date_created::date between upv.start_date and upv.end_date
                     else p.date_created::date >= upv.start_date
                     end
-                and upv.primary_flag is true
                 and upv.position_level = 0
                 and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
                 and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
