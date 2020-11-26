@@ -1434,10 +1434,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {sourceId: repToBeatId, attachmentTypeId: 9}
-          const {data} = await getRequestWithParams('/attachment/', {params})
+          const {data} = await getRequestWithParams('/attachment/getOne', {params})
 
-          if (data && data[0] && data[0].presignedUrl) {
-            this.rankBoxData.imageUrl = data[0].presignedUrl
+          if (data?.presignedUrl) {
+            this.rankBoxData.imageUrl = data.presignedUrl
 
             if (this.rankBoxData.setter_to_beat_name) {
               this.rankBoxData.imageAltText = 'Photo of ' + this.rankBoxData.setter_to_beat_name + ', a Blue Raven Solar employee'

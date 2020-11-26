@@ -44,6 +44,7 @@ BEGIN
                   where ust.user_status_type = 'Active'
                       and upv.primary_flag is true
                       and upv.position_level = 0
+                      and upv.position_id = 4 --Setter
                       and pd.source in (525, 526) --(Setter Gen, Retargeted)
                       and pd.closer_appointment_start between p_start_date and p_end_date
                       and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
