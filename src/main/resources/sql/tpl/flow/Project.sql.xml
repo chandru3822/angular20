@@ -103,7 +103,7 @@
                      concat(u.first_name, ' ', u.last_name) as "fullName",
                      pos.position,
                      up.id as "userPositionId"
-                  FROM blueraven."user" u
+                  FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position pos on pos.id = up.position_id
                   WHERE up.id = p.user_position_id) o) AS owner,
