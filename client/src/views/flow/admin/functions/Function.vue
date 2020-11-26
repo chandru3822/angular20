@@ -66,81 +66,89 @@
           </v-btn>
           <v-btn @click="[addNew = !addNew, newParam = {}]">Cancel</v-btn>
         </v-card>
-        <h3 class="pt-3">Params</h3>
-        <h5>System Params must be added to Company Function Params</h5>
-        <v-data-table
-          :headers="headers"
-          :items="dbFunction.dbFunctionParams"
-          :fixed-header="true"
-          hide-default-footer
-          class="elevation-1 mt-3"
-        >
-          <template #no-data>
-            No available params
-          </template>
-          <template #no-results>
-            No available params
-          </template>
-
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">
-                {{item.id}}
-              </td>
-              <td class="text-left">
-                {{item.parameterName}}
-              </td>
-              <td class="text-left">
-                {{item.dataType}}
-              </td>
-              <td class="text-left">
-                {{item.parameterType}}
-              </td>
-              <td class="text-left">
-                {{item.systemValue}}
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-        <h3 class="pt-3">Already Assigned To:</h3>
-        <div v-if="null != dbFunction.companyFunctions && dbFunction.companyFunctions.length > 0">
-          <span v-for="(cf, index) in dbFunction.companyFunctions" :key="index">
-            {{cf.companyName}},
-          </span>
-        </div>
-        <div v-else>
-          Not assigned to any companies yet
-        </div>
-        <h3 class="pt-3">Save to Companies</h3>
-        <v-select v-model="selectedCompanies"
-                  :items="companies"
-                  label="Select Companies"
-                  item-text="companyName"
-                  item-value="id"
-                  return-object
-                  clearable
-                  multiple
-        >
-          <template
-            slot="selection"
-            slot-scope="{ item, index }"
+        <v-divider></v-divider>
+        <v-card flat class="px-3">
+          <h3 class="pt-3">Params</h3>
+          <v-data-table
+            :headers="headers"
+            :items="dbFunction.dbFunctionParams"
+            :fixed-header="true"
+            hide-default-footer
+            class="elevation-1 mt-3"
           >
-            <div v-if="index === 0 && selectedCompanies.length < 3">
-              <v-chip small v-for="sc in selectedCompanies">
-                <span>{{ sc.companyName }}</span>
-              </v-chip>
-            </div>
-            <span
-              v-if="index === 1 && selectedCompanies.length >= 3"
-              class="primary--text caption"
-            >{{ selectedCompanies.length }} selected</span>
-          </template>
-        </v-select>
-        <v-btn :disabled="selectedCompanies.length === 0"
-               color="primaryCustom" class="white--text mr-2"
-               @click="pushToCompanies()">
-          Push to Companies
-        </v-btn>
+            <template #no-data>
+              No available params
+            </template>
+            <template #no-results>
+              No available params
+            </template>
+
+            <template #item="{ item, index }">
+              <tr :class="{'shaded-row': index % 2}">
+                <td class="text-left">
+                  {{item.id}}
+                </td>
+                <td class="text-left">
+                  {{item.parameterName}}
+                </td>
+                <td class="text-left">
+                  {{item.dataType}}
+                </td>
+                <td class="text-left">
+                  {{item.parameterType}}
+                </td>
+                <td class="text-left">
+                  {{item.systemValue}}
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-card>
+        <v-divider class="mt-5"></v-divider>
+        <v-card flat class="px-3">
+          <h3 class="pt-3">Already Assigned To:</h3>
+          <div v-if="null != dbFunction.companyFunctions && dbFunction.companyFunctions.length > 0">
+            <span v-for="(cf, index) in dbFunction.companyFunctions" :key="index">
+              {{cf.companyName}},
+            </span>
+          </div>
+          <div v-else>
+            Not assigned to any companies yet
+          </div>
+        </v-card>
+        <v-divider class="mt-5"></v-divider>
+        <v-card flat class="px-3">
+          <h3 class="pt-3">Save to Companies</h3>
+          <v-select v-model="selectedCompanies"
+                    :items="companies"
+                    label="Select Companies"
+                    item-text="companyName"
+                    item-value="id"
+                    return-object
+                    clearable
+                    multiple
+          >
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedCompanies.length < 3">
+                <v-chip small v-for="sc in selectedCompanies">
+                  <span>{{ sc.companyName }}</span>
+                </v-chip>
+              </div>
+              <span
+                v-if="index === 1 && selectedCompanies.length >= 3"
+                class="primary--text caption"
+              >{{ selectedCompanies.length }} selected</span>
+            </template>
+          </v-select>
+          <v-btn :disabled="selectedCompanies.length === 0"
+                 color="primaryCustom" class="white--text mr-2"
+                 @click="pushToCompanies()">
+            Push to Companies
+          </v-btn>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -196,7 +204,6 @@
         try {
           const {data} = await getRequest(`/dbFunction/${this.functionId}`)
           this.dbFunction = data
-          console.log('randaLogger', data)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

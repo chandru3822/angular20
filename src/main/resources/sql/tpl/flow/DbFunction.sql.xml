@@ -33,6 +33,12 @@
       order by pt.parameter_type
   ]]></dbFunction.getParameterTypes>
 
+  <dbFunction.archive><![CDATA[
+     update flow.db_function
+        set archived = true
+     where id = :id
+  ]]></dbFunction.archive>
+
   <dbFunction.getOne><![CDATA[
      select df.*,
             dt.data_type as return_data_type,

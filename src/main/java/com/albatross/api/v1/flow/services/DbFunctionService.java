@@ -56,6 +56,12 @@ public class DbFunctionService {
     return result.orElse(null);
   }
 
+  public void archiveDbFunction(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("dbFunction.archive", params);
+  }
+
   public List<DbFunctionType> getDbFunctionTypes() {
     List<DbFunctionType> results = sqlCache.query("dbFunction.getTypes", Collections.emptyMap(), DbFunctionType.class);
     return results;

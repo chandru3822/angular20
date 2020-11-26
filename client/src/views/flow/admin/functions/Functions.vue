@@ -65,11 +65,44 @@
           <template #item="{ item }">
             <tr  class="text-left" :class="{'shaded-row': functions.indexOf(item) % 2}">
               <td class="text-left">{{ item.functionName }}</td>
+              <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.functionType }}</td>
               <td>
                 <v-btn small text @click="goToFunction(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
+                <v-dialog
+                  v-model="item.deleteConfirm"
+                  width="500">
+                  <template #activator="{ on }">
+                    <v-btn small text color="primaryCustom"
+                           v-on="on">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title class="headline grey lighten-2" primary-title>
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text class="pt-4">
+                      Are you sure you want to delete this function <strong>{{item.functionName}}</strong>?
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn @click="item.deleteConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primaryCustom"
+                        text
+                        @click="[item.deleteConfirm = false, deleteFunction(item)]">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </td>
             </tr>
           </template>
@@ -103,6 +136,7 @@
         userId: this.$store.state.user.details.id,
         headers: [
           { text: 'Function', value: 'functionName', show: true },
+          { text: 'Display Name', value: 'displayName', show: true },
           { text: 'Type', value: 'functionType', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
@@ -167,6 +201,19 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteFunction(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/dbFunction/${item.id}`)
+          item.archived = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Functions')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

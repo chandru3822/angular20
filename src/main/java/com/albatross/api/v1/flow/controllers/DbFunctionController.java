@@ -39,6 +39,11 @@ public class DbFunctionController {
     return dbFunctionService.getDbFunction(id);
   }
 
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteDbFunction (@PathVariable Long id) {
+    dbFunctionService.archiveDbFunction(id);
+  }
+
   @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<DbFunctionType> getDbFunctionTypes () {
     return dbFunctionService.getDbFunctionTypes();

@@ -183,7 +183,6 @@
       },
       async loadFieldsByParent(id, dataTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        console.log('randaLogger', dataTypeId)
         try {
           const {data} = await getRequest(`/customField/getByParentProcessStep/${id}`)
           this.availableCustomFields = data.filter(d => {
