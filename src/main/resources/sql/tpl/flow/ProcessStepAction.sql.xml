@@ -365,7 +365,7 @@ select
                    dfp.system_value_id as "systemValueId",
                    apdv.dynamic_value as "dynamicValue"
             from flow.db_function_param dfp
-                   left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
+                   left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true and cfp.company_function_id = cf.id
                    left join flow.system_value sv on sv.id = dfp.system_value_id
                    left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_action_company_function_id = psacf.id
                    left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
