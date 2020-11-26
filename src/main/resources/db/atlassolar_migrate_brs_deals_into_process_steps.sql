@@ -342,7 +342,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
                                                                     where d.id = d2.id and up.position_id in (67,43,44,114,42) and introduction_call_completed_by is not null limit 1)
-                 when p.custom_field_group_assignment_id = 13597 (select plh.id from brs.proposal_log_history plh
+                 when p.custom_field_group_assignment_id = 13597 then (select plh.id from brs.proposal_log_history plh
                                                                     inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
                                                                     where d2.id = d3.id and plh.project_id =d2.id limit 1)
 --                  when p.custom_field_group_assignment_id = 14 then (select id from flow.list_of_value where parent_id = 140
@@ -425,7 +425,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                           inner join blueraven.user u on u.first_name|| ' '||u.last_name = d.introduction_call_completed_by
                                                                                           inner join flow.user_position up on up.user_id = u.id
                                                                     where d.id = d2.id and up.position_id in (67,43,44,114,42) and introduction_call_completed_by is not null limit 1)
-                 when p.custom_field_group_assignment_id = 13597 (select plh.id from brs.proposal_log_history plh
+                 when p.custom_field_group_assignment_id = 13597 then (select plh.id from brs.proposal_log_history plh
                                                                     inner join blueraven.deal d3 on plh.proposal_nbr::integer = d3.proposal_nbr
                                                                     where d2.id = d3.id and plh.project_id =d2.id limit 1)
                 --                  when p.custom_field_group_assignment_id = 14 then (select id from flow.list_of_value where parent_id = 140
