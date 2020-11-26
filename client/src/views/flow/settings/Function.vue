@@ -41,7 +41,7 @@
                           label="Parent Object"
                           item-text="processStepName"
                           item-value="id"
-                          @input="loadFieldsByParent(item.processStepId)"
+                          @input="loadFieldsByParent(item.processStepId, item.dataTypeId)"
                 ></v-select>
                 <v-select v-if="item.processStepId"
                           v-model="item.customFieldGroupAssignmentId"
@@ -181,11 +181,14 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async loadFieldsByParent(id) {
+      async loadFieldsByParent(id, dataTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        console.log('randaLogger', dataTypeId)
         try {
           const {data} = await getRequest(`/customField/getByParentProcessStep/${id}`)
-          this.availableCustomFields = data
+          this.availableCustomFields = data.filter(d => {
+            return d.dataTypeId === dataTypeId
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

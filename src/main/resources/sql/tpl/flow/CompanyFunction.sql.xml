@@ -81,6 +81,7 @@
 
   <companyFunction.getFunctionDynamicParams><![CDATA[
     select dfp.id db_function_param_id,
+           dfp.data_type_id,
        dfp.parameter_name,
        null as dynamic_value
     from flow.db_function_param dfp
