@@ -279,6 +279,10 @@
           }
           const {data} = await postRequest(`/dbFunction/${this.functionId}/addToCompany`, params)
           this.dbFunction = data
+          this.companies = this.companies.filter(c => {
+            let match = this.selectedCompanies.find(sc => sc.id === c.id)
+            return !match
+          })
           this.selectedCompanies = []
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
