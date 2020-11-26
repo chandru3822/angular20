@@ -15,7 +15,7 @@ public class SmartlistFieldAssignment {
 
   private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById,
       displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
-      companyId;
+      companyId, systemListId;
 
   private String name, objectType, processStepName, customFieldSqlKey, projectDetailsColumn;
 

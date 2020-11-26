@@ -270,6 +270,7 @@ select
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
+  sl.id as system_list_id,
   case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key,
   (select row_to_json(f) from(
       select
@@ -395,6 +396,7 @@ select
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
+  sl.id as system_list_id,
   case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' else cf.custom_field_sql_key end as custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
