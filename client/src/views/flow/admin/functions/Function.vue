@@ -18,10 +18,14 @@
         </v-toolbar>
         <v-list>
           <v-list-item>
-            <v-list-item-title>Function Return Data Type: <strong>{{dbFunction.returnDataType}}</strong></v-list-item-title>
+            <v-list-item-title>Display Name: <strong>{{dbFunction.displayName}}</strong></v-list-item-title>
           </v-list-item>
           <v-list-item>
             <v-list-item-title>Function Type: <strong>{{dbFunction.functionType}}</strong></v-list-item-title>
+          </v-list-item>
+<!--          only need to show return type for requirement functions -->
+          <v-list-item v-if="dbFunction.functionTypeId === 1">
+            <v-list-item-title>Function Return Data Type: <strong>{{dbFunction.returnDataType}}</strong></v-list-item-title>
           </v-list-item>
         </v-list>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
@@ -98,6 +102,45 @@
             </tr>
           </template>
         </v-data-table>
+        <h3 class="pt-3">Already Assigned To:</h3>
+        <div v-if="null != dbFunction.companyFunctions && dbFunction.companyFunctions.length > 0">
+          <span v-for="(cf, index) in dbFunction.companyFunctions" :key="index">
+            {{cf.companyName}},
+          </span>
+        </div>
+        <div v-else>
+          Not assigned to any companies yet
+        </div>
+        <h3 class="pt-3">Save to Companies</h3>
+        <v-select v-model="selectedCompanies"
+                  :items="companies"
+                  label="Select Companies"
+                  item-text="companyName"
+                  item-value="id"
+                  return-object
+                  clearable
+                  multiple
+        >
+          <template
+            slot="selection"
+            slot-scope="{ item, index }"
+          >
+            <div v-if="index === 0 && selectedCompanies.length < 3">
+              <v-chip small v-for="sc in selectedCompanies">
+                <span>{{ sc.companyName }}</span>
+              </v-chip>
+            </div>
+            <span
+              v-if="index === 1 && selectedCompanies.length >= 3"
+              class="primary--text caption"
+            >{{ selectedCompanies.length }} selected</span>
+          </template>
+        </v-select>
+        <v-btn :disabled="selectedCompanies.length === 0"
+               color="primaryCustom" class="white--text mr-2"
+               @click="pushToCompanies()">
+          Push to Companies
+        </v-btn>
       </v-col>
     </v-row>
 
@@ -123,6 +166,8 @@
         dataTypes: [],
         parameterTypes: [],
         systemValues: [],
+        companies: [],
+        selectedCompanies: [],
         functionId: parseInt(this.$route.params.id),
         headers: [
           {text: 'ID', value: 'id', show: true},
@@ -143,6 +188,7 @@
     },
     async created () {
       this.getFunction()
+      this.getCompanies()
     },
     methods: {
       async getFunction() {
@@ -150,6 +196,20 @@
         try {
           const {data} = await getRequest(`/dbFunction/${this.functionId}`)
           this.dbFunction = data
+          console.log('randaLogger', data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Function')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCompanies() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/dbFunction/${this.functionId}/availableCompanies`)
+          this.companies = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -195,6 +255,24 @@
           const {data} = await postRequest(`/dbFunction/param`, this.newParam)
           this.dbFunction = data
           this.newParam = {}
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Function Param')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async pushToCompanies() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            ...this.dbFunction,
+            selectedCompanyIds: this.selectedCompanies.map(sc => sc.id),
+          }
+          const {data} = await postRequest(`/dbFunction/${this.functionId}/addToCompany`, params)
+          this.dbFunction = data
+          this.selectedCompanies = []
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

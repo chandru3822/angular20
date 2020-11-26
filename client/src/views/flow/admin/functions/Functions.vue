@@ -18,22 +18,26 @@
                       v-model="newFunction.functionName"
                       hint="* This MUST match the function name in the procedure files"
                       persistent-hint></v-text-field>
+            <v-text-field text label="Display Name"
+                          v-model="newFunction.displayName"></v-text-field>
             <v-select
-              v-model="newFunction.returnDataTypeId"
-              :items="dataTypes"
-              label="Return Data Type"
-              item-text="dataType"
-              item-value="id"
-            ></v-select>
-            <v-select
+              class="mt-2"
               v-model="newFunction.dbFunctionTypeId"
               :items="dbFunctionTypes"
               label="Function Type"
               item-text="functionType"
               item-value="id"
             ></v-select>
+            <v-select
+              v-if="newFunction.dbFunctionTypeId === 1"
+              v-model="newFunction.returnDataTypeId"
+              :items="dataTypes"
+              label="Return Data Type"
+              item-text="dataType"
+              item-value="id"
+            ></v-select>
           </div>
-          <v-btn :disabled="!newFunction || !newFunction.functionName || !newFunction.dbFunctionTypeId || !newFunction.returnDataTypeId"
+          <v-btn :disabled="!newFunction || !newFunction.functionName || !newFunction.displayName || !newFunction.dbFunctionTypeId || (newFunction.dbFunctionTypeId === 1 && !newFunction.returnDataTypeId)"
                  color="primaryCustom" class="white--text mr-2"
                  @click="addFunction()">
             Save
@@ -155,6 +159,8 @@
       async addFunction() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          //unset the returnDataTypeId if they changed the function type back to Action
+          this.newFunction.returnDataTypeId = this.newFunction.dbFunctionTypeId !== 1 ? null : this.newFunction.returnDataTypeId
           const {data} = await postRequest(`/dbFunction`, this.newFunction)
           this.goToFunction(data.id)
           this.$store.commit(AppMutations.SET_LOADING, false)

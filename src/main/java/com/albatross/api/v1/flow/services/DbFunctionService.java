@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.DbFunctionController;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,13 @@ public class DbFunctionService {
     return results;
   }
 
+  public List<Company> getAvailableCompanies(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("dbFunctionId", id);
+    List<Company> results = sqlCache.query("dbFunction.getAvailableCompanies", params, Company.class);
+    return results;
+  }
+
   public DbFunction getDbFunction(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -63,6 +71,7 @@ public class DbFunctionService {
     params.put("functionName", dbFunction.getFunctionName());
     params.put("returnDataTypeId", dbFunction.getReturnDataTypeId());
     params.put("dbFunctionTypeId", dbFunction.getDbFunctionTypeId());
+    params.put("displayName", dbFunction.getDisplayName());
 
     Long id = sqlCache.updateReturningId("dbFunction.insertFunction", params, "id").longValue();
     return getDbFunction(id);
@@ -77,6 +86,19 @@ public class DbFunctionService {
 
     sqlCache.update("dbFunction.insertParam", params);
     return getDbFunction(dbFunctionParam.getDbFunctionId());
+  }
+
+  public DbFunction addToCompany(Long functionId, DbFunctionController.AddToCompanyRequest req) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("functionId", functionId);
+    params.put("displayName", req.getDisplayName());
+
+    for(Long companyId : req.getSelectedCompanyIds()) {
+      params.put("companyId", companyId);
+      sqlCache.update("dbFunction.addToCompany", params);
+    }
+
+    return getDbFunction(functionId);
   }
 
   public List<SystemValue> getSystemValues() {
@@ -98,6 +120,10 @@ public class DbFunctionService {
 
       bw.registerCustomEditor(List.class, "dbFunctionParams",
           new JsonCollectionDeserializer(dbFunctionParamRef, objectMapper));
+
+      TypeReference<List<CompanyFunction>> companyFunctionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "companyFunctions",
+          new JsonCollectionDeserializer(companyFunctionsRef, objectMapper));
 
     }
   }

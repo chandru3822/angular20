@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.DbFunctionService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -28,6 +29,11 @@ public class DbFunctionController {
     return dbFunctionService.getDbFunctions();
   }
 
+  @GetMapping(value = "/{id}/availableCompanies", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Company> getAvailableCompanies (@PathVariable Long id) {
+    return dbFunctionService.getAvailableCompanies(id);
+  }
+
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public DbFunction getDbFunction (@PathVariable Long id) {
     return dbFunctionService.getDbFunction(id);
@@ -52,6 +58,17 @@ public class DbFunctionController {
   @PostMapping(value = "/param", produces = MediaType.APPLICATION_JSON_VALUE)
   public DbFunction insertDbFunctionParam (@RequestBody DbFunctionParam dbFunctionParam) {
     return dbFunctionService.insertDbFunctionParam(dbFunctionParam);
+  }
+
+  @Data
+  public static class AddToCompanyRequest extends DbFunction {
+    private List<Long> selectedCompanyIds;
+  }
+
+  @PostMapping(value = "/{id}/addToCompany", produces = MediaType.APPLICATION_JSON_VALUE)
+  public DbFunction addToCompany (@PathVariable Long id,
+                            @RequestBody AddToCompanyRequest req) {
+    return dbFunctionService.addToCompany(id, req);
   }
 
   @GetMapping(value = "/systemValues", produces = MediaType.APPLICATION_JSON_VALUE)

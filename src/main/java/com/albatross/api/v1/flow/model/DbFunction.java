@@ -14,8 +14,9 @@ import java.util.List;
 public class DbFunction {
 
   private Long id, returnDataTypeId, dbFunctionTypeId;
-  private String functionName, functionType, returnDataType;
+  private String functionName, functionType, returnDataType, displayName;
   private Boolean archived;
   private List<DbFunctionParam> dbFunctionParams;
+  private List<CompanyFunction> companyFunctions;
 }
 
