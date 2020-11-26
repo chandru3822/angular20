@@ -132,16 +132,16 @@ INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@uat-0.1.0-406.plist', 'application/octet-stream', 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-406.plist', null, false, '2020-11-26 01:04:26.802141', '2020-11-26 03:23:26.608306', null, 99999992, null, null, true);
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@uat-0.1.0-407.apk', 'application/vnd.android.package-archive', 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-407.apk', null, false, '2020-11-26 01:29:28.758582', '2020-11-26 03:23:23.879418', null, 99999992, null, null, true);
 
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (3);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 4);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 4);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 4);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES ( 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884897,1);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884898,3);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884899, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884900, 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884902, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884903, 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884904, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884905, 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884906, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884907, 4);
 
 
 -- select * from  flow.attachment

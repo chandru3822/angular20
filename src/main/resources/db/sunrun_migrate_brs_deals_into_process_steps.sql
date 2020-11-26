@@ -14892,7 +14892,7 @@ with active_step as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         text_value,int_array_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16831 then inspection_fail_feedback
                  else null end,
@@ -14939,7 +14939,7 @@ with process_step1 as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         text_value,int_array_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16831 then inspection_fail_feedback
                  else null end,
@@ -14985,12 +14985,18 @@ with process_step1 as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         text_value,int_array_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16831 then ahj_reinspection_fail_feedback
                  else null end,
-            case when p.custom_field_group_assignment_id = 10981 then (select id from flow.list_of_value where parent_id = 9
-                                                                                                           and name = d2.ahj_reinspection_fail_reason)
+            case when p.custom_field_group_assignment_id = 10981 then (select array_agg(id)
+                                                                       from flow.list_of_value
+                                                                       where parent_id = 1575 and
+                                                                               name in (
+                                                                               select  * from
+                                                                                   json_array_elements_text((select d2.ahj_reinspection_fail_reason::json from blueraven.deal
+                                                                                                             where d2.ahj_reinspection_fail_reason is not null and
+                                                                                                                     id = d2.id))))
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -15025,12 +15031,18 @@ with process_step1 as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         text_value,int_array_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16831 then ahj_reinspection_b_fail_feedback
                  else null end,
-            case when p.custom_field_group_assignment_id = 10981 then (select id from flow.list_of_value where parent_id = 9
-                                                                                                           and name = d2.ahj_reinspection_b_fail_reason)
+            case when p.custom_field_group_assignment_id = 10981 then (select array_agg(id)
+                                                                       from flow.list_of_value
+                                                                       where parent_id = 1575 and
+                                                                               name in (
+                                                                               select  * from
+                                                                                   json_array_elements_text((select d2.ahj_inspection_fail_reason::json from blueraven.deal
+                                                                                                             where ahj_inspection_fail_reason is not null and
+                                                                                                                     id = d2.id))))
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -17226,7 +17238,7 @@ with active_step as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         timestamp_value,text_value,int_array_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16688 then additional_ahj_inspection_audit_complete_date
                  else null end,
@@ -17275,7 +17287,7 @@ with process_step1 as (
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,text_value,int_value,date_created, date_modified, created_by_id, modified_by_id)
+                                                         timestamp_value,text_value,int_array_value,date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 16688 then additional_ahj_inspection_audit_complete_date
                  else null end,

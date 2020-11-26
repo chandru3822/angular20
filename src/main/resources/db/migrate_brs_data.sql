@@ -7785,6 +7785,63 @@ INSERT INTO flow.contact (city,
             (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
+             where cc.company_id = (select id from flow.company where company_name = 'Code 7 Roof and Solar')
+               and cy.id = 1),
+            email,
+            first_name,
+            id,
+            last_name,
+            mailing_city,
+            mailing_postal_code,
+            mailing_state,
+            mailing_street1,
+            mailing_street2,
+            mobile,
+            phone,
+            postal_code,
+            prospect_status,
+            state,
+            street1,
+            street2,
+            (select id from flow.contact_type where contact_type='Customer'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Code 7 Roof and Solar'),
+            (select up.id
+             from flow.user_position up
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
+     from blueraven.customer c
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =17));
+
+INSERT INTO flow.contact (city,
+                          company_country_id,
+                          email,
+                          first_name,
+                          id,
+                          last_name,
+                          mailing_city,
+                          mailing_postal_code,
+                          mailing_state,
+                          mailing_street1,
+                          mailing_street2,
+                          mobile,
+                          phone,
+                          postal_code,
+                          prospect_status,
+                          state,
+                          street1,
+                          street2,
+                          contact_type_id,
+                          created_by_id,
+                          date_created,
+                          company_id,
+                          owner_user_position_id)
+    (SELECT city,
+            (select cc.id
+             from flow.company_country cc
+                      inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Energy Pal')
                and cy.id = 1),
             email,
@@ -9356,7 +9413,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
      FROM blueraven.deal d
      inner join flow.project p on p.id = d.id
      inner join flow.contact c on c.id = p.contact_id
-    WHERE entered_into_payment_system_date IS NOT NULL
+    WHERE entered_into_payment_system_date IS NOT NULL and originator_id = 1
    );
 
 -- INSERT INTO flow.custom_field_group_assignment(
