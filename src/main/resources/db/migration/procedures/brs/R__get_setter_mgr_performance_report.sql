@@ -26,25 +26,33 @@ BEGIN
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
+                 inner join flow.user_positions_vw upv on (upv.user_position_id = c.owner_user_position_id and upv.position_id = 4)
                  inner join flow.user u on u.id = upv.user_id
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
+                 and case when upv.end_date is not null
+                     then p.date_created::date between upv.start_date and upv.end_date
+                     else p.date_created::date >= upv.start_date
+                     end
+                 and upv.position_level = 0
                  and pd.closer_appointment_start between p_start_date and p_end_date
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
                  and u.id = any(v_setter_ids)
-                 and upv.primary_flag is true
             ) as total_appointments,
             (select count(1)::bigint
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
+                 inner join flow.user_positions_vw upv on (upv.user_position_id = c.owner_user_position_id and upv.position_id = 4)
                  inner join flow.user u on u.id = upv.user_id
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
+                 and case when upv.end_date is not null
+                     then p.date_created::date between upv.start_date and upv.end_date
+                     else p.date_created::date >= upv.start_date
+                     end
+                 and upv.position_level = 0
                  and pd.closer_appointment_start between p_start_date and p_end_date
                  and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                  and u.id = any(v_setter_ids)
-                 and upv.primary_flag is true
             ) as total_pitches
         ) rpt
     ) as sub_rows;
