@@ -2182,6 +2182,14 @@
 
               this.markMissingDrilldownData()
               this.reformatFunnelDrilldownDates()
+
+              this.funnelDrilldownData.forEach(row => {
+                if (row.verified_setter_lead !== null && row.verified_setter_lead === true) {
+                  row.verified_setter_lead = 'Yes'
+                } else if (row.verified_setter_lead !== null && row.verified_setter_lead === false) {
+                  row.verified_setter_lead = 'No'
+                }
+              })
             }
 
             this.funnelDrilldownDialog = true
