@@ -285,6 +285,8 @@ public class ProjectProcessStepService {
     }
 
     log.info("PPSs created by initial auto triggers: " + createdPpsIds.size());
+    log.info("PPS ids created by initial auto triggers: " + createdPpsIds);
+
     return createdPpsIds;
   }
 
@@ -306,6 +308,7 @@ public class ProjectProcessStepService {
     }
 
     log.info("PPS created by time based auto triggers: " + createdPpsIds.size());
+    log.info("PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
   @Transactional
