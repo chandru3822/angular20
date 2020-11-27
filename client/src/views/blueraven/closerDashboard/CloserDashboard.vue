@@ -2211,6 +2211,7 @@
         })
 
         this.apptsToFdcPipelineData = []
+        this.apptsToFdcPipelineLoaded = true
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
