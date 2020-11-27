@@ -4,11 +4,11 @@
 
 name: Albatross Build
 
-on: workflow_dispatch
-push:
-        branches:
-            - "dev"
-
+#on: workflow_dispatch
+#push:
+#        branches:
+#            - "dev"
+#
 jobs:
     build:
         name: Package & Deploy
