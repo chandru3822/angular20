@@ -4,7 +4,7 @@
 name: Albatross Build
 
 on: workflow_dispatch
-    push:
+push:
         branches:
             - "dev"
 
