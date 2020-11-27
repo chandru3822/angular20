@@ -14,10 +14,10 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            -   name: Cancel Previous Runs
-                uses: styfle/cancel-workflow-action@0.6.0
-                with:
-                    access_token: ${{ github.token }}
+                #            -   name: Cancel Previous Runs
+                #                uses: styfle/cancel-workflow-action@0.6.0
+                #                with:
+                #                    access_token: ${{ github.token }}
 
             -   uses: actions/checkout@v2
             -   name: Set up JDK 11
