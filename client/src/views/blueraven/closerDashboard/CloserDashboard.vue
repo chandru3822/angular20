@@ -24,7 +24,7 @@
           Dashboard
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable" :class="{'font-weight-bold': showFunnel}" @click="switchTabs(2)">
+        <span class="clickable" :class="{'font-weight-bold': showFunnels}" @click="switchTabs(2)">
           Funnel
         </span>
       </v-col>
@@ -414,7 +414,7 @@
 
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
-    <div v-show="showFunnel" id="appts-created-pipeline-container" class="mb-8">
+    <div v-show="showFunnels" id="appts-created-pipeline-container" class="mb-8">
       <div class="pipeline-header-container">
         <v-icon class="pipeline-icon">mdi-poll</v-icon>
         <div class="pipeline-title">Appointments Created Pipeline</div>
@@ -554,7 +554,7 @@
     <!-- APPOINTMENTS CREATED PIPELINE END -->
 
     <!-- APPOINTMENTS TO FDC PIPELINE START -->
-    <div v-show="showFunnel" id="appts-to-fdc-pipeline-container"
+    <div v-show="showFunnels" id="appts-to-fdc-pipeline-container"
          :class="{'mb-8': apptsToFdcPipelineData.length > 0}">
       <div class="pipeline-header-container">
         <div id="pipeline-header-left-side">
@@ -1124,9 +1124,10 @@
       timeInterval: +moment().format('DD'),
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
-      showFunnel: false,
+      showFunnels: false,
       rankingTablesLoaded: false,
       dashboardWasLoaded: false,
+      apptsToFdcPipelineLoaded: false,
       funnelsWereLoaded: false,
       currentQuarter: moment().quarter(),
       fdcCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
@@ -1374,6 +1375,12 @@
       }
     },
     watch: {
+      // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
+      '$store.state.app.loading': function () {
+        if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsToFdcPipelineLoaded)) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+        }
+      },
       appts_created_pipeline_dt1 () {
         this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
       },
@@ -1407,7 +1414,7 @@
         switch (tabNum) {
           case 2: // Funnel tab
             this.showDashboard = false
-            this.showFunnel = true
+            this.showFunnels = true
             if (!this.funnelsWereLoaded) {
               await this.loadFunnels()
               this.funnelsWereLoaded = true
@@ -1415,7 +1422,7 @@
             break
           default: // Dashboard tab
             this.showDashboard = true
-            this.showFunnel = false
+            this.showFunnels = false
             await this.loadIronman()
 
             if (!this.dashboardWasLoaded) {
@@ -2080,6 +2087,7 @@
       },
 
       async apptsToFdcPipelineLoad (start, end, useRepDataInstead) {
+        this.apptsToFdcPipelineLoaded = false
         let reps = []
         let orgs = []
 
@@ -2165,6 +2173,7 @@
             this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
             if (this.apptsCreatedPipelineData.length > 0) {
+              this.apptsToFdcPipelineLoaded = true
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           })
@@ -2172,6 +2181,7 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.apptsToFdcPipelineLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -4446,7 +4456,8 @@
     }
 
     #appts-to-fdc-pipeline-container {
-      margin: 0 auto;
+      margin-left: auto;
+      margin-right: auto;
       max-width: calc(100% - 50px);
 
       .pipeline-header-container {
