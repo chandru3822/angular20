@@ -4,9 +4,9 @@
 name: Albatross Build
 
 on: workflow_dispatch
-#    push:
-#        branches:
-#            - "dev"
+    push:
+        branches:
+            - "dev"
 
 jobs:
     build:
@@ -17,7 +17,7 @@ jobs:
             -   name: Cancel Previous Runs
                 uses: styfle/cancel-workflow-action@0.6.0
                 with:
-                    access_token: ${{ github.token }}
+                    access_token: ${{ secrets.GH_ACCESS_TOKEN }}
 
             -   uses: actions/checkout@v2
             -   name: Set up JDK 11
