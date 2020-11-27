@@ -19,7 +19,8 @@
           <v-btn
             v-if="index === 0 && userCanEdit"
             text
-            @click="updateFieldGroups">Save</v-btn>
+            :disabled="fieldsSaving"
+            @click="[fieldsSaving = true, updateFieldGroups()]">Save</v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card class="pa-4 text-left square-card">
@@ -70,6 +71,7 @@ export default {
       processSteps: [],
       customFieldGroups: [],
       menuOpen: false,
+      fieldsSaving: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       isProcessStepsLoading: false,
       isFieldsLoading: true,
@@ -146,6 +148,7 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Updating Project Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
+        this.fieldsSaving = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

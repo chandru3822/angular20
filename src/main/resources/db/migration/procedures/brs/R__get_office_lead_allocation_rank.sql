@@ -20,7 +20,7 @@ BEGIN
                      inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
                      inner join flow.user u on u.id = up.user_id
             where pcz.id = p_postal_code_zone_id
-              and p.schedulable is true),
+              and pczu.postal_code_zone_user_type_id = 1),
              lead_gen_num as (
                  select rru.user_id, rru.closer_name, count(1) as lead_gen_num
                  from brs.project_details pd
@@ -28,14 +28,14 @@ BEGIN
                           inner join flow.project_status_type pst on pst.id = p.company_project_status_type_id
                           inner join round_robin_users rru on rru.user_id = pd.closer_user_id
                  where closer_appointment_start >= (now() at time zone 'US/Mountain')::date - p_time_interval
-                   and pd.source not in (7, 8, 484)
+                   and pd.source not in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                    and final_design_signed_date is not null
                    and pd.financial_agreement_signed_date is not null
                    and pd.utility_bill_verified_date is not null
                    and (pd.proof_of_homeowners_insurance_obtained_date is not null or
                         proof_of_homeowners_insurance_required = 306)
                    and case
-                           when pd.primary_financier = 119 then
+                           when pd.primary_financier = 721 then
                                    pd.first_cash_payment_paid_date is not null and
                                    greatest(final_design_signed_date, financial_agreement_signed_date,
                                             first_cash_payment_paid_date, utility_bill_verified_date,
@@ -55,7 +55,7 @@ BEGIN
                           inner join flow.project p on p.id = pd.project_id
                           inner join round_robin_users rru on rru.user_id = pd.closer_user_id
                  where closer_appointment_start >= (now() at time zone 'US/Mountain')::date - p_time_interval
-                   and pd.source not in (7, 8, 484)
+                   and pd.source not in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                  group by rru.user_id, rru.closer_name),
              self_gen as (
                  select rru.user_id, rru.closer_name, count(1) * 2 as self_gen
@@ -66,14 +66,14 @@ BEGIN
                  where greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
                                 utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date)
                            >= (now() at time zone 'US/Mountain')::date - p_time_interval
-                   and pd.source in (7, 8, 484)
+                   and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                    and final_design_signed_date is not null
                    and pd.financial_agreement_signed_date is not null
                    and pd.utility_bill_verified_date is not null
                    and (pd.proof_of_homeowners_insurance_obtained_date is not null or
                         proof_of_homeowners_insurance_required = 306)
                    and case
-                           when pd.primary_financier = 119 then
+                           when pd.primary_financier = 721 then
                                pd.first_cash_payment_paid_date is not null
                            else
                                1 = 1
@@ -144,7 +144,7 @@ BEGIN
                                    left join total_avail ta on ta.user_id = up.user_id
                                    left join appointment_count_with_interval acwi on acwi.user_id = up.user_id
                           where pcz.id = p_postal_code_zone_id
-                            and p.schedulable is true
+                            and pczu.postal_code_zone_user_type_id = 1
                           group by up.user_id, concat(u.first_name, ' ', u.last_name), lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                    ac.appointment_count,
                                    pcz.distribution_time_frame_days, ta.avail,

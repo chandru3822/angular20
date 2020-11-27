@@ -23,7 +23,28 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-tabs :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
+          <v-menu v-if="constants.IS_MOBILE" data-app left
+                  offset-y
+                  v-model="tabMenuOpen"
+                  class="account-menu"
+                  :close-on-content-click="false">
+            <template v-slot:activator="{ on }">
+              <v-btn class="account-menu-button"
+                     :color="headerColor"
+                     dark
+                     v-on="on">
+                Pages
+                <v-icon>mdi-chevron-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list v-if="displayedTabs.length > 1">
+              <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
+                           @click="[tabMenuOpen = false, goToPath(tab.path)]">
+                <v-list-item-title>{{tab.label}}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+          <v-tabs v-else :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
             </v-tab>
@@ -46,6 +67,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {UserActions, UserMutations} from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
@@ -65,11 +87,13 @@ export default {
   data () {
     return {
       snackbar: {},
+      constants,
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
       companyName: this.$store.state.user?.details?.companyName,
       selectedCompany: {},
       menuOpen: false,
+      tabMenuOpen: false,
       companies: [],
       companyTools: [],
       model: '',
@@ -158,6 +182,9 @@ export default {
               this.$store.commit(AppMutations.SET_LOADING, false)
           }
       },
+      goToPath(path) {
+        this.$router.push({path: `${path}`})
+      },
   }
 }
 </script>
@@ -176,6 +203,13 @@ export default {
 .header-logo {
   max-height: 45px;
   max-width: 45px;
+}
+
+.account-menu-button{
+  text-transform: capitalize;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  border: none !important;
 }
 
 @media (min-width: 769px) {

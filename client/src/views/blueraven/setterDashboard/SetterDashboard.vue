@@ -158,15 +158,9 @@
                 <td class="text-left">{{ index + 1 }}</td>
                 <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td class="text-left">{{ item.id ? item.id : '' }}</td>
-                <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
-                <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
-                <td class="text-left">
-                  {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
-                </td>
-                <td class="text-left">
-                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
-                </td>
-                <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
+                <td class="text-left">{{ item.source ? item.source : '' }}</td>
+                <td class="text-left">{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td class="text-left">{{ item.appointment_outcome ? item.appointment_outcome : '' }}</td>
               </tr>
             </template>
 
@@ -325,11 +319,11 @@
             <tr v-for="rep in reps" :key="rep.user_id"
                 :class="{'highlight-user-row': rep.user_id === currentUserId}">
               <td class="center-text">{{ rep.rank }}</td>
-              <td>
-                <img class="ranking-table-img"
-                     :class="{'round-img': rep.userImageUrl, 'default-img': !rep.userImageUrl}"
-                     :src="rep.userImageUrl ? rep.userImageUrl : '../../../assets/flow/user_img_placeholder.png'"
-                     :alt="rep.userImageAltText ? rep.userImageAltText : 'User photo placeholder'">
+              <td class="user-img-col">
+                <img v-if="rep.userImageUrl" class="ranking-table-img"
+                     :src="rep.userImageUrl" :alt="rep.userImageAltText">
+                <img v-else class="placeholder-img"
+                     src="../../../assets/flow/user_img_placeholder.png" :alt="rep.userImageAltText">
               </td>
               <td class="left-text">{{ rep.name }}</td>
               <td class="center-text">{{ rep.pitches }}</td>
@@ -576,7 +570,9 @@
               </template>
             </v-select>
 
-            <v-btn id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
+            <v-btn v-if="!isSetter && !isSetterMgr" id="all-reps-btn" outlined @click="funnelAllReps">
+              All Reps
+            </v-btn>
           </div>
         </div>
       </div>
@@ -841,7 +837,9 @@
       milestoneDialog: false,
       funnelDrilldownDialog: false,
       currentUserId: null,
+      isSetter: false,
       isSetterMgr: false,
+      isSetterRegional: false,
       selectedQuarter: 1,
       headers: [
         { text: '', value: '', show: true, sortable: false },
@@ -858,7 +856,6 @@
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
       showFunnel: false,
-      ironmanLoaded: false,
       performanceDataLoaded: false,
       rankingTablesLoaded: false,
       dashboardWasLoaded: false,
@@ -1028,7 +1025,7 @@
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
       '$store.state.app.loading': function () {
-        if (!this.ironmanLoaded || !this.performanceDataLoaded || !this.rankingTablesLoaded) {
+        if (!this.performanceDataLoaded || !this.rankingTablesLoaded) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
       },
@@ -1058,8 +1055,9 @@
           default: // Dashboard tab
             this.showDashboard = true
             this.showFunnel = false
+            await this.loadIronman()
+
             if (!this.dashboardWasLoaded) {
-              await this.loadIronman()
               await this.loadRankingTables('MTD') // MTD is the default
               this.dashboardWasLoaded = true
             }
@@ -1069,8 +1067,6 @@
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        this.ironmanLoaded = false
-
         try {
           const params = {
             isSetterMgr: this.isSetterMgr,
@@ -1125,13 +1121,11 @@
             this.progressBarIsFull = this.percentAchieved === 100
             $('#progress-bar-fill').css('width', this.percentAchieved + '%')
 
-            this.ironmanLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Ironman data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.ironmanLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1174,13 +1168,13 @@
       calcPointsForQuarter (pitchCount) {
         if (!this.isSetterMgr) {
           switch (true) {
-            case pitchCount >= 10 && pitchCount < 12:
+            case pitchCount >= 48 && pitchCount < 60:
               return 1 // Bronze
-            case pitchCount >= 12 && pitchCount < 15:
+            case pitchCount >= 60 && pitchCount < 72:
               return 2 // Silver
-            case pitchCount >= 15 && pitchCount < 18:
+            case pitchCount >= 72 && pitchCount < 84:
               return 3 // Gold
-            case pitchCount >= 18:
+            case pitchCount >= 84:
               return 4 // Platinum
             default:
               return 0 // Unranked
@@ -1372,8 +1366,16 @@
                     officeToBeat = tiedOffices[Math.floor(Math.random() * tiedOffices.length)]
                   }
 
+                  if (officeToBeat.name.includes(' ()')) {
+                    officeToBeat.name = officeToBeat.name.substr(0, officeToBeat.name.length - 3)
+                  }
+
                   this.rankBoxData.setter_office_to_beat_name = officeToBeat.name
                   this.rankBoxData.pitches_to_go = 1
+                }
+              } else {
+                if (this.rankBoxData.setter_office_to_beat_name.includes(' ()')) {
+                  this.rankBoxData.setter_office_to_beat_name = this.rankBoxData.setter_office_to_beat_name.substr(0, this.rankBoxData.setter_office_to_beat_name.length - 3)
                 }
               }
             }
@@ -1438,13 +1440,12 @@
 
       async getRepToBeatImage (repToBeatId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
-          const params = {sourceId: repToBeatId, attachmentSourceTypeId: 9}
-          const {data} = await getRequestWithParams('/attachment/', {params}, 'blueraven')
+          const params = {sourceId: repToBeatId, attachmentTypeId: 9}
+          const {data} = await getRequestWithParams('/attachment/getOne', {params})
 
-          if (data && data[0] && data[0].presignedUrl) {
-            this.rankBoxData.imageUrl = data[0].presignedUrl
+          if (data?.presignedUrl) {
+            this.rankBoxData.imageUrl = data.presignedUrl
 
             if (this.rankBoxData.setter_to_beat_name) {
               this.rankBoxData.imageAltText = 'Photo of ' + this.rankBoxData.setter_to_beat_name + ', a Blue Raven Solar employee'
@@ -1470,8 +1471,7 @@
           const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
-          if (this.reps.length > 0 && data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
-            this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
+          if (this.reps.length > 0) {
             let userIds = []
 
             this.reps.forEach(rep => {
@@ -1481,18 +1481,19 @@
             })
 
             if (userIds.length > 0) {
-              const {attachmentUrlData} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlForUserList',
-                {
-                  params: {
-                    sourceIds: userIds,
-                    attachmentSourceTypeId: 9
-                  }
-                }, 'blueraven')
+              userIds = encodeURI(userIds)
 
-              if (attachmentUrlData) {
+              let params = {
+                sourceIds: userIds,
+                attachmentTypeId: 9
+              }
+
+              const {data} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})
+
+              if (data) {
                 this.reps.forEach(rep => {
-                  if (rep.user_id && attachmentUrlData[rep.user_id]) {
-                    rep.userImageUrl = attachmentUrlData[rep.user_id]
+                  if (rep.user_id && data[rep.user_id]) {
+                    rep.userImageUrl = data[rep.user_id]
                   }
 
                   if (rep.userImageUrl && rep.name) {
@@ -1525,6 +1526,13 @@
             }, 'blueraven')
           this.offices = data
 
+          // removes empty parentheses from missing metro areas
+          this.offices.forEach(office => {
+            if (office.name.includes(' ()')) {
+              office.name = office.name.substr(0, office.name.length - 3)
+            }
+          })
+
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1544,6 +1552,12 @@
               }
             }, 'blueraven')
           this.officeRankingData = data
+
+          this.officeRankingData.forEach(office => {
+            if (office.org.includes(' ()')) {
+              office.org = office.org.substr(0, office.org.length - 3)
+            }
+          })
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -2226,8 +2240,9 @@
       if (userPositions?.length > 0) {
         this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate)[0].orgId
         this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
-        this.isSetter = userPositions.filter(position => (position.positionId === 4) && position.primaryFlag && !position.endDate).length > 0
-        this.isSetterMgr = userPositions.filter(position => position.primaryFlag && !position.endDate && ([5,6].indexOf(position.positionId) !== -1)).length > 0
+        this.isSetter = userPositions.filter(position => (position.positionId === 4) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+        this.isSetterMgr = userPositions.filter(position => (position.positionId === 5) && !position.endDate && !position.archived && position.primaryFlag).length > 0
+        this.isSetterRegional = userPositions.filter(position => (position.positionId === 6) && !position.endDate && !position.archived && position.primaryFlag).length > 0
       }
 
       this.switchTabs(this.tabNum)
@@ -2257,6 +2272,10 @@
 
     #setter-dash-toolbar {
       padding: 0;
+
+      header {
+        background-color: #fff !important;
+      }
 
       .v-toolbar {
         margin-top: -12px;
@@ -2861,15 +2880,16 @@
     color: #fff;
   }
 
-  .ranking-table-img {
+  .ranking-table-img,
+  .placeholder-img {
+    border-radius: 50%;
+    padding: 1px;
     width: 28px;
     height: 28px;
   }
 
-  .default-img {
+  .placeholder-img {
     background-color: #e9e9e9;
-    padding : 1px;
-    border-radius: 50%;
   }
 
   #funnel-background {
@@ -3523,7 +3543,8 @@
       padding: 0 5px;
     }
 
-    .ranking-table-img {
+    .ranking-table-img,
+    .placeholder-img {
       width: 40px;
       height: 40px;
     }
@@ -3920,7 +3941,6 @@
 
     .ranking-table td {
       font-size: 12px;
-      height: 55px;
     }
 
     .ranking-tables-no-data {

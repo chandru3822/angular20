@@ -95,7 +95,8 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn text v-if="userCanEdit"
-                     @click="saveContact">Save</v-btn>
+                     :disabled="fieldsSaving"
+                     @click="[fieldsSaving = true, saveContact()]">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -234,6 +235,7 @@ export default {
       contactLoading: true,
       customFieldGroups: [],
       notes: [],
+      fieldsSaving: false,
       dirtyCfvs: [],
       owners: [],
       contactId: this.$route.params.id,
@@ -259,17 +261,29 @@ export default {
       // save contact
         const {data} = await postRequest(`/contact`, this.contact)
         this.contact.projects = data.projects
-      // save dirty custom field values
-        await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
+        await this.saveCustomFieldValues()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.fieldsSaving = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveCustomFieldValues () {
+      try {
+        // save dirty custom field values
+        const {data} = await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.addressChanged = false
-        //this line reloads the contact so we dont have to reset the cfgs
-        this.$router.push({name: 'contact', params: {id: data.id}})
+        this.customFieldGroups = data
+        this.fieldsSaving = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.fieldsSaving = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
+import javax.annotation.PostConstruct;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -38,6 +39,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.autoTriggers.enabled:false}")
     private boolean autoTriggers;
 
+    @Value(value = "${app.cron.initialAutoTriggers.enabled:false}")
+    private boolean initialAutoTriggers;
+
     @Value(value = "${app.cron.cacheAvailability.enabled:false}")
     private boolean runCachedAvailability;
 
@@ -51,6 +55,15 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(taskExecutor());
+    }
+
+    @PostConstruct
+    public void init() {
+      if (initialAutoTriggers) {
+        log.info("*** CRON: start INITIAL auto triggers ***");
+        projectProcessStepService.performInitialAutoTriggers();
+        log.info("*** CRON: end INITIAL auto triggers ***");
+      }
     }
 
     //    every  minute
@@ -86,13 +99,13 @@ public class ScheduledConfig implements SchedulingConfigurer {
         }
     }
 
-    @Scheduled(cron = "0 3 * ? * *")
+    @Scheduled(cron = "0 0 2 * * *")
     public void autoTriggers() {
-      log.info("*** CRON: start autoTriggers ***");
       if (autoTriggers) {
+        log.info("*** CRON: start auto triggers ***");
         projectProcessStepService.performTimeBasedAutoTriggers();
+        log.info("*** CRON: end auto triggers ***");
       }
-      log.info("*** CRON: end autoTriggers ***");
     }
 
     @Bean(destroyMethod = "shutdown")

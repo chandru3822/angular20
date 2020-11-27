@@ -225,21 +225,7 @@ export default {
       }
     },
     goToContact (selectedRow) {
-      let id = null
-
-      for (const [key, val] of Object.entries(selectedRow)) {
-        if (key === 'Contact ID') {
-          id = val
-          break
-        }
-      }
-
-      if (id === null) {
-        this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Contact ID" column')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else {
-        this.$router.push({name: 'contact', params: {id}})
-      }
+      this.$router.push({name: 'contact', params: {id: selectedRow.contact_id}})
     }
   }
 }

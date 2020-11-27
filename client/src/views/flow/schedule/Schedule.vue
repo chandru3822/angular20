@@ -110,7 +110,7 @@
           <v-card-text v-else>
             <v-toolbar color="white" flat>
               <v-toolbar-title class="app-title">
-                {{selectedProject.contactFirstName}} {{selectedProject.contactLastName}}
+                {{selectedProject.projectName}}
                 <div class="toolbar-subtitle">{{selectedProject.processStepName}}</div>
               </v-toolbar-title>
               <v-spacer></v-spacer>
@@ -171,8 +171,8 @@
               />
               <v-btn color="primaryCustom"
                      class="white--text"
-                     :disabled="saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
-                     @click="scheduleProject">Save</v-btn>
+                     :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                     @click="[fieldsSaving = true, scheduleProject()]">Save</v-btn>
               <v-dialog
                   v-if="selectedProject.processStepStatusTypeId === 2"
                   v-model="selectedProject.unscheduleConfirm"
@@ -333,6 +333,7 @@
         eventTypesChanged: false,
         searchProjectsLoading: false,
         search: null,
+        fieldsSaving: false,
         asyncActions: {},
         headers: [
           {text: 'Project', value: 'projectName', show: true},
@@ -405,11 +406,13 @@
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
           this.$refs.calendar.getEvents(false, true)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.fieldsSaving = false
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Scheduling Project')
+          this.fieldsSaving = false
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

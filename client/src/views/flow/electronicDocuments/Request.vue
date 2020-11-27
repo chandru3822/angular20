@@ -148,6 +148,9 @@
                 },
                 {
                     text: 'Utility'
+                },
+                {
+                    text: 'Change Order'
                 }
       ],
       selectedTempType: 'Permitting'
@@ -220,8 +223,14 @@
                       this.documents = data
                   }
               }
-              else {
+              else if (this.selectedTempType == 'Utility') {
                   const {data} = await getRequest('/electronicDocument/getUtilityDocuments/'+this.project_id)
+                  if (data != null) {
+                      this.documents = data
+                  }
+              }
+              else {
+                  const {data} = await getRequest('/electronicDocument/getChangeOrderDocuments/'+this.project_id)
                   if (data != null) {
                       this.documents = data
                   }

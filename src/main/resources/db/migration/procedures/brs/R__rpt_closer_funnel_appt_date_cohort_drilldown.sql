@@ -20,9 +20,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date
                     from brs.project_details pd
@@ -32,8 +32,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
@@ -49,12 +47,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -62,9 +60,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.closer_appointment_outcome = 4 --(Cancelled)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
@@ -81,12 +76,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -94,9 +89,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.closer_appointment_outcome in (59,61) --(No Go, Low TSRF)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
@@ -113,12 +105,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -126,9 +118,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) --(Cancelled, No Go, Low TSRF)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
@@ -145,12 +134,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (ppscfv.timestamp_value - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from flow.project_process_step pps
                         inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
                         inner join brs.project_details pd on pd.project_id = pps.project_id
@@ -160,9 +149,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where pps.process_step_id = 1 and --Closer Appointment Details
                         pps.main is false and
                         ppscfv.custom_field_group_assignment_id = 5 and
@@ -182,12 +168,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -195,9 +181,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 56 --Not Pitched: No Show
@@ -215,12 +198,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -228,9 +211,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
@@ -249,12 +229,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -262,9 +242,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 3 --Missed
@@ -282,12 +259,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -295,9 +272,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 3 and --Missed
@@ -316,12 +290,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -329,9 +303,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 58 --Not Pitched: Other
@@ -349,12 +320,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -362,9 +333,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 58 and --Not Pitched: Other
@@ -383,12 +351,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -396,9 +364,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
@@ -416,12 +381,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -429,9 +394,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
@@ -450,12 +412,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -463,9 +425,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
@@ -483,12 +442,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -496,9 +455,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -517,12 +473,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -530,9 +486,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
                         (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
@@ -550,12 +503,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -563,9 +516,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
                         (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
@@ -584,12 +534,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -597,9 +547,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 2 --Pitched
@@ -617,12 +564,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -630,9 +577,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 2 and --Pitched
@@ -651,12 +595,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
@@ -665,9 +609,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null
                     order by owner_name, pd.credit_decision_date
@@ -684,12 +625,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
@@ -698,9 +639,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
                         pd.appointment_check_in is not null
@@ -718,14 +656,14 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date,
-                           lov4.name credit_check
+                           pd.credit_check_name credit_check
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -733,10 +671,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                        left outer join flow.list_of_value lov4 on lov4.id = pd.credit_check
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
                         pd.credit_check = 82 --Pass
@@ -754,14 +688,14 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date,
-                           lov4.name credit_check
+                           pd.credit_check_name credit_check
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -769,10 +703,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                        left outer join flow.list_of_value lov4 on lov4.id = pd.credit_check
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
                         pd.credit_check = 82 and --Pass
@@ -791,9 +721,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.installation_agreement_signed_date,
@@ -805,8 +735,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.installation_agreement_signed_date is not null
                     order by owner_name, pd.installation_agreement_signed_date
@@ -823,9 +751,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.installation_agreement_signed_date,
@@ -837,8 +765,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.installation_agreement_signed_date is not null and
                         pd.appointment_check_in is not null
@@ -856,9 +782,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.site_survey_verified_date
@@ -869,8 +795,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.site_survey_verified_date is not null
                     order by owner_name, pd.site_survey_verified_date :: DATE
@@ -887,9 +811,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.site_survey_verified_date
@@ -900,8 +824,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.site_survey_verified_date is not null and
                         pd.appointment_check_in is not null
@@ -919,9 +841,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_sent_to_homeowner_date,
@@ -933,8 +855,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_sent_to_homeowner_date is not null
                     order by owner_name, pd.final_design_sent_to_homeowner_date
@@ -951,9 +871,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_sent_to_homeowner_date,
@@ -965,8 +885,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_sent_to_homeowner_date is not null and
                         pd.appointment_check_in is not null
@@ -984,9 +902,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -1001,8 +919,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_signed_date is not null
                     order by owner_name, pd.final_design_signed_date
@@ -1019,9 +935,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -1036,8 +952,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_signed_date is not null and
                         pd.appointment_check_in is not null
@@ -1055,9 +969,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -1072,8 +986,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_signed_date is not null and
                           pd.financial_agreement_signed_date is not null and
                           ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
@@ -1099,9 +1011,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -1116,8 +1028,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where pd.final_design_signed_date is not null and
                         pd.financial_agreement_signed_date is not null and
                         ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
@@ -1144,9 +1054,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.substantial_completion_date
@@ -1157,8 +1067,6 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.substantial_completion_date is not null
                     order by owner_name, pd.substantial_completion_date
@@ -1179,9 +1087,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date
                     from brs.project_details pd
@@ -1191,10 +1099,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
@@ -1210,12 +1117,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1223,11 +1130,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.closer_appointment_outcome = 4 --(Cancelled)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
@@ -1244,12 +1149,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1257,11 +1162,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.closer_appointment_outcome in (59,61) --(No Go, Low TSRF)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
@@ -1278,12 +1181,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1291,11 +1194,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) --(Cancelled, No Go, Low TSRF)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
@@ -1312,12 +1213,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from flow.project_process_step pps
                         inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
                         inner join brs.project_details pd on pd.project_id = pps.project_id
@@ -1327,17 +1228,14 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
                     where pps.process_step_id = 1 and --Closer Appointment Details
                         pps.main is false and
                         ppscfv.custom_field_group_assignment_id = 5 and
                         ppscfv.timestamp_value < pd.closer_appointment_start and
                         (ppscfv.timestamp_value - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ p_user_ids and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = (p_user_ids) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1352,12 +1250,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1365,11 +1263,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 56 --Not Pitched: No Show
@@ -1387,12 +1283,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1400,11 +1296,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 56 and --Not Pitched: No Show
@@ -1423,12 +1317,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1436,11 +1330,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 3 --Missed
@@ -1458,12 +1350,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1471,11 +1363,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 3 and --Missed
@@ -1494,12 +1384,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1507,11 +1397,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 58 --Not Pitched: Other
@@ -1529,12 +1417,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1542,11 +1430,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 58 and --Not Pitched: Other
@@ -1565,12 +1451,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1578,11 +1464,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
@@ -1600,12 +1484,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1613,11 +1497,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 57 and --Not Pitched: No Utility Bill
@@ -1636,12 +1518,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1649,11 +1531,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain')
@@ -1671,12 +1551,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1684,11 +1564,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1707,12 +1585,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1720,11 +1598,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
                         (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain')
@@ -1742,12 +1618,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1755,11 +1631,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
                         (pd.closer_appointment_start - interval '6 hours') >= (now() AT TIME ZONE 'US/Mountain') and
@@ -1778,12 +1652,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1791,11 +1665,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 2 --Pitched
@@ -1813,12 +1685,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome
+                           pd.closer_appointment_outcome_name appointment_outcome
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1826,11 +1698,9 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and pd.closer_user_id is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                    where pd.closer_user_id = any(p_user_ids) and
+                        pd.closer_user_id is not null and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
                         pd.closer_appointment_outcome = 2 and --Pitched
@@ -1849,12 +1719,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
@@ -1863,14 +1733,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
@@ -1885,12 +1752,12 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
@@ -1899,14 +1766,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         pd.appointment_check_in is not null
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
@@ -1922,14 +1786,14 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date,
-                           lov4.name credit_check
+                           pd.credit_check_name credit_check
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1937,16 +1801,12 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                        left outer join flow.list_of_value lov4 on lov4.id = pd.credit_check
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
                         pd.credit_check = 82 and --Pass
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
 
@@ -1962,14 +1822,14 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
-                           lov3.name appointment_outcome,
+                           pd.closer_appointment_outcome_name appointment_outcome,
                            pd.credit_decision_date,
-                           lov4.name credit_check
+                           pd.credit_check_name credit_check
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
@@ -1977,16 +1837,12 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                        left outer join flow.list_of_value lov3 on lov3.id = pd.closer_appointment_outcome
-                        left outer join flow.list_of_value lov4 on lov4.id = pd.credit_check
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.credit_decision_date is not null and
                         pd.credit_check = 82 and --Pass
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         pd.appointment_check_in is not null
                     order by owner_name, pd.credit_decision_date
                 ) as funnel_rows;
@@ -2002,9 +1858,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.installation_agreement_signed_date,
@@ -2016,13 +1872,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.installation_agreement_signed_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, pd.installation_agreement_signed_date
                 ) as funnel_rows;
 
@@ -2037,9 +1891,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.installation_agreement_signed_date,
@@ -2051,13 +1905,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.installation_agreement_signed_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         pd.appointment_check_in is not null
                     order by owner_name, pd.installation_agreement_signed_date
                 ) as funnel_rows;
@@ -2073,9 +1925,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.site_survey_verified_date
@@ -2086,13 +1938,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.site_survey_verified_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, pd.site_survey_verified_date :: DATE
                 ) as funnel_rows;
 
@@ -2108,9 +1958,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.site_survey_verified_date
@@ -2121,13 +1971,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.site_survey_verified_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         pd.appointment_check_in is not null
                     order by owner_name, pd.site_survey_verified_date :: DATE
                 ) as funnel_rows;
@@ -2143,9 +1991,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_sent_to_homeowner_date,
@@ -2157,13 +2005,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_sent_to_homeowner_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, pd.final_design_sent_to_homeowner_date
                 ) as funnel_rows;
 
@@ -2178,9 +2024,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_sent_to_homeowner_date,
@@ -2192,13 +2038,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_sent_to_homeowner_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_sent_to_homeowner_date
                 ) as funnel_rows;
@@ -2214,9 +2058,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -2231,13 +2075,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_signed_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
 
@@ -2252,9 +2094,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -2269,13 +2111,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.final_design_signed_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         pd.appointment_check_in is not null
                     order by owner_name, pd.final_design_signed_date
                 ) as funnel_rows;
@@ -2291,9 +2131,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -2308,9 +2148,7 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         pd.final_design_signed_date is not null and
                         pd.financial_agreement_signed_date is not null and
@@ -2320,7 +2158,7 @@ BEGIN
                           (pd.proof_of_homeowners_insurance_required is null or
                            pd.proof_of_homeowners_insurance_required = 306)) and --No
                         pd.utility_bill_verified_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         case when pd.primary_financier = 721 --Cash
                             then pd.first_cash_payment_paid_date is not null else 1=1 end
@@ -2338,9 +2176,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.final_design_signed_date,
@@ -2355,9 +2193,7 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         pd.final_design_signed_date is not null and
                         pd.financial_agreement_signed_date is not null and
@@ -2367,7 +2203,7 @@ BEGIN
                           (pd.proof_of_homeowners_insurance_required is null or
                            pd.proof_of_homeowners_insurance_required = 306)) and --No
                         pd.utility_bill_verified_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         case when pd.primary_financier = 721 --Cash
                             then pd.first_cash_payment_paid_date is not null else 1=1 end and
@@ -2386,9 +2222,9 @@ BEGIN
                            concat(c.first_name, ' ', c.last_name) customer_name,
                            c.id contact_id,
                            pd.project_id,
-                           lov.name source_name,
+                           pd.source_name,
                            pd.system_size,
-                           lov2.name financier,
+                           pd.primary_financier_name financier,
                            (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
                            pd.cancelled_date,
                            pd.substantial_completion_date
@@ -2399,13 +2235,11 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
-                        left outer join flow.list_of_value lov on lov.id = pd.source
-                        left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-                    where Array[pd.closer_user_id] <@ p_user_ids and
+                    where pd.closer_user_id = (p_user_ids) and
                         pd.closer_user_id is not null and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         pd.substantial_completion_date is not null and
-                        Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                        pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                     order by owner_name, pd.substantial_completion_date
                 ) as funnel_rows;
 

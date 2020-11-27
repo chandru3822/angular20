@@ -100,6 +100,10 @@ export default {
         title: 'Features',
         show: true
       }, {
+        path: '/admin/functions',
+        title: 'Functions',
+        show: this.$store.getters.isCompanyRoot(this.companyId)
+      }, {
         path: '/admin/orgFilters',
         title: 'Org Filters',
         show: !this.$store.getters.isCompanyRoot(this.companyId)

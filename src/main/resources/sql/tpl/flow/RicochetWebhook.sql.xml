@@ -133,31 +133,14 @@
     returning id
   ]]></ricochetWebhook.insertCustomFieldDropdownValue>
 
-  <ricochetWebhook.checkForExistingCustomFieldValue><![CDATA[
-    with existing_row as (
-      select ccfv.id
-      from flow.contact_custom_field_value ccfv
-      where ccfv.contact_id = :contactId
-        and ccfv.custom_field_group_assignment_id = :customFieldGroupAssignmentId
-        and ccfv.archived is false
-    )
-    select (case when (select id from existing_row) is not null then (select id::text from existing_row)
-              else 'null'
-              end) as id;
-  ]]></ricochetWebhook.checkForExistingCustomFieldValue>
-
-  <ricochetWebhook.insertCustomFieldValue><![CDATA[
+  <ricochetWebhook.upsertCustomFieldValue><![CDATA[
     insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, int_value, created_by_id)
     values (:contactId, :customFieldGroupAssignmentId, :textValue, :intValue, :leadOwnerUserId)
-  ]]></ricochetWebhook.insertCustomFieldValue>
-
-  <ricochetWebhook.updateCustomFieldValue><![CDATA[
-    update flow.contact_custom_field_value
-    set custom_field_group_assignment_id = :customFieldGroupAssignmentId,
-        text_value = :textValue,
+    on conflict
+    do update
+        set text_value = :textValue,
         int_value = :intValue,
         modified_by_id = :leadOwnerUserId,
         date_modified = now()
-    where id = :id
-  ]]></ricochetWebhook.updateCustomFieldValue>
+  ]]></ricochetWebhook.upsertCustomFieldValue>
 </sql>

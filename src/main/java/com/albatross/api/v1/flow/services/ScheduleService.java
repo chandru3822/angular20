@@ -137,8 +137,8 @@ public class ScheduleService {
       User user = securityService.getCurrentUser();
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectProcessStepId", ev.getProjectProcessStepId());
-      params.put("modifiedById", user.getId());
-      params.put("createdById", user.getId());
+      params.put("userId", user.getId());
+      params.put("sourceId", ev.getProjectProcessStepId());
 
       //default values so we can call the same query all the other ones do
       params.put("dateValue", null);
@@ -152,13 +152,9 @@ public class ScheduleService {
       // save the start time
       params.put("timestampValue", ev.getStart());
       params.put("customFieldGroupAssignmentId", ev.getStartCustomFieldGroupAssignmentId());
-      if(null != ev.getStartCustomFieldValueId()) {
-        params.put("id", ev.getStartCustomFieldValueId());
-        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
-      } else {
-        params.put("sourceId", ev.getProjectProcessStepId());
-        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
-      }
+      // this can be null for new values
+      params.put("id", ev.getStartCustomFieldValueId());
+      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
 
       // reset the params - although i dont think this is actually necessary
       params.remove("customFieldGroupAssignmentId");
@@ -168,12 +164,9 @@ public class ScheduleService {
       // save the end time
       params.put("timestampValue", ev.getEnd());
       params.put("customFieldGroupAssignmentId", ev.getEndCustomFieldGroupAssignmentId());
-      if(null != ev.getEndCustomFieldValueId()) {
-        params.put("id", ev.getEndCustomFieldValueId());
-        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
-      } else {
-        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
-      }
+      params.put("id", ev.getEndCustomFieldValueId());
+      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+
 
       // reset the params - although i dont think this is actually necessary
       params.remove("customFieldGroupAssignmentId");
@@ -183,12 +176,8 @@ public class ScheduleService {
       // save the resourceId
       params.put("intValue", ev.getResourceId());
       params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldGroupAssignmentId());
-      if(null != ev.getResourceCustomFieldValueId()) {
-        params.put("id", ev.getResourceCustomFieldValueId());
-        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
-      } else {
-        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
-      }
+      params.put("id", ev.getResourceCustomFieldValueId());
+      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
     }
 
   }

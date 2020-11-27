@@ -51,6 +51,7 @@
                 fixed-header
                 :options.sync="options"
                 disable-sort
+                :mobile-breakpoint="0"
                 :footer-props="footerProps"
                 :server-items-length="totalProjects"
                 :loading="isProjectsLoading"
@@ -194,21 +195,7 @@ export default {
             }
         },
       goToSelectedProject (selectedRow) {
-        let projectId = null
-
-        for (const [key, val] of Object.entries(selectedRow)) {
-          if (key === 'Project ID') {
-            projectId = val
-            break
-          }
-        }
-
-        if (projectId === null) {
-          this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Project ID" column')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.$router.push({name: 'projectDetails', params: {projectId: projectId}})
-        }
+        this.$router.push({name: 'projectDetails', params: {projectId: selectedRow.project_id}})
       }
     }
 }

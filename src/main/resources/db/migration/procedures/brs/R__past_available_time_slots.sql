@@ -50,7 +50,7 @@ BEGIN
                                                        when rsa.end_time > rsa.start_time
                                                            then $$'$$ || p_available_date::date || $$'$$
                                                        else $$'$$ || p_available_date::date + 1 || $$'$$ end ||
-                                                   rsa.end_time)::timestamp, interval '30 min')                 available_times,
+                                                   rsa.end_time)::timestamp - (default_appointment_length || ' minutes')::interval, interval '30 min')                 available_times,
                                           uc.default_appointment_length,
                                           (rsa.end_time - (default_appointment_length || ' minutes')::interval) closer_end_time
                                    from flow.resource_schedule rs
@@ -62,11 +62,7 @@ BEGIN
                                    where rs.user_id = p_user_id
                                      and p_available_date::date >= rs.start_date and
                                          case when rs.end_date is not null then p_available_date <=rs.end_date
-                                        else 1=1 end) as foo) as foo1
-                 where case when foo1.scheduled_start_time::date = p_available_date::date + 1 then
-                                  foo1.scheduled_start_time <= ($$'$$ || p_available_date::date + 1 || $$'$$ || foo1.closer_end_time)::timestamp
-                          else 1=1
-                         end) as foo2
+                                        else 1=1 end) as foo) as foo1) as foo2
         where foo2.available is true
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;

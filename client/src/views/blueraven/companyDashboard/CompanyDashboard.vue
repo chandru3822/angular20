@@ -643,6 +643,10 @@
       flex-flow: row nowrap;
       justify-content: space-between;
 
+      header {
+        background-color: #fff !important;
+      }
+
       ::v-deep {
         .v-toolbar__title {
           font-size: 10px;

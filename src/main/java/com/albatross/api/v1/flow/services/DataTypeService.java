@@ -3,12 +3,14 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyDataType;
+import com.albatross.api.v1.flow.model.DataType;
 import com.albatross.api.v1.flow.model.DataTypeRequirement;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,6 +27,11 @@ public class DataTypeService {
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
+
+  public List<DataType> getSystemDataTypes() {
+    List<DataType> result = sqlCache.query("dataType.getSystemDataTypes", Collections.emptyMap(), DataType.class);
+    return result;
+  }
 
   public List<CompanyDataType> getCompanyDataTypes() {
     User user = securityService.getCurrentUser();

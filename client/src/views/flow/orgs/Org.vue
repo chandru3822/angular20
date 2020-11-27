@@ -13,7 +13,8 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="saveOrg" v-if="userCanEdit">Save</v-btn>
+              <v-btn text :disabled="fieldsSaving"
+                     @click="[fieldsSaving = true, saveOrg()]" v-if="userCanEdit">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -124,6 +125,7 @@
         dirtyCfvs: [],
         companyTimezones: [],
         states: [],
+        fieldsSaving: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
         orgId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
@@ -150,12 +152,14 @@
           this.customFieldGroups = data
           this.snackbar = getSnackbar('SUCCESS', 'Organization Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let msg = this.org.id ? 'Error Saving Organization' : 'Error Adding Organization'
           this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

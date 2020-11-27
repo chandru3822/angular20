@@ -79,17 +79,13 @@ public class CustomFieldValueService {
       params.put("intArrayValue", cfv.getIntArrayValue());
       params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
       params.put("sourceId", sourceId);
+      params.put("userId", currentUser.getId());
 
-      String sqlPrefix = "customFieldValues." + objectType;
+      //only used on upsert
+      params.put("id", cfv.getId());
 
-      if(null != cfv.getId()){
-        params.put("id", cfv.getId());
-        params.put("modifiedById", currentUser.getId());
-        sqlCache.update(sqlPrefix + ".updateCustomFieldValue", params);
-      } else {
-        params.put("createdById", currentUser.getId());
-        sqlCache.update(sqlPrefix + ".insertCustomFieldValue", params);
-      }
+      String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
+      sqlCache.update(sql, params);
     }
     return getCustomFieldGroupsAndValues(objectType, sourceId);
   }
@@ -123,6 +119,19 @@ public class CustomFieldValueService {
     }
 
     return fieldGroups;
+  }
+
+  public void updateProjectCustomFieldValue(CustomFieldValue cfv, Long projectId, Long customFieldId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("customFieldId", customFieldId);
+    params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+    params.put("intValue", cfv.getIntValue());
+    params.put("timestampValue", cfv.getTimestampValue());
+    params.put("dateValue", cfv.getDateValue());
+    params.put("userId", user.getId());
+    sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

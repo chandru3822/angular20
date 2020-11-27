@@ -39,7 +39,7 @@ public class SecurityService implements UserDetailsService {
             throw new UsernameNotFoundException("Could not find user " + username);
         }
         // todo: come back and add permissions when the re-write is complete
-        List<FeatureAccessControl> results = this.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        List<FeatureAccessControl> results = getUserFeatureAccess(user.getId(), user.getCompanyId());
         return new UserAccountDetails(user, results);
     }
 

@@ -64,7 +64,9 @@
       and company_id = :companyId
       and archived is not true
       and end_date is null
-      and id != :id
+      and case when :endDate::date is not null then
+          start_date < :startDate
+          else id != :id end
   ]]></availability.updateScheduleWithoutEndDate>
 
   <availability.deleteSchedule><![CDATA[
@@ -84,6 +86,7 @@
     SELECT
         rs.id,
         rs.org_id,
+        rs.user_id,
         rs.start_date,
         rs.end_date,
         rs.company_id,

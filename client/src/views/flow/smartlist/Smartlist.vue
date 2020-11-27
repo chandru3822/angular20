@@ -228,7 +228,7 @@
             <v-autocomplete
               v-model="newField.projectDetailsColumn"
               label="Field"
-              :items="projectDetailsColumns"
+              :items="filteredProjectDetailsColumns"
               item-value="projectDetailsColumn"
               item-text="name"
             />
@@ -342,7 +342,7 @@
       :disabled="!smartlist.id"
       :can-edit="canEdit"
       :is-project-details="smartlist.projectDetails"
-      :project-details-columns="projectDetailsColumns"
+      :project-details-columns="filteredProjectDetailsRequirements"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -481,6 +481,14 @@ export default {
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+    },
+    filteredProjectDetailsColumns () {
+      const columnNames = this.assignedFields.map(f => f.projectDetailsColumn)
+      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
+    },
+    filteredProjectDetailsRequirements () {
+      const columnNames = this.requirements.map(r => r.projectDetailsColumn)
+      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
     }
   },
   methods: {
@@ -577,6 +585,14 @@ export default {
       if (this.newField.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
       }
+
+      this.availableFields = this.availableFields.filter(f => {
+        if (f.customFieldGroupAssignmentId !== null) {
+          return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
+        } else {
+          return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+        }
+      })
     },
     async addSmartlist () {
       try {
@@ -744,7 +760,7 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
+        const {data} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });

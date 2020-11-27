@@ -97,13 +97,23 @@
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
               <v-card flat>
-                <v-text-field
-                    v-for="(fp, index) in newRequirement.requirementParamDynamicValues"
+                <div v-for="(fp, index) in newRequirement.requirementParamDynamicValues">
+                  <v-text-field
+                    v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
                     :key="index"
+                    type="number"
+                    placeholder="Enter a dynamic value (number)"
+                    v-model="fp.dynamicValue"
+                    @input="validateRequirementForm()"
+                    :label="fp.parameterName"></v-text-field>
+                <v-text-field
+                    :key="index"
+                    v-else
                     placeholder="Enter a dynamic value"
                     v-model="fp.dynamicValue"
                     @input="validateRequirementForm()"
                     :label="fp.parameterName"></v-text-field>
+                </div>
               </v-card>
             </div>
             <v-select
@@ -752,12 +762,21 @@
                       <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
                         <h5 class="text-left">Dynamic Function Parameters</h5>
                         <v-card flat color="transparent">
+                          <div v-for="(fp, index) in selectedChildRequirementParamDynamicValues">
+                            <v-text-field
+                              v-if="fp.dataTypeId === 4 || fp.dataTypeId === 6"
+                              type="number"
+                              :key="index"
+                              placeholder="Enter a dynamic value (number)"
+                              v-model="fp.dynamicValue"
+                              :label="fp.parameterName"></v-text-field>
                           <v-text-field
-                            v-for="(fp, index) in selectedChildRequirementParamDynamicValues"
+                            v-else
                             :key="index"
                             placeholder="Enter a dynamic value"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
+                          </div>
                         </v-card>
                       </div>
                       <div class="mt-3">

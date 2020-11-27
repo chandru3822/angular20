@@ -94,9 +94,6 @@ public class ProjectService {
     String searchSqlKey = viewAll ? "project.search" : viewDownline ? "project.searchDownline" : "project.searchByOwner";
     String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
 
-    log.info("SQL KEY USED {}", searchSqlKey);
-    log.info("SQL COUNT KEY USED {}", countSqlKey);
-
     List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
     Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);

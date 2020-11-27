@@ -24,7 +24,7 @@
           Dashboard
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable" :class="{'font-weight-bold': showFunnel}" @click="switchTabs(2)">
+        <span class="clickable" :class="{'font-weight-bold': showFunnels}" @click="switchTabs(2)">
           Funnel
         </span>
       </v-col>
@@ -199,14 +199,14 @@
     <!-- IRONMAN END -->
 
     <!-- RANKING TABLES FIRST HEADER START -->
-    <div v-if="showDashboard"
+    <div v-if="showDashboard && (isCloser || isCloserMgr || isCloserRegional)"
          class="ranking-tables-section-header">
       Your Office Ranking
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
 
     <!-- RANKING TABLES TOP ROW START -->
-    <div v-if="showDashboard"
+    <div v-if="showDashboard && (isCloser || isCloserMgr || isCloserRegional)"
          class="ranking-tables-section">
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
@@ -414,7 +414,7 @@
 
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
-    <div v-show="showFunnel" id="appts-created-pipeline-container" class="mb-8">
+    <div v-show="showFunnels" id="appts-created-pipeline-container" class="mb-8">
       <div class="pipeline-header-container">
         <v-icon class="pipeline-icon">mdi-poll</v-icon>
         <div class="pipeline-title">Appointments Created Pipeline</div>
@@ -487,6 +487,7 @@
                         outlined
                         background-color="white"
                         dense
+                        return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="grey--text caption">
@@ -517,6 +518,7 @@
                         outlined
                         background-color="white"
                         dense
+                        return-object
                         @input="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:selection="{ item, index }">
                   <span v-if="index === 0" class="grey--text caption">
@@ -552,7 +554,7 @@
     <!-- APPOINTMENTS CREATED PIPELINE END -->
 
     <!-- APPOINTMENTS TO FDC PIPELINE START -->
-    <div v-show="showFunnel" id="appts-to-fdc-pipeline-container"
+    <div v-show="showFunnels" id="appts-to-fdc-pipeline-container"
          :class="{'mb-8': apptsToFdcPipelineData.length > 0}">
       <div class="pipeline-header-container">
         <div id="pipeline-header-left-side">
@@ -700,7 +702,8 @@
                     dense
                     hide-details
                     return-object
-                    @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2)">
+                    @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2, false)"
+                    :menu-props="{closeOnContentClick: true}">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ repModel.length }} Checked
@@ -730,7 +733,9 @@
             </template>
           </v-select>
 
-          <v-btn id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
+          <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps">
+            All Reps
+          </v-btn>
         </div>
       </div>
 
@@ -1098,6 +1103,8 @@
       funnelDrilldownDialog: false,
       currentUserId: null,
       isCloser: false,
+      isCloserMgr: false,
+      isCloserRegional: false,
       selectedQuarter: 1,
       headers: [
         { text: '', value: '', show: true, sortable: false },
@@ -1117,10 +1124,10 @@
       timeInterval: +moment().format('DD'),
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
-      showFunnel: false,
-      ironmanLoaded: false,
+      showFunnels: false,
       rankingTablesLoaded: false,
       dashboardWasLoaded: false,
+      apptsToFdcPipelineLoaded: false,
       funnelsWereLoaded: false,
       currentQuarter: moment().quarter(),
       fdcCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
@@ -1368,6 +1375,12 @@
       }
     },
     watch: {
+      // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
+      '$store.state.app.loading': function () {
+        if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsToFdcPipelineLoaded)) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+        }
+      },
       appts_created_pipeline_dt1 () {
         this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
       },
@@ -1401,7 +1414,7 @@
         switch (tabNum) {
           case 2: // Funnel tab
             this.showDashboard = false
-            this.showFunnel = true
+            this.showFunnels = true
             if (!this.funnelsWereLoaded) {
               await this.loadFunnels()
               this.funnelsWereLoaded = true
@@ -1409,9 +1422,10 @@
             break
           default: // Dashboard tab
             this.showDashboard = true
-            this.showFunnel = false
+            this.showFunnels = false
+            await this.loadIronman()
+
             if (!this.dashboardWasLoaded) {
-              await this.loadIronman()
               await this.loadRoundRobins()
               this.dashboardWasLoaded = true
             }
@@ -1444,8 +1458,6 @@
 
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
-        this.ironmanLoaded = false
-
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           getRequest('/closerDashboard/getIronmanFdcCounts', 'blueraven').then(res => {
@@ -1496,14 +1508,12 @@
             this.progressBarIsFull = this.percentAchieved === 100
             $('#progress-bar-fill').css('width', this.percentAchieved + '%')
 
-            this.ironmanLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           })
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Ironman data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.ironmanLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1669,9 +1679,9 @@
           // if there's only one Round Robin for the current user, this auto-selects it
           if (this.roundRobins?.length === 1) {
             this.selectedRoundRobin = this.roundRobins[0]?.id
-            await this.loadRankingTables()
           }
 
+          await this.loadRankingTables()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1699,7 +1709,7 @@
             break
         }
 
-        if (this.selectedRoundRobin) {
+        if (this.selectedRoundRobin || (!this.isCloser && !this.isCloserMgr && !this.isCloserRegional)) {
           this.loadRankingTables()
         }
       },
@@ -1711,8 +1721,10 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
-          await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+            const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
+            await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
+          }
 
           const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params: {timeInterval: this.timeInterval}}, 'blueraven')
 
@@ -1864,7 +1876,7 @@
       viewSelected (view) {
         if (this.viewSelect !== view) {
           this.viewSelect = view
-          this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+          this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
         }
       },
 
@@ -1984,7 +1996,7 @@
         }
 
         if (this.apptsToFdcPipelineData?.length === 0) {
-          if (this.isCloser) {
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             this.districtLoad(true)
           } else {
             this.districtLoad(false)
@@ -2005,7 +2017,7 @@
           {user_id: -1, name: 'All Reps', active: true}
         ]
 
-        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
       },
 
       loadSources () {
@@ -2031,17 +2043,20 @@
       },
 
       async apptsCreatedPipelineLoad (start, end) {
-        let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.sourceId)
-        let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.sourceId)
+        let brsProvidedSources = []
+        let selfGenSources = []
 
-        if (brsProvidedSources.length === 0 && selfGenSources.length === 0) {
-          this.apptsCreatedPipelineData = [
-            {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-            {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-            {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
-          ]
-          return
-        }
+        this.brsProvidedSourceModel.forEach(brsProvidedSource => {
+          if (brsProvidedSource.sourceId) {
+            brsProvidedSources.push(brsProvidedSource.sourceId)
+          }
+        })
+
+        this.selfGenSourceModel.forEach(selfGenSource => {
+          if (selfGenSource.sourceId) {
+            selfGenSources.push(selfGenSource.sourceId)
+          }
+        })
 
         const requestBody = {
           brsProvidedSources: brsProvidedSources,
@@ -2056,7 +2071,7 @@
             this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
           })
 
-          if (this.isCloser) {
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             if (this.apptsToFdcPipelineData.length > 0) {
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
@@ -2071,17 +2086,36 @@
         }
       },
 
-      async apptsToFdcPipelineLoad (start, end) {
+      async apptsToFdcPipelineLoad (start, end, useRepDataInstead) {
+        this.apptsToFdcPipelineLoaded = false
         let reps = []
         let orgs = []
 
-        if (this.repModel.length === 0) {
+        if ((this.repModel.length === 0 && !useRepDataInstead) || (useRepDataInstead && this.repData.length === 0)) {
           this.apptsToFdcPipelineData = []
           return
         }
 
-        this.repModel.forEach(rep => reps.push(rep.user_id))
         this.officeModel.forEach(org => orgs.push(org.org_id))
+
+        if (useRepDataInstead) {
+          this.repData.forEach((rep, index) => {
+            reps.push(rep.user_id)
+            if (index === this.repData.length - 1) {
+              this.districtModel = []
+              this.regionModel = []
+              this.officeModel = []
+              this.repModel = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+              this.repData = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+            }
+          })
+        } else {
+          this.repModel.forEach(rep => reps.push(rep.user_id))
+        }
 
         const requestBody = {
           users: reps,
@@ -2139,6 +2173,7 @@
             this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
             if (this.apptsCreatedPipelineData.length > 0) {
+              this.apptsToFdcPipelineLoaded = true
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           })
@@ -2146,6 +2181,7 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.apptsToFdcPipelineLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -2194,7 +2230,7 @@
           this.officeData = []
           this.repModel = []
           this.repData = []
-          this.funnelStats = []
+          this.apptsToFdcPipelineData = []
 
           if (districts?.length === 0) return
         }
@@ -2232,7 +2268,7 @@
           this.officeData = []
           this.repModel = []
           this.repData = []
-          this.funnelStats = []
+          this.apptsToFdcPipelineData = []
 
           if (regions?.length === 0) return
         }
@@ -2274,7 +2310,7 @@
         if (!this.selectAllOffices) {
           this.repModel = []
           this.repData = []
-          this.funnelStats = []
+          this.apptsToFdcPipelineData = []
 
           if (offices?.length === 0) return
         }
@@ -2290,7 +2326,7 @@
           this.apptsToFdcPipelineData = []
 
           if (this.repModel.length > 0) {
-            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
           }
         })
 
@@ -2306,7 +2342,7 @@
       updateApptsToFdcPipelineCalendar () {
         this.appts_to_fdc_pipeline_menu1 = false
         this.appts_to_fdc_pipeline_menu2 = false
-        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
       },
 
       yesterday (pipelineName) {
@@ -2638,6 +2674,7 @@
         this.$nextTick(() => {
           if (this.selectAllBrsProvidedSources) {
             this.brsProvidedSourceModel = []
+            this.apptsCreatedPipelineData[0] = {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
           } else {
             this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
             this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
@@ -2649,6 +2686,7 @@
         this.$nextTick(() => {
           if (this.selectAllSelfGenSources) {
             this.selfGenSourceModel = []
+            this.apptsCreatedPipelineData[1] = {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
           } else {
             this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
             this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
@@ -2666,7 +2704,7 @@
             this.officeModel = []
             this.repData = []
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
             this.districtModel = cloneDeep(this.districtData)
             this.repModel = [] // in case the user previously clicked the 'All Reps' button
@@ -2683,7 +2721,7 @@
             this.officeModel = []
             this.repData = []
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
             this.regionModel = cloneDeep(this.regionData)
             this.officeLoad(false)
@@ -2697,7 +2735,7 @@
             this.officeModel = []
             this.repData = []
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
             this.officeModel = cloneDeep(this.officeData)
             this.repLoad(false)
@@ -2709,10 +2747,16 @@
         this.$nextTick(() => {
           if (this.selectAllReps) {
             this.repModel = []
-            this.funnelStats = []
+            this.apptsToFdcPipelineData = []
           } else {
-            this.repModel = cloneDeep(this.repData)
-            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+            this.$store.commit(AppMutations.SET_LOADING, true)
+
+            if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+              this.repModel = cloneDeep(this.repData)
+              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+            } else {
+              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+            }
           }
         })
       },
@@ -2729,7 +2773,15 @@
       this.currentUserId = this.$store.state.user.details.id
       if (this.$store.state.user.details.userPositions?.length > 0) {
         this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
-          return (position.position === 'Closer' && !position.endDate && !position.archived && position.primaryFlag)
+          return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
+        }).length > 0
+
+        this.isCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
+          return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
+        }).length > 0
+
+        this.isCloserRegional = this.$store.state.user.details.userPositions.filter(position => {
+          return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
       }
 
@@ -2753,9 +2805,6 @@
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
   }
-  #closer-dash-btn-toggle {
-
-  }
 
   #closer-dash-toolbar-container {
     position: sticky;
@@ -2764,6 +2813,10 @@
 
     #closer-dash-toolbar {
       padding: 0;
+
+      header {
+        background-color: #fff !important;
+      }
 
       .v-toolbar {
         margin-top: -12px;
@@ -4403,7 +4456,8 @@
     }
 
     #appts-to-fdc-pipeline-container {
-      margin: 0 auto;
+      margin-left: auto;
+      margin-right: auto;
       max-width: calc(100% - 50px);
 
       .pipeline-header-container {

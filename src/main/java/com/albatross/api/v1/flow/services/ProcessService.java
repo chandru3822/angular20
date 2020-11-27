@@ -156,6 +156,7 @@ public class ProcessService {
             params.put("processStepProcessId", id);
             params.put("positionId", p.getPositionId());
 
+            //added unique constraint and changed to upsert. will unarchive if trying to add dupe
             sqlCache.update("process.insertOwningPosition", params);
         }
 
@@ -198,6 +199,7 @@ public class ProcessService {
             if(null == p.getProcessStepProcessOwningPositionId()){
                 params.put("positionId", p.getPositionId());
                 params.put("createdById", currentUser.getId());
+                //added unique constraint and changed to upsert. will unarchive if trying to add dupe
                 sqlCache.update("process.insertOwningPosition", params);
             }
         }
