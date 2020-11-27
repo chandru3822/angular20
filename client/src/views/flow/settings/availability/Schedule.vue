@@ -438,13 +438,6 @@
             this.saveErrorMsg = '* End times must be after start times'
           } else {
 
-            //if there is not an end date, update any other's without an end date (there should only ever be one) - backend will handle actual save
-            if(!s.endDate && isNew) {
-              let match = this.schedules.find(sc => !sc.endDate)
-              if (match) {
-                match.endDate = moment.utc(s.startDate).subtract(1, 'd').format("YYYY-MM-DD")
-              }
-            }
             //check that no other schedules overlap this one
             let scheduleOverlap = false
             let unEndingScheduleBeforeOthers = false
@@ -489,10 +482,8 @@
                 //   rsa.startTime = rsa.startTime != null ? moment.utc(rsa.startTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
                 //   rsa.endTime = rsa.endTime != null ? moment.utc(rsa.endTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
                 // })
-                if(!s.id) {
-                  this.schedules.push(data)
-                }
-                this.schedules = orderBy(this.schedules, [s => s.startDate])
+                this.schedules = data
+                this.newSchedule = {}
                 this.addNew = false
                 this.expanded = []
                 this.$store.commit(AppMutations.SET_LOADING, false)

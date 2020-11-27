@@ -1104,14 +1104,8 @@
         )
         select count(1)
         from companies, brs.project_details pd
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Scheduled'
-        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.date_value BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1126,18 +1120,12 @@
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
                pd.ahj_inspection_scheduled_date,
-               ppscfv.date_value ahj_reinspection_scheduled_date
+               pd.ahj_reinspection_scheduled_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Scheduled'
-        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.date_value BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1147,71 +1135,43 @@
     <dash.getInspectionsScheduledActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Scheduled'
-        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.date_value BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
-            and ps.company_id = 3
     ]]></dash.getInspectionsScheduledActualBrs>
 
     <dash.getInspectionsScheduledActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
                pd.ahj_inspection_scheduled_date,
-               ppscfv.date_value ahj_reinspection_scheduled_date
+               pd.ahj_reinspection_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Scheduled'
-        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.date_value BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
-            and ps.company_id = 3
     ]]></dash.getInspectionsScheduledActualBrsDrilldown>
 
     <dash.getInspectionsScheduledActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Scheduled'
-        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.date_value BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
-            and ps.company_id != 3
     ]]></dash.getInspectionsScheduledActualPartner>
 
     <dash.getInspectionsScheduledActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
                pd.ahj_inspection_scheduled_date,
-               ppscfv.date_value ahj_reinspection_scheduled_date
+               pd.ahj_reinspection_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Scheduled'
-        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.date_value BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
-            and ps.company_id != 3
     ]]></dash.getInspectionsScheduledActualPartnerDrilldown>
 
     <dash.getPlannedInspectionsActualTotal><![CDATA[
@@ -1221,14 +1181,8 @@
         )
         select count(1)
         from companies, brs.project_details pd
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Start Time'
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.timestamp_value::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1243,18 +1197,12 @@
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
                pd.ahj_inspection_start_time::DATE ahj_inspection_date,
-               ppscfv.timestamp_value::DATE ahj_reinspection_date
+               pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Start Time'
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.timestamp_value::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1264,71 +1212,43 @@
     <dash.getPlannedInspectionsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Start Time'
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.timestamp_value::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
-            and ps.company_id = 3
     ]]></dash.getPlannedInspectionsActualBrs>
 
     <dash.getPlannedInspectionsActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
                pd.ahj_inspection_start_time::DATE ahj_inspection_date,
-               ppscfv.timestamp_value::DATE ahj_reinspection_date
+               pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Start Time'
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.timestamp_value::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
-            and ps.company_id = 3
     ]]></dash.getPlannedInspectionsActualBrsDrilldown>
 
     <dash.getPlannedInspectionsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Start Time'
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.timestamp_value::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
-            and ps.company_id != 3
     ]]></dash.getPlannedInspectionsActualPartner>
 
     <dash.getPlannedInspectionsActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
                pd.ahj_inspection_start_time::DATE ahj_inspection_date,
-               ppscfv.timestamp_value::DATE ahj_reinspection_date
+               pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-            inner join flow.project_process_step pps on pps.project_id = pd.project_id
-            inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-            inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-            inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-            inner join flow.process_step ps on ps.id = cfg.process_step_id and ps.process_step_name = 'Schedule AHJ Re-inspection with Customer'
-            inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Inspection Start Time'
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
-            or ppscfv.timestamp_value::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
-            and ps.company_id != 3
     ]]></dash.getPlannedInspectionsActualPartnerDrilldown>
 
     <dash.getInspectionsPassedActualTotal><![CDATA[

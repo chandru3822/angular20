@@ -185,6 +185,11 @@
   <process.insertOwningPosition><![CDATA[
     insert into flow.process_step_process_owning_position (position_id, process_step_process_id, created_by_id)
     values (:positionId, :processStepProcessId, :createdById)
+    ON CONFLICT (position_id, process_step_process_id)
+      DO UPDATE
+        set archived = false,
+            modified_by_id = :createdById,
+            date_modified = now()
   ]]></process.insertOwningPosition>
 
   <process.deleteOldOwningPositions><![CDATA[

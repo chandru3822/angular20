@@ -83,7 +83,7 @@
       AND a.attachment_type_id = :attachmentTypeId
       AND a.archived IS NOT TRUE
         and a.show is true
-    order by a.date_created
+    order by a.date_created desc
     LIMIT 1
   ]]></attachment.getLatestAppBySourceIdAndType>
 

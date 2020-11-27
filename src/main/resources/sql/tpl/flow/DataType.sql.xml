@@ -1,4 +1,12 @@
 <sql>
+  <dataType.getSystemDataTypes><![CDATA[
+    select dt.id,
+       dt.data_type,
+       dt.custom_behavior,
+       dt.system_list
+    from flow.data_type dt
+  ]]></dataType.getSystemDataTypes>
+
   <dataType.getCompanyDataTypes><![CDATA[
     select cdt.id,
        cdt.company_id,

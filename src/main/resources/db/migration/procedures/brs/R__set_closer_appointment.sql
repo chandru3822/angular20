@@ -60,7 +60,7 @@ BEGIN
                      and (pd.proof_of_homeowners_insurance_obtained_date is not null or
                           proof_of_homeowners_insurance_required = 306)
                      and case
-                             when pd.primary_financier = 119 then
+                             when pd.primary_financier = 721 then
                                      pd.first_cash_payment_paid_date is not null and
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               first_cash_payment_paid_date, utility_bill_verified_date,
@@ -97,7 +97,7 @@ BEGIN
                      and (pd.proof_of_homeowners_insurance_obtained_date is not null or
                           proof_of_homeowners_insurance_required = 306)
                      and case
-                             when pd.primary_financier = 119 then
+                             when pd.primary_financier = 721 then
                                  pd.first_cash_payment_paid_date is not null
                              else
                                      1 = 1

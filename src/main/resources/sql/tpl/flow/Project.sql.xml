@@ -103,7 +103,7 @@
                      concat(u.first_name, ' ', u.last_name) as "fullName",
                      pos.position,
                      up.id as "userPositionId"
-                  FROM blueraven."user" u
+                  FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position pos on pos.id = up.position_id
                   WHERE up.id = p.user_position_id) o) AS owner,
@@ -151,6 +151,7 @@
       pps.id as project_process_step_id,
       pps.process_step_complete_date,
       pps.project_id,
+      pps.date_created,
       pps.main,
       ps.process_step_name,
       coalesce(pps.date_modified, pps.date_created) as last_updated,

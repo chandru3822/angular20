@@ -111,7 +111,8 @@
           v-if="anyGroupNonUnique()"
           color="primaryCustom"
           class="white--text"
-          @click="updateFieldGroups"
+          :disabled="fieldsSaving"
+          @click="[fieldsSaving = true, updateFieldGroups()]"
         >Save Process Step Fields</v-btn>
       </div>
     </v-toolbar>
@@ -322,6 +323,7 @@ export default {
       timeSlots: [],
       selectedTimeSlot: {},
       closerApptOverride: false,
+      fieldsSaving: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
       schedulerCanEdit: false,
@@ -484,7 +486,8 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        this.fieldsSaving = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     populateDirtyCfvs(field) {

@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -61,5 +62,11 @@ public class AttachmentController {
   public Attachment getOneBySourceIdAndType(@RequestParam Long sourceId,
                                             @RequestParam Long attachmentTypeId) {
     return attachmentService.getOneBySourceIdAndType(sourceId, attachmentTypeId);
+  }
+
+  @GetMapping(value = "/getAttachmentPresignedUrlsForUserList")
+  public Map<Long, String> getAttachmentPresignedUrlsForUserList(@RequestParam List<Long> sourceIds,
+                                                                 @RequestParam Long attachmentTypeId) {
+    return attachmentService.getAttachmentPresignedUrlsForUserList(sourceIds, attachmentTypeId);
   }
 }

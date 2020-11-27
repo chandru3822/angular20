@@ -194,7 +194,7 @@
       async exportPayrollReview () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          let filename = 'Payroll Review'
+          let filename = 'Payroll Review.csv'
           let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
           csvData += '\n'
 

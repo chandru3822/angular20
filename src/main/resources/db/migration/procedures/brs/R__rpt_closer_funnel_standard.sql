@@ -1160,8 +1160,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE
                            ) as today_count,
@@ -1171,8 +1171,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE
@@ -1183,8 +1183,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
                            ) as custom_date_range_count
@@ -1203,8 +1203,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 pd.closer_appointment_outcome = 4 --Cancelled
@@ -1215,8 +1215,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1228,8 +1228,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.closer_appointment_outcome = 4 --Cancelled
@@ -1249,8 +1249,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 pd.closer_appointment_outcome in (59,61) --(No Go, Low TSRF)
@@ -1261,8 +1261,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1274,8 +1274,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.closer_appointment_outcome in (59,61) --(No Go, Low TSRF)
@@ -1295,8 +1295,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) --(Cancelled, No Go, Low TSRF)
@@ -1307,8 +1307,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1320,8 +1320,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) --(Cancelled, No Go, Low TSRF)
@@ -1343,8 +1343,8 @@ BEGIN
                                 inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
                                 inner join flow.project p on p.id = pps.project_id
                                 inner join brs.project_details pd on pd.project_id = pps.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 pps.process_step_id = 1 and --Closer Appointment Details
                                 pps.main is false and
@@ -1360,8 +1360,8 @@ BEGIN
                                 inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
                                 inner join flow.project p on p.id = pps.project_id
                                 inner join brs.project_details pd on pd.project_id = pps.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 pps.process_step_id = 1 and --Closer Appointment Details
                                 pps.main is false and
@@ -1378,8 +1378,8 @@ BEGIN
                                 inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
                                 inner join flow.project p on p.id = pps.project_id
                                 inner join brs.project_details pd on pd.project_id = pps.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 pps.process_step_id = 1 and --Closer Appointment Details
                                 pps.main is false and
@@ -1400,8 +1400,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1412,8 +1412,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1423,8 +1423,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1436,8 +1436,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1448,8 +1448,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1460,8 +1460,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1480,8 +1480,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1492,8 +1492,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1503,8 +1503,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1516,8 +1516,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1528,8 +1528,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1540,8 +1540,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1560,8 +1560,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1572,8 +1572,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1583,8 +1583,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1596,8 +1596,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1608,8 +1608,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1620,8 +1620,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1640,8 +1640,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1652,8 +1652,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1663,8 +1663,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1676,8 +1676,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1688,8 +1688,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1700,8 +1700,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1720,8 +1720,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
@@ -1732,8 +1732,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
@@ -1743,8 +1743,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1756,8 +1756,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1768,8 +1768,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
@@ -1780,8 +1780,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60) and --Non-Dispositioned
@@ -1800,8 +1800,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
@@ -1812,8 +1812,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
@@ -1824,8 +1824,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1837,8 +1837,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1849,8 +1849,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
@@ -1861,8 +1861,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome not in (4,59,61)) and --(Cancelled, No Go, Low TSRF)
@@ -1881,8 +1881,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1893,8 +1893,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1904,8 +1904,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1917,8 +1917,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
@@ -1929,8 +1929,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1941,8 +1941,8 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                            where pd.closer_user_id = any(p_user_ids) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
@@ -1961,66 +1961,66 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.credit_decision_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.credit_decision_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.credit_decision_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -2035,72 +2035,72 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.credit_decision_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.credit_decision_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.credit_decision_date is not null and
                                 pd.credit_check = 82 and --Pass
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -2115,66 +2115,66 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.installation_agreement_signed_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.installation_agreement_signed_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.installation_agreement_signed_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.installation_agreement_signed_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.installation_agreement_signed_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.installation_agreement_signed_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.installation_agreement_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -2189,66 +2189,66 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.site_survey_verified_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.site_survey_verified_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.site_survey_verified_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.site_survey_verified_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.site_survey_verified_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.site_survey_verified_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.site_survey_verified_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.site_survey_verified_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -2263,66 +2263,66 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_sent_to_homeowner_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_sent_to_homeowner_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_sent_to_homeowner_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.final_design_sent_to_homeowner_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_sent_to_homeowner_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.final_design_sent_to_homeowner_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_sent_to_homeowner_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_sent_to_homeowner_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.final_design_sent_to_homeowner_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -2337,66 +2337,66 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.final_design_signed_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.final_design_signed_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.final_design_signed_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -2411,7 +2411,7 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
@@ -2437,14 +2437,14 @@ BEGIN
                                         pd.utility_bill_verified_date :: DATE
                                     ) = (now() at time zone 'US/Mountain') :: DATE
                                     end and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
@@ -2470,13 +2470,13 @@ BEGIN
                                         pd.utility_bill_verified_date :: DATE
                                     ) = (now() at time zone 'US/Mountain') :: DATE
                                     end and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
@@ -2515,14 +2515,14 @@ BEGIN
                                         pd.utility_bill_verified_date :: DATE
                                     ) <= (now() at time zone 'US/Mountain') :: DATE
                                     end and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
@@ -2561,13 +2561,13 @@ BEGIN
                                         pd.utility_bill_verified_date :: DATE
                                     ) <= (now() at time zone 'US/Mountain') :: DATE
                                     end and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
@@ -2593,14 +2593,14 @@ BEGIN
                                         pd.utility_bill_verified_date :: DATE
                                     ) between p_custom_start_date and p_custom_end_date
                                     end and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.final_design_signed_date is not null and
                                 pd.financial_agreement_signed_date is not null and
@@ -2626,7 +2626,7 @@ BEGIN
                                         pd.utility_bill_verified_date :: DATE
                                     ) between p_custom_start_date and p_custom_end_date
                                     end and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -2641,66 +2641,66 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.substantial_completion_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.substantial_completion_date :: DATE = (now() at time zone 'US/Mountain') :: DATE and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as today_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.substantial_completion_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.substantial_completion_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.substantial_completion_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 pd.substantial_completion_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE) and
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
                            (select count(1)
                             from brs.project_details pd
                                 inner join flow.project p on p.id = pd.project_id
-                            where Array[pd.closer_user_id] <@ p_user_ids and
+                            where pd.closer_user_id = any(p_user_ids) and
                                 pd.closer_user_id is not null and
                                 pd.substantial_completion_date :: DATE between p_custom_start_date and p_custom_end_date and
                                 pd.substantial_completion_date is not null and
-                                Array[pd.closer_user_id] <@ brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)
+                                pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE))
                            ) as custom_date_range_count
 
                     from brs.funnel

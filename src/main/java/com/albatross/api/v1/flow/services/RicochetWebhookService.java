@@ -263,13 +263,6 @@ public class RicochetWebhookService {
         params.put("intValue", cfv.getIntValue());
         params.put("leadOwnerUserId", leadOwnerUserId);
 
-        String existingRowId = sqlCache.queryForObject("ricochetWebhook.checkForExistingCustomFieldValue", params, String.class);
-
-        if (existingRowId.equalsIgnoreCase("null")) {
-            sqlCache.update("ricochetWebhook.insertCustomFieldValue", params);
-        } else {
-            params.put("id", Long.parseLong(existingRowId));
-            sqlCache.update("ricochetWebhook.updateCustomFieldValue", params);
-        }
+        sqlCache.update("ricochetWebhook.upsertCustomFieldValue", params);
     }
 }

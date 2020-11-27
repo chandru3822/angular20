@@ -601,6 +601,8 @@ insert into flow.user_company(company_id,user_id,is_default)
           select id from flow.company where company_name = 'Supernova Energy'
           union
           select id from flow.company where company_name = 'Energy Pal'
+          union
+          select id from flow.company where company_name = 'Code 7 Roof and Solar'
       )
  select c.id,u1.id,case when c.id = (select id from flow.company where company_name = 'Blue Raven Corporate') then true else false end
  FROM blueraven."user" u1
@@ -709,6 +711,164 @@ where user_id not in (select distinct u.id
   and org_id in (select distinct id
                  from blueraven.org_hierarchy_filter_down(
                          '{215}'));
+
+
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Code 7 Roof and Solar'), 1, 'Parent');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Code 7 Roof and Solar'), 2, 'Region');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Code 7 Roof and Solar'), 3, 'Office');
+--
+--
+--
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')),(select id from flow.company where company_name = 'Code 7 Roof and Solar'), false,now(),2350555);
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), (select id from flow.company where company_name = 'Code 7 Roof and Solar'), false, now(),2350555);
+-- INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), (select id from flow.company where company_name = 'Code 7 Roof and Solar'), false,now(),2350555);
+
+
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'Code 7 Roof and Solar'), 'Code 7 Roof and Solar', null,
+            (select id from flow.org_type where org_type.org_type = 'Parent' and
+                    company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), true,   false,null,false,
+            2350555,
+            now(),
+            2350555,
+            now());
+
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'Code 7 Roof and Solar'),
+            id,
+            org_name,
+            (select id
+             from flow.org where org_name = 'Code 7 Roof and Solar' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')),
+            (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')),
+            active_flag,
+            has_calendar,case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
+     from blueraven.org
+     where originator_id = 17 and org_type_id = 15);
+
+
+
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'Code 7 Roof and Solar'),
+            o.id,
+            o.org_name,
+            (select id
+             from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')),
+            (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')),
+            o.active_flag,
+            o.has_calendar,
+            case when o.active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
+     from blueraven.org o
+              inner join blueraven.org  p on p.id = o.parent_org_id
+     where p.originator_id = 17 and p.org_type_id = 15);
+
+-- SELECT setval('flow.position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.position), 1), false);
+--
+-- INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Code 7 Roof and Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), true,now(),2350555);
+-- INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Code 7 Roof and Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Code 7 Roof and Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')), true,now(),2350555);
+
+
+
+INSERT INTO flow."user" (
+    phone_number,
+    id,
+    email,
+    created_by_id,
+    last_name,
+    first_name,
+    date_created,
+    password,
+    date_modified,
+    modified_by_id,
+    username)
+    (SELECT
+         phone_number,
+         id,
+         email,
+         created_by,
+         last_name,
+         first_name,
+         created_dt,
+         password,
+         modified_dt,
+         modified_by,
+         email
+     FROM blueraven."user"
+     where id in ( select distinct u.id
+                   from blueraven.user u
+                            inner join blueraven.user_position up on up.user_id = u.id
+                            inner join blueraven.org o on o.id = up.org_id
+                       and o.org_type_id in (15,16) and o.id in (931)));
+
+insert into flow.user_company(company_id,user_id,is_default)
+    (select (select id from flow.company where company_name = 'Code 7 Roof and Solar'),id,true
+     FROM blueraven."user"
+     where id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and id in ( select distinct u.id
+                   from blueraven.user u
+                            inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
+                            inner join blueraven.org o on o.id = up.org_id
+                       and o.org_type_id in (15,16) and o.id in (931)));
+
+insert into flow.company_user_status(user_id, user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+       and u.id not in (2350555,99999999,2405363, 2356764, 2410143)
+       and u.id in (select distinct u.id
+                    from blueraven.user u
+                             inner join blueraven.user_position up on up.user_id = u.id
+                             inner join blueraven.org o on o.id = up.org_id
+                        and o.org_type_id in (15,16) and o.id in (931)));
+
+
+insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
+    (select u.id,case when up.position_id = 174 then
+                          (select id from flow.position
+                           where position = 'Closer Regional Manager'
+                             and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar'))
+                      when up.position_id = 175 then
+                          (select id from flow.position
+                           where position = 'Closer Office Manager'
+                             and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar'))
+                      when up.position_id = 176 then
+                          (select id from flow.position
+                           where position = 'Closer'
+                             and company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')) end ,up.start_date,up.end_date,
+            case when o.org_type_id = 15 then
+                     (select o1.id from flow.org o1
+                      where o1.org_type_id = (select id from flow.org_type
+                                              where org_type = 'Region' and
+                                                      company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar')))
+                 when o.org_type_id = 16 then
+                     (select o1.id from flow.org o1
+                      where o1.org_type_id = (select id from flow.org_type
+                                              where org_type = 'Office' and
+                                                      company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar'))
+                        and o1.id = o.id) end,up.primary_flag,
+            2350555
+     from blueraven."user" u
+              inner join blueraven.user_position up on up.user_id = u.id
+              inner join blueraven.org o on o.id = up.org_id and o.org_type_id in (15,16) and o.id in (931));
+
 
 
 -- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Energy Pal'), 1, 'Parent');
@@ -7625,6 +7785,63 @@ INSERT INTO flow.contact (city,
             (select cc.id
              from flow.company_country cc
                       inner join flow.country cy on cy.id = cc.country_id
+             where cc.company_id = (select id from flow.company where company_name = 'Code 7 Roof and Solar')
+               and cy.id = 1),
+            email,
+            first_name,
+            id,
+            last_name,
+            mailing_city,
+            mailing_postal_code,
+            mailing_state,
+            mailing_street1,
+            mailing_street2,
+            mobile,
+            phone,
+            postal_code,
+            prospect_status,
+            state,
+            street1,
+            street2,
+            (select id from flow.contact_type where contact_type='Customer'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Code 7 Roof and Solar'),
+            (select up.id
+             from flow.user_position up
+                      inner join flow.user u on u.id = up.user_id
+                      inner join blueraven.deal d on d.setter_user_id = u.id
+             where d.customer_id = c.id and up.primary_flag is true limit 1)
+     from blueraven.customer c
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =17));
+
+INSERT INTO flow.contact (city,
+                          company_country_id,
+                          email,
+                          first_name,
+                          id,
+                          last_name,
+                          mailing_city,
+                          mailing_postal_code,
+                          mailing_state,
+                          mailing_street1,
+                          mailing_street2,
+                          mobile,
+                          phone,
+                          postal_code,
+                          prospect_status,
+                          state,
+                          street1,
+                          street2,
+                          contact_type_id,
+                          created_by_id,
+                          date_created,
+                          company_id,
+                          owner_user_position_id)
+    (SELECT city,
+            (select cc.id
+             from flow.company_country cc
+                      inner join flow.country cy on cy.id = cc.country_id
              where cc.company_id = (select id from flow.company where company_name = 'Energy Pal')
                and cy.id = 1),
             email,
@@ -8837,6 +9054,8 @@ INSERT INTO flow.project (id,
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Supernova Energy'))
                  when d.originator_id = 16 then
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Energy Pal'))
+                 when d.originator_id = 17 then
+                     (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Code 7 Roof and Solar'))
                 else
                      (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
                      end ,
@@ -8872,7 +9091,9 @@ INSERT INTO flow.project (id,
                                            when d.originator_id = 15 then
                                                (select id from flow.company where company_name = 'Supernova Energy')
                                            when d.originator_id = 16 then
-                                               (select id from flow.company where company_name = 'Energy Pal')end)
+                                               (select id from flow.company where company_name = 'Energy Pal')
+                                           when d.originator_id = 17 then
+                                               (select id from flow.company where company_name = 'Code 7 Roof and Solar')end)
                  when current_stage_id not in (2,3) and on_hold is true then
                      (select id from flow.company_project_status_type where project_status_type = 'On Hold' and company_id =
                                                                                                                 case when d.originator_id = 1 then
@@ -8902,7 +9123,9 @@ INSERT INTO flow.project (id,
                                                                                                                      when d.originator_id = 15 then
                                                                                                                          (select id from flow.company where company_name = 'Supernova Energy')
                                                                                                                      when d.originator_id = 16 then
-                                                                                                                         (select id from flow.company where company_name = 'Energy Pal')end)
+                                                                                                                         (select id from flow.company where company_name = 'Energy Pal')
+                                                                                                                     when d.originator_id = 17 then
+                                                                                                                         (select id from flow.company where company_name = 'Code 7 Roof and Solar')end)
                  when (financier = '["Dividend Solar"]' or financier = '["One Roof Energy"]') then
                      (select id from flow.company_project_status_type where project_status_type = 'Complete' and company_id =
                                                                                                                  case when d.originator_id = 1 then
@@ -8932,7 +9155,9 @@ INSERT INTO flow.project (id,
                                                                                                                       when d.originator_id = 15 then
                                                                                                                           (select id from flow.company where company_name = 'Supernova Energy')
                                                                                                                       when d.originator_id = 16 then
-                                                                                                                          (select id from flow.company where company_name = 'Energy Pal') end)
+                                                                                                                          (select id from flow.company where company_name = 'Energy Pal')
+                                                                                                                      when d.originator_id = 17 then
+                                                                                                                          (select id from flow.company where company_name = 'Code 7 Roof and Solar')end)
                  else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id =
                                                                                                                 case when d.originator_id = 1 then
                                                                                                                          (select id from flow.company where company_name = 'Blue Raven Solar')
@@ -8961,7 +9186,9 @@ INSERT INTO flow.project (id,
                                                                                                                      when d.originator_id = 15 then
                                                                                                                          (select id from flow.company where company_name = 'Supernova Energy')
                                                                                                                      when d.originator_id = 16 then
-                                                                                                                         (select id from flow.company where company_name = 'Energy Pal')end)end ,
+                                                                                                                         (select id from flow.company where company_name = 'Energy Pal')
+                                                                                                                     when d.originator_id = 17 then
+                                                                                                                         (select id from flow.company where company_name = 'Code 7 Roof and Solar')end)end ,
             c.latitude,
             c.longitude,
             c.time_zone
@@ -9075,7 +9302,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
               inner join list_of_values lov on lov.company_id = l.company_id and lov.name = l.source_name);
 
 
-INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT c.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Referral Follow-up' and cf.company_id = c.company_id) as custom_field_id,
             needs_final_referral_followup_date,
@@ -9084,7 +9311,8 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
          inner join flow.project p on p.id= d.id
          inner join blueraven.customer c1 on c1.id = d.customer_id
           inner join flow.contact c on c.id = c1.id
-     WHERE needs_final_referral_followup_date IS NOT NULL);
+     WHERE needs_final_referral_followup_date IS NOT NULL
+        limit 1);
 
 
 
@@ -9185,7 +9413,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
      FROM blueraven.deal d
      inner join flow.project p on p.id = d.id
      inner join flow.contact c on c.id = p.contact_id
-    WHERE entered_into_payment_system_date IS NOT NULL
+    WHERE entered_into_payment_system_date IS NOT NULL and originator_id = 1
    );
 
 -- INSERT INTO flow.custom_field_group_assignment(
@@ -9829,16 +10057,16 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
               inner join flow.contact c on c.id = p.contact_id
      WHERE ancillary_expense_estimated_price_3 is not null
        );
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
-    (SELECT d.id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Annual Utility Usage (kWh)' and cf.company_id = c.company_id),
-            d.annual_utility_usage::integer,
-            2350555 as created_by_id
-     FROM blueraven.deal d
-              inner join flow.project p on p.id = d.id
-              inner join flow.contact c on c.id = p.contact_id
-     WHERE annual_utility_usage is not null
-      );
+-- INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+--     (SELECT d.id,
+--             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Annual Utility Usage (kWh)' and cf.company_id = c.company_id),
+--             d.annual_utility_usage::integer,
+--             2350555 as created_by_id
+--      FROM blueraven.deal d
+--               inner join flow.project p on p.id = d.id
+--               inner join flow.contact c on c.id = p.contact_id
+--      WHERE annual_utility_usage is not null
+--       );
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT d.id,
@@ -10760,9 +10988,9 @@ insert into  flow.user_org_access(org_id, user_id, date_created,
                                   created_by_id
 )
 with all_org_calendars as (
-    select distinct  unnest(calendar_org_ids) as org_id
-    from blueraven."user"
-    where id = 2350555
+    select distinct  id as org_id
+    from blueraven.org
+    where has_calendar is true
 ) select  distinct org_id,user_id,now(),2350555
 from blueraven.role_permission rp
          inner join blueraven.role r on r.id = rp.role_id
@@ -11007,10 +11235,6 @@ where c.column_a = uc.user_id
 
 update flow.user_company set default_appointment_length = 90;
 
-insert into flow.company_feature (feature_name, company_id, feature_id, home_page)
-values ('Smartlists', 2, 19, true);
-
-
 
 with owners as (
     select d.id,((added_on  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC')::date as added_on
@@ -11019,3 +11243,161 @@ update flow.project p
 set user_position_id = blueraven.get_user_position_for_closer(o.id::integer,o.added_on)
 from owners o
 where o.id = p.id;
+
+
+with insert_availability as (
+    insert into flow.resource_schedule(company_id, user_id, start_date,
+                                       end_date, date_created,
+                                       created_by_id,migrated_user_id)
+        (select 3,u.id,'2020-11-01',null,now(),2350555,ac.user_id
+         from blueraven.user u
+                  inner join base_mysql.availability_configurations ac on (ac.user_id = u.user_base_oid or ac.user_id = u.user_base_setter_oid)
+         where ac.local_deleted = 0
+           and (monday !='[]' or tuesday != '[]' or wednesday != '[]' or
+                thursday != '[]' or friday != '[]' or saturday != '[]'))returning *)
+
+insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time,
+                                                day_of_week_id, date_created,
+                                                created_by_id
+)
+(select foo.id,(('2020-01-01 ' ||min(foo.from_time))::timestamp at time zone foo.timezone at time zone 'UTC')::time,(('2020-01-01 ' ||max(foo.to_time))::timestamp at time zone foo.timezone at time zone 'UTC')::time,foo.day_of_week,now(),2350555
+from (
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,1 as day_of_week,
+                         ac1 ->> 'from' as from_time,ac1 ->> 'to' as to_time
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.monday::jsonb) ac1
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,2 as day_of_week,
+                         ac2 ->> 'from' as tuesday_from,ac2 ->> 'to' as tuesday_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.tuesday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,3 as day_of_week,
+                         ac2 ->> 'from' as wed_from,ac2 ->> 'to' as wed_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.wednesday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,4 as day_of_week,
+                         ac2 ->> 'from' as thurs_from,ac2 ->> 'to' as thurs_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.thursday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,5 as day_of_week,
+                         ac2 ->> 'from' as friday_from,ac2 ->> 'to' as friday_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.friday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0
+         union
+         select distinct iaa.id,ac.user_id,ac.appointment_duration,case
+                                                                       when ac.timezone = 'America/Denver' then 'America/Denver'
+                                                                       when ac.timezone = 'Mountain Time (US & Canada)' then 'US/Mountain'
+                                                                       when ac.timezone = 'Pacific Time (US & Canada)' then 'US/Pacific'
+                                                                       when ac.timezone = 'America/New_York' then 'America/New_York'
+                                                                       when ac.timezone = 'Eastern Time (US & Canada)' then 'US/Eastern'
+                                                                       when ac.timezone = 'America/Los_Angeles' then 'America/Los_Angeles'
+                                                                       when ac.timezone = 'Central Time (US & Canada)' then 'US/Central'
+                                                                       when ac.timezone = 'America/Indianapolis' then 'America/Indianapolis'
+             end as timezone,6 as day_of_week,
+                         ac2 ->> 'from' as sat_from,ac2 ->> 'to' as sat_to
+         from base_mysql.availability_configurations ac
+                  cross join LATERAL jsonb_array_elements(ac.saturday::jsonb) ac2
+                  inner join insert_availability iaa on ac.user_id = iaa.migrated_user_id
+         where local_deleted = 0) as foo
+group by id,day_of_week, foo.timezone);
+
+
+
+insert into  flow.resource_appointment(company_id, user_id, start_time,
+                                       end_time, all_day, description, date_created,
+                                       created_by_id,
+                                       archived)
+    (
+        with active_closers as (
+            select distinct u.id as user_id,u.first_name,u.last_name,t.timezone,start_date.start_date
+            from flow.user u
+                     inner join flow.user_position up on up.user_id = u.id and up.position_id in (1,2,3) and up.end_date is null
+                     inner join flow.org o on o.id = up.org_id
+                     inner join blueraven.user  u1 on u1.id = u.id
+                     left join flow.company_timezone ct on ct.id = o.company_timezone_id
+                     left join flow.timezone t on t.id = ct.timezone_id
+                     cross join generate_series('2020-11-30',
+                                                '2021-11-30',interval '1 day') as start_date
+            where u1.user_status_type_id = 1
+              and t.timezone is not null and u.id not in (45988,46416,2294211,2294471))
+        select 3,foo.user_id,foo.start_time,foo.end_time,
+               false,'Initial Block Off',now(),2350555,
+               false
+        from (
+                 select user_id,timezone,((start_date::date ||' 09:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') as start_time,
+                        ((start_date::date ||' 09:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') + interval '30 minutes' as end_time
+                 from active_closers ac
+                 union
+                 select user_id,timezone,((start_date::date ||' 11:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') as start_time,
+                        ((start_date::date ||' 11:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') + interval '30 minutes' as end_time
+                 from active_closers ac
+                 union
+                 select user_id,timezone,((start_date::date ||' 13:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') as start_time,
+                        ((start_date::date ||' 13:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') + interval '30 minutes' as end_time
+                 from active_closers ac
+                 union
+                 select user_id,timezone,((start_date::date ||' 15:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') as start_time,
+                        ((start_date::date ||' 15:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') + interval '30 minutes' as end_time
+                 from active_closers ac
+                 union
+                 select user_id,timezone,((start_date::date ||' 17:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') as start_time,
+                        ((start_date::date ||' 17:30:00')::timestamp at time zone ac.timezone at time zone 'UTC') + interval '30 minutes' as end_time
+                 from active_closers ac)as foo) ;

@@ -14,13 +14,13 @@
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
                 case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-01-01') and ('2020-01-31')
-                  and pd.source in (7, 8, 484) -- ('Closer Gen', 'Referral', 'Events - Closer Gen')
+                  and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                   then 1.5
                 when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
-                  and pd.source = 7 -- ('Closer Gen')
+                  and pd.source = 523 --Closer Gen
                   then 3
                 when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
-                  and pd.source in (8, 484) -- ('Referral', 'Events - Closer Gen')
+                  and pd.source in (524, 530) --(Referral, Events - Closer Gen)
                   then 2
                 else 1
                 end as q1points
@@ -29,7 +29,7 @@
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
-                and case when pd.primary_financier = 119
+                and case when pd.primary_financier = 721 --Cash
                   then pd.first_cash_payment_paid_date is not null
                 and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
                   between (select q1_start from quarters) and (select q1_end from quarters)
@@ -47,7 +47,7 @@
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
-                and case when pd.primary_financier = 119
+                and case when pd.primary_financier = 721 --Cash
                   then pd.first_cash_payment_paid_date is not null
                 and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
                   between (select q2_start from quarters) and (select q2_end from quarters)
@@ -65,7 +65,7 @@
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
                 and pd.utility_bill_verified_date is not null
-                and case when pd.primary_financier = 119
+                and case when pd.primary_financier = 721 --Cash
                   then pd.first_cash_payment_paid_date is not null
                     and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                       between (select q3_start from quarters) and (select q3_end from quarters)
@@ -87,7 +87,7 @@
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
                 and pd.utility_bill_verified_date is not null
-                and case when pd.primary_financier = 119
+                and case when pd.primary_financier = 721 --Cash
                   then pd.first_cash_payment_paid_date is not null
                 and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q4_start from quarters) and (select q4_end from quarters)
@@ -118,7 +118,11 @@
       WHERE up.user_id = :userId
         AND pczu.archived IS FALSE
         AND pcz.archived IS FALSE
-        AND p.schedulable IS TRUE
+        -- postal_code_zone_user_type_id = 1 means schedule to (2 = schedule by)
+        AND pczu.postal_code_zone_user_type_id = 1
+        AND up.archived IS NOT TRUE
+        AND up.start_date <= now()
+        AND (up.end_date is null or up.end_date >= now())
     ]]>
   </closerDashboard.getRoundRobins>
 
@@ -131,20 +135,20 @@
   <closerDashboard.getCloserTableScores>
     <![CDATA[
       SELECT u.id,
-            concat(u.first_name, ' ', u.last_name) AS name,
+             concat(u.first_name, ' ', u.last_name) AS name,
              ust.user_status_type,
              o.org_name as officeName,
              o2.org_name as region,
              coalesce(lov.name, '--') as metroArea,
              count(
                case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
-                 and pd.source not in (7, 8, 484)
+                 and pd.source not in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                  and pd.final_design_signed_date is not null
                  and pd.financial_agreement_signed_date is not null
                  and pd.utility_bill_verified_date is not null
                  and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
                  and case
-                   when pd.primary_financier = 119 then
+                   when pd.primary_financier = 721 then --Cash
                      pd.first_cash_payment_paid_date is not null and
                      greatest(final_design_signed_date, financial_agreement_signed_date,
                               first_cash_payment_paid_date, utility_bill_verified_date,
@@ -162,7 +166,7 @@
              ) as leadGenFdcPercentageNumerator,
              count(
                case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
-                 and pd.source not in (7, 8, 484)
+                 and pd.source not in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                then 1
                end
              ) as leadGenFdcPercentageDenominator,
@@ -171,12 +175,12 @@
                                   first_cash_payment_paid_date, utility_bill_verified_date,
                                   proof_of_homeowners_insurance_obtained_date)
                            >= (now() at time zone 'US/Mountain')::date - :timeInterval
-                 and pd.source in (7, 8, 484)
+                 and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                  and pd.final_design_signed_date is not null
                  and pd.financial_agreement_signed_date is not null
                  and pd.utility_bill_verified_date is not null
                  and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
-                 and case when pd.primary_financier = 119
+                 and case when pd.primary_financier = 721 --Cash
                    then pd.first_cash_payment_paid_date is not null
                    else 1=1
                    end
@@ -193,7 +197,7 @@
                  and pd.financial_agreement_signed_date is not null
                  and pd.utility_bill_verified_date is not null
                  and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
-                 and case when pd.primary_financier = 119
+                 and case when pd.primary_financier = 721 --Cash
                    then pd.first_cash_payment_paid_date is not null
                    else 1=1
                    end
@@ -214,7 +218,7 @@
         LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
       WHERE CASE WHEN :officeFdcRank IS TRUE
         THEN -- Office FDC Rank table
-          up.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived is false and primary_flag is true)
+          up.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived is false and up.primary_flag is true)
         ELSE -- Company Ranking (2nd row of tables)
           up.position_id = 1
           AND up.archived IS FALSE
@@ -229,22 +233,24 @@
 
   <closerDashboard.getBrsProvidedSources>
     <![CDATA[
-      SELECT distinct pd.source as source_id,
-             lov.name as source_name
+      SELECT DISTINCT pd.source source_id,
+             lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
-      WHERE pd.source NOT IN (7, 484, 8) -- ('Closer Gen', 'Events - Closer Gen', 'Referral')
+      WHERE pd.source NOT IN (523, 530, 524) -- (Closer Gen, Events - Closer Gen, Referral)
+        AND lov.parent_id = 520
       ORDER BY source_name
     ]]>
   </closerDashboard.getBrsProvidedSources>
 
   <closerDashboard.getSelfGenSources>
     <![CDATA[
-      SELECT distinct pd.source as source_id,
-             lov.name as source_name
+      SELECT DISTINCT pd.source source_id,
+             lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
-      WHERE pd.source IN (7, 484, 8) -- ('Closer Gen', 'Events - Closer Gen', 'Referral')
+      WHERE pd.source IN (523, 530, 524) -- (Closer Gen, Events - Closer Gen, Referral)
+        AND lov.parent_id = 520
       ORDER BY source_name
     ]]>
   </closerDashboard.getSelfGenSources>

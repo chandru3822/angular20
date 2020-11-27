@@ -61,7 +61,10 @@ export default {
     async saveUserHomePage () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/user/homePage/${this.user.homePageCompanyFeatureId}`)
+        let tempUsr = {
+          homePageCompanyFeatureId: this.user.homePageCompanyFeatureId
+        }
+        await putRequest(`/user/homePage`, tempUsr)
         this.snackbar = getSnackbar('SUCCESS', 'Default Home Page Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)

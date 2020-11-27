@@ -92,7 +92,7 @@ public class AvailabilityService {
     return result.orElse(null);
   }
 
-  public ResourceSchedule saveSchedule(ResourceSchedule ra) {
+  public List<ResourceSchedule> saveSchedule(ResourceSchedule ra) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -114,10 +114,9 @@ public class AvailabilityService {
       id = sqlCache.updateReturningId("availability.insertSchedule", params, "id").longValue();
     }
 
-    if(null == ra.getEndDate()) {
-      params.put("id", id);
-      sqlCache.update("availability.updateScheduleWithoutEndDate", params);
-    }
+    //this should account for a new infinite schedule, or a schedule added after an infinite one but that has an end date
+    params.put("id", id);
+    sqlCache.update("availability.updateScheduleWithoutEndDate", params);
 
     // handle saving each day's working hours
     if(!ra.getResourceScheduleAvailability().isEmpty()) {
@@ -126,7 +125,7 @@ public class AvailabilityService {
       }
     }
 
-    return getOneResourceAvailability(id);
+    return getResourceAvailability(ra.getUserId(), ra.getOrgId());
   }
 
   public void deleteSchedule(Long id) {

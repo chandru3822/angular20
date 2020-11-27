@@ -27,7 +27,7 @@ BEGIN
         from (
             select
                 o.id as org_id,
-                o.org_name || ' (' || metro_area.metro_area || ')' as org,
+                concat(o.org_name, ' (', metro_area.metro_area, ')') as org,
                 (select count(1)::bigint
                  from flow.project p2
                      inner join brs.project_details pd2 on pd2.project_id = p2.id
@@ -35,13 +35,14 @@ BEGIN
                      inner join flow.user_positions_vw upv2 on (upv2.user_position_id = c2.owner_user_position_id and upv2.position_id = 4)
                      inner join flow.user u2 on u2.id = upv2.user_id
                      inner join flow.org o2 on (o2.id = upv2.org_id and o2.active_flag is true)
-                 where pd2.source in (6,493) -- ('Setter Gen', 'Retargeted')
+                 where pd2.source in (525, 526) --(Setter Gen, Retargeted)
                      and case when upv2.end_date is not null
                          then p2.date_created::date between upv2.start_date and upv2.end_date
                          else p2.date_created::date >= upv2.start_date
                          end
-                     and pd2.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date - 1)
-                     and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date - 1))
+                     and upv2.position_level = 0
+                     and pd2.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
+                     and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date))
                      and o2.id = o.id
                 ) as total_appointments,
                 count(1)::bigint as pitches,
@@ -53,15 +54,16 @@ BEGIN
                 inner join flow.user u on u.id = upv.user_id
                 inner join flow.org o on (o.id = upv.org_id and o.active_flag is true)
                 left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
-            where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
+            where pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and case when upv.end_date is not null
                     then p.date_created::date between upv.start_date and upv.end_date
                     else p.date_created::date >= upv.start_date
                     end
+                and upv.position_level = 0
                 and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
-                and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
+                and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                 and o.id != 171
-            group by o.id, o.org_name || ' (' || metro_area.metro_area || ')'
+            group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')
             limit p_limit
         ) as t
         order by pitches desc, org_id

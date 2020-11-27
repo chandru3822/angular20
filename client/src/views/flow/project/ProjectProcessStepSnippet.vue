@@ -20,12 +20,12 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr>
+            <tr :class="{'primary-row': item.main}">
               <td class="text-left">
                 <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${contactId}`">{{ item.projectProcessStepId }}</router-link>
               </td>
-              <td class="text-center"><input type="checkbox" disabled v-model="item.main"></td>
               <td class="text-left">{{item.processStepName}}</td>
+              <td class="text-left">{{ item.dateCreated | formatDate('timestamp') }}</td>
               <td class="text-left">{{ item.owner && item.owner.fullName }}</td>
               <td class="text-left">{{ item.processStepStatusType }}</td>
             </tr>
@@ -49,8 +49,8 @@
       return {
         headers: [
           {text: 'ID', value: 'id', show: true, width: 80},
-          {text: 'Primary', value: 'main', show: true, width: 75},
           {text: 'Type', value: 'processStepName', show: true},
+          {text: 'Created', value: 'dateCreated', show: true},
           {text: 'Owner', value: 'owner', show: true},
           {text: 'Status', value: 'processStepStatusType', show: true},
         ]
@@ -65,5 +65,9 @@
   background-color: #E6E6E9;
   color: #1F3C73;
   border-bottom: 1px solid #C7C7CC;
+}
+
+.primary-row{
+  background-color: #ebf5ff !important;
 }
 </style>

@@ -95,7 +95,7 @@
       async exportPayrollSummary () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          let filename = 'Payroll Summary';
+          let filename = 'Payroll Summary.csv';
           let csvData = 'Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay';
           csvData += '\n';
 

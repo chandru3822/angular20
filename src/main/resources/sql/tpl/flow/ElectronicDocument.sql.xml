@@ -23,6 +23,17 @@
         ]]>
     </electronicDocument.getUtilityQueryStr>
 
+    <electronicDocument.getChangeOrderQueryStr>
+        <![CDATA[
+            select s.state || '_Change Order_Generic'
+                from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
+                left outer join flow.company_state cs on cs.id = p.company_state_id
+                left outer join flow.state s on s.id = cs.state_id
+            where pd.project_id = :projectId
+        ]]>
+    </electronicDocument.getChangeOrderQueryStr>
+
     <electronicDocument.getStateQueryStr>
         <![CDATA[
             select s.abbreviation

@@ -13,8 +13,8 @@ import java.util.List;
 @Setter
 public class CompanyFunction {
 
-  private Long id, dbFunctionId, returnDataTypeId, dbFunctionTypeId;
-  private String companyFunctionName;
+  private Long id, dbFunctionId, returnDataTypeId, dbFunctionTypeId, companyId;
+  private String companyFunctionName, companyName;
   private Boolean archived;
   private List<CompanyFunctionParam> companyFunctionParams;
 }

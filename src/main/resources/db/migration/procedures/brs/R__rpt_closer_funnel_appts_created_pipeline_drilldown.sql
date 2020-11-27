@@ -13,10 +13,10 @@ BEGIN
                        concat(c.first_name, ' ', c.last_name) customer_name,
                        c.id contact_id,
                        pd.project_id,
-                       lov.name source_name,
+                       pd.source_name,
                        pd.system_size,
-                       lov2.name financier,
-                       pd.closer_appointment_start,
+                       pd.primary_financier_name financier,
+                       pd.closer_appointment_start appointment_date,
                        pd.cancelled_date,
                        p.date_created
                 from brs.project_details pd
@@ -26,12 +26,10 @@ BEGIN
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left outer join flow.list_of_value lov on lov.id = pd.source
-                    left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                 where p.date_created::date between p_start_date and p_end_date and
                     pd.closer_appointment_start is not null and
                     pd.source is not null and
-                    Array[pd.source] <@ p_source_ids
+                    pd.source = any(p_source_ids)
                 order by owner_name, p.date_created::date
             ) as funnel_rows;
 
@@ -45,10 +43,10 @@ BEGIN
                        concat(c.first_name, ' ', c.last_name) customer_name,
                        c.id contact_id,
                        pd.project_id,
-                       lov.name source_name,
+                       pd.source_name,
                        pd.system_size,
-                       lov2.name financier,
-                       pd.closer_appointment_start,
+                       pd.primary_financier_name financier,
+                       pd.closer_appointment_start appointment_date,
                        pd.cancelled_date,
                        p.date_created
                 from brs.project_details pd
@@ -58,12 +56,10 @@ BEGIN
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left outer join flow.list_of_value lov on lov.id = pd.source
-                    left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                 where p.date_created::date between p_start_date and p_end_date and
                     pd.closer_appointment_start is not null and
                     pd.source is not null and
-                    Array[pd.source] <@ p_source_ids
+                    pd.source = any(p_source_ids)
                 order by owner_name, p.date_created::date
             ) as funnel_rows;
 
@@ -77,10 +73,10 @@ BEGIN
                        concat(c.first_name, ' ', c.last_name) customer_name,
                        c.id contact_id,
                        pd.project_id,
-                       lov.name source_name,
+                       pd.source_name,
                        pd.system_size,
-                       lov2.name financier,
-                       pd.closer_appointment_start,
+                       pd.primary_financier_name financier,
+                       pd.closer_appointment_start appointment_date,
                        pd.cancelled_date,
                        p.date_created
                 from brs.project_details pd
@@ -90,8 +86,6 @@ BEGIN
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left outer join flow.list_of_value lov on lov.id = pd.source
-                    left outer join flow.list_of_value lov2 on lov2.id = pd.primary_financier
                 where p.date_created::date between p_start_date and p_end_date and
                     pd.closer_appointment_start is not null and
                     pd.source is not null

@@ -1,0 +1,104 @@
+<sql>
+
+  <dbFunction.getAll><![CDATA[
+     select df.*,
+            dft.function_type
+      from flow.db_function df
+        inner join flow.db_function_type dft on dft.id = df.db_function_type_id
+      where df.archived is not true
+      order by df.function_name
+  ]]></dbFunction.getAll>
+
+  <dbFunction.getAvailableCompanies><![CDATA[
+    select *
+    from flow.company c
+    where c.parent_company_id is not null
+    and not exists (
+        select cf.id from flow.company_function cf where db_function_id = :dbFunctionId and cf.company_id = c.id
+        )
+    order by c.parent_company_id, c.company_name
+  ]]></dbFunction.getAvailableCompanies>
+
+  <dbFunction.getTypes><![CDATA[
+     select df.*
+      from flow.db_function_type df
+      where df.archived is not true
+      order by df.function_type
+  ]]></dbFunction.getTypes>
+
+  <dbFunction.getParameterTypes><![CDATA[
+     select pt.*
+      from flow.parameter_type pt
+      where pt.archived is not true
+      order by pt.parameter_type
+  ]]></dbFunction.getParameterTypes>
+
+  <dbFunction.archive><![CDATA[
+     update flow.db_function
+        set archived = true
+     where id = :id
+  ]]></dbFunction.archive>
+
+  <dbFunction.getOne><![CDATA[
+     select df.*,
+            dt.data_type as return_data_type,
+            dft.function_type,
+            coalesce((
+               SELECT array_to_json(array_agg(row_to_json(dbFunctionParams)))
+               FROM (
+                       select dfp.id,
+                              dfp.db_function_id as "dbFunctionId",
+                              dfp.display_order as "displayOrder",
+                              dfp.system_value_id as "systemValueId",
+                              sv.system_value as "systemValue",
+                              dfp.parameter_name as "parameterName",
+                              dfp.data_type_id as "dataTypeId",
+                              dfp.parameter_type_id as "parameterTypeId",
+                              pt.parameter_type as "parameterType",
+                              dt.data_type as "dataType"
+                       from flow.db_function_param dfp
+                        inner join flow.data_type dt on dfp.data_type_id = dt.id
+                        inner join flow.parameter_type pt on dfp.parameter_type_id = pt.id
+                        left join flow.system_value sv on sv.id = dfp.system_value_id
+                        where dfp.archived is not true
+                        and dfp.db_function_id = df.id
+                        order by display_order
+                    ) dbFunctionParams), '[]') AS "dbFunctionParams",
+            coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(companyFunctions)))
+                    FROM (
+                             select cf.id,
+                                    cf.company_id as "companyId",
+                                    cf.company_function_name as "companyFunctionName",
+                                    c.company_name as "companyName"
+                             from flow.company_function cf
+                              inner join flow.company c on c.id = cf.company_id
+                             where cf.db_function_id = df.id
+                             and cf.archived is not true
+                         ) companyFunctions), '[]') AS "companyFunctions"
+      from flow.db_function df
+        left join flow.data_type dt on df.return_data_type_id = dt.id
+         inner join flow.db_function_type dft on dft.id = df.db_function_type_id
+      where df.id = :id
+  ]]></dbFunction.getOne>
+
+  <dbFunction.insertFunction><![CDATA[
+     insert into flow.db_function(function_name, return_data_type_id, db_function_type_id, display_name)
+     values (:functionName, :returnDataTypeId, :dbFunctionTypeId, :displayName)
+  ]]></dbFunction.insertFunction>
+
+  <dbFunction.insertParam><![CDATA[
+     insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
+        values(:dbFunctionId, :parameterName, (select coalesce(max(display_order) + 1, 0) from flow.db_function_param where db_function_id = :dbFunctionId), :dataTypeId, :parameterTypeId, :systemValueId)
+  ]]></dbFunction.insertParam>
+
+  <dbFunction.addToCompany><![CDATA[
+     insert into flow.company_function(company_function_name, db_function_id, company_id)
+     values (:displayName, :functionId, :companyId)
+  ]]></dbFunction.addToCompany>
+
+  <dbFunction.getSystemValues><![CDATA[
+    select *
+    from flow.system_value
+  ]]></dbFunction.getSystemValues>
+</sql>

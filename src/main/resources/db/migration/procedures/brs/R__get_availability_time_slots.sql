@@ -27,6 +27,7 @@ BEGIN
         select ui.user_id,ui.id, ppscfv.timestamp_value as start_time, ppscfv2.timestamp_value as end_time
         from flow.project p
                  inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
+            and pps.main is true
                  inner join flow.project_process_step_custom_field_value ppscfv
                             on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 5
                  inner join flow.project_process_step_custom_field_value ppscfv2
@@ -75,7 +76,7 @@ BEGIN
                                                        when rsa.end_time > rsa.start_time
                                                            then $$'$$ || p_available_date::date || $$'$$
                                                        else $$'$$ || p_available_date::date + 1 || $$'$$ end ||
-                                                   rsa.end_time)::timestamp, interval '30 min')    available_times,
+                                                   rsa.end_time)::timestamp - (default_appointment_length || ' minutes')::interval, interval '30 min')    available_times,
                                           uc.default_appointment_length,
                                           (rsa.end_time - (default_appointment_length || ' minutes')::interval) closer_end_time
                                    from flow.project p
@@ -93,11 +94,7 @@ BEGIN
                                             p_available_date::date between rs.start_date and rs.end_date
                                          else
                                              p_available_date::date >= rs.start_date end) as foo) as foo1
-                 where foo1.scheduled_start_time > now()  + interval '30 minutes' and
-                     case when foo1.scheduled_start_time::date = p_available_date::date + 1 then
-                                  foo1.scheduled_start_time <= ($$'$$ || p_available_date::date + 1 || $$'$$ || foo1.closer_end_time)::timestamp
-                          else 1=1
-                         end) as foo2
+                 where foo1.scheduled_start_time > now()  + interval '30 minutes') as foo2
         where foo2.available is true
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;
