@@ -370,6 +370,8 @@ public class SmartlistService {
             requirementValue = requirementValue.toString().replace("not", "");
           }
         }
+
+
       }
 
       if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 2)) {
