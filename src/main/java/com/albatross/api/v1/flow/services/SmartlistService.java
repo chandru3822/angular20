@@ -578,7 +578,7 @@ public class SmartlistService {
     switch (smartlist.getObjectTypeId().intValue()) {
       case 1:
         query.append("\nfrom flow.project ");
-        query.append("\ninner join flow.company_process on flow.company_process.id = flow.project.company_process_id ");
+        query.append("\ninner join flow.company_process on flow.company_process.id = flow.project.company_process_id and " + String.format("flow.company_process.company_id = any(%s)", companySubquery));
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
         query.append("\nleft join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
         query.append("\nleft join flow.user on flow.user.id = flow.user_position.user_id ");
