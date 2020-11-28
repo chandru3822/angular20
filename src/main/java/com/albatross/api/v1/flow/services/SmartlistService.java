@@ -370,6 +370,8 @@ public class SmartlistService {
             requirementValue = requirementValue.toString().replace("not", "");
           }
         }
+
+
       }
 
 
