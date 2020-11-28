@@ -1,0 +1,41 @@
+-- INSERT 7 OAKS DEVS
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Scott', 'Humes', 'scott.humes@7oaksgroup.com', '$2a$10$gNj8M3uetkKFuYCMq6XXn.qeP4IeXwkzZTq3tUWQ1sLeop4bBEk92', null, null, now(), null, now(), 3, 'scott.humes@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'scott.humes@7oaksgroup.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Joseph', 'Canto', 'joseph@7oaksgroup.com', '$2a$10$gNj8M3uetkKFuYCMq6XXn.qeP4IeXwkzZTq3tUWQ1sLeop4bBEk92', null, null, now(), null, now(), 3, 'joseph@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'joseph@7oaksgroup.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Scott', 'Keller', 'kellersk@7oaksgroup.com', '$2a$10$vSjw76YpVDj3SYR1S10/D.6OFYHEzgDXOg8oWuJRbp1BuvmgER90.', null, null, now(), null, now(), 3, 'kellersk@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'kellersk@7oaksgroup.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Mandy', 'Cosper', 'mandy@7oaksgroup.com', '$2a$10$.Yt8nujpN2q795POxbXiOuL.hJXhb7yzSo2bgYh7gRtcJWiWa5HKC', null, null, now(), null, now(), 3, 'mandy@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'mandy@7oaksgroup.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Rick', 'Sanchez', 'scott.humes+rick@7oaksgroup.com', '$2a$10$GfvMhjU0nITML7KGWhLw9utbk5dT8qX1Nb6Q6b0qZ13f.DpPk0wMC', null, null, now(), null, now(), 3, 'scott.humes+rick@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'scott.humes+rick@7oaksgroup.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'John', 'Berns', 'john@7oaksgroup.com', '$2a$10$MVMAyDXJyX4G.AAL5C.mFetbuZtDhcduV/FIzVnp03AGYmjN9Woma', null, null, now(), null, now(), 3, 'john@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'john@7oaksgroup.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Kory', 'Calmes', 'kory@calmes.org', '$2a$10$MVMAyDXJyX4G.AAL5C.mFetbuZtDhcduV/FIzVnp03AGYmjN9Woma', null, null, now(), null, now(), 3, 'kory@calmes.org', false where not exists (select id from flow."user" where username = 'kory@calmes.org'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Michael', 'Meyers', 'michael.meyers@xomly.com', '$2a$10$MVMAyDXJyX4G.AAL5C.mFetbuZtDhcduV/FIzVnp03AGYmjN9Woma', null, null, now(), null, now(), 3, 'michael.meyers@xomly.com', false where not exists (select id from flow."user" where username = 'michael.meyers@xomly.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+    (select 'Randa', 'Nunn', 'randa@randa.com', '$2a$10$MVMAyDXJyX4G.AAL5C.mFetbuZtDhcduV/FIzVnp03AGYmjN9Woma', null, null, now(), null, now(), 3, 'randa@randa.com', false where not exists (select id from flow."user" where username = 'randa@randa.com'));
+INSERT INTO flow."user" (first_name, last_name, email, password, phone_number, created_by_id, date_created, modified_by_id, date_modified, default_company_id, username, archived)
+  (select 'SYSTEM', 'SYSTEM', 'system@7oaksgroup.com', null, null, null, now(), null, now(), null, 'system@7oaksgroup.com', false where not exists (select id from flow."user" where username = 'system@7oaksgroup.com'));
+
+-- ADD 7 OAKS DEVS TO ALBATROSS COMPANY
+-- insert into flow.user_company(company_id, is_default, user_id)
+--     (select 1, true, (select id from flow."user" where username = 'scott.humes@7oaksgroup.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'scott.humes@7oaksgroup.com')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'joseph@7oaksgroup.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'joseph@7oaksgroup.com')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'kellersk@7oaksgroup.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'kellersk@7oaksgroup.com')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'mandy@7oaksgroup.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'mandy@7oaksgroup.com')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'scott.humes+rick@7oaksgroup.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'scott.humes+rick@7oaksgroup.com')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'john@7oaksgroup.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'john@7oaksgroup.com')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'kory@calmes.org') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'kory@calmes.org')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'michael.meyers@xomly.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'michael.meyers@xomly.com')) );
+insert into flow.user_company(company_id, is_default, user_id)
+    (select 1, true, (select id from flow."user" where username = 'randa@randa.com') where not exists (select id from flow.user_company where company_id = 1 and user_id = (select id from flow."user" where username = 'randa@randa.com')) );

@@ -79,6 +79,14 @@ jobs:
                     cluster: br-stage-cluster
                     wait-for-service-stability: true
 
+            -   name: Deploy Amazon ECS cron-stage task definition
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: .aws/cron-stage-definition.json
+                    service: albatross-cron-stage-service
+                    cluster: albatross-cron-stage-cluster
+
+
     frontend-build:
       needs: build
       runs-on: ubuntu-18.04
