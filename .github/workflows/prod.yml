@@ -17,7 +17,7 @@ jobs:
             -   name: Cancel Previous Runs
                 uses: styfle/cancel-workflow-action@0.6.0
                 with:
-                  access_token: ${{ secrets.GH_ACCESS_TOKEN }}
+                    access_token: ${{ github.token }}
 
             -   uses: actions/checkout@v2
             -   name: Set up JDK 11
@@ -76,6 +76,14 @@ jobs:
                     task-definition: ${{ steps.task-def.outputs.task-definition }}
                     service: albatross-prod-service
                     cluster: albatross-prod-cluster
+
+            -   name: Deploy Amazon ECS task definition
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: .aws/cron-prod-definition.json
+                    service: albatross-cron-prod-service
+                    cluster: albatross-cron-prod-cluster
+
 
     frontend-build:
       needs: build
