@@ -17,7 +17,9 @@ CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_open_payroll(p_
 
 AS
 $BODY$
+
 BEGIN
+
     RETURN QUERY
         select foo.project_id,
                foo.closer,
@@ -41,15 +43,14 @@ BEGIN
                         opru1.m2_allocation                                       as milestone2_amount,
                         op.total                                                  as plan_total,
 
-                        coalesce(brs.get_overrides_earned(array [p.id], u.id::integer), 0) as overrides_earned,
+                        coalesce(brs.get_overrides_earned(array [p.id],p1.period_end, u.id::integer), 0) as overrides_earned,
                         (select coalesce(sum(dcl.paid_to_date), 0)
                          from brs.project_commission_ledger dcl
                                   inner join flow.project d1 on d1.id = dcl.project_id
                          WHERE dcl.project_id = d1.id
                            and dcl.ledger_type_id = 3
                            and dcl.closer_id = u.id
-                           and d1.id = p.id
-                           and dcl.payroll_id < p_payroll_id)                        overrides_paid,
+                           and d1.id = p.id)                        overrides_paid,
                         op.name as name
                  from brs.payroll p1
                           inner join flow.project p on p.id = any (p1.selected_project_ids)
