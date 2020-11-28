@@ -345,9 +345,7 @@ public class SmartlistService {
       query.append("\nleft join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
     }
 
-    if (!requirements.isEmpty()) {
-      query.append("\nwhere");
-    }
+    query.append("\nwhere");
 
     // If user is in a parent company, get all rows. else if user is the child, limit rows to that company
     User user = securityService.getCurrentUser();
@@ -381,10 +379,8 @@ public class SmartlistService {
       }
     }
 
-    if (!requirements.isEmpty()) {
-      // remove the last "and "
-      query = query.delete(query.length() - 5, query.length());
-    }
+    // remove the last "and "
+    query = query.delete(query.length() - 5, query.length());
 
     query.append(";");
 

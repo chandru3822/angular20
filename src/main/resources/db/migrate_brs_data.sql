@@ -11245,6 +11245,20 @@ from owners o
 where o.id = p.id;
 
 
+with owner_projects_not_closers as (
+    select distinct p.id as project_id, up2.id as user_position_id,d.closer_user_id
+    from flow.project p
+             inner join blueraven.deal d on d.id = p.id
+             inner join blueraven.user_position up on up.user_id = d.closer_user_id and up.primary_flag is true
+             inner join flow.user_position up2 on up2.id = up.id
+    where p.user_position_id is null and d.closer_user_id is not null)
+update flow.project p2
+set user_position_id = opnc.user_position_id
+from owner_projects_not_closers opnc
+where opnc.project_id = p2.id
+  and p2.user_position_id is null;
+
+
 with insert_availability as (
     insert into flow.resource_schedule(company_id, user_id, start_date,
                                        end_date, date_created,

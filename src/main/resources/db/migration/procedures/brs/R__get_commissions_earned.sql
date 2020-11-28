@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_ids integer[])
+CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_ids integer[],p_period_end date )
     RETURNS NUMERIC AS
 $BODY$
 DECLARE
@@ -23,6 +23,7 @@ BEGIN
                                         inner join flow.project_process_step pps
                                                    on pps.project_id = p1.id and pps.process_step_id = 175 and
                                                       pps.process_step_complete_date is not null and main is true
+                                                     and pps.process_step_complete_date::date <= p_period_end
                                         inner join brs.project_commission pc on pc.project_id = p1.id
                                         inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                         inner join brs.commission_plan_allocation cpa
@@ -48,6 +49,7 @@ BEGIN
                                         inner join flow.project_process_step pps
                                                    on pps.project_id = p1.id and pps.process_step_id = 35 and
                                                       pps.process_step_complete_date is not null and main is true
+                                                    and pps.process_step_complete_date::date <= p_period_end
                                         inner join brs.project_commission pc on pc.project_id = p1.id
                                         inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                         inner join brs.commission_plan_allocation cpa
