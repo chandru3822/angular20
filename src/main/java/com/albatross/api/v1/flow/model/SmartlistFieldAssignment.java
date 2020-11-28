@@ -29,6 +29,7 @@ public class SmartlistFieldAssignment {
 
   private CustomField customField;
 
+
   // The fields below are used for smartlist generation
   @JsonIgnore
   private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn, ppsTable, userPositionTable;
