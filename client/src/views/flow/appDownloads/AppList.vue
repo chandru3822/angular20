@@ -201,16 +201,11 @@ export default {
       }
     },
     getFilteredApps() {
-      let sourceId;
-      //plist: 1 = prod, 2= uat
-      //apk: 3 = prod, 4= uat
-      if(this.isIos) {
-        sourceId = VUE_APP_ENV === 'prod' ? 1 : 2
-      } else {
-        sourceId = VUE_APP_ENV === 'prod' ? 3 : 4
-      }
+      let appTypeId = this.isIos ? 1 : 3
+      //1 = ios
+      //3 = android
       return this.apps.filter(a => {
-        return this.userCanEdit ? a.sourceId === sourceId && !a.archived : a.sourceId === sourceId && a.show && !a.archived
+        return this.userCanEdit ? a.appTypeId === appTypeId && !a.archived : a.appTypeId === appTypeId && a.show && !a.archived
       })
     },
     getVersion (filename) {

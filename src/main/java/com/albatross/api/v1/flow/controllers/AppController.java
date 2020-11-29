@@ -1,10 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.AttachmentType;
-import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.AppAttachment;
 import com.albatross.api.v1.flow.model.MobileAttachment;
 import com.albatross.api.v1.flow.services.AppService;
-import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,35 +21,36 @@ public class AppController {
 
 
     private final AppService appService;
-    private final AttachmentService attachmentService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Attachment> getApps() {
-        return attachmentService.getAttachmentsByType(AttachmentType.APP_DOWNLOAD.id);
+    public List<AppAttachment> getApps() {
+        return appService.getAttachmentsByType(AttachmentType.APP_DOWNLOAD.id);
     }
 
-    @GetMapping(value = "/latest/{sourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Attachment getLastestBuild(@PathVariable Long sourceId) {
-        return attachmentService.getLatestAppBySourceIdAndType(sourceId, AttachmentType.APP_DOWNLOAD.id);
+    @GetMapping(value = "/latest/{appTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AppAttachment getLastestBuild(@PathVariable Long appTypeId) {
+        if(appTypeId == 2) {
+            appTypeId = 1L;
+        } else if(appTypeId == 4) {
+            appTypeId = 3L;
+        }
+        return appService.getLatestAppByAppTypeIdAndType(appTypeId, AttachmentType.APP_DOWNLOAD.id);
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteApp(@PathVariable Long id) {
-        attachmentService.delete(id);
+        appService.delete(id);
     }
 
     @PutMapping(value = "/show", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void getApps(@RequestBody Attachment attachment) {
-        attachmentService.showOrHideAttachment(attachment);
+    public void getApps(@RequestBody AppAttachment attachment) {
+        appService.showOrHideAttachment(attachment);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/addAttachmentRecord")
-    public Attachment uploadDocument(@RequestBody MobileAttachment mobileAttachment) throws IOException {
+    public AppAttachment uploadDocument(@RequestBody MobileAttachment mobileAttachment) throws IOException {
 
-        Attachment newRecord = attachmentService.insertAttachmentRecord(mobileAttachment);
-
-        //add to the join table
-        attachmentService.addToJoinTable(newRecord.getId(), mobileAttachment.getSourceId(), mobileAttachment.getAttachmentTypeId(), false);
+        AppAttachment newRecord = appService.insertAttachmentRecord(mobileAttachment);
 
         return newRecord;
     }
