@@ -187,6 +187,7 @@ export default new Router({
       name: 'companyDashboard',
       meta: { title: 'Albatross - Company Dashboard'},
       component: () => {
+
         if(store.getters.userHasFeature('COMPANY_DASHBOARD')) {
           return import (/* webpackChunkName: "companyDashboard" */ './views/blueraven/companyDashboard/CompanyDashboard.vue')
         } else {
@@ -198,7 +199,7 @@ export default new Router({
       name: 'companyDashboardTargets',
       meta: { title: 'Albatross - Company Dashboard Targets'},
       component: () => {
-        if(store.getters.userHasFeature('ADMIN')) {
+        if(store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN')) {
           return import (/* webpackChunkName: "companyDashboardTargets" */ './views/blueraven/companyDashboard/CompanyDashboardTargets.vue')
         } else {
           return accessDenied()
