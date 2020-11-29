@@ -5,6 +5,7 @@ import com.albatross.api.v1.flow.model.HubspotContact;
 import com.albatross.api.v1.flow.model.RicochetLead;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,58 +16,65 @@ public class HubspotWebhookController {
     @Autowired
     private HubspotWebhookService hubspotWebhookService;
 
+    @Value(value = "${ricochet.enabled}")
+    private Boolean ricochetEnabled;
+
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/contact")
     public void saveContact(@RequestBody HubspotContact contact) throws Exception {
-        log.info(
-            "Received new contact information from HubSpot. " +
-                "hubspotId: {}, " +
-                "First Name: {}, " +
-                "Last Name: {}, " +
-                "Phone1: {}, " +
-                "Email: {}, " +
-                "Zip: {}",
-                contact.getVid(),
-                contact.getProperties().getFirstname().getValue(),
-                contact.getProperties().getLastname().getValue(),
-                contact.getProperties().getPhone().getValue(),
-                contact.getProperties().getEmail().getValue(),
-                contact.getProperties().getZip().getValue()
-        );
+        if(ricochetEnabled) {
+            log.info(
+                "Received new contact information from HubSpot. " +
+                    "hubspotId: {}, " +
+                    "First Name: {}, " +
+                    "Last Name: {}, " +
+                    "Phone1: {}, " +
+                    "Email: {}, " +
+                    "Zip: {}",
+                    contact.getVid(),
+                    contact.getProperties().getFirstname().getValue(),
+                    contact.getProperties().getLastname().getValue(),
+                    contact.getProperties().getPhone().getValue(),
+                    contact.getProperties().getEmail().getValue(),
+                    contact.getProperties().getZip().getValue()
+            );
 
-        RicochetLead lead = new RicochetLead();
-        lead.setHubspotId(contact.getVid());
-        lead.setStatus("New");
-        lead.setLeadOwner(null);
+            RicochetLead lead = new RicochetLead();
+            lead.setHubspotId(contact.getVid());
+            lead.setStatus("New");
+            lead.setLeadOwner(null);
 
-        if (contact.getProperties().getLead_source() != null && !contact.getProperties().getLead_source().getValue().equals("")) {
-            log.info("(Additional contact information from HubSpot) " +
-                         "lead_source: {}", contact.getProperties().getLead_source().getValue());
-            lead.setLead_source(contact.getProperties().getLead_source().getValue());
+            if (contact.getProperties().getLead_source() != null && !contact.getProperties().getLead_source().getValue().equals("")) {
+                log.info("(Additional contact information from HubSpot) " +
+                             "lead_source: {}", contact.getProperties().getLead_source().getValue());
+                lead.setLead_source(contact.getProperties().getLead_source().getValue());
+            } else {
+                lead.setLead_source("Organic");
+            }
+
+            if (contact.getProperties().getLead_source_detail() != null && !contact.getProperties().getLead_source_detail().getValue().equals("")) {
+                log.info("(Additional contact information from HubSpot) " +
+                             "lead_source_detail: {}", contact.getProperties().getLead_source_detail().getValue());
+                lead.setLead_source_detail(contact.getProperties().getLead_source_detail().getValue());
+            } else {
+                lead.setLead_source_detail("DigitalOrganic");
+            }
+
+            RicochetLead.Customer customer = new RicochetLead.Customer();
+            customer.setFirstName(contact.getProperties().getFirstname().getValue());
+            customer.setLastName(contact.getProperties().getLastname().getValue());
+            customer.setPhone1(contact.getProperties().getPhone().getValue());
+            customer.setEmail(contact.getProperties().getEmail().getValue());
+
+            RicochetLead.Address address = new RicochetLead.Address();
+            address.setZip(contact.getProperties().getZip().getValue());
+
+            customer.setAddress(address);
+            lead.setCustomer(customer);
+
+            hubspotWebhookService.postLeadToRicochet(lead);
         } else {
-            lead.setLead_source("Organic");
+            log.info("RICOCHET: not enabled");
         }
-
-        if (contact.getProperties().getLead_source_detail() != null && !contact.getProperties().getLead_source_detail().getValue().equals("")) {
-            log.info("(Additional contact information from HubSpot) " +
-                         "lead_source_detail: {}", contact.getProperties().getLead_source_detail().getValue());
-            lead.setLead_source_detail(contact.getProperties().getLead_source_detail().getValue());
-        } else {
-            lead.setLead_source_detail("DigitalOrganic");
-        }
-
-        RicochetLead.Customer customer = new RicochetLead.Customer();
-        customer.setFirstName(contact.getProperties().getFirstname().getValue());
-        customer.setLastName(contact.getProperties().getLastname().getValue());
-        customer.setPhone1(contact.getProperties().getPhone().getValue());
-        customer.setEmail(contact.getProperties().getEmail().getValue());
-
-        RicochetLead.Address address = new RicochetLead.Address();
-        address.setZip(contact.getProperties().getZip().getValue());
-
-        customer.setAddress(address);
-        lead.setCustomer(customer);
-
-        hubspotWebhookService.postLeadToRicochet(lead);
     }
 }
