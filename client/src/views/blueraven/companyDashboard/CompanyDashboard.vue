@@ -229,60 +229,70 @@
       DatetimePickerInput,
       Snackbar
     },
-    data: () => ({
-      snackbar: {},
-      constants,
-      isBrCorporateUser: false,
-      is7oaksAdmin: this.$store.getters.isFullAdmin(),
-      headers: [],
-      timezone: 'US/Mountain',
-      selectedDateRange: 'Today',
-      startDate: moment().format('YYYY-MM-DD'),
-      endDate: moment().format('YYYY-MM-DD'),
-      weekNum: 1,
-      currentPeriod: Math.ceil(moment().isoWeek() / 4),
-      dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
-      isLoading: true,
-      dashValues: [],
-      drilldownDialog: false,
-      drilldownTitle: '',
-      drilldownHeaders: [
-        { text: '', value: '', show: true, sortable: false }, // 0
-        { text: 'Project ID', value: 'projectId', show: true }, // 1
-        { text: 'Customer Name', value: 'customerName', show: true }, // 2
-        { text: 'Appointment Date', value: 'appointmentDateFormatted', show: false }, // 3
-        { text: 'Appointment Outcome', value: 'appointmentOutcome', show: false }, // 4
-        { text: 'Installation Agreement Signed Date', value: 'installationAgreementSignedDateFormatted', show: false }, // 5
-        { text: 'Site Survey Verified Date', value: 'siteSurveyVerifiedDateFormatted', show: false }, // 6
-        { text: 'Final Design QA Date', value: 'finalDesignQADateFormatted', show: false }, // 7
-        { text: 'Final Design Sent to Homeowner Date', value: 'finalDesignSentToHomeownerDateFormatted', show: false }, // 8
-        { text: 'Final Design Approved Date', value: 'finalDesignApprovedDateFormatted', show: false }, // 9
-        { text: 'Plan Set Created Date', value: 'planSetCreatedDateFormatted', show: false }, // 10
-        { text: 'Permit Pack Complete Date', value: 'permitPackCompleteDateFormatted', show: false }, // 11
-        { text: 'Permit Pack Submittal Verified Date', value: 'permitPackSubmittalVerifiedDateFormatted', show: false }, // 12
-        { text: 'Permit Approved Date', value: 'permitApprovedDateFormatted', show: false }, // 13
-        { text: 'Installation Scheduled Date', value: 'installationScheduledDateFormatted', show: false }, // 14
-        { text: 'Installation Date', value: 'installationDateFormatted', show: false }, // 15
-        { text: 'Installation Closeout Date', value: 'installationCloseoutDateFormatted', show: false }, // 16
-        { text: 'Substantial Completion Date', value: 'substantialCompletionDateFormatted', show: false }, // 17
-        { text: 'AHJ Inspection Scheduled Date', value: 'ahjInspectionScheduledDateFormatted', show: false }, // 18
-        { text: 'AHJ Reinspection Scheduled', value: 'ahjReinspectionScheduledDateFormatted', show: false }, // 19
-        { text: 'AHJ Inspection Date', value: 'ahjInspectionDateFormatted', show: false }, // 20
-        { text: 'AHJ Reinspection Date', value: 'ahjReinspectionDateFormatted', show: false }, // 21
-        { text: 'AHJ Final Inspection Verified Date', value: 'ahjFinalInspectionVerifiedDateFormatted', show: false }, // 22
-        { text: 'Verified Inspection Approval Received by Utility Date', value: 'verifiedInspectionApprovalReceivedByUtilityDateFormatted', show: false }, // 23
-        { text: 'AHJ Inspection Approval Submitted Date', value: 'ahjInspectionApprovalSubmittedDateFormatted', show: false }, // 24
-        { text: 'Final Completion Submitted Date', value: 'finalCompletionSubmittedDateFormatted', show: false } // 25
-      ],
-      drilldownData: [],
-      footerProps: {
-        showFirstLastPage: !constants.IS_MOBILE,
-        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
-        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
-        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
-        'items-per-page-options': [100, 500, 1000, 2000]
+    data () {
+      return {
+        snackbar: {},
+        constants,
+        isBrCorporateUser: false,
+        is7oaksAdmin: this.$store.getters.isFullAdmin,
+        headers: [],
+        timezone: 'US/Mountain',
+        selectedDateRange: 'Today',
+        startDate: moment().format('YYYY-MM-DD'),
+        endDate: moment().format('YYYY-MM-DD'),
+        weekNum: 1,
+        currentPeriod: Math.ceil(moment().isoWeek() / 4),
+        dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
+        isLoading: true,
+        dashValues: [],
+        drilldownDialog: false,
+        drilldownTitle: '',
+        drilldownHeaders: [
+          {text: '', value: '', show: true, sortable: false}, // 0
+          {text: 'Project ID', value: 'projectId', show: true}, // 1
+          {text: 'Customer Name', value: 'customerName', show: true}, // 2
+          {text: 'Appointment Date', value: 'appointmentDateFormatted', show: false}, // 3
+          {text: 'Appointment Outcome', value: 'appointmentOutcome', show: false}, // 4
+          {text: 'Installation Agreement Signed Date', value: 'installationAgreementSignedDateFormatted', show: false}, // 5
+          {text: 'Site Survey Verified Date', value: 'siteSurveyVerifiedDateFormatted', show: false}, // 6
+          {text: 'Final Design QA Date', value: 'finalDesignQADateFormatted', show: false}, // 7
+          {text: 'Final Design Sent to Homeowner Date', value: 'finalDesignSentToHomeownerDateFormatted', show: false}, // 8
+          {text: 'Final Design Approved Date', value: 'finalDesignApprovedDateFormatted', show: false}, // 9
+          {text: 'Plan Set Created Date', value: 'planSetCreatedDateFormatted', show: false}, // 10
+          {text: 'Permit Pack Complete Date', value: 'permitPackCompleteDateFormatted', show: false}, // 11
+          {text: 'Permit Pack Submittal Verified Date', value: 'permitPackSubmittalVerifiedDateFormatted', show: false}, // 12
+          {text: 'Permit Approved Date', value: 'permitApprovedDateFormatted', show: false}, // 13
+          {text: 'Installation Scheduled Date', value: 'installationScheduledDateFormatted', show: false}, // 14
+          {text: 'Installation Date', value: 'installationDateFormatted', show: false}, // 15
+          {text: 'Installation Closeout Date', value: 'installationCloseoutDateFormatted', show: false}, // 16
+          {text: 'Substantial Completion Date', value: 'substantialCompletionDateFormatted', show: false}, // 17
+          {text: 'AHJ Inspection Scheduled Date', value: 'ahjInspectionScheduledDateFormatted', show: false}, // 18
+          {text: 'AHJ Reinspection Scheduled', value: 'ahjReinspectionScheduledDateFormatted', show: false}, // 19
+          {text: 'AHJ Inspection Date', value: 'ahjInspectionDateFormatted', show: false}, // 20
+          {text: 'AHJ Reinspection Date', value: 'ahjReinspectionDateFormatted', show: false}, // 21
+          {text: 'AHJ Final Inspection Verified Date', value: 'ahjFinalInspectionVerifiedDateFormatted', show: false}, // 22
+          {
+            text: 'Verified Inspection Approval Received by Utility Date',
+            value: 'verifiedInspectionApprovalReceivedByUtilityDateFormatted',
+            show: false
+          }, // 23
+          {
+            text: 'AHJ Inspection Approval Submitted Date',
+            value: 'ahjInspectionApprovalSubmittedDateFormatted',
+            show: false
+          }, // 24
+          {text: 'Final Completion Submitted Date', value: 'finalCompletionSubmittedDateFormatted', show: false} // 25
+        ],
+        drilldownData: [],
+        footerProps: {
+          showFirstLastPage: !constants.IS_MOBILE,
+          firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+          lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+          'items-per-page-options': [100, 500, 1000, 2000]
+        }
       }
-    }),
+    },
     computed: {
       visibleHeaders () {
         return this.headers.filter(header => header.show === true)
