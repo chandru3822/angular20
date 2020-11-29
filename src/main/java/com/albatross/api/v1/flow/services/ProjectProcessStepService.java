@@ -270,7 +270,7 @@ public class ProjectProcessStepService {
   public List<Long> performInitialAutoTriggers() {
 
     User cronUser = new User();
-    cronUser.setId(SystemSettings.USER.getId());
+    cronUser.setId(SystemSettings.CRON_USER.getId());
 
     final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getInitialAutoTriggerPps", null, new ColumnMapRowMapper());
 
@@ -293,7 +293,7 @@ public class ProjectProcessStepService {
   public void performTimeBasedAutoTriggers() {
 
     User cronUser = new User();
-    cronUser.setId(SystemSettings.USER.getId());
+    cronUser.setId(SystemSettings.CRON_USER.getId());
 
     final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getTimeBasedAutoTriggerPps", null, new ColumnMapRowMapper());
 
