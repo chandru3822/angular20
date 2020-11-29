@@ -220,9 +220,9 @@ order by name,
 ]]></smartlist.getAvailableFields>
 
 <smartlist.getAvailableProjectDetailsFields><![CDATA[
-select distinct pdc.field_to_update as project_details_column,
+select distinct coalesce(pdc.second_field_to_update, pdc.field_to_update) as project_details_column,
                 pdc.display_name as name,
-                case when pdc.field_to_update = 'ahj' then 8 else pdc.data_type_id end as data_type_id,
+                case when pdc.field_to_update = 'ahj' then 8 else coalesce(pdc.second_data_type_id, pdc.data_type_id) end as data_type_id,
                 case when pdc.field_to_update = 'ahj' then true end as has_list_values,
                 case when pdc.field_to_update = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
                 case when pdc.field_to_update = 'ahj' then (
@@ -341,27 +341,27 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step ps1 on ps1.id = sfa.process_step_id
 left join (
-  select distinct field_to_update, display_name, data_type_id
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
   from brs.project_details_config
-) pdc on pdc.field_to_update = sfa.project_details_column
+) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
 where
   sfa.smartlist_id = :smartlistId and
   sfa.archived is not true
-order by sfa.display_order;
+order by sfa.display_order
 ]]></smartlist.getAssignedFields>
 
 <smartlist.getAssignedProjectDetailsFields><![CDATA[
 select sfa.id,
        sfa.smartlist_id,
-       case when pdc.second_field_to_update is not null then sfa.project_details_column || '_name' else sfa.project_details_column end as project_details_column,
+       coalesce(pdc.second_field_to_update, sfa.project_details_column) as project_details_column,
        pdc.display_name as name,
-       case when sfa.project_details_column = 'ahj' then 8 else pdc.data_type_id end as data_type_id,
+       case when sfa.project_details_column = 'ahj' then 8 else coalesce(pdc.second_data_type_id, pdc.data_type_id) end as data_type_id,
        case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 inner join (
-  select distinct field_to_update, display_name, data_type_id, second_field_to_update
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
   from brs.project_details_config
-) pdc on pdc.field_to_update = sfa.project_details_column
+) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
 where sfa.smartlist_id = :smartlistId and
       sfa.archived is not true
 order by sfa.display_order
@@ -414,9 +414,9 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.process_step ps1 on ps1.id = sfa.process_step_id
 left join (
-  select distinct field_to_update, display_name, data_type_id
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
   from brs.project_details_config
-) pdc on pdc.field_to_update = sfa.project_details_column
+) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
 where
   sfa.id = :id and
   sfa.archived is not true;
@@ -552,9 +552,9 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 left join (
-  select distinct field_to_update, display_name, data_type_id
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
   from brs.project_details_config
-) pdc on pdc.field_to_update = sr.project_details_column
+) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sr.project_details_column
 where sr.id = :requirementId and
       sr.archived is not true;
 ]]></smartlist.getRequirementById>
@@ -718,9 +718,9 @@ left join flow.object_type ot1 on ot1.id = cot1.object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 left join (
-  select distinct field_to_update, display_name, data_type_id
+  select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
   from brs.project_details_config
-) pdc on pdc.field_to_update = sr.project_details_column
+) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sr.project_details_column
 where sr.smartlist_id = :smartlistId and
       sr.archived is not true
 order by sr.display_order;
