@@ -16,7 +16,7 @@ public class HubspotWebhookController {
     @Autowired
     private HubspotWebhookService hubspotWebhookService;
 
-    @Value(value = "${ricochet.enabled}")
+    @Value(value = "${app.ricochet.enabled:false}")
     private Boolean ricochetEnabled;
 
     @ResponseStatus(HttpStatus.ACCEPTED)
