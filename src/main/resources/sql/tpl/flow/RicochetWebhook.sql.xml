@@ -136,7 +136,7 @@
   <ricochetWebhook.upsertCustomFieldValue><![CDATA[
     insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, int_value, created_by_id)
     values (:contactId, :customFieldGroupAssignmentId, :textValue, :intValue, :leadOwnerUserId)
-    on conflict
+    on conflict (contact_id, custom_field_group_assignment_id)
     do update
         set text_value = :textValue,
         int_value = :intValue,
