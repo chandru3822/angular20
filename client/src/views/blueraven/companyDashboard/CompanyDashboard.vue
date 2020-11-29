@@ -39,7 +39,7 @@
                                    :dense="'dense'"
                                    :outlined="'outlined'"
               ></DatetimePickerInput>
-              <v-btn v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && isBrCorporateUser"
+              <v-btn v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser)"
                      id="targets-btn" class="white--text text-capitalize" color="primaryCustom"
                      to="/companyDashboardTargets" title="View company dashboard targets">
                 Targets
@@ -233,6 +233,7 @@
       snackbar: {},
       constants,
       isBrCorporateUser: false,
+      is7oaksAdmin: this.$store.getters.isFullAdmin(),
       headers: [],
       timezone: 'US/Mountain',
       selectedDateRange: 'Today',
