@@ -7,7 +7,7 @@ module.exports = {
     workboxOptions: {
       swSrc: 'client/src/service-worker.js',
       swDest: 'service-worker.js',
-      exclude: [/_redirects/]
+      exclude: [/\.map$/, /_redirects/]
     }
   }
 }
