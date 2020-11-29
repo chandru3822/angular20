@@ -35,11 +35,11 @@
             where wqt.id = pswqt.work_queue_type_id
               and pswqt.archived is not true
               and pps.archived is not true
-              and case when :isParent then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))) else ps.company_id = :companyId end
+              and case when :isParent then ps.company_id = any ( select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)) else ps.company_id = :companyId end
               and case when :unassigned is true then pps.user_position_id is null
                        when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
               and cpsst.process_step_status_type_id in (1)
-              and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
+              and p.company_project_status_type_id  = any( s.company_project_status_type_ids)
            ) as work_queue_count
     from flow.work_queue_type wqt
              inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
@@ -170,12 +170,12 @@
         and pswqt.archived is not true
         and pps.archived is not true
         and case
-                when :isParent then array [ps.company_id] <@ (select array(select id
-                                                                           from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                when :isParent then ps.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                 else ps.company_id = :companyId end
 
         and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
-        and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
+        and p.company_project_status_type_id  = any( s.company_project_status_type_ids)
       order by pps.date_created
       limit :limit
       offset :offset
@@ -216,12 +216,12 @@
       and pswqt.archived is not true
         and pps.archived is not true
     and case
-          when :isParent then array [ps.company_id] <@ (select array(select id
-                                                                     from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+          when :isParent then ps.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
           else ps.company_id = :companyId end
 
     and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
-    and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
+    and p.company_project_status_type_id  = any( s.company_project_status_type_ids)
   ]]></workQueue.getProcessStepsByTypeIdCount>
 
   <workQueue.getWorkQueueOwners><![CDATA[
@@ -235,8 +235,8 @@
         inner join flow.user_position up on up.id = pps.user_position_id
         inner join flow."user" u on u.id = up.user_id
         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-    where case when :isParent
-          then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+    where case when :isParent then ps.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
           else ps.company_id = :companyId end
           and cpsst.process_step_status_type_id = :processStepStatusTypeId
     order by first_name, last_name
@@ -371,12 +371,12 @@
         and pswqt.archived is not true
         and pps.archived is not true
         and case
-                when :isParent then array [ps.company_id] <@ (select array(select id
-                                                                           from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                when :isParent then ps.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                 else ps.company_id = :companyId end
 
         and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
-        and array [ coalesce(p.company_project_status_type_id, -1) ] <@ s.company_project_status_type_ids
+        and p.company_project_status_type_id  = any( s.company_project_status_type_ids)
       order by coalesce(ppscfv.timestamp_value, ppscfv3.timestamp_value) nulls last
       limit :limit
       offset :offset

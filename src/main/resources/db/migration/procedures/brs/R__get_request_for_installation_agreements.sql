@@ -37,7 +37,7 @@ BEGIN
             WHERE pd.cancelled_date is null AND pd.energized_date is null
                 AND p.project_name ILIKE '%' || p_searchterm || '%'
                 AND case when p_is_parent
-                  then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(p_parent_company_id::int)))
+                             then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
                   else c.company_id = p_company_id end
             limit p_limit
             offset p_offset;
@@ -57,7 +57,7 @@ BEGIN
                     AND pd.cancelled_date is null
                     AND pd.energized_date is null
                     AND case when p_is_parent
-                      then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(p_parent_company_id::int)))
+                                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
                       else c.company_id = p_company_id end
                     AND p.project_name ILIKE '%' || p_searchterm || '%'
                 limit p_limit

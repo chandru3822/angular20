@@ -503,7 +503,7 @@ select sr.id,
              lv.id,
              lv.name
            from flow.list_of_value lv
-           where array[lv.id] <@ array[sr.list_of_value_ids]
+           where lv.id = any(sr.list_of_value_ids)
         ) lov), '[]') as list_of_values,
         case
           when cf.list_of_value_id is not null then
@@ -616,7 +616,7 @@ select sr.id,
              lv.id,
              lv.name
            from flow.list_of_value lv
-           where array[lv.id] <@ array[sr.list_of_value_ids]
+           where lv.id = any(sr.list_of_value_ids)
         ) lov), '[]') as list_of_values,
         case
           when cf.list_of_value_id is not null then

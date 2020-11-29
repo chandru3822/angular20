@@ -442,9 +442,11 @@ public class AvailabilityService {
 
   public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws Exception {
       if (null != request.getProjectId() && null != request.getAppointmentTime() && null != request.getProjectProcessStepId() && null != request.getUsers()) {
+        User user = securityService.getCurrentUser();
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", request.getProjectId());
+        params.put("userId", user.getId());
         params.put("projectProcessStepId", request.getProjectProcessStepId());
         params.put("appointmentTime", request.getAppointmentTime());
         params.put("users", createSqlArrayOfType("int", request.getUsers()));

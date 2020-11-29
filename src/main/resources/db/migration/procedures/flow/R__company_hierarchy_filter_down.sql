@@ -15,8 +15,9 @@ BEGIN
             UNION
             select c.id,c.parent_company_id,c.company_name, c.level
             from flow.company c
-                     INNER JOIN subordinates s ON s.id = c.parent_company_id
+                 INNER JOIN subordinates s ON s.id = c.parent_company_id
             where c.archived is not true
+                and c.parent_company_id != 1
         ) SELECT
               s1.id,s1.parent_company_id,s1.company_name::text, s1.level
         FROM

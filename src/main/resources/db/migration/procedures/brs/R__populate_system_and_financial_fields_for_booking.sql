@@ -226,7 +226,7 @@ BEGIN
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
        -- raise notice 'cfga% value %',_key,_value;
-        perform flow.set_pps_cfv(p_project_id,2350555, _key::integer, _value);
+        perform flow.set_pps_cfv(p_project_id,99999999, _key::integer, _value);
     END LOOP;
 
 

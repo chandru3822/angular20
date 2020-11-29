@@ -66,7 +66,7 @@ BEGIN
         insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
                                            date_created, created_by_id)
         values (v_company_feature_id, 'Unable to assign Commission Plan to Project ' || p_project_id || '.', 1, now(),
-                2350555);
+                99999999);
     end if;
     if v_user_id is not null and v_override_plan_id is not null then
         insert into brs.project_override(project_id, override_plan_id)
@@ -86,7 +86,7 @@ BEGIN
         insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
                                            date_created, created_by_id)
         values (v_company_feature_id, 'Unable to assign Override Plan to Project ' || p_project_id || '.', 1, now(),
-                2350555);
+                99999999);
     end if;
     --         insert into brs.project_residual( project_id, residual_plan_id)
 --         values (p_project_id,v_residual_plan_id);

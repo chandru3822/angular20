@@ -6,7 +6,7 @@ declare
     v_whole_company boolean;
 BEGIN
     --If p_user_ids has a -1 that means get the funnel for the whole company
-    select p_user_ids <@ Array[-1] into v_whole_company;
+    select -1 = any(p_user_ids)  into v_whole_company;
     if v_whole_company then
         --Appointments Created
         case when p_funnel_id = 3 then

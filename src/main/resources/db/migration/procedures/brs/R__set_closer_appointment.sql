@@ -1,5 +1,6 @@
 -- drop function flow.set_closer_appointment(integer, integer, timestamp, int[])
 CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
+                                                       p_current_user_id integer,
                                                        p_project_process_step_id integer,
                                                        p_appointment_start_time timestamp,
                                                        p_users integer array)
@@ -263,7 +264,7 @@ BEGIN
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
                                                                           custom_field_group_assignment_id, int_value,
                                                                           date_created, created_by_id, archived)
-                VALUES (p_project_process_step_id, 7, v_user_position_id, now(), 2350555, false);
+                VALUES (p_project_process_step_id, 7, v_user_position_id, now(), p_current_user_id, false);
             end if;
 
             v_project_process_step_id = null;
@@ -284,7 +285,7 @@ BEGIN
                                                                           custom_field_group_assignment_id,
                                                                           timestamp_value,
                                                                           date_created, created_by_id, archived)
-                VALUES (p_project_process_step_id, 5, p_appointment_start_time, now(), 2350555, false);
+                VALUES (p_project_process_step_id, 5, p_appointment_start_time, now(), p_current_user_id, false);
             end if;
 
             v_project_process_step_id = null;
@@ -307,7 +308,7 @@ BEGIN
                                                                           date_created, created_by_id, archived)
                 VALUES (p_project_process_step_id, 6, p_appointment_start_time +
                                                       (v_default_appointment_length || 'minutes')::interval, now(),
-                        2350555, false);
+                        p_current_user_id, false);
             end if;
             -- raise notice 'user id %',v_user_id;
             -- raise notice 'p_appointment_start_time %',p_appointment_start_time;
@@ -326,6 +327,7 @@ BEGIN
            -- raise notice 'i am here';
             return query select *
                          from flow.set_closer_appointment(p_project_id,
+                                                          p_current_user_id,
                                                           p_project_process_step_id,
                                                           p_appointment_start_time,
                                                           p_users);

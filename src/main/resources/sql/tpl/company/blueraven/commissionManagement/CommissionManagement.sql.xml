@@ -33,7 +33,7 @@
         (select coalesce(sum(paid_to_date),0) as total from brs.project_commission_ledger where ledger_type_id = 3
         and closer_id = :userId and payroll_id = p.id)) as total) as current_pay
         from brs.payroll p
-        inner join flow.project p on array[id] <@ p.selected_project_ids
+        inner join flow.project p on id = any(p.selected_project_ids)
         inner join brs.project_commission_snapshot dcs on dcs.payroll_id = p.id
         left join brs.project_override_commission_snapshot docs on docs.project_commission_snapshot_id = dcs.id
         where (dcs.sales_rep_id = :userId or docs.user_id = :userId)
@@ -56,7 +56,7 @@
     select p.id, d.closer_user_id
           from brs.payroll p
           inner join brs.project_commission_snapshot dcs on p.id = dcs.payroll_id
-          inner join flow.project d on dcs.deaproject_id = d.id
+          inner join flow.project d on dcs.project_id = d.id
          where lower(dcs.customer_name) LIKE '%' || :searchQuery || '%' and d.closer_user_id = :userId
          group by p.id, d.closer_user_id
     )

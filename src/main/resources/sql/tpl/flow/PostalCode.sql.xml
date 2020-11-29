@@ -179,7 +179,7 @@
                 concat(upv.first_name, ' ', upv.last_name) AS title
       from flow.user_positions_vw upv
       where case when :isParent and :isSchedulingTool
-                     then array[upv.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                     then upv.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                  else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and case when :loadSchedulers is true
                      then upv.position_scheduler is true
@@ -213,7 +213,7 @@
         where pczu.archived is not true
           and pcz.company_id = :companyId
           and upv.position_schedulable is true
-          and ((cast(:zoneIds as int[]) is null) OR ARRAY[ pczu.postal_code_zone_id ] <@ ARRAY[ :zoneIds ]::INTEGER[])
+          and ((cast(:zoneIds as int[]) is null) OR pczu.postal_code_zone_id = any (:zoneIds))
     )
     select *,
            coalesce((
