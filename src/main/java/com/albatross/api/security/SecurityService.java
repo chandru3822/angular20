@@ -80,7 +80,7 @@ public class SecurityService implements UserDetailsService {
                 UserAccountDetails details = (UserAccountDetails) p;
 
                 // This is a special system user used for crons
-                if (details.getId() == 69696969) {
+                if (details.getId() == 2417171) {
                   user = new User();
                   user.setCompanyId(details.getCompanyId());
                   user.setId(details.getId());

@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum SystemSettings {
-  USER(69696969L);
+  USER(2417171L);
 
   private final Long id;
 
