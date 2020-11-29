@@ -51,7 +51,7 @@
                              select lv.id,
                                     lv.name
                              from flow.list_of_value lv
-                             where array[lv.id] <@ array[psr.list_of_value_ids]
+                             where lv.id = any(psr.list_of_value_ids)
                          ) lov), '[]') AS "listOfValues",
        coalesce(cdt.data_type_id, df.return_data_type_id) as data_type_id,
        cfn.company_function_name,
@@ -152,7 +152,7 @@
                              select lv.id,
                                     lv.name
                              from flow.list_of_value lv
-                             where array[lv.id] <@ array[psr.list_of_value_ids]
+                             where lv.id = any(psr.list_of_value_ids)
                          ) lov), '[]') AS "listOfValues",
        coalesce(cdt.data_type_id, df.return_data_type_id) as data_type_id,
        cfn.company_function_name,

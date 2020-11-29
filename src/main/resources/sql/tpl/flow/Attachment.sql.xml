@@ -120,7 +120,7 @@
     FROM flow.attachment a
       INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
       INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
-    WHERE array[src.source_id] <@ ARRAY[ :sourceIds ]::INTEGER[]
+    WHERE src.source_id = any( array [ :sourceIds ] )
       AND at.id = :attachmentTypeId
       AND a.archived is not true
   ]]></attachment.getAttachmentBySourceAndTypeForUserList>

@@ -257,7 +257,7 @@
   ]]></availability.getTimeSlots>
 
   <availability.setCloserAppointment><![CDATA[
-    select * from flow.set_closer_appointment(:projectId::int, :projectProcessStepId::int, :appointmentTime::timestamp, :users::int[]);
+    select * from flow.set_closer_appointment(:projectId::int, :userId::int, :projectProcessStepId::int, :appointmentTime::timestamp, :users::int[]);
   ]]></availability.setCloserAppointment>
 
   <availability.getDistinctRecurringEvents><![CDATA[
