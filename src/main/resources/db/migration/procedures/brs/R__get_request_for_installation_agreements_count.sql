@@ -25,7 +25,7 @@ BEGIN
             WHERE pd.cancelled_date is null
                 AND pd.energized_date is null
                 AND case when p_is_parent
-                             then c.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                             then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
                     else c.company_id = p_company_id end
                 AND p.project_name ILIKE '%' || p_searchterm || '%';
         ELSE
@@ -39,7 +39,7 @@ BEGIN
                     AND pd.cancelled_date is null
                     AND pd.energized_date is null
                     AND case when p_is_parent
-                                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                                 then c.company_id = any (select id from flow.company_hierarchy_filter_down(p_parent_company_id::int))
                         else c.company_id = p_company_id end
                     AND p.project_name ILIKE '%' || p_searchterm || '%';
         END CASE;
