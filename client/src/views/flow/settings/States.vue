@@ -228,7 +228,7 @@
       async deleteCompanyState(companyState) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/state/companyState/${companyState.companyStateId}`)
+          await deleteRequest(`/state/companyState/${companyState.id}`)
           companyState.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'State Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
