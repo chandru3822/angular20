@@ -1,6 +1,7 @@
 package com.albatross.api.security;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -80,7 +81,7 @@ public class SecurityService implements UserDetailsService {
                 UserAccountDetails details = (UserAccountDetails) p;
 
                 // This is a special system user used for crons
-                if (details.getId() == 69696969) {
+                if (details.getId() == SystemSettings.CRON_USER.getId()) {
                   user = new User();
                   user.setCompanyId(details.getCompanyId());
                   user.setId(details.getId());

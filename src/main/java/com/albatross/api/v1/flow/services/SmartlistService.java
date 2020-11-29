@@ -345,9 +345,7 @@ public class SmartlistService {
       query.append("\nleft join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
     }
 
-    if (!requirements.isEmpty()) {
-      query.append("\nwhere");
-    }
+    query.append("\nwhere");
 
     // If user is in a parent company, get all rows. else if user is the child, limit rows to that company
     User user = securityService.getCurrentUser();
@@ -372,7 +370,10 @@ public class SmartlistService {
             requirementValue = requirementValue.toString().replace("not", "");
           }
         }
+
+
       }
+
 
       if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 2)) {
         query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
@@ -381,10 +382,8 @@ public class SmartlistService {
       }
     }
 
-    if (!requirements.isEmpty()) {
-      // remove the last "and "
-      query = query.delete(query.length() - 5, query.length());
-    }
+    // remove the last "and "
+    query = query.delete(query.length() - 5, query.length());
 
     query.append(";");
 
@@ -579,7 +578,7 @@ public class SmartlistService {
     switch (smartlist.getObjectTypeId().intValue()) {
       case 1:
         query.append("\nfrom flow.project ");
-        query.append("\ninner join flow.company_process on flow.company_process.id = flow.project.company_process_id ");
+        query.append("\ninner join flow.company_process on flow.company_process.id = flow.project.company_process_id and " + String.format("flow.company_process.company_id = any(%s)", companySubquery));
         query.append("\nleft join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
         query.append("\nleft join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
         query.append("\nleft join flow.user on flow.user.id = flow.user_position.user_id ");

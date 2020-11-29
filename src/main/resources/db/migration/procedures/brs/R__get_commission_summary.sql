@@ -13,7 +13,7 @@ begin
         group by pay.id
     ),
          users AS (SELECT opru.user_id AS user_id, array_agg(DISTINCT p2.id) AS project_ids,p.id,a.v_all_projects,
-                          coalesce(brs.get_overrides_earned(a.v_all_projects, opru.user_id), 0) as overrides_earned,
+                          coalesce(brs.get_overrides_earned(a.v_all_projects,p.period_end, opru.user_id), 0) as overrides_earned,
                           coalesce(brs.get_total_overrides(p.id, a.v_all_projects, opru.user_id), 0)as total_overrides
                    FROM brs.override_plan_receiving_user opru
                        inner join brs.override_plan op on op.id = opru.override_plan_id
@@ -27,9 +27,9 @@ begin
          ),
          commission_users AS (
              SELECT array_agg(DISTINCT p.id) AS project_ids, pd.closer_user_id AS user_id,pay.id,a.v_all_projects,
-                    coalesce(brs.get_commissions_earned(array_agg(DISTINCT p.id)), 0) as commissions_earned,
+                    coalesce(brs.get_commissions_earned(array_agg(DISTINCT p.id),pay.period_end), 0) as commissions_earned,
                     coalesce(brs.get_ledger_totals(pay.id, array_agg(DISTINCT p.id), 1), 0) as ledger_totals,
-                    coalesce(brs.get_overrides_earned(a.v_all_projects,pd.closer_user_id), 0) as overrides_earned,
+                    coalesce(brs.get_overrides_earned(a.v_all_projects,pay.period_end,pd.closer_user_id), 0) as overrides_earned,
                     coalesce(brs.get_total_overrides(pay.id, a.v_all_projects, pd.closer_user_id),0) as total_overrides,
                     coalesce(brs.get_ledger_adjustment_current_totals(pay.id, array_agg(DISTINCT p.id), 1),0) as ledger_adjustments
              FROM brs.payroll pay

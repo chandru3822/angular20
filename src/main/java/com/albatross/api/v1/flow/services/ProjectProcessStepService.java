@@ -270,7 +270,7 @@ public class ProjectProcessStepService {
   public List<Long> performInitialAutoTriggers() {
 
     User cronUser = new User();
-    cronUser.setId(SystemSettings.USER.getId());
+    cronUser.setId(SystemSettings.CRON_USER.getId());
 
     final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getInitialAutoTriggerPps", null, new ColumnMapRowMapper());
 
@@ -285,13 +285,15 @@ public class ProjectProcessStepService {
     }
 
     log.info("PPSs created by initial auto triggers: " + createdPpsIds.size());
+    log.info("PPS ids created by initial auto triggers: " + createdPpsIds);
+
     return createdPpsIds;
   }
 
   public void performTimeBasedAutoTriggers() {
 
     User cronUser = new User();
-    cronUser.setId(SystemSettings.USER.getId());
+    cronUser.setId(SystemSettings.CRON_USER.getId());
 
     final List<Map<String, Object>> results = sqlCache.query("projectProcessStep.getTimeBasedAutoTriggerPps", null, new ColumnMapRowMapper());
 
@@ -306,6 +308,7 @@ public class ProjectProcessStepService {
     }
 
     log.info("PPS created by time based auto triggers: " + createdPpsIds.size());
+    log.info("PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
   @Transactional
@@ -436,8 +439,8 @@ public class ProjectProcessStepService {
     ExpressionParser parser = new SpelExpressionParser();
     if (logicString.length() > 0) {
       // @TODO: humes, This is for debugging purposes
-      final String tempString = logicString.toString().replaceAll("AND", "&&").replaceAll("OR", "||");
-      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
+//      final String tempString = logicString.toString().replaceAll("AND", "&&").replaceAll("OR", "||");
+//      log.info(String.format("Logic string generated for actionId: %s, ppsId: %s, %s", action.getId(), pps.getProjectProcessStepId(), tempString));
       action.setCanPerform(parser.parseExpression(logicString.toString()).getValue(Boolean.class));
       return action;
     } else {

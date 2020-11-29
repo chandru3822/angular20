@@ -14,11 +14,11 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-                #            -   name: Cancel Previous Runs
-                #                uses: styfle/cancel-workflow-action@0.6.0
-                #                with:
-                #                    access_token: ${{ github.token }}
-                #
+            -   name: Cancel Previous Runs
+                uses: styfle/cancel-workflow-action@0.6.0
+                with:
+                    access_token: ${{ github.token }}
+
             -   name: Cancel Previous Runs
                 uses: styfle/cancel-workflow-action@0.6.0
                 with:
@@ -81,6 +81,14 @@ jobs:
                     task-definition: ${{ steps.task-def.outputs.task-definition }}
                     service: albatross-uat-service
                     cluster: albatross-uat-cluster
+
+            -   name: Deploy Amazon ECS UAT cron task definition
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: .aws/cron-uat-definition.json
+                    service: albatross-cron-uat-service
+                    cluster: albatross-cron-uat-cluster
+
 
     frontend-build:
       needs: build

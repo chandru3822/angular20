@@ -315,7 +315,7 @@ public class AvailabilityService {
             params2.put("description", rra.getDescription());
             params2.put("allDay", rra.getAllDay() != null && rra.getAllDay());
             params2.put("companyId", rra.getCompanyId());
-            params2.put("createdById", SystemSettings.USER.getId());
+            params2.put("createdById", SystemSettings.CRON_USER.getId());
             params2.put("orgId", rra.getOrgId());
             params2.put("userId", rra.getUserId());
             params2.put("recurrence", rra.getRecurrence());

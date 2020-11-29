@@ -4,9 +4,10 @@
 name: Albatross Build
 
 on: workflow_dispatch
-#    push:
-#        branches:
-#            - "dev"
+  #    push:
+  #        branches:
+  #            - "feat-cron-task"
+  #
 
 jobs:
     build:
@@ -76,6 +77,14 @@ jobs:
                     task-definition: ${{ steps.task-def.outputs.task-definition }}
                     service: albatross-dev-service
                     cluster: albatross-dev-cluster
+
+            -   name: Deploy Amazon ECS task definition
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: .aws/cron-dev-definition.json
+                    service: albatross-cron-dev-service
+                    cluster: albatross-cron-dev-cluster
+
 
     frontend-build:
       needs: build

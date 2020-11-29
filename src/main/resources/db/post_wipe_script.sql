@@ -122,6 +122,8 @@ INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_fi
 
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES (8, 3, 'Albatross@prod-0.1.0-337.plist', 'application/octet-stream', 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@prod-0.1.0-337.plist', null, false, '2020-11-12 23:27:32.449350', null, null, null, null, null, false);
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES (8, 3, 'Albatross@prod-0.1.0-338.apk', 'application/vnd.android.package-archive', 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@prod-0.1.0-338.apk', null, false, '2020-11-12 23:51:41.387503', null, null, null, null, null, false);
+INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@prod-0.1.0-337.plist', 'application/octet-stream', 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@prod-0.1.0-337.plist', null, false, '2020-11-12 23:27:32.449350', null, null, null, null, null, false);
+INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@prod-0.1.0-338.apk', 'application/vnd.android.package-archive', 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@prod-0.1.0-338.apk', null, false, '2020-11-12 23:51:41.387503', null, null, null, null, null, false);
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@uat-0.1.0-388.plist', 'application/octet-stream', 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-388.plist', null, false, '2020-11-24 15:01:10.574845', '2020-11-25 20:51:51.388909', null, 99999992, null, null, false);
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@uat-0.1.0-389.apk', 'application/vnd.android.package-archive', 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-389.apk', null, false, '2020-11-24 15:35:56.688170', '2020-11-25 19:38:06.649004', null, 99999992, null, null, false);
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 47, 3, 'Albatross@uat-0.1.0-380.apk', 'application/vnd.android.package-archive', 'blueraven/uploads/a1618ae7-0162-4ec2-8f7c-81c1e1ba19b9', 80212879, false, '2020-11-24 22:00:44.693598', null, 2354015, null, null, null, false);
@@ -132,16 +134,18 @@ INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@uat-0.1.0-406.plist', 'application/octet-stream', 'blueraven/apps/ios/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-406.plist', null, false, '2020-11-26 01:04:26.802141', '2020-11-26 03:23:26.608306', null, 99999992, null, null, true);
 INSERT INTO flow.attachment ( attachment_type_id, company_id, filename, content_type, s3_key, size, archived, date_created, date_modified, created_by_id, modified_by_id, migrated_deal_id, migrated_deal_resource_id, show) VALUES ( 8, 3, 'Albatross@uat-0.1.0-407.apk', 'application/vnd.android.package-archive', 'blueraven/app/android/com.myblueraven.albatross/0.1.0/Albatross@uat-0.1.0-407.apk', null, false, '2020-11-26 01:29:28.758582', '2020-11-26 03:23:23.879418', null, 99999992, null, null, true);
 
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884897,1);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884898,3);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884899, 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884900, 4);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884902, 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884903, 4);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884904, 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884905, 4);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884906, 2);
-INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1884907, 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885097,1);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885098,3);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885099, 1);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885100, 3);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885101, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885102, 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885104, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885105, 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885106, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885107, 4);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885108, 2);
+INSERT INTO flow.attachment_source (attachment_id, source_id) VALUES (1885109, 4);
 
 
 -- select * from  flow.attachment
