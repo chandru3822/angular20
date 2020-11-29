@@ -2675,9 +2675,10 @@ with process_step1 as (
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
          where
-             utility_bill_verified_date is not null and ((proof_of_howmeowners_insurance_required is false or proof_of_howmeowners_insurance_required is null) or proof_of_homeowners_insurance_obtained_date is not null)
-           and originator_id = 1)
-        returning *),
+             utility_bill_verified_date is not null and
+               ((proof_of_howmeowners_insurance_required is false or proof_of_howmeowners_insurance_required is null)
+                    or proof_of_homeowners_insurance_obtained_date is not null)
+           and originator_id = 1)returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
          from flow.custom_field_group_assignment cfga
