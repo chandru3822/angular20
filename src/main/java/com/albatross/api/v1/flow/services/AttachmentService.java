@@ -4,7 +4,6 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
-import com.albatross.api.v1.flow.model.MobileAttachment;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
@@ -12,10 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -132,30 +129,6 @@ public class AttachmentService {
         }
     }
 
-    /**
-     * Find latest mobile build
-     *
-     * @param sourceId ID of the source
-     * @return
-     */
-    public Attachment getLatestAppBySourceIdAndType(Long sourceId, Long attachmentTypeId) {
-        //this is an endpoint for mobile to determine if a user is using the most current app
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("sourceId", sourceId);
-        params.put("attachmentTypeId", attachmentTypeId);
-
-        Optional<Attachment> result = sqlCache.get("attachment.getLatestAppBySourceIdAndType", params, Attachment.class);
-
-        if(result.isPresent()){
-            Attachment attachment = result.get();
-            setAttachmentUrl(storageBucket, attachment);
-            setAttachmentPresignedUrl(storageBucket, attachment);
-
-            return attachment;
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No App Found", new Exception());
-        }
-    }
 
     /**
      * Find Attachments by source Id and source type Id, using a custom S3 bucket name.
@@ -388,36 +361,4 @@ public class AttachmentService {
         sqlCache.update("attachment.addToJoinTable", params);
     }
 
-    public void showOrHideAttachment(Attachment attachment) {
-        User currentUser = securityService.getCurrentUser();
-
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("id", attachment.getId());
-        params.put("show", attachment.getShow());
-        params.put("userId", currentUser.getId());
-
-        sqlCache.update("attachment.showOrHideAttachment", params);
-    }
-
-    //endpoint for automating mobile build uploads
-    public Attachment insertAttachmentRecord(MobileAttachment ma) throws IOException {
-        //todo: if used from within the app need to get companyId off of user in those cases
-        if (null == ma || null == ma.getAttachment()) {
-            throw new RuntimeException("Attachment cannot be null");
-        }
-
-        String key = String.format(ma.getKeyPattern(), ma.getAttachment().getS3Key());
-
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("filename", ma.getAttachment().getFilename());
-        params.put("contentType", ma.getAttachment().getContentType());
-        params.put("size", ma.getAttachment().getSize());
-        params.put("companyId", ma.getAttachment().getCompanyId());
-        params.put("attachmentTypeId", ma.getAttachmentTypeId());
-        params.put("key", key);
-
-        Long id = sqlCache.updateReturningId("attachment.insertAttachmentRecord", params, "id").longValue();
-
-        return findById(id);
-    }
 }
