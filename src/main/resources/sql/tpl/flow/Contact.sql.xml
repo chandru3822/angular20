@@ -54,8 +54,8 @@
              left outer join flow.company_country cc on cc.id = c.company_country_id
              left join flow.country ctr on ctr.id = cc.country_id
     where c.id = :contactId
-      and case when :isParent
-            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+      and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else c.company_id = :companyId end
 
   ]]></contact.getById>
@@ -86,8 +86,8 @@
       left join flow.company_country cc on cc.id = c.company_country_id
       left join flow.country ct on ct.id = cc.country_id
     where p.id = :projectId
-       and case when :isParent
-            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+       and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else c.company_id = :companyId end
   ]]></contact.getByProjectId>
 
@@ -116,8 +116,8 @@
       inner join flow.company_country cc on cc.id = c.company_country_id
       inner join flow.country ct on ct.id = cc.country_id
     where c.phone = :phone
-     and case when :isParent
-            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+     and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else c.company_id = :companyId end
   ]]></contact.getContactByPhone>
 

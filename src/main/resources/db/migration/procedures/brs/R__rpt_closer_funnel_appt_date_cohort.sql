@@ -6,7 +6,7 @@ declare
 	v_whole_company boolean;
 BEGIN
 	--If p_user_ids has a -1 that means get data for the whole company
-	select p_user_ids <@ Array[-1] into v_whole_company;
+	select -1 = any(p_user_ids) into v_whole_company;
 	if v_whole_company then
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (

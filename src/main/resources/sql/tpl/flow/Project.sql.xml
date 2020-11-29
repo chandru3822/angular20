@@ -121,7 +121,7 @@
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.id = :projectId
         and case when :isParent
-            then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else cp.company_id = :companyId end
     ]]>
   </project.get>
@@ -181,7 +181,7 @@
     where
       p.id = :projectId and
         case when :isParent
-            then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else ps.company_id = :companyId end
       and pps.archived is not true
     order by ps.process_step_name;

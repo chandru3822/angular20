@@ -19,7 +19,7 @@
          inner join flow.org_level ol on ol.id = ot.org_level_id
          inner join flow.org o on o.org_type_id = ot.id and o.schedulable is true and o.archived is not true
     where case when :isParent
-            then array[ot.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            then ot.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else ot.company_id = :companyId end
     order by ot.org_type
   ]]></orgType.getSchedulableForCompany>
