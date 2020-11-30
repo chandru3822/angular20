@@ -271,6 +271,14 @@
       and position_id not in (:positionIdsUsed)
   ]]></customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed>
 
+  <customFieldGroupAssignment.archiveAllWhiteListedPositions><![CDATA[
+    update flow.custom_field_group_assignment_white_listed_position
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :userId
+    where custom_field_group_assignment_id = :cfgaId
+  ]]></customFieldGroupAssignment.archiveAllWhiteListedPositions>
+
   <customFieldGroupAssignment.insertWhiteListPosition><![CDATA[
     insert into flow.custom_field_group_assignment_white_listed_position(position_id, custom_field_group_assignment_id, created_by_id)
     select :positionId, :cfgaId, :userId

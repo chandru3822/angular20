@@ -111,7 +111,12 @@ public class CustomFieldGroupService {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<Long> positionIdsUsed = customField.getWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
-      sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
+      if(positionIdsUsed.size() > 0) {
+        sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
+      } else {
+        //this means they removed ALL white listed positions
+        sqlCache.update("customFieldGroupAssignment.archiveAllWhiteListedPositions", params);
+      }
 
       for(WhiteListedPosition wlp : customField.getWhiteListedPositions()) {
         params.put("positionId", wlp.getPositionId());
