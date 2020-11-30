@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 @Configuration
 @EnableAsync
 @EnableScheduling
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
 @ConditionalOnProperty(prefix = "app.scheduled", value = "enabled")
 public class ScheduledConfig implements SchedulingConfigurer {
@@ -59,6 +59,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @PostConstruct
     public void init() {
+        log.info("cron service enabled");
 //      if (initialAutoTriggers) {
 //        log.info("*** CRON: start INITIAL auto triggers ***");
 //        projectProcessStepService.performInitialAutoTriggers();
