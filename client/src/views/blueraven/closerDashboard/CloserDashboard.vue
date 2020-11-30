@@ -1730,7 +1730,7 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if ((this.isCloser || this.isCloserMgr || this.isCloserRegional) || this.selectedRoundRobin) {
+          if (((this.isCloser || this.isCloserMgr || this.isCloserRegional && this.selectedRoundRobin)) || this.selectedRoundRobin) {
             const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
             await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
           }
