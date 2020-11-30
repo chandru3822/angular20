@@ -7,7 +7,9 @@ import com.albatross.api.v1.flow.model.*;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -148,18 +150,29 @@ public class AttachmentTypeService {
   public List<ProjectAttachmentType> getProjectTypes(Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
+    Optional<Long> projectCompanyId = null;
 
     if(null != projectId) {
       //had to change this so that a parent looking at a child project could still see attachments
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      projectCompanyId = sqlCache.get("project.getCompanyId", params, Long.class);
+      log.info("companyId is {}", projectCompanyId);
+      if(projectCompanyId.isPresent()) {
+        List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
+          ImmutableMap.of("companyId", projectCompanyId.get()), ProjectAttachmentType.class);
+        return result;
+      } else {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project Not Found", new Exception());
+      }
+    } else {
+      List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
+          ImmutableMap.of("companyId", companyId), ProjectAttachmentType.class);
+      return result;
     }
 
-    List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
-        ImmutableMap.of("companyId", companyId), ProjectAttachmentType.class);
 
-    return result;
+
   }
 
   public Optional<ProjectAttachmentType> insertProjectType(ProjectAttachmentType attachmentType) {
