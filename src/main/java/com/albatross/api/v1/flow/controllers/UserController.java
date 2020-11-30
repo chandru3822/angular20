@@ -172,6 +172,7 @@ public class UserController {
         try {
             if(null != passwordResetRequest.getUserId() && null != passwordResetRequest.getNewPassword()) {
                 result = userService.updatePassword(passwordResetRequest);
+                userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
             }
 
         } catch (Exception e) {
