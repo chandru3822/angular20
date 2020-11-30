@@ -66,9 +66,11 @@
     ]]></app.insertAttachmentRecord>
 
   <app.findById><![CDATA[
-    SELECT *
-    FROM flow.app_attachment
-    WHERE id = :id
+    SELECT aa.*,
+           ap.app_type
+    FROM flow.app_attachment aa
+        inner join flow.app_type ap on ap.id = aa.app_type_id
+    WHERE aa.id = :id
   ]]></app.findById>
 
   <app.deleteBySourceAndType><![CDATA[
