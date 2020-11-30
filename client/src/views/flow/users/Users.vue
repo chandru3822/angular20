@@ -189,13 +189,13 @@
               :class="{'shaded-row': index % 2}"
             >
               <td><v-checkbox v-model="item.selected"></v-checkbox></td>
-              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.firstName}}</td>
-              <td class="text-left user-column clickable" @click="clickRow(item.id)">{{item.lastName}}</td>
-              <td class="text-left user-column">{{item.email}}</td>
-              <td class="text-left user-column">{{item.phoneNumber}}</td>
-              <td class="text-left user-column">{{item.userStatusType}}</td>
-              <td class="text-left user-column">{{item.position || 'N/A'}}</td>
-              <td class="text-left user-column" v-for="(f, index) in orgFilters" :key="index">
+              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.firstName}}</td>
+              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.lastName}}</td>
+              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.email}}</td>
+              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.phoneNumber}}</td>
+              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.userStatusType}}</td>
+              <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.position || 'N/A'}}</td>
+              <td @click="clickRow(item.id)" class="text-left user-column clickable" v-for="(f, index) in orgFilters" :key="index">
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
             </tr>

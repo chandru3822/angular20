@@ -48,18 +48,26 @@ public class AuthController {
           + (log.isDebugEnabled() ? ": " + creds.getUsername()
           : "."));
       return ResponseEntity.badRequest().body("No such username found");
+    } else if (user.getLoginAttempts() >= 9) {
+      String msg = "Too Many Attempts. Account is Locked";
+      log.info("Too many attempts; account is locked: " + creds.getUsername());
+      return ResponseEntity.badRequest().body(msg);
     }
 
     Boolean validPassword = securityService.validatePassword(user, creds.getPassword());
     if (!validPassword) {
-      log.info("Login attempted with bad password for user: " + creds.getUsername());
-      return ResponseEntity.badRequest().body("Invalid password");
+      int attempts = user.getLoginAttempts() + 1;
+      securityService.updateLoginAttempts(attempts, user.getId());
+      log.info("Login attempted with bad password for user: " + creds.getUsername() + ": count: " + attempts);
+      return ResponseEntity.badRequest().body("Invalid Username or Password");
+    } else if (user.getLoginAttempts() > 0) {
+      //after successful login, if any previous unsuccessful, reset the count
+      securityService.updateLoginAttempts(0, user.getId());
     }
 
     if (!user.isUnlocked()) {
-      String msg = "Cannot log in; account is locked: " + creds.getUsername();
-      log.info(msg);
-      return ResponseEntity.badRequest().body(msg);
+      log.info("Cannot log in; account is locked: " + creds.getUsername());
+      return ResponseEntity.badRequest().body("Account is Locked");
     }
 
     List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());

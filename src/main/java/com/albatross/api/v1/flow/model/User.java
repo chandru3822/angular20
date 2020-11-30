@@ -13,6 +13,7 @@ import java.util.UUID;
 public class User {
 
     private Long id, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId, defaultAppointmentLength, homePageCompanyFeatureId;
+    private int loginAttempts;
     //not sure if i should put this here.  there are times when i need a unique list of users so i can coalesce their positions. but other times i need lists of all users so 1 user can show up multiple times with different positions
     private Long userPositionId;
     // companyId = context

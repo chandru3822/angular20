@@ -150,6 +150,7 @@
              u.created_by_id,
              u.first_name,
              u.last_name,
+             u.login_attempts,
              concat(u.first_name, ' ', u.last_name) AS full_name,
              uc.company_id,
              u.modified_by_id,
@@ -192,6 +193,7 @@
              u.email,
              u.username,
              u.created_by_id,
+             u.login_attempts,
              u.first_name,
              u.last_name,
              concat(u.first_name, ' ', u.last_name) AS full_name,
@@ -276,6 +278,7 @@
        u.username,
        u.email,
        u.phone_number,
+       u.login_attempts,
        u.username,
        (select has_access
           from flow.company_user_status cus
@@ -341,6 +344,12 @@
       and uc.is_default = true
     limit 1
   ]]></user.findByUsernameIgnoreCase>
+
+  <user.updateLoginAttempts><![CDATA[
+    update flow."user"
+        set login_attempts = :loginAttempts
+    where id = :userId
+  ]]></user.updateLoginAttempts>
 
   <user.findByUsernameOrEmailIgnoreCase><![CDATA[
     select u.id,
