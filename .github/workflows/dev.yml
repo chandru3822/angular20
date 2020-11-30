@@ -4,10 +4,11 @@
 name: Albatross Build
 
 on: workflow_dispatch
-  #    push:
-  #        branches:
-  #            - "feat-cron-task"
-  #
+#on:
+#      push:
+#          branches:
+#              - "feat-cron"
+
 
 jobs:
     build:
@@ -63,28 +64,35 @@ jobs:
                     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
                     echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-            -   name: Fill in the new image ID in the Amazon ECS task definition
-                id: task-def
+            -   name: Fill in the new image ID for App Fargate task definition
+                id: app-task-def
                 uses: aws-actions/amazon-ecs-render-task-definition@v1
                 with:
                     task-definition: .aws/dev-definition.json
                     container-name: albatross-dev-container
                     image: ${{ steps.build-image.outputs.image }}
 
-            -   name: Deploy Amazon ECS task definition
+            -   name: Fill in the new image ID for Cron Fargate task definition
+                id: cron-task-def
+                uses: aws-actions/amazon-ecs-render-task-definition@v1
+                with:
+                    task-definition: .aws/cron-dev-definition.json
+                    container-name: albatross-cron-dev-container
+                    image: ${{ steps.build-image.outputs.image }}
+
+            -   name: Deploy App Fargate Task
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
-                    task-definition: ${{ steps.task-def.outputs.task-definition }}
+                    task-definition: ${{ steps.app-task-def.outputs.task-definition }}
                     service: albatross-dev-service
                     cluster: albatross-dev-cluster
 
-            -   name: Deploy Amazon ECS task definition
+            -   name: Deploy Cron Fargate Task
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
-                    task-definition: .aws/cron-dev-definition.json
-                    service: albatross-cron-dev-service
-                    cluster: albatross-cron-dev-cluster
-
+                    task-definition: ${{ steps.cron-task-def.outputs.task-definition }}
+                    service: albatross-dev-cron-service
+                    cluster: albatross-dev-cluster
 
     frontend-build:
       needs: build

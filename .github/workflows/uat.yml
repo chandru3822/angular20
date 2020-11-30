@@ -67,28 +67,35 @@ jobs:
                     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
                     echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-            -   name: Fill in the new image ID in the Amazon ECS task definition
-                id: task-def
+            -   name: Fill in the new image ID for App Fargate task definition
+                id: app-task-def
                 uses: aws-actions/amazon-ecs-render-task-definition@v1
                 with:
                     task-definition: .aws/uat-definition.json
                     container-name: albatross-uat-container
                     image: ${{ steps.build-image.outputs.image }}
 
-            -   name: Deploy Amazon ECS task definition
+            -   name: Fill in the new image ID for Cron Fargate task definition
+                id: cron-task-def
+                uses: aws-actions/amazon-ecs-render-task-definition@v1
+                with:
+                    task-definition: .aws/cron-uat-definition.json
+                    container-name: albatross-cron-uat-container
+                    image: ${{ steps.build-image.outputs.image }}
+
+            -   name: Deploy App Fargate Task
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
-                    task-definition: ${{ steps.task-def.outputs.task-definition }}
+                    task-definition: ${{ steps.app-task-def.outputs.task-definition }}
                     service: albatross-uat-service
                     cluster: albatross-uat-cluster
 
-            -   name: Deploy Amazon ECS UAT cron task definition
+            -   name: Deploy Cron Fargate Task
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
-                    task-definition: .aws/cron-uat-definition.json
-                    service: albatross-cron-uat-service
-                    cluster: albatross-cron-uat-cluster
-
+                    task-definition: ${{ steps.cron-task-def.outputs.task-definition }}
+                    service: albatross-uat-cron-service
+                    cluster: albatross-uat-cluster
 
     frontend-build:
       needs: build
