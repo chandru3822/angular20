@@ -437,7 +437,7 @@
         if (isProject) {
           this.$router.push({name: 'projectDetails', params: {projectId: ps.projectId}})
         } else if (isProcessStep) {
-          this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}})
+          this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}, query: { processStepId: ps.processStepId, contactId: ps.contactId }})
         }
       },
       resourceMapCallback (newValue) {
