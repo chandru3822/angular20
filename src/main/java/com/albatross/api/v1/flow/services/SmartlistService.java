@@ -374,10 +374,20 @@ public class SmartlistService {
 
       }
 
-      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
+      if (r.getDataTypeId() == 7) {
+        if (r.getDataTypeRequirementId() != null) {
+          query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        } else {
+          query.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        }
+      } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
       } else {
-        query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
+          query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        } else {
+          query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        }
       }
     }
 
@@ -451,7 +461,7 @@ public class SmartlistService {
             joinTables.add(f);
           } else {
             final String uuid = joinTables.stream()
-              .filter(t -> t.getProcessStepId().equals(f.getProcessStepId()))
+              .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
               .map(SmartlistFieldAssignment::getReferenceTable)
               .findFirst()
               .orElse(null);
