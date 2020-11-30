@@ -19,11 +19,11 @@
         custom_field_group_assignment_id = 395)::integer) as source,
         trim(concat(users.first_name, ' ', users.last_name)) as deal_owner,
         (select numeric_value from flow.project_process_step_custom_field_value where project_process_step_id =
-            (select id from flow.project_process_step where project_id = :projectId and process_step_id=3)
+            (select id from flow.project_process_step where project_id = :projectId and process_step_id=3 and main is true)
              and custom_field_group_assignment_id= 709) as epc_proposal_pricing,
         (select user_id from flow.user_position
         where id = (select user_position_id from flow.project_process_step
-        where project_id = :projectId and process_step_id = 2)
+        where project_id = :projectId and process_step_id = 2 and main is true)
         ) as deal_owner_id
         from flow.project p
         inner join flow.contact c on c.id = p.contact_id

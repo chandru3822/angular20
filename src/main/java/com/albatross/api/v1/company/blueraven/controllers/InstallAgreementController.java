@@ -74,7 +74,7 @@ public class InstallAgreementController {
   }
 
   @GetMapping(value = "/loanStatus/{projectId}")
-  public ResponseEntity<Object> getLoanStatus(@PathVariable Long projectId) {
+  public ResponseEntity<Object> getLoanStatus(@PathVariable String projectId) {
       try {
           JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
           return ResponseEntity.ok(loanApp.toString());
