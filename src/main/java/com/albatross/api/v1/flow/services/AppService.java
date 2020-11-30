@@ -163,6 +163,9 @@ public class AppService {
     params.put("appTypeId", attachment.getAppTypeId());
     params.put("companyId", attachment.getCompanyId());
     params.put("attachmentTypeId", attachment.getAttachmentTypeId());
+    params.put("displayName", attachment.getDisplayName());
+    params.put("versionNumber", attachment.getVersionNumber());
+    params.put("buildNumber", attachment.getBuildNumber());
     params.put("createdById", SystemSettings.SYSTEM_USER.getId());
     params.put("key", key);
 

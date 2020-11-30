@@ -54,6 +54,11 @@
                             placeholder=" "
                             v-model="user.username"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
+              <v-text-field text class="mt-4"
+                            v-if="userIsAdmin"
+                            label="Password"
+                            placeholder=" "
+                            v-model="user.newPassword"></v-text-field>
               <div class="mt-2">
                 <v-toolbar color="transparent" class="elevation-0" id="company-access-toolbar">
                   <v-toolbar-title>Company Access:</v-toolbar-title>
@@ -134,11 +139,6 @@
                 </div>
 
               </div>
-              <v-text-field text class="mt-4"
-                            v-if="userIsAdmin"
-                            label="Password"
-                            placeholder=" "
-                            v-model="user.newPassword"></v-text-field>
             </v-card>
           </div>
           <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
