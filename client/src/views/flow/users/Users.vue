@@ -401,7 +401,12 @@
         return 'check_box_outline_blank'
       },
       usersSelected () {
-          return this.users.filter(u => u.selected === true).length;
+          if (this.selectAllUsers) {
+              return this.users.length;
+          }
+          else {
+              return this.users.filter(u => u.selected === true).length;
+          }
       },
       disableSendEmail() {
           return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0)
