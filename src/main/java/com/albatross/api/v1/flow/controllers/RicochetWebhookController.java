@@ -52,7 +52,7 @@ public class RicochetWebhookController {
         }
 
         log.info(
-            "Received new contact information from Ricochet. " +
+            "Received new lead info from Ricochet. " +
                 "uniqueIdentifier: {}, " +
                 "status: {}, " +
                 "leadOwner: {}, " +
