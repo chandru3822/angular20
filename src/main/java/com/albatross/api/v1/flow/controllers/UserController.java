@@ -91,6 +91,11 @@ public class UserController {
         userService.saveUserStatusType(userStatusType);
     }
 
+    @PutMapping(value = "/{id}/unlock", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void unlockUser(@PathVariable Long id) {
+        userService.unlockUser(id);
+    }
+
     @Data
     public static class NewUserCompanyRequest {
         private Long companyId, companyUserStatusTypeId, userId;

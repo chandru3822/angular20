@@ -204,6 +204,14 @@ public class UserService {
     return user.orElse(null);
   }
 
+  public void updateLoginAttempts(int loginAttempts, Long userId) {
+    // update count of login attempts
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("loginAttempts", loginAttempts);
+    params.put("userId", userId);
+    sqlCache.update("user.updateLoginAttempts", params);
+  }
+
   public User findByUsernameOrEmailIgnoreCase(String usernameOrEmail) {
     // for forgot password they need to be able to enter username or email. this will find them either way
     HashMap<String, Object> params = new HashMap<>();
@@ -241,6 +249,15 @@ public class UserService {
     params.put("hasAccess", userStatusType.getHasAccess());
     params.put("modifiedById", user.getId());
     sqlCache.update("user.saveUserStatusType", params);
+  }
+
+  public void unlockUser(Long userId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("loginAttempts", 0);
+
+    sqlCache.update("user.updateLoginAttempts", params);
   }
 
   public List<Company> removeFromCompany(UserController.NewUserCompanyRequest req) {
