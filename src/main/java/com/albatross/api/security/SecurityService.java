@@ -54,6 +54,10 @@ public class SecurityService implements UserDetailsService {
         return user;
     }
 
+    public void updateLoginAttempts(int loginAttempts, Long userId) {
+        userService.updateLoginAttempts(loginAttempts, userId);
+    }
+
     public Optional<UserAccountDetails> getUserDetailsById(Long id) {
         Optional<User> user = findUserById(id);
         if (!user.isPresent()) {
