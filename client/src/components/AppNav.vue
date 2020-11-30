@@ -138,7 +138,7 @@ export default {
         label: 'Smartlists',
         path: '/smartlist',
         feature: 'SMARTLIST',
-        show: false
+        show: true
       }],
       VUE_APP_ENV
     }
