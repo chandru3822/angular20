@@ -12,12 +12,12 @@
       <v-col cols="12" class="py-0">
         <v-toolbar flat color="transparent" class="app-toolbar">
             <v-tooltip bottom max-width="300px" content-class="user-img-tooltip">
-              <template v-slot:activator="{ on }">
+              <template v-slot:activator="{ on:tooltip }">
                 <v-avatar :tile="false"
-                          v-on="on"
+                          v-on="{ ...tooltip }"
                           :size="50"
                           color="grey lighten-4"
-                          @click="changePhoto = true"
+                          @click="changePhoto = !changePhoto"
                           class="clickable account-img mr-3"
                 >
                   <v-img name="userImg" alt="user-image" v-if="loadComplete && userImage && userImage.presignedUrl && !imageFailed" v-on:error="onImgError()" :src="userImage.presignedUrl"></v-img>
