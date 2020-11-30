@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.AppAttachment;
-import com.albatross.api.v1.flow.model.MobileAttachment;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
@@ -147,21 +147,23 @@ public class AppService {
   }
 
   //endpoint for automating mobile build uploads
-  public AppAttachment insertAttachmentRecord(MobileAttachment ma) throws IOException {
+  public AppAttachment insertAttachmentRecord(AppAttachment attachment) throws IOException {
+
     //todo: if used from within the app need to get companyId off of user in those cases
-    if (null == ma || null == ma.getAttachment()) {
+    if (null == attachment) {
       throw new RuntimeException("Attachment cannot be null");
     }
 
-    String key = String.format(ma.getKeyPattern(), ma.getAttachment().getS3Key());
+    String key = String.format(attachment.getKeyPattern(), attachment.getS3Key());
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", ma.getAttachment().getFilename());
-    params.put("contentType", ma.getAttachment().getContentType());
-    params.put("size", ma.getAttachment().getSize());
-    params.put("appTypeId", ma.getAttachment().getAppTypeId());
-    params.put("companyId", ma.getAttachment().getCompanyId());
-    params.put("attachmentTypeId", ma.getAttachmentTypeId());
+    params.put("filename", attachment.getFilename());
+    params.put("contentType", attachment.getContentType());
+    params.put("size", attachment.getSize());
+    params.put("appTypeId", attachment.getAppTypeId());
+    params.put("companyId", attachment.getCompanyId());
+    params.put("attachmentTypeId", attachment.getAttachmentTypeId());
+    params.put("createdById", SystemSettings.SYSTEM_USER.getId());
     params.put("key", key);
 
     Long id = sqlCache.updateReturningId("app.insertAttachmentRecord", params, "id").longValue();
