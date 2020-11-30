@@ -45,6 +45,12 @@ public class RicochetWebhookController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
         }
 
+        if (lead.getCustomer().getAddress().getZip().length() > 10) {
+            msg = "Character limit exceeded for Zip. The maximum number of characters allowed is 10.";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
+
         log.info(
             "Received new contact information from Ricochet. " +
                 "uniqueIdentifier: {}, " +
@@ -60,7 +66,7 @@ public class RicochetWebhookController {
                 "state: {}, " +
                 "lead_source: {}, " +
                 "lead_source_detail: {}, " +
-                "hubspotId: {}",
+                "hubspot_id: {}",
                 lead.getUniqueIdentifier() != null ? lead.getUniqueIdentifier() : "null",
                 !isBlank(lead.getStatus()) ? lead.getStatus() : "null",
                 !isBlank(lead.getLeadOwner()) ? lead.getLeadOwner() : "null",
@@ -74,7 +80,7 @@ public class RicochetWebhookController {
                 !isBlank(lead.getCustomer().getAddress().getState()) ? lead.getCustomer().getAddress().getState() : "null",
                 !isBlank(lead.getLead_source()) ? lead.getLead_source() : "null",
                 !isBlank(lead.getLead_source_detail()) ? lead.getLead_source_detail() : "null",
-                lead.getHubspotId() != null ? lead.getHubspotId() : "null"
+                lead.getHubspot_id() != null ? lead.getHubspot_id() : "null"
         );
 
         return ricochetWebhookService.saveLead(lead);
