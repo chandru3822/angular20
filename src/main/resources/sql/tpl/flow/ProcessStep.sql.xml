@@ -111,7 +111,7 @@
                                                                   FROM (
                                                                            SELECT cfgawlp.id,
                                                                                   cfgawlp.position_id as "positionId",
-                                                                                  cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                  cfgawlp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
                                                                                   cfgawlp.created_by_id as "createdById",
                                                                                   cfgawlp.modified_by_id as "modifiedById",
                                                                                   cfgawlp.archived
