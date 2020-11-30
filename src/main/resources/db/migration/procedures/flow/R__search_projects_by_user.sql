@@ -67,6 +67,15 @@ BEGIN
                          select array_agg(up.id) as user_position_ids
                          from flow.user_position up
                          where user_id = p_user_id
+                     ),project_ids as (
+                         select array_agg(p.id) as project_ids
+                         from flow.project p
+                         inner join user_position_ids upi on p.user_position_id = any(user_position_ids)
+                         union
+                         select array_agg(p2.id) as project_ids
+                         from flow.contact c
+                             inner join flow.project p2 on p2.contact_id = c.id
+                                  inner join user_position_ids upi on c.owner_user_position_id = any(user_position_ids)
                      )
                      select p.id,
                             p.project_name,
@@ -90,7 +99,7 @@ BEGIN
                                              c.mobile
                                   ) contact1)::jsonb as contact
                      from flow.project p
-                              inner join user_position_ids upi on p.user_position_id = any (upi.user_position_ids)
+                              inner join project_ids pi on p.id = any (pi.project_ids)
                               inner join flow.company_process cp on cp.id = p.company_process_id
                               inner join flow.process pr on pr.id = cp.process_id
                               inner join flow.status_type st on st.id = cp.status_type_id
@@ -170,11 +179,20 @@ BEGIN
                                   order by count(1) desc, sum(rank)
                                  -- limit p_limit offset p_offset
                               ),
-                              user_position_ids as (
-                                  select array_agg(up.id) as user_position_ids
-                                  from flow.user_position up
-                                  where user_id = p_user_id
-                              )
+                        user_position_ids as (
+                         select array_agg(up.id) as user_position_ids
+                         from flow.user_position up
+                         where user_id = p_user_id
+                     ),project_ids as (
+                         select array_agg(p.id) as project_ids
+                         from flow.project p
+                         inner join user_position_ids upi on p.user_position_id = any(user_position_ids)
+                         union
+                         select array_agg(p2.id) as project_ids
+                         from flow.contact c
+                             inner join flow.project p2 on p2.contact_id = c.id
+                                  inner join user_position_ids upi on c.owner_user_position_id = any(user_position_ids)
+                     )
                          select p.id,
                                 p.project_name,
                                 p.contact_id,
@@ -198,7 +216,7 @@ BEGIN
                                       ) contact1)::jsonb as contact
                          from ranked_projects rp
                                   inner join flow.project p on p.id = rp.id
-                                  inner join user_position_ids upi on p.user_position_id = any (upi.user_position_ids)
+                                  inner join project_ids pi on p.id = any (pi.project_ids)
                                   inner join flow.company_process cp on cp.id = p.company_process_id
                                   inner join flow.process pr on pr.id = cp.process_id
                                   inner join flow.status_type st on st.id = cp.status_type_id

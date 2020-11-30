@@ -104,7 +104,11 @@ BEGIN
                foo1.lead_gen_fdc * 100,
                foo1.self_gen,
                foo1.average_availability,
-               round(foo1.score / sum(foo1.score) over (), 2)*100 as score
+               case when sum(foo1.score) = 0 then
+                   0
+                else
+               round(foo1.score / sum(foo1.score) over (), 2)*100
+                end as score
         from (
                  select foo.user_id,
                         case when lead_gen_den is null or lead_gen_den = 0 then
