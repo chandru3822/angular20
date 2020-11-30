@@ -59,6 +59,12 @@
                             label="Password"
                             placeholder=" "
                             v-model="user.newPassword"></v-text-field>
+              <v-card color="#ffcac7" class="pa-4" v-if="user.loginAttempts >= 9">
+                <label>Too Many Attempts, User Account Locked</label><br/>
+                <v-btn v-if="userIsAdmin" @click="unlockUserAccount" color="primaryCustom" class="white--text mt-2">
+                  Unlock
+                </v-btn>
+              </v-card>
               <div class="mt-2">
                 <v-toolbar color="transparent" class="elevation-0" id="company-access-toolbar">
                   <v-toolbar-title>Company Access:</v-toolbar-title>
@@ -382,6 +388,21 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async unlockUserAccount () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/user/${this.userId}/unlock`)
+          this.user.loginAttempts = 0
+          this.snackbar = getSnackbar('SUCCESS', 'User Unlocked')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Unlocking User')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
