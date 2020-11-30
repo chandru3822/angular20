@@ -977,7 +977,7 @@ export default new Router({
       path: '/smartlist',
       meta: { title: 'Albatross - Smartlists'},
       component: () => {
-        if(store.getters.userHasFeature('NUNN_SHALL_PASS')) {
+        if(store.getters.userHasFeature('SMARTLIST')) {
           return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/SmartlistHome.vue')
         } else  {
           return accessDenied()
