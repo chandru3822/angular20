@@ -59,14 +59,14 @@ public class CloserDashboardService {
 
   public List<PostalCodeZone> getRoundRobins() {
     User user = securityService.getCurrentUser();
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "ROUND_ROBIN", List.of("VIEW_ALL"));
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CLOSER_DASHBOARD", List.of("VIEW_ALL"));
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
     params.put("viewAll", viewAll);
     params.put("companyId", user.getCompanyId());
 
-    String sqlKey = viewAll ? "closerDashboard.getRoundRobins" : "closerDashboard.getAllRoundRobins";
+    String sqlKey = viewAll ? "closerDashboard.getAllRoundRobins" : "closerDashboard.getRoundRobins";
 
     return sqlCache.query(sqlKey, params, PostalCodeZone.class);
   }
