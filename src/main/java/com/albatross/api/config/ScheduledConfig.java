@@ -5,7 +5,6 @@ import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.SMSService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +24,7 @@ import java.util.concurrent.Executors;
 @Configuration
 @EnableAsync
 @EnableScheduling
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
 @ConditionalOnProperty(prefix = "app.scheduled", value = "enabled")
 public class ScheduledConfig implements SchedulingConfigurer {
@@ -59,6 +58,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @PostConstruct
     public void init() {
+        log.info("cron service enabled");
 //      if (initialAutoTriggers) {
 //        log.info("*** CRON: start INITIAL auto triggers ***");
 //        projectProcessStepService.performInitialAutoTriggers();
@@ -92,14 +92,16 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     // last day of every month
 //    @Scheduled(cron = "0 0 0 L * ?")
-    @Scheduled(cron = "0 0 0 28-31 * ?")
-    public void populateNextMonthsBudgets() {
+    @Scheduled(cron = "0 0 0 28-31 * ?", zone = "America/Denver")
+    public void processFutureRecurringEvents() {
         if(processFutureAppointments) {
+            log.info("*** CRON: start populating recurring events ***");
             availabilityService.processFutureRecurringEvents();
+            log.info("*** CRON: end populating recurring events ***");
         }
     }
 
-    @Scheduled(cron = "0 0 2 * * *")
+    @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
     public void autoTriggers() {
       if (autoTriggers) {
         log.info("*** CRON: start auto triggers ***");

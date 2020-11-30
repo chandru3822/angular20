@@ -10795,7 +10795,7 @@ insert into flow.organization_custom_field_value( org_id, custom_field_group_ass
 --             2350555
 --         from blueraven.org o
 --                  inner join flow.org o1 on o1.id = o.id
---                  inner join org_types ot on ot.id = o.org_type_id
+--                  inner join org_types ot onm ot.id = o.org_type_id
 --                  inner join blueraven.org_metro_area oma on oma.org_id = o.id
 --                  inner join blueraven.metro_area ma on ma.id = oma.metro_area_id
 --             inner join  blueraven.sales_area sa on sa.id = ma.sales_area_id
