@@ -78,7 +78,7 @@ public class InstallAgreementRepository {
     sqlCache.update("installAgreement.setAgreementSent", request.toHashMap());
 
     if (sendLoanpalDocs && financier != null && financier.equals("LoanPal")) {
-      JSONObject loanApplication = loanPalService.getApplicationByProjectId(request.getProjectId());
+      JSONObject loanApplication = loanPalService.getApplicationByProjectId(request.getProjectId().toString());
       if (loanApplication != null) {
         try {
           JSONObject outcome = loanApplication.getJSONObject("outcome");
