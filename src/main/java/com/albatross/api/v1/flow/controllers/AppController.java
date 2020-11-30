@@ -48,9 +48,9 @@ public class AppController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/addAttachmentRecord")
-    public AppAttachment uploadDocument(@RequestBody MobileAttachment mobileAttachment) throws IOException {
+    public AppAttachment uploadDocument(@RequestBody AppAttachment appAttachment) throws IOException {
 
-        AppAttachment newRecord = appService.insertAttachmentRecord(mobileAttachment);
+        AppAttachment newRecord = appService.insertAttachmentRecord(appAttachment);
 
         return newRecord;
     }
