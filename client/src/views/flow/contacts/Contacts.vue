@@ -85,7 +85,7 @@
               <td class="text-left">{{item.fullName}}</td>
               <td class="text-left">{{item.owner ? item.owner.fullName : ''}}</td>
               <td class="text-left">{{item.state}}</td>
-              <td class="text-left">{{item.dateCreated | formatDate('date')}}</td>
+              <td class="text-left">{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</td>
             </tr>
           </template>
         </v-data-table>
