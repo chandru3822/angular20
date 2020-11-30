@@ -370,14 +370,22 @@ public class SmartlistService {
             requirementValue = requirementValue.toString().replace("not", "");
           }
         }
-
-
       }
 
-      if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
+      if (r.getDataTypeId() == 7) {
+        if (r.getDataTypeRequirementId() != null) {
+          query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        } else {
+          query.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        }
+      } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
       } else {
-        query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
+          query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        } else {
+          query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        }
       }
     }
 
@@ -441,22 +449,33 @@ public class SmartlistService {
         } else if (f.getCustomFieldGroupAssignmentId() == null && f.getProcessStepId() != null && smartlist.getObjectTypeId() != 4) {
 
           // When the field is system but has a process step ID, reference table will be a UUID to keep track of that specific relationship/join to the same process step
-          if (joinTables.stream().noneMatch(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))) {
+          if (Objects.equals(f.getReferenceTable(), "flow.user") || joinTables.stream().noneMatch(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))) {
             if (f.getJoinTable() != null && f.getJoinColumn() != null) {
               // System fields with joins will use this property (for now at least) instead of referenceTable
               f.setValueReferenceTable(UUID.randomUUID().toString());
             } else {
               f.setReferenceTable(UUID.randomUUID().toString());
             }
+            f.setPpsTable(UUID.randomUUID().toString());
             joinTables.add(f);
           } else {
             final String uuid = joinTables.stream()
-              .filter(t -> t.getProcessStepId().equals(f.getProcessStepId()))
-              .map(SmartlistFieldAssignment::getReferenceTable)
+              .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
+              .map(t -> {
+                if (Objects.equals(t.getReferenceTable(), "flow.user")) {
+                  return t.getPpsTable();
+                } else {
+                  return t.getReferenceTable();
+                }
+              })
               .findFirst()
               .orElse(null);
 
-            f.setReferenceTable(uuid);
+            if (f.getReferenceTable().equals("flow.user")) {
+              f.setValueReferenceTable(uuid);
+            } else {
+              f.setReferenceTable(uuid);
+            }
           }
         } else if (f.getJoinTable() != null && f.getJoinColumn() != null) {
           f.setValueReferenceTable(UUID.randomUUID().toString());
@@ -649,6 +668,7 @@ public class SmartlistService {
               }
 
               if (f.getReferenceTable().equals("flow.user")) {
+                // @TODO: This creates a duplicate join on project_process_step if the process step already being used in a previous field
                 final String joinUserPosition = UUID.randomUUID().toString();
                 query.append(String.format("\nleft join flow.user_position \"%s\" on \"%s\".id = \"%s\".%s ", joinUserPosition, joinUserPosition, joinUuid, f.getJoinColumn()));
                 query.append(String.format("\nleft join %s \"%s\" on \"%s\".id = \"%s\".user_id ", f.getReferenceTable(), joinAlias, joinAlias, joinUserPosition));
