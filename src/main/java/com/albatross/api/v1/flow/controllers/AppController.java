@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.AttachmentType;
 import com.albatross.api.v1.flow.model.AppAttachment;
-import com.albatross.api.v1.flow.model.MobileAttachment;
 import com.albatross.api.v1.flow.services.AppService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

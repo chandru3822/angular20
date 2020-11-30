@@ -1,11 +1,11 @@
 package com.albatross.api.v1.company.blueraven.services;
 
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
-import com.albatross.api.security.SecurityService;
-
-import com.albatross.api.utils.SqlCache;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,10 +58,17 @@ public class CloserDashboardService {
   }
 
   public List<PostalCodeZone> getRoundRobins() {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", securityService.getCurrentUser().getId());
+    User user = securityService.getCurrentUser();
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CLOSER_DASHBOARD", List.of("VIEW_ALL"));
 
-    return sqlCache.query("closerDashboard.getRoundRobins", params, PostalCodeZone.class);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("viewAll", viewAll);
+    params.put("companyId", user.getCompanyId());
+
+    String sqlKey = viewAll ? "closerDashboard.getAllRoundRobins" : "closerDashboard.getRoundRobins";
+
+    return sqlCache.query(sqlKey, params, PostalCodeZone.class);
   }
 
   public List<OfficeLeadAllocationScores> getOfficeLeadAllocationRank(Integer postalCodeZoneId, Integer timeInterval) {

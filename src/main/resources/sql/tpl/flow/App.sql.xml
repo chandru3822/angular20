@@ -61,14 +61,16 @@
     ]]></app.showOrHideAttachment>
 
   <app.insertAttachmentRecord><![CDATA[
-        INSERT INTO flow.app_attachment (filename, content_type, s3_key, size, date_created, company_id, attachment_type_id, app_type_id, created_by_id)
-        VALUES (:filename, :contentType, :key, :size, now(), :companyId, :attachmentTypeId, :appTypeId, :createdById)
+        INSERT INTO flow.app_attachment (filename, content_type, s3_key, size, date_created, company_id, attachment_type_id, app_type_id, created_by_id, display_name, version_number, build_number)
+        VALUES (:filename, :contentType, :key, :size, now(), :companyId, :attachmentTypeId, :appTypeId, :createdById, :displayName, :versionNumber, :buildNumber)
     ]]></app.insertAttachmentRecord>
 
   <app.findById><![CDATA[
-    SELECT *
-    FROM flow.app_attachment
-    WHERE id = :id
+    SELECT aa.*,
+           ap.app_type
+    FROM flow.app_attachment aa
+        inner join flow.app_type ap on ap.id = aa.app_type_id
+    WHERE aa.id = :id
   ]]></app.findById>
 
   <app.deleteBySourceAndType><![CDATA[
