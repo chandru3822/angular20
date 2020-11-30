@@ -67,10 +67,9 @@
             }
           } catch (e) {
             this.loginLoading = false
-            let msg = e?.includes('Too many') ? 'Too Many Attempts, Account Locked' : e?.includes('account is locked') ? 'Account Locked' : 'Invalid Username/Password.'
             this.$store.commit(
               UserMutations.LOGIN_ERROR,
-              msg
+              e
             )
           }
         } else {
