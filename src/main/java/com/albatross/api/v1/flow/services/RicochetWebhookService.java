@@ -246,8 +246,8 @@ public class RicochetWebhookService {
         CustomFieldValue hubspotId = new CustomFieldValue();
         hubspotId.setCustomFieldGroupAssignmentId(397L);
 
-        if (lead.getHubspotId() != null) {
-            hubspotId.setTextValue(lead.getHubspotId().toString());
+        if (lead.getHubspot_id() != null) {
+            hubspotId.setTextValue(lead.getHubspot_id().toString());
         } else {
             hubspotId.setTextValue(null);
         }

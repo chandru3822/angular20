@@ -40,7 +40,7 @@ public class HubspotWebhookController {
             );
 
             RicochetLead lead = new RicochetLead();
-            lead.setHubspotId(contact.getVid());
+            lead.setHubspot_id(contact.getVid());
             lead.setStatus("New");
             lead.setLeadOwner(null);
 

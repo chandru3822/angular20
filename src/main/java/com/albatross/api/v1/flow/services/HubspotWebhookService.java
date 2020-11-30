@@ -37,7 +37,7 @@ public class HubspotWebhookService {
             HttpPost req = new HttpPost(RICOCHET_URL);
 
             JSONObject contact = new JSONObject();
-            contact.put("hubspotId", lead.getHubspotId());
+            contact.put("hubspot_id", lead.getHubspot_id());
             contact.put("lead_source", lead.getLead_source());
             contact.put("status", lead.getStatus());
             contact.put("leadOwner", lead.getLeadOwner());
