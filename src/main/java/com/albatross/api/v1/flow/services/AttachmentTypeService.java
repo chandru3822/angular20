@@ -3,7 +3,10 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.model.ProjectAttachmentType;
+import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,7 +160,7 @@ public class AttachmentTypeService {
     }
 
     List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
-        ImmutableMap.of("companyId", companyId), ProjectAttachmentType.class);
+      ImmutableMap.of("companyId", companyId), ProjectAttachmentType.class);
 
     return result;
   }
