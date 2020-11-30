@@ -382,6 +382,8 @@ export default {
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
         this.processStep = data
+        window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
+          : `${this.processStep.processStepName}`
       } catch (e) {
         logError(e)
       } finally {
@@ -419,6 +421,8 @@ export default {
       try {
         const {data} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        window.document.title = this.processStep?.processStepId ? `${this.project.projectName} - ${this.processStep.processStepName}`
+                                    : `${this.project.projectName}`
         await this.userCanScheduleLeadAllocation()
       } catch (e) {
         logError(e)
