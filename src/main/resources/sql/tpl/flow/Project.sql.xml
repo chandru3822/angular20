@@ -89,6 +89,7 @@
         p.postal_code,
         p.company_country_id,
         c.country,
+        p.contact_id,
         p.date_created,
         cp.company_id,
         cp.process_id,
