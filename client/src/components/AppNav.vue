@@ -115,25 +115,30 @@ export default {
       tabs: [ {
         label: 'Contacts',
         path: '/contacts',
-        feature: 'CONTACTS'
+        feature: 'CONTACTS',
+        show: true
       }, {
         label: 'Projects',
         path: '/projects',
-        feature: 'PROJECTS'
+        feature: 'PROJECTS',
+        show: true
       },
         {
         label: 'Schedule',
         path: '/schedule',
-        feature: 'SCHEDULE'
+        feature: 'SCHEDULE',
+          show: true
       },
         {
         label: 'Work Queue',
         path: '/workQueue',
-        feature: 'WORK_QUEUE'
+        feature: 'WORK_QUEUE',
+        show: true
       }, {
         label: 'Smartlists',
         path: '/smartlist',
-        feature: 'SMARTLIST'
+        feature: 'SMARTLIST',
+        show: false
       }],
       VUE_APP_ENV
     }
@@ -147,7 +152,7 @@ export default {
 	},
   computed: {
     displayedTabs () {
-      return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature))
+      return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature) && tab.show)
     },
   },
   methods: {
