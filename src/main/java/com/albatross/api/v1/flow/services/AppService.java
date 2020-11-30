@@ -159,6 +159,7 @@ public class AppService {
     params.put("filename", ma.getAttachment().getFilename());
     params.put("contentType", ma.getAttachment().getContentType());
     params.put("size", ma.getAttachment().getSize());
+    params.put("appTypeId", ma.getAttachment().getAppTypeId());
     params.put("companyId", ma.getAttachment().getCompanyId());
     params.put("attachmentTypeId", ma.getAttachmentTypeId());
     params.put("key", key);
