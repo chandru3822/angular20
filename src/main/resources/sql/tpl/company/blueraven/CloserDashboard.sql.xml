@@ -105,6 +105,18 @@
     ]]>
   </closerDashboard.getIronmanFdcCounts>
 
+  <closerDashboard.getAllRoundRobins>
+    <![CDATA[
+      SELECT pcz.id,
+       pcz.company_id,
+       pcz.zone_name,
+       pcz.archived
+      from flow.postal_code_zone pcz
+      WHERE pcz.archived IS FALSE
+      and pcz.company_id = :companyId
+    ]]>
+  </closerDashboard.getAllRoundRobins>
+
   <closerDashboard.getRoundRobins>
     <![CDATA[
       SELECT pcz.id,
@@ -118,6 +130,7 @@
       WHERE up.user_id = :userId
         AND pczu.archived IS FALSE
         AND pcz.archived IS FALSE
+        and pcz.company_id = :companyId
         -- postal_code_zone_user_type_id = 1 means schedule to (2 = schedule by)
         AND pczu.postal_code_zone_user_type_id = 1
         AND up.archived IS NOT TRUE

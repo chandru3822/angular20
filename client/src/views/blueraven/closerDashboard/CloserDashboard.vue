@@ -256,6 +256,9 @@
             <td class="center-text">{{ row.score }}%</td>
           </tr>
         </table>
+        <div v-else-if="!selectedRoundRobin" class="ranking-tables-no-data left-text">
+          Please select a round robin
+        </div>
         <div v-else class="ranking-tables-no-data left-text">
           Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
         </div>
@@ -1721,7 +1724,7 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+          if ((this.isCloser || this.isCloserMgr || this.isCloserRegional) && this.selectedRoundRobin) {
             const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
             await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
           }
