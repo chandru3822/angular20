@@ -1,6 +1,18 @@
 <template>
   <div v-if="loadComplete">
     <v-row>
+      <v-col
+        v-if="VUE_APP_ENV === 'uat'"
+        cols="12"
+        style="font-size: 18px; text-align: center; background-color: orange; color: white;"
+      >
+        THIS IS UAT - YOU SHOULD BE WORKING IN PRODUCTION
+        <v-btn
+            href="https://albatross.myblueraven.com"
+        >
+          CLICK HERE
+        </v-btn>
+      </v-col>
       <v-col cols="12" class="pt-0 pb-0">
         <Spinner v-if="$store.state.app.loading" :spinnerColor="'primaryCustom'" :size="100"></Spinner>
         <v-app-bar dense id="header" :color="headerColor" tabs dark>
@@ -122,7 +134,8 @@ export default {
         label: 'Smartlists',
         path: '/smartlist',
         feature: 'SMARTLIST'
-      }]
+      }],
+      VUE_APP_ENV
     }
   },
   created () {
