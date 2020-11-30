@@ -35,7 +35,7 @@ public class LoanPalService {
     log.info("LOANPAL: processing project {}", projectId);
 
     try {
-      JSONObject application = getApplicationByProjectId(projectId);
+      JSONObject application = getApplicationByProjectId(projectId.toString());
       String creditCheck = getCreditCheck(application);
 
       HashMap<String, Object> data = new HashMap<>();
@@ -75,7 +75,7 @@ public class LoanPalService {
     }
   }
 
-  public JSONObject getApplicationByProjectId(Long projectId) throws Exception {
+  public JSONObject getApplicationByProjectId(String projectId) throws Exception {
     String refNum = "";
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
@@ -85,7 +85,7 @@ public class LoanPalService {
         refNum = dealId.get().toString();
     }
     else {
-        refNum = projectId.toString();
+        refNum = projectId;
     }
 
     String uri = "/applications/reference/" + refNum;
