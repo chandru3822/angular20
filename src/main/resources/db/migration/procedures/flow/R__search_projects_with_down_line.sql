@@ -64,7 +64,7 @@ BEGIN
                    limited_projects.process_name,
                    limited_projects.contact
             FROM (
-                     with user_position_ids as (
+                     with project_ids as (
                          with positions as (
                              select up.org_id as parent_org_id
                              from flow.user_position up
@@ -76,9 +76,16 @@ BEGIN
                                   from positions p
                                            join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
                                                 on true)
-                         select distinct array_agg(up2.id) as user_position_ids
+                         select distinct array_agg(p.id) as project_ids
                          from org_ids o
-                                  inner join flow.user_position up2 on up2.org_id = o.id)
+                                  inner join flow.user_position up2 on up2.org_id = o.id
+                                inner join flow.project p on p.user_position_id = up2.id
+                         union
+                         select distinct array_agg(p.id) as project_ids
+                         from org_ids o
+                                  inner join flow.user_position up2 on up2.org_id = o.id
+                                  inner join flow.contact c on c.owner_user_position_id = up2.id
+                                  inner join flow.project p on p.contact_id = c.id)
                      select p.id,
                             p.project_name,
                             p.contact_id,
@@ -101,7 +108,7 @@ BEGIN
                                              c.mobile
                                   ) contact1)::jsonb as contact
                      from flow.project p
-                              inner join user_position_ids upi on p.user_position_id = any (upi.user_position_ids)
+                              inner join project_ids pi on p.id = any (pi.project_ids)
                               inner join flow.company_process cp on cp.id = p.company_process_id
                               inner join flow.process pr on pr.id = cp.process_id
                               inner join flow.status_type st on st.id = cp.status_type_id
@@ -181,22 +188,28 @@ BEGIN
                                   order by count(1) desc, sum(rank)
                               --    limit p_limit offset p_offset
                               ),
-                              user_position_ids as (
-                                  with positions as (
-                                      select up.org_id as parent_org_id
-                                      from flow.user_position up
-                                      where up.primary_flag is true
-                                        and user_id = p_user_id
-                                  ),
-                                       org_ids as (
-                                           select t.id
-                                           from positions p
-                                                    join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
-                                                         on true)
-                                  select distinct array_agg(up2.id) as user_position_ids
-                                  from org_ids o
-                                           inner join flow.user_position up2 on up2.org_id = o.id
-                              )
+                            project_ids as (
+                         with positions as (
+                             select up.org_id as parent_org_id
+                             from flow.user_position up
+                             where up.primary_flag is true
+                               and user_id = p_user_id
+                         ),
+                              org_ids as (
+                                  select t.id
+                                  from positions p
+                                           join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
+                                                on true)
+                         select distinct array_agg(p.id) as project_ids
+                         from org_ids o
+                                  inner join flow.user_position up2 on up2.org_id = o.id
+                                inner join flow.project p on p.user_position_id = up2.id
+                         union
+                         select distinct array_agg(p.id) as project_ids
+                         from org_ids o
+                                  inner join flow.user_position up2 on up2.org_id = o.id
+                                  inner join flow.contact c on c.owner_user_position_id = up2.id
+                                  inner join flow.project p on p.contact_id = c.id)
                          select p.id,
                                 p.project_name,
                                 p.contact_id,
@@ -220,7 +233,7 @@ BEGIN
                                       ) contact1)::jsonb as contact
                          from ranked_projects rp
                                   inner join flow.project p on p.id = rp.id
-                                  inner join user_position_ids upi on p.user_position_id = any (upi.user_position_ids)
+                                  inner join project_ids pi on p.id = any (pi.project_ids)
                                   inner join flow.company_process cp on cp.id = p.company_process_id
                                   inner join flow.process pr on pr.id = cp.process_id
                                   inner join flow.status_type st on st.id = cp.status_type_id

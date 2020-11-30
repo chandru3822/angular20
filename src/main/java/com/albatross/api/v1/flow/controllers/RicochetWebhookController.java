@@ -45,8 +45,8 @@ public class RicochetWebhookController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
         }
 
-        if (lead.getCustomer().getAddress().getZip().length() > 10) {
-            msg = "Character limit exceeded for Zip. The maximum number of characters allowed is 10.";
+        if (!lead.getCustomer().getAddress().getZip().isBlank() && lead.getCustomer().getAddress().getZip().length() > 10) {
+            msg = "Character limit exceeded for provided Zip \"" + lead.getCustomer().getAddress().getZip() + "\". The maximum number of characters allowed is 10.";
             log.error(msg);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
         }

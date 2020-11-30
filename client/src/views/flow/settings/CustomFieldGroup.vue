@@ -244,6 +244,7 @@
                                 :items="positions"
                                 :loading="positionsLoading"
                                 multiple
+                                clearable
                                 :readonly="!userCanEdit"
                                 :disabled="!userCanEdit"
                                 label="White Listed Positions"

@@ -114,6 +114,7 @@
       from flow.postal_code_zone pcz
       WHERE pcz.archived IS FALSE
       and pcz.company_id = :companyId
+      ORDER BY pcz.zone_name
     ]]>
   </closerDashboard.getAllRoundRobins>
 

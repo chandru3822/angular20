@@ -68,10 +68,10 @@
 
   <ricochetWebhook.getCompanyStateIdByStateAbbreviation><![CDATA[
     with company_state as (
-      select (case when :stateAbbreviation is not null then cs.id else null::integer end) id
+      select (case when :stateAbbreviation::character varying is not null then cs.id else null::integer end) id
       from flow.company_state cs
         inner join flow.state s on s.id = cs.state_id
-      where s.abbreviation = :stateAbbreviation
+      where s.abbreviation = :stateAbbreviation::character varying
         and cs.company_id = 3
     )
     select (case when (select id from company_state) is not null then (select id from company_state) else null::integer end) company_state_id
