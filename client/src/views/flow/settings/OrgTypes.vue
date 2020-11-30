@@ -35,7 +35,7 @@
           </div>
 
           <v-btn :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
-                 color="primary" class="white--text mr-2"
+                 color="primaryCustom" class="white--text mr-2"
                  @click="saveOrgType(newOrgType, true)">
             Save
           </v-btn>
@@ -83,7 +83,7 @@
                 <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
               </div>
               <v-btn :disabled="!item.orgType || !item.orgLevelId"
-                     color="primary" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
+                     color="primaryCustom" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
             </td>
           </template>
 
@@ -103,7 +103,7 @@
 
         </v-data-table>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -112,15 +112,13 @@
   import {AppMutations} from '@/stores/AppStore'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import orderBy from 'lodash.orderby'
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'
 
   export default {
     name: 'OrgTypes',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -150,6 +148,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -162,6 +161,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -175,14 +175,17 @@
             this.addType = false
             this.newOrgType = {}
             this.snackbar = getSnackbar('SUCCESS', 'Org Type Added')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             this.expanded = []
             this.snackbar = getSnackbar('SUCCESS', 'Org Type Updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

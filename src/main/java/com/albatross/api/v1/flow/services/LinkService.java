@@ -1,20 +1,18 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Link;
 import com.albatross.api.v1.flow.model.ProcessStepLink;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -38,6 +36,31 @@ public class LinkService {
     params.put("companyId", user.getCompanyId());
 
     List<Link> links = sqlCache.query("link.getLinksForCompany", params, Link.class);
+    return links;
+  }
+
+  public void updateOrderInProcessStep(List<ProcessStepLink> links) {
+    for(ProcessStepLink l : links){
+      updateTypeOrderInProcessStep(l);
+    }
+  }
+
+  public void updateTypeOrderInProcessStep(ProcessStepLink link) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", link.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("displayOrder", link.getDisplayOrder());
+
+    sqlCache.update("link.updateOrderInProcessStep", params);
+  }
+
+  public List<ProcessStepLink> getLinksForProcessStep(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<ProcessStepLink> links = sqlCache.query("link.getLinksForProcessStep", params, ProcessStepLink.class);
     return links;
   }
 

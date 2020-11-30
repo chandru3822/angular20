@@ -14,13 +14,10 @@ DECLARE
     v_clean_address_search_term VARCHAR;
     v_company_ids               INTEGER[];
 BEGIN
-    v_clean_name_search_term = lower(
-            trim(replace(replace(replace(replace(replace(p_searchterm, '*', ''), ',', ''), '.', ''), '&', ''), '  ',
-                         ' ')));
-    v_clean_phone_search_term = replace(replace(replace(replace(trim(p_searchterm), '-', ''), ')', ''), '(', ''), '.',
-                                        '');
+    v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
+    v_clean_phone_search_term = trim(translate(p_searchterm, '-(). ', ''));
     v_clean_email_search_term = lower(trim(p_searchterm));
-    v_clean_address_search_term = trim(lower(replace(replace(p_searchterm, '.', ''), ',', '')));
+    v_clean_address_search_term = trim(lower(translate(p_searchterm, '.,', '')));
     if p_is_parent then
         select array(select f.id from flow.company_hierarchy_filter_down(p_company_id) f)
         into v_company_ids;
@@ -33,7 +30,8 @@ BEGIN
             SELECT count(1) as count
             FROM flow.contact c
                      inner join flow.contact_type ct on ct.id = c.contact_type_id
-                     left join flow.state s on s.id = c.state_id
+                     left join flow.company_state cs on cs.id = c.company_state_id
+                     left join flow.state s on s.id = cs.state_id
                      left join flow.user_position up on up.id = c.owner_user_position_id
                      left join flow."user" u on u.id = up.user_id
             WHERE c.company_id = ANY (v_company_ids)
@@ -46,8 +44,8 @@ BEGIN
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
                       AND NOT v_clean_name_search_term ~ '^([0-9]+)$'
-                      AND concat(lower(translate(coalesce(c.first_name, ''), '*,.& ', '')) , ' ',
-                          lower(translate(coalesce(c.last_name, ''), '*,.& ', ''))) like
+                      AND lower(translate(coalesce(c.first_name, ''), '*,.& ', '')) || ' ' ||
+                          lower(translate(coalesce(c.last_name, ''), '*,.& ', '')) like
                           '%' || v_clean_name_search_term || '%'
                     union
                     SELECT c.id, 2 as rank
@@ -59,13 +57,13 @@ BEGIN
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
                       and v_clean_phone_search_term ~ '^([0-9]+)$'
-                      and trim(translate(c.phone, '()-+.', '')) LIKE '%' || v_clean_phone_search_term || '%'
+                      and trim(translate(c.phone, '()-+. ', '')) LIKE '%' || v_clean_phone_search_term || '%'
                     union
                     SELECT c.id, 4 as rank
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
-                      AND concat(lower(trim(translate(coalesce(c.street1, ''), '.,', ''))), ' ',
-                          lower(trim(translate(coalesce(c.street2, ''), '.,', ''))))
+                      AND lower(trim(translate(coalesce(c.street1, ''), '.,', ''))) || ' ' ||
+                          lower(trim(translate(coalesce(c.street2, ''), '.,', '')))
                         like '%' || v_clean_address_search_term || '%'),
                      ranked_contacts as (
                          select sc.id,
@@ -79,7 +77,8 @@ BEGIN
                 from ranked_contacts ranked
                          inner join flow.contact c on c.id = ranked.id
                          inner join flow.contact_type ct on ct.id = c.contact_type_id
-                         left join flow.state s on s.id = c.state_id
+                         left join flow.company_state cs on cs.id = c.company_state_id
+                         left join flow.state s on s.id = cs.state_id
                          left join flow.user_position up on up.id = c.owner_user_position_id
                          left join flow."user" u on u.id = up.user_id
                 where case when p_is_viewall is not true then u.id = p_userid else 1 = 1 end;

@@ -3,7 +3,7 @@
     <v-toolbar color="transparent" class="elevation-0">
       <v-toolbar-title>Notes</v-toolbar-title>
     </v-toolbar>
-    <v-card>
+    <v-card class="square-card">
       <v-toolbar flat dense color="white" class="elevation-0">
         <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
       </v-toolbar>
@@ -15,8 +15,8 @@
                     background-color="#F2F6F8"
                     filled v-model="note.note"></v-textarea>
         <div class="text-left mb-2">
-          <v-btn color="primary" class="white--text"
-                 :disabled="!note.note"
+          <v-btn color="primaryCustom" class="white--text"
+                 :disabled="!note.note || savingNote"
                  @click="saveNote(note)">Save</v-btn>
           <v-btn text v-if="note.note" @click="note={}">
             <span>cancel</span>
@@ -55,7 +55,7 @@
                           background-color="#F2F6F8"
                           filled v-model="item.note"></v-textarea>
               <div class="text-left mb-2">
-                <v-btn color="primary" class="white--text"
+                <v-btn color="primaryCustom" class="white--text"
                        :disabled="!item.note"
                        @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save</v-btn>
                 <v-btn text @click="[item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
@@ -125,7 +125,7 @@
                           No
                         </v-btn>
                         <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deleteNote(item, false)">
                           Yes
@@ -149,7 +149,7 @@
                           rows="1"
                           placeholder="Add a comment..." class="mt-1"></v-textarea>
               <div class="text-left py-2">
-                <v-btn color="primary white--text" @click="saveNote(item)"
+                <v-btn color="primaryCustom white--text" @click="saveNote(item)"
                        :disabled="!item.reply"
                 >
                   Save
@@ -167,7 +167,7 @@
                             background-color="#F2F6F8"
                             filled v-model="cn.note"></v-textarea>
                 <div class="text-left mb-2">
-                  <v-btn color="primary" class="white--text"
+                  <v-btn color="primaryCustom" class="white--text"
                          :disabled="!cn.note"
                          @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save</v-btn>
                   <v-btn text @click="[cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
@@ -231,9 +231,9 @@
                               No
                             </v-btn>
                             <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
-                              @click="deleteNote(cn, false)">
+                              @click="deleteNote(cn, true, item)">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -253,13 +253,14 @@
 
 
     </v-card>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-import Snackbar from '@/components/Snackbar.vue'
+import {AppMutations} from '@/stores/AppStore'
+
 import Vue2Filters from "vue2-filters";
 
 export default {
@@ -269,17 +270,18 @@ export default {
     showNotes: Boolean,
     showActivity: Boolean,
     primaryId: Number,
+    secondaryId: Number,
+    isWqtNote: Boolean,
     notes: Array,
     type: String
   },
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},
       addNote: false,
       note: {},
+      savingNote: false,
       userId: this.$store.state.user.details.id,
       noteOptions: [
         { label: 'Add Comment' },
@@ -296,26 +298,35 @@ export default {
     }
   },
   methods: {
-    async deleteNote(n, isChildNote) {
+    async deleteNote(n, isChildNote, item) {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         await deleteRequest(`/note/${n.id}`)
         n.archived = true
+        if(isChildNote) {
+          item.childNotes = item.childNotes.filter(cn => !cn.archived)
+        }
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Note')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async saveNote(n) {
       try {
+        this.savingNote = true
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
-        console.log('NOTE_HERE', n)
-        const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
+        let url = this.isWqtNote ? `/note/saveProjectProcessStepWorkQueueNote` : `/note/save${this.$props.type}Note`
+        const {data} = await postRequest(url, {
           primaryId: this.primaryId,
           id: n.reply ? null : n.id,
           note: n.reply ? n.reply : n.note,
-          parentId: n.reply ? n.id : null
+          parentId: n.reply ? n.id : null,
+          //these 2 fields are for pps pswqt notes which require 2 keys to save/get
+          projectProcessStepId: this.primaryId,
+          processStepWorkQueueTypeId: this.secondaryId,
         })
         // this.notes.unshift(data)
         if(n.reply) {
@@ -327,9 +338,13 @@ export default {
           this.note = {}
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.savingNote = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Note')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.savingNote = false
       }
     },
     filterNotes() {

@@ -30,13 +30,29 @@ public class ProcessStepStatusService {
   @Autowired
   SecurityService securityService;
 
-  public List<CompanyProcessStepStatusType> getStatusTypesForCompany() {
+  public List<CompanyProcessStepStatusType> getStatusTypesForCompany(Long projectId, Long projectProcessStepId) {
     User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    if(null != projectId) {
+      //had to change this so that a parent looking at a child project process step could will get the right statuses back
+      HashMap<String, Object> p1 = new HashMap<>();
+      p1.put("projectId", projectId);
+      companyId = sqlCache.queryForObject("project.getCompanyId", p1, Long.class);
+    } else if(null != projectProcessStepId) {
+      //had to change this so that a parent looking at a child project process step could will get the right statuses back
+      HashMap<String, Object> p2 = new HashMap<>();
+      p2.put("projectProcessStepId", projectProcessStepId);
+      companyId = sqlCache.queryForObject("projectProcessStep.getCompanyId", p2, Long.class);
+    }
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", companyId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
+    //if a projectId or projectProcessStepId is sent in, use that company even if isParent is true
+    params.put("parentOverride", null != projectId || null != projectProcessStepId);
 
     List<CompanyProcessStepStatusType> companyProcessStepStatusTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, CompanyProcessStepStatusType.class);
     return companyProcessStepStatusTypes;
@@ -51,6 +67,10 @@ public class ProcessStepStatusService {
 
   public Optional<CompanyProcessStepStatusType> getActiveType() {
       return sqlCache.get("processStepStatus.getActiveTypeForCompany", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), CompanyProcessStepStatusType.class);
+  }
+
+  public Optional<CompanyProcessStepStatusType> getCancelledType(Long companyId) {
+    return sqlCache.get("processStepStatus.getCancelledTypeForCompany", Map.of("companyId", companyId), CompanyProcessStepStatusType.class);
   }
 
   public void deleteType(Long typeId) {

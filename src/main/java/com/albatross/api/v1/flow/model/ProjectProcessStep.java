@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.model;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -10,9 +11,11 @@ public class ProjectProcessStep {
 
   //@TODO: This repeats a lot of the stuff the ProcessStep model does and should probably inherit from it
 
-  private Long projectProcessStepId, processStepId, projectId, processStepStatusTypeId, processStepProcessId, companyProcessStepStatusTypeId, uniqueBehaviorTypeId;
+  private Long projectProcessStepId, processStepId, projectId, processStepStatusTypeId, processStepProcessId, companyProcessStepStatusTypeId;
 
   private String processStepName, processStepStatusType;
+
+  private Date dateCreated;
 
   private LocalDate lastUpdated, processStepCompleteDate;
 

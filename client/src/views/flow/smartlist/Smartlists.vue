@@ -6,7 +6,7 @@
         <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text to="/smartlist/null" color="primary">
+          <v-btn text to="/smartlist/null" color="primaryCustom">
             <v-icon>add</v-icon>
             <span v-if="!constants.IS_MOBILE">Add Smartlist</span>
           </v-btn>
@@ -36,15 +36,14 @@
         <template #item="{item: smartlist}">
           <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
             <td class="text-left">{{smartlist.name}}</td>
-            <td class="text-left">{{smartlist.objectType}}</td>
-            <td class="text-left">{{smartlist.ownerId}}</td>
+            <td class="text-left">{{smartlist.viewObjectType}}</td>
+            <td class="text-left">{{smartlist.owner}}</td>
             <td class="text-left">{{smartlist.shared ? 'Yes' : 'No'}}</td>
           </tr>
         </template>
       </v-data-table>
     </v-col>
   </v-row>
-  <Snackbar :snackbar="snackbar"/>
 </v-container>
 </template>
 
@@ -52,13 +51,11 @@
 
 import {getRequest, getSnackbar, logError} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 export default {
   name: 'Smartlists',
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       constants,
@@ -67,8 +64,8 @@ export default {
       smartlists: [],
       headers: [
         {text: 'Name', value: 'name'},
-        {text: 'Type', value: 'companyObjectTypeId'},
-        {text: 'Owner', value: 'ownerId'},
+        {text: 'Table Display View', value: 'objectType'},
+        {text: 'Owner', value: 'owner'},
         {text: 'Public', value: 'shared'}
       ]
     }

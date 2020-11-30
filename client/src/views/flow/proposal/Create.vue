@@ -19,7 +19,7 @@
               <v-text-field v-model="prop.customerName" label="Customer Name"></v-text-field>
               <v-text-field v-model="prop.address" label="Address"></v-text-field>
               <v-text-field v-model="prop.city" label="City"></v-text-field>
-              <v-select v-model="prop.stateId"
+              <v-select v-model="prop.companyStateId"
                         class="mr-4"
                         :items="states"
                         no-data-text="No States Available"
@@ -194,21 +194,19 @@
         </v-card>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
 
   export default {
     name: 'Create',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         proposalIdIn: parseInt(this.$route.params.proposalId),
@@ -264,7 +262,7 @@
       }
     },
     async created () {
-      this.getStates()
+      this.getCompanyStates()
       this.getUtilityCompanies()
       this.getProducts()
       this.getPanels()
@@ -276,15 +274,16 @@
       }
     },
     methods: {
-      async getStates () {
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
+          const {data} = await getCompanyStates()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -297,6 +296,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Utility Companies')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -309,6 +309,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Products')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -320,6 +321,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Panels')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -331,6 +333,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Inverters')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -342,6 +345,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Adders')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -365,6 +369,7 @@
 
           const {data} = await putRequest(`/propTool/proposal`, prop)
           this.snackbar = getSnackbar('SUCCESS', prop.id ? 'Proposal Saved' : 'Proposal Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           this.$router.push({name: 'modify', params: {proposalId: data.id}})
 
@@ -372,6 +377,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', prop.id ? 'Error Updating Proposal' : 'Error Adding Proposal')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -386,6 +392,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Proposal')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -395,11 +402,13 @@
           // TODO: Update with Aurora validation
           const {data} = await getRequest(`/project/${this.prop.projectId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Aurora Design ID Valid')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Invalid Aurora Design ID')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -408,11 +417,13 @@
         try {
           const {data} = await getRequest(`/project/${this.prop.projectId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Project ID Valid')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Invalid Project ID')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

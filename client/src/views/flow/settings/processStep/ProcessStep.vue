@@ -25,7 +25,7 @@
         </v-toolbar>
         <router-view/>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -33,7 +33,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
@@ -43,7 +43,6 @@
     mixins: [Vue2Filters.mixin],
     components: {
       ProcessStepCustomFieldGroups,
-      Snackbar
     },
     data () {
       return {
@@ -77,6 +76,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

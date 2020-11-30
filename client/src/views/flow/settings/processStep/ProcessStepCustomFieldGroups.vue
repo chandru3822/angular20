@@ -82,7 +82,7 @@
             </div>
           </div>
           <v-btn
-              color="primary"
+              color="primaryCustom"
               class="white--text mr-2"
               :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
               @click="saveFieldGroup()">
@@ -124,17 +124,20 @@
                     </v-btn>
                   </td>
                   <td class="text-left">
-                    <v-text-field text
-                                  v-if="item.edit"
-                                  v-model="item.groupName">
-                      <template slot="append-outer">
-                        <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
-                        <v-icon @click="item.edit = false">clear</v-icon>
-                      </template>
-                    </v-text-field>
-                    <a style="text-decoration: underline;" v-else @click="item.edit = true">
-                      {{item.groupName}}
-                    </a>
+                    <div v-if="userCanEdit">
+                      <v-text-field text
+                                    v-if="item.edit"
+                                    v-model="item.groupName">
+                        <template slot="append-outer">
+                          <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
+                          <v-icon @click="item.edit = false">clear</v-icon>
+                        </template>
+                      </v-text-field>
+                      <a style="text-decoration: underline;" v-else @click="item.edit = true">
+                        {{item.groupName}}
+                      </a>
+                    </div>
+                    <span v-else>{{item.groupName}}</span>
                   </td>
                   <td><div class="item-icons">
                     <v-btn v-if="!item.eventTypeId && userCanAdd" small text @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
@@ -177,7 +180,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="deleteWithChecks(item, item.id, null)">
                             Yes
@@ -249,6 +252,7 @@
                           v-if="item.customFields && item.customFields.length > 0">
                     <div v-if="item.eventTypeId">Scheduling Tool Event Type: {{item.eventType}}</div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
+                               :disabled="!userCanEdit"
                                group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                               :key="index" class="pa-0"  color="transparent">
@@ -370,9 +374,9 @@
                                   No
                                 </v-btn>
                                 <v-btn
-                                    color="primary"
+                                    color="primaryCustom"
                                     text
-                                    @click="deleteWithChecks(cf, null, cf.id)">
+                                    @click="[addField=false, newField={}, deleteWithChecks(cf, null, cf.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -388,7 +392,7 @@
             </v-data-table>
           </v-col>
         </v-row>
-        <Snackbar :snackbar="snackbar"></Snackbar>
+
       </v-col>
     </v-row>
   </v-container>
@@ -398,7 +402,7 @@
   import Vue2Filters from 'vue2-filters'
   import draggable from 'vuedraggable'
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getEventTypes} from '@/services/scheduleService'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
@@ -412,7 +416,6 @@
     mixins: [Vue2Filters.mixin],
     components: {
       draggable,
-      Snackbar
     },
     props: {
       customFieldGroups: Array,
@@ -534,10 +537,12 @@
           }
           this.createNew = false
           this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Group')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -561,16 +566,19 @@
               this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
             }
             this.snackbar = getSnackbar('ERROR', errorMsg)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             this.fieldsInUse = []
             item.archived = true
             this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -579,10 +587,12 @@
         try {
           await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
           this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -591,11 +601,13 @@
         try {
           await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
           this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
           window.location.reload()
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Moving Field')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -623,6 +635,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -640,6 +653,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -655,6 +669,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -676,10 +691,12 @@
             await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
           }
           this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
@@ -696,10 +713,12 @@
           cfg.customFields.push(data)
           this.newField = {}
           this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -718,10 +737,12 @@
           this.addField = false
           this.parent = {}
           this.snackbar = getSnackbar('SUCCESS', 'Reference Field Assigned')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Assigning Reference Field')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -738,6 +759,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -752,6 +774,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -768,12 +791,14 @@
             await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
             this.localCustomFieldGroups = orderBy(this.localCustomFieldGroups, 'groupOrder')
             this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             // this componentKey forces the data-table component to re-render
             this.componentKey += 1
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Group Order')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -790,6 +815,7 @@
             this.positionsLoading = false
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -798,8 +824,10 @@
         this.$nextTick(() => {
           if (this.selectAll(field)) {
             field.whiteListedPositions = []
+            field.positionsChanged = true
           } else {
-            this.$set(field, 'whiteListedPositions', this.positions.map(p => p.id))
+            field.whiteListedPositions = cloneDeep(this.positions)
+            field.positionsChanged = true
           }
         })
       },

@@ -6,8 +6,7 @@ module.exports = {
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
       swSrc: 'client/src/service-worker.js',
-      swDest: 'service-worker.js',
-
+      swDest: 'service-worker.js'
     }
   }
 }

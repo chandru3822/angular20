@@ -1,11 +1,16 @@
 <template>
-<v-btn
-  :disabled="!proceed"
-  :loading="isResultLoading"
-  color="primary"
-  class="action-button"
-  @click="completeAction"
->{{ label }}</v-btn>
+  <v-btn
+    :disabled="!proceed"
+    :loading="isResultLoading"
+    color="primaryCustom"
+    class="action-button"
+    @click="completeAction"
+  >
+  {{ label }}
+    <span v-if="actionResult.alreadyTriggered">
+      <v-icon>check</v-icon>
+    </span>
+</v-btn>
 </template>
 
 <script>
@@ -25,7 +30,8 @@ export default {
   data () {
     return {
       isResultLoading: false,
-      proceed: false
+      proceed: false,
+      actionResult: {}
     }
   },
   methods: {
@@ -34,6 +40,7 @@ export default {
         this.isResultLoading = true
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/actionResult/${this.actionId}`)
         //verifying that a user has edit permissions to process steps to be able to click a button, might have to add an Actions permission eventually
+        this.actionResult = data
         this.proceed = data.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
       } catch (e) {
         logError(e)

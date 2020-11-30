@@ -10,7 +10,7 @@ BEGIN
   SELECT (
     select coalesce(sum(amount),0)
     from brs.payroll_adjustment  pca
-    where array[pca.project_id] <@ p_project_ids and
+    where pca.project_id = any (p_project_ids) and
           pca.payroll_id = p_payroll_id AND
           pca.payroll_adjustment_type_id = p_payroll_adjustment_type_id
   )

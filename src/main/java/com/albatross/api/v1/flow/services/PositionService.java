@@ -43,7 +43,7 @@ public class PositionService {
     return results;
   }
 
-  public List<Position> getSchedulingPositions() {
+  public List<Position> getSchedulablePositions() {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -52,7 +52,7 @@ public class PositionService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 
-    List<Position> results = sqlCache.query("position.getSchedulingPositions", params, Position.class);
+    List<Position> results = sqlCache.query("position.getSchedulablePositions", params, Position.class);
     return results;
   }
 
@@ -83,6 +83,8 @@ public class PositionService {
     params.put("orgTypeId", p.getOrgTypeId());
     params.put("position", p.getPosition());
     params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
+    params.put("scheduler", null != p.getScheduler() ? p.getScheduler() : false);
+    params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("createdById", user.getId());
     Long positionId = sqlCache.updateReturningId("position.insert", params, "id").longValue();
@@ -109,6 +111,8 @@ public class PositionService {
     params.put("orgTypeId", p.getOrgTypeId());
     params.put("position", p.getPosition());
     params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
+    params.put("scheduler", null != p.getScheduler() ? p.getScheduler() : false);
+    params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("id", p.getId());
     params.put("modifiedById", user.getId());
@@ -118,7 +122,7 @@ public class PositionService {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
         if(null != ac.getId()) {
           params.put("enabled", ac.isEnabled());
-          params.put("positionFeatureAccessControlId", ac.getAccessControlId());
+          params.put("id", ac.getId());
           sqlCache.update("position.updatePositionFeatureAccessControl", params);
         } else if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());

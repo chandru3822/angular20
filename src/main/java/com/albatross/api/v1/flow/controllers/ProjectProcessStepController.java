@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -24,6 +27,7 @@ public class ProjectProcessStepController {
   private final ProjectProcessStepService projectProcessStepService;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
+  private final ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
@@ -47,7 +51,7 @@ public class ProjectProcessStepController {
       ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
 
       if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
-          return new ResponseEntity<>(String.format("{\"canPerform\": %s}", false), HttpStatus.OK);
+          return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s}", false, null != action && action.getAlreadyTriggered()), HttpStatus.OK);
       }
 
       List<Long> requirementIds = action.getProcessStepLogicList().stream()
@@ -55,8 +59,8 @@ public class ProjectProcessStepController {
           .map(ProcessStepLogic::getProcessStepRequirementId)
           .collect(Collectors.toList());
       List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-      boolean canPerform = projectProcessStepService.canPerformAction(action, pps, requirements);
-      return new ResponseEntity<>(String.format("{\"canPerform\": %s}", canPerform), HttpStatus.OK);
+      ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, requirements);
+      return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s}", actionResult.getCanPerform(), actionResult.getAlreadyTriggered()), HttpStatus.OK);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
@@ -76,7 +80,8 @@ public class ProjectProcessStepController {
           .map(ProcessStepLogic::getProcessStepRequirementId)
           .collect(Collectors.toList());
       List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-      boolean canPerform = projectProcessStepService.canPerformAction(action, pps, requirements);
+      ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, requirements);
+      boolean canPerform = actionResult.getCanPerform();
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
@@ -89,7 +94,7 @@ public class ProjectProcessStepController {
 
   @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Long> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
-    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null), HttpStatus.OK);
+    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, true), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -126,11 +131,26 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        ProjectProcessStep currentStep = projectProcessStepService.getProjectProcessStep(projectProcessStepId);
-        projectProcessStepService.setStatus(currentStep, status.getProcessStepStatusTypeId(), status.getId());
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), new RuntimeException());
+    }
+  }
+
+  //i created a new one for this because where i am canceling from I don't know the companyStatusTypeId and stuff
+  @PostMapping(value = "/{projectProcessStepId}/cancel", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> cancelProjectProcessStepStatus(@PathVariable Long projectProcessStepId,
+                                                          @RequestBody Project project) {
+    try {
+      //get the company's cancelled status then call the existing function
+      Optional<CompanyProcessStepStatusType> type = processStepStatusService.getCancelledType(project.getCompanyId());
+      if(type.isPresent()) {
+        projectProcessStepService.setStatus(projectProcessStepId, ProcessStepStatusType.CANCELLED.id, type.get().getId());
+      }
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (RuntimeException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), new RuntimeException());
     }
   }
 }

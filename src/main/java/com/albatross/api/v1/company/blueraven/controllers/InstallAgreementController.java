@@ -59,7 +59,7 @@ public class InstallAgreementController {
   }
 
   @GetMapping(value = "/getProposalNumbers/{projectId}")
-  public List<InstallAgreementRepository.ProposalNumber> getProposalNumbers(@PathVariable Long projectId) {
+  public List<InstallAgreementRepository.ProposalInfo> getProposalNumbers(@PathVariable Long projectId) {
       return installAgreementRepository.getProposalNumbers(projectId);
   }
 

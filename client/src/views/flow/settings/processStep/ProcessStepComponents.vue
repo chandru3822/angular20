@@ -4,9 +4,9 @@
       <v-col cols="12">
         <v-row class="mb-2">
           <v-col cols="12">
-            <v-text-field color="primary"
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+            <v-text-field color="primaryCustom"
+                          :readonly="true"
+                          :disabled="true"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
             <div>
@@ -122,7 +122,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                color="primary"
+                                color="primaryCustom"
                                 text
                                 @click="deleteWorkQueueTypeFromStep(item)">
                                 Yes
@@ -169,7 +169,7 @@
 <!--                            No-->
 <!--                          </v-btn>-->
 <!--                          <v-btn-->
-<!--                            color="primary"-->
+<!--                            color="primaryCustom"-->
 <!--                            text-->
 <!--                            @click="[a.archived = true, deleteWorkQueueTypeFromStep(a.id)]">-->
 <!--                            Yes-->
@@ -206,52 +206,61 @@
                         @input="assignNewLink"
               ></v-select>
               <v-card flat v-if="processStep.links && processStep.links.length > 0">
-                <v-list v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
-                        :key="index">
-                  <v-list-item :class="{'shaded-row': index % 2}">
-                    <v-list-item-content>
-                      {{a.link}} | {{ a.url }}
-                    </v-list-item-content>
-                    <v-dialog
-                        v-if="userCanEdit"
-                        v-model="a.deleteConfirm"
-                        width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-list-item-action class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="headline grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
+                <draggable v-model="processStep.links" group="links"
+                           :disabled="!userCanEdit"
+                           id="link-draggable"
+                           @change="saveLinkOrder(processStep.links)"
+                           @start="drag=true" @end="drag=false">
+                  <v-list class="grab" v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
+                          :key="index">
+                    <v-list-item dense :class="{'shaded-row': index % 2}">
+                      <v-list-item-action>
+                        <v-icon>drag_handle</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-content>
+                        {{a.link}} | {{ a.url }}
+                      </v-list-item-content>
+                      <v-dialog
+                          v-if="userCanEdit"
+                          v-model="a.deleteConfirm"
+                          width="500">
+                        <template v-slot:activator="{ on }">
+                          <v-list-item-action class="clickable" v-on="on">
+                            <v-icon>delete</v-icon>
+                          </v-list-item-action>
+                        </template>
+                        <v-card>
+                          <v-card-title
+                              class="headline grey lighten-2"
+                              primary-title
+                          >
+                            Confirm
+                          </v-card-title>
 
-                        <v-card-text>
-                          Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
-                        </v-card-text>
+                          <v-card-text>
+                            Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
+                          </v-card-text>
 
-                        <v-divider></v-divider>
+                          <v-divider></v-divider>
 
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                              @click="a.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                              color="primary"
-                              text
-                              @click="[a.archived = true, deleteLinkFromStep(a.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </v-list-item>
-                </v-list>
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                @click="a.deleteConfirm = false">
+                              No
+                            </v-btn>
+                            <v-btn
+                                color="primaryCustom"
+                                text
+                                @click="[a.archived = true, deleteLinkFromStep(a.id)]">
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </v-list-item>
+                  </v-list>
+                </draggable>
               </v-card>
             </div>
           </v-col>
@@ -270,67 +279,75 @@
               </v-toolbar-items>
             </v-toolbar>
             <div class="pl-5">
-              <v-select v-if="addNewType"
+              <v-autocomplete v-if="addNewType"
                         v-model="newType.attachmentTypeId"
                         :items="availableAttachmentTypes"
                         label="Select Attachment Type"
                         item-text="attachmentType"
                         item-value="id"
                         @input="assignNewType"
-              ></v-select>
+              ></v-autocomplete>
               <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
-                <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"
-                        :key="index">
-                  <v-list-item :class="{'shaded-row': index % 2}">
-                    <v-list-item-content>
-                      {{a.attachmentType}}
-                    </v-list-item-content>
-                    <v-dialog
-                        v-if="userCanEdit"
-                        v-model="a.deleteConfirm"
-                        width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-list-item-action class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="headline grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
+                <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
+                           :disabled="!userCanEdit"
+                           id="attachment-draggable"
+                           @change="saveAttachmentTypeOrder(processStep.attachmentTypes)"
+                           @start="drag=true" @end="drag=false">
+                  <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"  :key="index">
+                    <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
+                      <v-list-item-action>
+                        <v-icon>drag_handle</v-icon>
+                      </v-list-item-action>
+                      <v-list-item-content>
+                        {{a.attachmentType}}
+                      </v-list-item-content>
+                      <v-dialog
+                          v-if="userCanEdit"
+                          v-model="a.deleteConfirm"
+                          width="500">
+                        <template v-slot:activator="{ on }">
+                          <v-list-item-action class="clickable" v-on="on">
+                            <v-icon>delete</v-icon>
+                          </v-list-item-action>
+                        </template>
+                        <v-card>
+                          <v-card-title
+                              class="headline grey lighten-2"
+                              primary-title
+                          >
+                            Confirm
+                          </v-card-title>
 
-                        <v-card-text>
-                          Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
-                        </v-card-text>
+                          <v-card-text>
+                            Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
+                          </v-card-text>
 
-                        <v-divider></v-divider>
+                          <v-divider></v-divider>
 
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                              @click="a.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                              color="primary"
-                              text
-                              @click="[a.archived = true, deleteTypeFromStep(a.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </v-list-item>
-                </v-list>
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                @click="a.deleteConfirm = false">
+                              No
+                            </v-btn>
+                            <v-btn
+                                color="primaryCustom"
+                                text
+                                @click="[a.archived = true, deleteTypeFromStep(a.id)]">
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </v-list-item>
+                  </v-list>
+                </draggable>
               </v-card>
             </div>
           </v-col>
         </v-row>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -338,7 +355,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+  import draggable from 'vuedraggable'
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -347,7 +364,7 @@
     mixins: [Vue2Filters.mixin],
     components: {
       ProcessStepCustomFieldGroups,
-      Snackbar
+      draggable,
     },
     data () {
       return {
@@ -411,6 +428,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
@@ -434,6 +452,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -443,10 +462,12 @@
           const {data} = await putRequest(`/processStep`, this.processStep)
           this.changesMade = false
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -462,6 +483,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -475,10 +497,12 @@
           this.addNewType = false
           this.newType = {}
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -488,10 +512,12 @@
           this.addNewType = false
           await deleteRequest(`/attachmentType/processStepType/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -500,13 +526,14 @@
         try {
           this.addNewLink = !this.addNewLink
           if(this.addNewLink){
-            const { data } = await getRequest(`/links/processStep/${this.$route.params.id}`)
+            const { data } = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
             this.availableLinks = data
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -520,10 +547,12 @@
           this.addNewLink = false
           this.newLink = {}
           this.snackbar = getSnackbar('SUCCESS', 'Link Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -533,10 +562,12 @@
           this.addNewLink = false
           await deleteRequest(`/links/processStep/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -552,6 +583,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -565,10 +597,12 @@
           this.addNewWorkQueueType = false
           this.newWorkQueueType = {}
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -601,10 +635,12 @@
           item.projectStatuses = data
           this.expanded = []
           this.snackbar = getSnackbar('SUCCESS', 'Project Status Types Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Project Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -615,10 +651,12 @@
           await deleteRequest(`/workQueueType/processStep/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -626,6 +664,60 @@
         return this.processStep?.workQueueTypes.filter(u => {
           return !u.archived
         })
+      },
+      async saveAttachmentTypeOrder (attachmentTypes) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+          // pull those needing to be saved out of list
+          let typesToSave = []
+          attachmentTypes.forEach((f, idx) => {
+            let order = idx + 1
+            if(f.displayOrder !== order){
+              f.displayOrder = order
+              typesToSave.push(f)
+            }
+          })
+          // save them here
+          if(typesToSave.length > 0) {
+            await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveLinkOrder (links) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+          // pull those needing to be saved out of list
+          let linksToSave = []
+          links.forEach((f, idx) => {
+            let order = idx + 1
+            if(f.displayOrder !== order){
+              f.displayOrder = order
+              linksToSave.push(f)
+            }
+          })
+          // save them here
+          if(linksToSave.length > 0) {
+            await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Links Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Links')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
     }
 
@@ -636,5 +728,9 @@
 .name-container {
   background-color: var(--v-rowShadeCustom-base) !important;
   border-radius: 5px;
+}
+#attachment-draggable .v-list, #link-draggable .v-list {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 </style>

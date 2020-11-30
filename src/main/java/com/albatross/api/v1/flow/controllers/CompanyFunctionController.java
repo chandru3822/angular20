@@ -1,9 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.FunctionType;
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
-import com.albatross.api.v1.flow.model.SystemValue;
 import com.albatross.api.v1.flow.services.CompanyFunctionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +30,16 @@ public class CompanyFunctionController {
     return companyFunctionService.getCompanyFunctions();
   }
 
+  @GetMapping(value = "/action", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFunction> getActionCompanyFunctions () {
+    return companyFunctionService.getCompanyFunctionsByType(FunctionType.ACTION.id);
+  }
+
+  @GetMapping(value = "/requirement", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFunction> getRequirementCompanyFunctions () {
+    return companyFunctionService.getCompanyFunctionsByType(FunctionType.REQUIREMENT.id);
+  }
+
   @DeleteMapping(value = "{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteCompanyFunction (@PathVariable Long id) {
     companyFunctionService.deleteCompanyFunction(id);
@@ -49,12 +59,6 @@ public class CompanyFunctionController {
   public CompanyFunctionParam saveParams (@PathVariable("id") Long functionId,
                           @RequestBody CompanyFunctionParam param) {
     return companyFunctionService.saveFunctionParams(functionId, param);
-  }
-
-  // this could be in a system value controller but i dont think it will be needed outside of functions??
-  @GetMapping(value = "/systemValues", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<SystemValue> getSystemValues () {
-    return companyFunctionService.getSystemValues();
   }
 
 }

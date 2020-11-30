@@ -5,20 +5,22 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
+import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,6 +32,8 @@ public class CustomFieldValueController {
   private final CustomFieldValueService customFieldValueService;
 
   private final ProjectProcessStepService projectProcessStepService;
+
+    private final ProjectService projectService;
 
   private final SecurityService securityService;
 
@@ -73,18 +77,7 @@ public class CustomFieldValueController {
       if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
           for (Long ppsId : ppsIds) {
-              Instant start = Instant.now();
-              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-              try {
-                  future.get();
-              } catch (Exception e) {
-                  log.error(e.getMessage());
-              }
-              Instant end = Instant.now();
-              log.info("");
-              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-              log.info("");
+              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
       }
 
@@ -115,18 +108,7 @@ public class CustomFieldValueController {
       if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
           for (Long ppsId : ppsIds) {
-              Instant start = Instant.now();
-              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-              try {
-                  future.get();
-              } catch (Exception e) {
-                  log.error(e.getMessage());
-              }
-              Instant end = Instant.now();
-              log.info("");
-              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-              log.info("");
+              projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
           }
       }
 
@@ -139,18 +121,7 @@ public class CustomFieldValueController {
                                                                           @PathVariable Long projectProcessStepId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
-    Instant start = Instant.now();
-    Future<Void> future = projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
-    try {
-        future.get();
-    } catch (Exception e) {
-        log.error(e.getMessage());
-    }
-    Instant end = Instant.now();
-    log.info("");
-    log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-    log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-    log.info("");
+    projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
 
 
     // grab all PPS where the updated fields are ancillary and perform auto triggers there
@@ -160,24 +131,47 @@ public class CustomFieldValueController {
     if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
         for (Long ppsId : ppsIds) {
-//            Don't re-check the ppsId we just previously did
+            // Don't re-check the ppsId we just previously did
             if (!ppsId.equals(projectProcessStepId)) {
-                start = Instant.now();
-                future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-                try {
-                    future.get();
-                } catch (Exception e) {
-                    log.error(e.getMessage());
-                }
-                end = Instant.now();
-                log.info("");
-                log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
-                log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
-                log.info("");
+                projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
             }
         }
     }
 
     return groups;
+  }
+
+  @PostMapping(value = "/project/{projectId}/customField/{customFieldId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> updateProjectCustomFieldValue(@RequestBody CustomFieldValue cfv,
+                                                              @PathVariable Long projectId,
+                                                              @PathVariable Long customFieldId) {
+    JSONObject result = new JSONObject();
+    try {
+        Optional<Project> project = projectService.getProject(projectId);
+        if (project.isPresent()) {
+            customFieldValueService.updateProjectCustomFieldValue(cfv, projectId, customFieldId);
+
+            // grab all PPS where the updated fields are ancillary and perform auto triggers there
+            ArrayList<Long> cfgaIds = new ArrayList<>();
+            cfgaIds.add(cfv.getCustomFieldGroupAssignmentId());
+            if (!cfgaIds.isEmpty()) {
+                List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+                for (Long ppsId : ppsIds) {
+                    projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+                }
+            }
+        }
+        else {
+            result.put("message", "User does not have access to this project.");
+            return ResponseEntity.badRequest().body(result.toString());
+        }
+
+    } catch (Exception e) {
+        result.put("message", e.getMessage());
+        return ResponseEntity.badRequest().body(result.toString());
+    }
+
+    result.put("message", "Custom field value successfully updated.");
+    return ResponseEntity.ok(result.toString());
   }
 }

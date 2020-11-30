@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Utilities</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newUtility = { utilityStates: [] }]" color="primary">
+            <v-btn text @click="[addNew = !addNew, newUtility = { utilityStates: [] }]" color="primaryCustom">
               <v-icon v-if="!addNew">add</v-icon>
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
@@ -116,7 +116,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[us.archived = true, us.deleteConfirm = false]">
                           Yes
@@ -181,7 +181,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deleteUtility(item.id)]">
                           Yes
@@ -196,13 +196,13 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getCompanyStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
@@ -211,9 +211,7 @@
   export default {
     name: 'Utilities',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         delay: 500,
@@ -238,7 +236,7 @@
     },
     created() {
       this.getUtilities()
-      this.getStates()
+      this.getCompanyStates()
     },
     methods: {
       async getUtilities() {
@@ -249,6 +247,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Utilities')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -257,10 +256,12 @@
         try {
           await deleteRequest(`/propTool/utility/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Utility Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Utility')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -269,7 +270,7 @@
           return !u.archived
         })
       },
-      async getStates () {
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getCompanyStates()
@@ -278,6 +279,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -292,6 +294,7 @@
           this.utilities = orderBy(this.utilities, [u => u.utilityCompany.toLowerCase()])
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Utility Saved' : 'Utility Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // reset the new fields
           this.addNew = false
@@ -301,6 +304,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', item.id ? 'Error Updating Utility' : 'Error Adding Utility')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

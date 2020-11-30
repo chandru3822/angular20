@@ -44,7 +44,9 @@ public class ScheduleService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     List<Long> combined = esp.getUserPositionIds();
-    combined.addAll(esp.getOrgIds());
+    if(null != esp.getOrgIds()) {
+      combined.addAll(esp.getOrgIds());
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
@@ -78,14 +80,24 @@ public class ScheduleService {
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("stateId", esp.getStateId());
+    params.put("companyStateId", esp.getCompanyStateId());
     params.put("eventTypeIds", esp.getEventTypeIds());
-    params.put("processStepStatusTypeIds", esp.getProcessStepStatusTypeIds());
+    params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.query("schedule.getProjects", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
+    return results;
+  }
+
+  public List<ListOfValue> getAvailableProjectResource(ScheduleController.ResourceRequest req) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", req.getCompanyId());
+    params.put("systemListId", req.getSystemListId());
+    params.put("resourceId", req.getResourceId());
+    params.put("systemListOptionIds", req.getSystemListOptionIds());
+    List<ListOfValue> results = sqlCache.query("schedule.getAvailableProjectResources", params, ListOfValue.class);
     return results;
   }
 
@@ -125,8 +137,8 @@ public class ScheduleService {
       User user = securityService.getCurrentUser();
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectProcessStepId", ev.getProjectProcessStepId());
-      params.put("modifiedById", user.getId());
-      params.put("createdById", user.getId());
+      params.put("userId", user.getId());
+      params.put("sourceId", ev.getProjectProcessStepId());
 
       //default values so we can call the same query all the other ones do
       params.put("dateValue", null);
@@ -140,13 +152,9 @@ public class ScheduleService {
       // save the start time
       params.put("timestampValue", ev.getStart());
       params.put("customFieldGroupAssignmentId", ev.getStartCustomFieldGroupAssignmentId());
-      if(null != ev.getStartCustomFieldValueId()) {
-        params.put("id", ev.getStartCustomFieldValueId());
-        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
-      } else {
-        params.put("sourceId", ev.getProjectProcessStepId());
-        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
-      }
+      // this can be null for new values
+      params.put("id", ev.getStartCustomFieldValueId());
+      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
 
       // reset the params - although i dont think this is actually necessary
       params.remove("customFieldGroupAssignmentId");
@@ -156,12 +164,9 @@ public class ScheduleService {
       // save the end time
       params.put("timestampValue", ev.getEnd());
       params.put("customFieldGroupAssignmentId", ev.getEndCustomFieldGroupAssignmentId());
-      if(null != ev.getEndCustomFieldValueId()) {
-        params.put("id", ev.getEndCustomFieldValueId());
-        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
-      } else {
-        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
-      }
+      params.put("id", ev.getEndCustomFieldValueId());
+      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
+
 
       // reset the params - although i dont think this is actually necessary
       params.remove("customFieldGroupAssignmentId");
@@ -171,12 +176,8 @@ public class ScheduleService {
       // save the resourceId
       params.put("intValue", ev.getResourceId());
       params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldGroupAssignmentId());
-      if(null != ev.getResourceCustomFieldValueId()) {
-        params.put("id", ev.getResourceCustomFieldValueId());
-        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
-      } else {
-        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
-      }
+      params.put("id", ev.getResourceCustomFieldValueId());
+      sqlCache.update("customFieldValues.process_step.upsertCustomFieldValue", params);
     }
 
   }
@@ -194,6 +195,10 @@ public class ScheduleService {
       TypeReference<List<ListOfValue>> resourcesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "resources",
           new JsonCollectionDeserializer(resourcesRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds",
+        new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
     }
   }
 

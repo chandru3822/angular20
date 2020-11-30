@@ -1,0 +1,76 @@
+<sql>
+    <electronicDocument.getAhjQueryStr>
+        <![CDATA[
+            select s.abbreviation || ' - ' || ah.name
+                from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
+                inner join brs.ahj ah on ah.id = pd.ahj
+                left outer join flow.company_state cs on cs.id = p.company_state_id
+                left outer join flow.state s on s.id = cs.state_id
+            where pd.project_id = :projectId
+        ]]>
+    </electronicDocument.getAhjQueryStr>
+
+    <electronicDocument.getUtilityQueryStr>
+        <![CDATA[
+            select s.abbreviation || ' - ' || au.name
+                from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
+                inner join brs.ahj_utility au on au.id = pd.utility_company
+                left outer join flow.company_state cs on cs.id = p.company_state_id
+                left outer join flow.state s on s.id = cs.state_id
+            where pd.project_id = :projectId
+        ]]>
+    </electronicDocument.getUtilityQueryStr>
+
+    <electronicDocument.getChangeOrderQueryStr>
+        <![CDATA[
+            select s.state || '_Change Order_Generic'
+                from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
+                left outer join flow.company_state cs on cs.id = p.company_state_id
+                left outer join flow.state s on s.id = cs.state_id
+            where pd.project_id = :projectId
+        ]]>
+    </electronicDocument.getChangeOrderQueryStr>
+
+    <electronicDocument.getStateQueryStr>
+        <![CDATA[
+            select s.abbreviation
+                from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
+                left outer join flow.company_state cs on cs.id = p.company_state_id
+                left outer join flow.state s on s.id = cs.state_id
+            where pd.project_id = :projectId
+        ]]>
+    </electronicDocument.getStateQueryStr>
+
+    <electronicDocument.getProjects>
+        <![CDATA[
+            SELECT *
+            FROM brs.get_request_for_installation_agreements(:view_all, :user_id, :isParent, :companyId, :parentCompanyId,
+                :query, :limit, :offset)
+        ]]>
+    </electronicDocument.getProjects>
+
+    <electronicDocument.getProjectsCount>
+        <![CDATA[
+            SELECT *
+            FROM brs.get_request_for_installation_agreements_count(:view_all, :user_id, :isParent, :companyId,
+                :parentCompanyId, :query)
+        ]]>
+    </electronicDocument.getProjectsCount>
+
+    <electronicDocument.getProjectsDetails>
+        <![CDATA[
+            SELECT p.id, p.project_name, p.street1, p.street2, p.city,
+                   s.state, s.abbreviation, p.postal_code, c.first_name,
+                   c.last_name, c.email, c.phone
+            FROM flow.project p INNER JOIN flow.company_state cs on p.company_state_id = cs.id
+                                INNER JOIN flow.state s on cs.state_id = s.id
+                                INNER JOIN flow.contact c on p.contact_id = c.id
+            where p.id = :projectId
+        ]]>
+    </electronicDocument.getProjectsDetails>
+
+</sql>

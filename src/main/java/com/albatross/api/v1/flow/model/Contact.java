@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Contact {
 
-  private Long id, contactBaseId, companyId, contactTypeId, stateId, countryId;
+  private Long id, contactBaseId, companyId, contactTypeId, companyStateId, companyCountryId;
   private String firstName, lastName, fullName, email,
       street1, street2, city, state, postalCode, country,
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,

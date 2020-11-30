@@ -39,10 +39,22 @@ public class ProjectController {
       .orElse(ResponseEntity.notFound().build());
   }
 
+  @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Owner> getOwners() {
+    return projectService.getOwners();
+  }
+
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProject(@RequestBody Project project) {
 //    currently only saves the address fields
     projectService.updateProject(project);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PutMapping(value = "/{projectId}/owner", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateProjectOwner(@PathVariable Long projectId,
+                                                 @RequestBody Owner owner) {
+    projectService.updateProjectOwner(projectId, owner);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
@@ -62,11 +74,6 @@ public class ProjectController {
                                                    @RequestParam Long attachmentTypeId,
                                                    @RequestParam("file") MultipartFile file) throws IOException {
     return new ResponseEntity<>(projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
-  }
-
-  @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Owner>> getAvailableProjectOwners() {
-    return new ResponseEntity<>(projectService.getOwners(), HttpStatus.OK);
   }
 
   @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)

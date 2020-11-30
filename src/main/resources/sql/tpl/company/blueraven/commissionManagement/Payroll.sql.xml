@@ -52,7 +52,7 @@
                              THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
                          ELSE 1 = 1 END
                 AND CASE WHEN :projectId:: INTEGER IS NOT NULL
-                             THEN p.id = :projectId:: INTEGER ELSE 1 = 1 END
+                             THEN prj.id = :projectId:: INTEGER ELSE 1 = 1 END
 
               GROUP BY p.id, p.period_end
               ORDER BY p.period_end desc) AS sub_rows
@@ -99,10 +99,18 @@
     ]]></payroll.setStatus>
 
     <payroll.status><![CDATA[
-    SELECT p.payroll_status_id
-    FROM brs.payroll p
-    WHERE p.id = :payrollId
+        SELECT p.payroll_status_id
+        FROM brs.payroll p
+        WHERE p.id = :payrollId
     ]]></payroll.status>
+
+    <payroll.overridesOpen><![CDATA[
+        SELECT * FROM brs.get_all_users_overrides_earned_in_open_payroll(:payrollId::integer)
+    ]]></payroll.overridesOpen>
+
+    <payroll.overridesSnapshot><![CDATA[
+        SELECT * FROM brs.get_all_users_overrides_earned_in_payroll_snapshot(:payrollId::integer)
+    ]]></payroll.overridesSnapshot>
 
     <payroll.addActionHistory><![CDATA[
     INSERT INTO brs.payroll_action_history (payroll_id, payroll_action_type_id, action_date, note, user_id)
@@ -127,8 +135,6 @@
 
     <payroll.getCurrentSummary><![CDATA[
         SELECT brs.get_commission_summary()
-        FROM brs.payroll p
-        WHERE p.current is true
     ]]></payroll.getCurrentSummary>
 
     <payroll.getSummary><![CDATA[
@@ -142,7 +148,7 @@
     <payroll.getAccountReview><![CDATA[
      SELECT array_to_json(array_agg(row_to_json(sub_rows)))
 FROM (SELECT *
-      FROM brs.get_commission_account_details(:payrollId::int, :projectId::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
+      FROM brs.get_commission_account_details(:payrollId::int, :selectedProjectIds::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
     ]]></payroll.getAccountReview>
 
     <payroll.getPayrollSearchDetail><![CDATA[

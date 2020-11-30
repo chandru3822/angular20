@@ -36,7 +36,7 @@
       </v-card>
     </v-dialog>
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" class="shrink pt-0">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -61,11 +61,11 @@
               :items="filterCustomFieldGroups()"
               :items-per-page="-1"
               single-expand
-              :sort-by="['groupOrder']"
+              :sort-by="['companyObjectTypeTabDisplayOrder', 'groupOrder']"
               :sort-desc="[false]"
               :expanded.sync="expanded"
               hide-default-footer
-              hide-default-header
+              :hide-default-header="!isProject"
               class="elevation-1 fix-column-width-bug mb-5"
           >
             <template #no-data>
@@ -87,17 +87,36 @@
                   <v-text-field text
                                 v-if="item.edit"
                                 v-model="item.groupName">
-                    <template slot="append-outer">
-                      <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
-                      <v-icon @click="item.edit = false">clear</v-icon>
-                    </template>
                   </v-text-field>
-                  <a style="text-decoration: underline;" v-else @click="item.edit = true">
-                    {{item.groupName}}
-                  </a>
+                  <span v-else>{{item.groupName}}</span>
+                </td>
+                <td class="text-left">
+                  <v-select v-if="item.edit && isProject"
+                            v-model="item.companyObjectTypeTabId"
+                            :items="objectTypeTabs"
+                            label="Tab"
+                            item-text="tabName"
+                            item-value="id"
+                            autocomplete="off">
+                  </v-select>
+                  <span v-if="!item.edit && isProject">
+                    {{item.tabName || 'n/a'}}
+                  </span>
                 </td>
                 <td>
                   <div class="item-icons">
+                    <div v-if="userCanEdit" class="flex-display">
+                      <v-btn small text
+                             @click="item.edit = !item.edit">
+                        <v-icon v-if="item.edit">remove</v-icon>
+                        <v-icon v-else>edit</v-icon>
+                      </v-btn>
+                      <v-btn small text
+                             v-if="item.edit"
+                             @click="[saveGroup(item), item.edit = false]">
+                        <v-icon>save</v-icon>
+                      </v-btn>
+                    </div>
                     <v-btn small text
                            v-if="userCanAdd"
                            @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
@@ -137,7 +156,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="deleteWithChecks(item, item.id, null)">
                             Yes
@@ -153,13 +172,13 @@
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
                 <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
-                  <v-radio-group v-if="$route.params.id === '1'" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
+                  <v-radio-group v-if="isProject" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
                     <v-radio label="Project Custom Field"
                              value="native"></v-radio>
                     <v-radio label="Reference Field: from Process Step"
                              value="ancillary"></v-radio>
                   </v-radio-group>
-                  <v-autocomplete v-if="newFieldType === 'native' || $route.params.id !== '1'"
+                  <v-autocomplete v-if="newFieldType === 'native' || !isProject"
                                   v-model="newField"
                                   :items="availableCustomFields"
                                   label="New Custom Field"
@@ -172,7 +191,7 @@
                       {{ item.fieldName }}
                     </template>
                   </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="parent"
                                   :items="parentObjects"
                                   label="Parent Object"
@@ -185,7 +204,7 @@
                       {{ item.processStepName }}
                     </template>
                   </v-autocomplete>
-                  <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                  <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
                                   label="Custom Field"
@@ -202,6 +221,7 @@
                 <v-col  cols="12" justify="center"  class="px-3 py-0" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
                   <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
+                             :disabled="!userCanEdit"
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                     <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
@@ -224,6 +244,7 @@
                                 :items="positions"
                                 :loading="positionsLoading"
                                 multiple
+                                clearable
                                 :readonly="!userCanEdit"
                                 :disabled="!userCanEdit"
                                 label="White Listed Positions"
@@ -271,7 +292,7 @@
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                           </div>
-                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
+                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && !isProject">
                             <input type="checkbox" v-model="cf.showOnInsert" :readonly="!userCanEdit"
                                    :disabled="!userCanEdit" @change="updateShowOnInsert(cf)">
                             Show On Insert
@@ -327,7 +348,7 @@
                                 No
                               </v-btn>
                               <v-btn
-                                  color="primary"
+                                  color="primaryCustom"
                                   text
                                   @click="deleteWithChecks(cf, null, cf.id)">
                                 Yes
@@ -342,79 +363,9 @@
               </td>
             </template>
           </v-data-table>
-        <v-divider v-if="$route.params.id === '1'"></v-divider>
-        <v-row v-if="$route.params.id === '1'">
-          <v-col cols="12" class="pt-0">
-            <v-toolbar flat>
-              <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <v-btn text @click="getAttachmentTypesForProjects" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <v-icon v-if="!addNewType">add</v-icon>
-                  {{ addNewType ? 'Cancel' : 'Add Type'}}
-                </v-btn>
-              </v-toolbar-items>
-            </v-toolbar>
-            <v-select v-if="addNewType"
-                      v-model="newType.attachmentTypeId"
-                      :items="availableAttachmentTypes"
-                      label="Select Attachment Type"
-                      item-text="attachmentType"
-                      item-value="id"
-                      @input="assignNewType"
-            ></v-select>
-            <v-card flat >
-              <v-list v-for="(a, index) in filterBy(projectAttachmentTypes, false, 'archived')"
-                      :key="index">
-                <v-list-item :class="{'shaded-row': index % 2}">
-                  <v-list-item-content>
-                    {{a.attachmentType}}
-                  </v-list-item-content>
-                  <v-dialog
-                      v-model="a.deleteConfirm"
-                      width="500">
-                    <template v-slot:activator="{ on }">
-                      <v-list-item-action class="clickable" v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-list-item-action>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title
-                      >
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            @click="a.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            text
-                            @click="[a.archived = true, deleteAttachmentType(a.id)]">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-col>
-        </v-row>
       </v-container>
     </v-col>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -425,7 +376,7 @@ import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
-import Snackbar from '@/components/Snackbar.vue'
+
 import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
@@ -434,7 +385,9 @@ export default {
   mixins: [Vue2Filters.mixin],
   components: {
     draggable,
-    Snackbar
+  },
+  props: {
+    isProject: Boolean
   },
   data () {
     return {
@@ -456,6 +409,8 @@ export default {
       newGroup: {
         groupName: null
       },
+      //ugh! is this a good idea? projects is a custom view that calls this but orgs/users/contacts do too and i dont want to add a view for each of those
+      typeId: this.$route.params.id ?? this.$route.query.companyObjectTypeId,
       addField: false,
       newField: {},
       customFieldGroups: [],
@@ -466,6 +421,7 @@ export default {
       headers: [
         { text: null, value: 'draggable', width: '50px', show: true },
         { text: 'Name', value: 'groupName', show: true },
+        { text: 'Tab', value: 'tabName', show: true },
         { text: null, value: 'icons', show: true }
       ],
       expanded: [],
@@ -473,11 +429,7 @@ export default {
       parentObjects: [],
       selectedAncillaryField: {},
       ancillaryCustomFields: [],
-
-      addNewType: false,
-      newType: {},
-      availableAttachmentTypes: [],
-      projectAttachmentTypes: []
+      objectTypeTabs: []
     }
   },
   mounted() {
@@ -500,13 +452,14 @@ export default {
     // whenever objectTypeId changes, this function will run
     '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
       // reset the selected group when the object type changes
+      this.typeId = this.$route.params.id ?? this.$route.query.companyObjectTypeid
       this.availableCustomFields = []
       this.getCustomFieldGroups()
     }
   },
   created () {
     this.getCustomFieldGroups()
-    this.getProjectAttachmentTypes()
+    this.getObjectTypeTabs()
   },
   methods: {
     selectAll (f) {
@@ -524,12 +477,27 @@ export default {
       }
       return 'check_box_outline_blank'
     },
+    async getObjectTypeTabs() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //currently we only do this for projects.. will have to change if we allow custom tabs for other object types
+        const {data} = await getRequest(`/objectTypeTab/project`)
+        this.objectTypeTabs = data
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Tabs')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
-            companyObjectTypeId: this.$route.params.id
+            companyObjectTypeId: this.typeId
           }
         })
         this.customFieldGroups = cloneDeep(data)
@@ -537,6 +505,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -546,7 +515,7 @@ export default {
         if(this.addField && this.newFieldType === 'native') {
           const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
             params: {
-              companyObjectTypeId: this.$route.params.id,
+              companyObjectTypeId: this.typeId,
               groupId
             }
           })
@@ -561,23 +530,26 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async addCustomFieldGroup () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.newGroup.companyObjectTypeId = this.$route.params.id
+        this.newGroup.companyObjectTypeId = this.$route.params.id ?? this.$route.query.companyObjectTypeId
         const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
         this.newGroup = {}
         this.addNew = false
         // add the new type to the list
         this.customFieldGroups.push(data)
         this.snackbar = getSnackbar('SUCCESS', 'Group Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Custom Field Group')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -594,10 +566,12 @@ export default {
         this.addField = false
         this.snackbar = getSnackbar
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -606,11 +580,13 @@ export default {
       try {
         await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
         this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
         window.location.reload()
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Moving Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -629,10 +605,12 @@ export default {
         this.parent = {}
         this.addField = false
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -641,22 +619,28 @@ export default {
       try {
         await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups)
         this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Group Changes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveGroupName (group) {
+    async saveGroup (group) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
+        const {data} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+        group.tabName = data.tabName
+        group.companyObjectTypeTabDisplayOrder = data.companyObjectTypeTabDisplayOrder
+        this.snackbar = getSnackbar('SUCCESS', 'Custom Field Group Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -680,16 +664,19 @@ export default {
             this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
           }
           this.snackbar = getSnackbar('ERROR', errorMsg)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } else {
           this.fieldsInUse = []
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -705,6 +692,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -726,10 +714,12 @@ export default {
           await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
 
@@ -745,10 +735,12 @@ export default {
         }
         await putRequest(`/customFieldGroup/updateFieldShowOnInsert`, objectType)
         this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -761,69 +753,11 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getProjectAttachmentTypes () {
-      //this one loads attachment types already assigned to a project
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data } = await getRequest(`/attachmentType/projectTypes`)
-        this.projectAttachmentTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getAttachmentTypesForProjects () {
-      //this one loads attachment types AVAILABLE TO BE assigned to a project ...idk maybe this should be one function
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = !this.addNewType
-        if(this.addNewType){
-          const { data } = await getRequest(`/attachmentType/typesForProjects`)
-          this.availableAttachmentTypes = data
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async assignNewType () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newType.processStepId = this.$route.params.id
-        const { data } = await postRequest(`/attachmentType/projectType`, this.newType)
-        this.projectAttachmentTypes.push(data)
-        // reset fields
-        this.addNewType = false
-        this.newType = {}
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteAttachmentType (id) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.addNewType = false
-        await deleteRequest(`/attachmentType/projectType/${id}`)
-        // this.availableAttachmentTypes = data
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+
     async getPositions() {
       if(this.positions?.length === 0) {
         try {
@@ -836,6 +770,7 @@ export default {
           this.positionsLoading = false
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -845,7 +780,8 @@ export default {
         if (this.selectAll(field)) {
           field.whiteListedPositions = []
         } else {
-          this.$set(field, 'whiteListedPositions', this.positions.map(p => p.id))
+          field.whiteListedPositions = cloneDeep(this.positions)
+          field.positionsChanged = true
         }
       })
     },

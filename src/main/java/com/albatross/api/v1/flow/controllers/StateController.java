@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.State;
+import com.albatross.api.v1.flow.model.CompanyState;
 import com.albatross.api.v1.flow.services.StateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +23,22 @@ public class StateController {
   private StateService stateService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<State> getAllStates() {
+  public List<CompanyState> getAllStates() {
     return stateService.getAllStates();
   }
 
-  @GetMapping(value = "/allForCompany", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<State> getAllStatesByCompany() {
-    return stateService.getAllStatesByCompany();
+  @GetMapping(value = "/available", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyState> getAvailableStates() {
+    return stateService.getAvailableStates();
+  }
+
+  @GetMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyState> getAllCompanyStates(@RequestParam(required = false) Long companyId) {
+    return stateService.getAllCompanyStates(companyId);
   }
 
   @PutMapping(value = "/saveCompanyState", produces = MediaType.APPLICATION_JSON_VALUE)
-  public State saveCompanyState(@RequestBody State state) {
+  public CompanyState saveCompanyState(@RequestBody CompanyState state) {
     return stateService.saveCompanyState(state);
   }
 
@@ -43,12 +48,12 @@ public class StateController {
   }
 
   @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<State> getActiveStatesByCompany() {
+  public List<CompanyState> getActiveStatesByCompany() {
     return stateService.getActiveStatesByCompany();
   }
 
   @GetMapping(value = "/activeByHierarchy", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<State> getActiveStatesByHierarchy() {
+  public List<CompanyState> getActiveStatesByHierarchy() {
     return stateService.getActiveStatesByHierarchy();
   }
 

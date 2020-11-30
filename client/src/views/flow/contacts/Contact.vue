@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pt-0">
+  <v-container class="pt-0" v-if="contact && contact.id">
     <v-row class="contact-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
         <div class="contact-title">
@@ -15,7 +15,7 @@
                 <template v-slot:activator="{ on: tooltip }">
                   <div v-on="{ ...tooltip }" class="d-inline-block">
                     <v-btn v-on="{ ...menu }"
-                           color="primary"
+                           color="primaryCustom"
                            :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
                            class="white--text"
                            @click="getAvailableProcesses">
@@ -56,7 +56,7 @@
                 color="grey lighten-4"
                 class="account-img mr-2"
             >
-              <img name="accountImg" src="../../../assets/user_img_placeholder.png">
+              <img name="accountImg" src="../../../assets/flow/user_img_placeholder.png">
             </v-avatar>
             {{contact.owner.fullName}}<br/>
             {{contact.owner.position}}
@@ -95,7 +95,8 @@
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn text v-if="userCanEdit"
-                     @click="saveContact">Save</v-btn>
+                     :disabled="fieldsSaving"
+                     @click="[fieldsSaving = true, saveContact()]">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -122,7 +123,7 @@
                             @change="addressChanged = true"
                             :readonly="!userCanEdit"
                             v-model="contact.city"></v-text-field>
-              <v-select v-model="contact.stateId"
+              <v-select v-model="contact.companyStateId"
                         :items="states"
                         label="State"
                         :readonly="!userCanEdit"
@@ -188,24 +189,39 @@
         ></NotesAndActivity>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
+  <v-row align="center" justify="center" v-else-if="!contactLoading">
+    <v-col cols="12" sm="8">
+      <v-card color="secondaryMaster" class="elevation-12 pb-5">
+        <v-toolbar dark color="red">
+          <v-toolbar-title>Error</v-toolbar-title>
+        </v-toolbar>
+        <v-card-text class="login-card-text">
+          This contact either doesn't exist or you don't have access to it in this context.
+        </v-card-text>
+        <v-card-actions class="justify-center">
+          <v-btn to="/contacts">Click here to go back to Contacts</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import {getStates} from '@/services/stateService'
+import {getCompanyStates} from '@/services/stateService'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 export default {
   name: 'Contact',
   components: {
-    Snackbar,
+
     CustomValueInput,
     NotesAndActivity,
     DatetimePickerInput
@@ -216,14 +232,16 @@ export default {
       states: [],
       contact: {},
       addressChanged: false,
+      contactLoading: true,
       customFieldGroups: [],
       notes: [],
+      fieldsSaving: false,
       dirtyCfvs: [],
       owners: [],
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
-      timezone: this.$store.state.user.details.timezone.value,
+      timezone: this.$store.state.user.details.timezone?.value,
       changeOwner: false,
       selectedProcess: null,
       availableProcesses: []
@@ -231,7 +249,7 @@ export default {
   },
   created () {
     this.getContact()
-    this.getStates()
+    this.getCompanyStates()
     this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
@@ -242,16 +260,30 @@ export default {
       try {
       // save contact
         const {data} = await postRequest(`/contact`, this.contact)
-      // save dirty custom field values
-        await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
+        this.contact.projects = data.projects
+        await this.saveCustomFieldValues()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.fieldsSaving = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveCustomFieldValues () {
+      try {
+        // save dirty custom field values
+        const {data} = await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.addressChanged = false
-        //this line reloads the contact so we dont have to reset the cfgs
-        this.$router.push({name: 'contact', params: {id: data.id}})
+        this.customFieldGroups = data
+        this.fieldsSaving = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.fieldsSaving = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -270,6 +302,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -278,24 +311,31 @@ export default {
       try {
         const {data} = await getRequest(`/contact/${this.contactId}`)
         this.contact = data
-
+        this.contactLoading = false
+        window.document.title = `Contact - ${this.contact.fullName}`
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
+        this.contactLoading = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getOwners () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/contact/owners`)
+        let params = {
+          contactId: parseInt(this.contactId)
+        }
+        const {data} = await getRequestWithParams(`/contact/owners`, { params })
         this.owners = data
 
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -310,6 +350,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -323,19 +364,24 @@ export default {
         this.contact.owner = {}
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getAvailableProcesses () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/processes`)
+        let params = {
+          contactId: parseInt(this.contactId)
+        }
+        const {data} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
 
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -344,23 +390,26 @@ export default {
       try {
         const {data} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$router.push({name: 'projectDetails', params: {projectId: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Converting Contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getStates () {
+    async getCompanyStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getStates()
+        const {data} = await getCompanyStates()
         this.states = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

@@ -6,7 +6,8 @@
           <v-toolbar-title class="app-title">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-select
+            <v-autocomplete
+              v-if="$store.getters.userHasFeature('SMARTLIST')"
               v-model="selectedSmartlistId"
               :items="smartlists"
               item-text="name"
@@ -14,7 +15,7 @@
               class="smartlist-selector pt-3"
             />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
-                   to="/newContact" color="primary">
+                   to="/newContact" color="primaryCustom">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Contact</span>
             </v-btn>
@@ -84,7 +85,7 @@
               <td class="text-left">{{item.fullName}}</td>
               <td class="text-left">{{item.owner ? item.owner.fullName : ''}}</td>
               <td class="text-left">{{item.state}}</td>
-              <td class="text-left">{{item.dateCreated | formatDate('date')}}</td>
+              <td class="text-left">{{item.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -97,13 +98,13 @@
         />
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import Snackbar from '@/components/Snackbar.vue'
+
 import {
   getRequest,
   deleteRequest,
@@ -121,7 +122,7 @@ import SmartlistTable from '@/components/SmartlistTable'
 export default {
   name: 'Contacts',
   components: {
-    Snackbar,
+
     SmartlistTable
   },
   data () {
@@ -165,7 +166,9 @@ export default {
     },
   },
   created () {
-    this.getSharedSmartlists()
+    if (this.$store.getters.userHasFeature('SMARTLIST')) {
+      this.getSharedSmartlists()
+    }
   },
   methods: {
     async getSharedSmartlists() {
@@ -198,6 +201,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contacts')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -216,24 +220,12 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Exporting Contacts')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     goToContact (selectedRow) {
-      let id = null
-
-      for (const [key, val] of Object.entries(selectedRow)) {
-        if (key === 'Contact ID') {
-          id = val
-          break
-        }
-      }
-
-      if (id === null) {
-        this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Contact ID" column')
-      } else {
-        this.$router.push({name: 'contact', params: {id}})
-      }
+      this.$router.push({name: 'contact', params: {id: selectedRow.contact_id}})
     }
   }
 }

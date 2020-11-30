@@ -9,7 +9,7 @@
         <v-row class="justify-center">
           <v-btn class="wq-button mx-2 mt-3 white--text" color="primaryCustom"
                  :outlined="showAll && !selectedWorkQueueCategory.id"
-                 @click="[showAll = true, getWorkQueues()]">
+                 @click="[showAll = !showAll, selectedWorkQueueCategory = {}, getWorkQueues()]">
             All
           </v-btn>
           <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2 mt-3"
@@ -37,7 +37,7 @@
                   @click="loadDrilldown(wq)"
                   width="200" height="100" >
             <div class="card-accent" :style="{'background-color': wq.color}"></div>
-            <v-card-text class="pt-1 pr-0">
+            <v-card-text class="pt-1">
               <div class="text-left">{{wq.workQueueType}}</div>
               <div class="card-count">{{wq.workQueueCount}}</div>
             </v-card-text>
@@ -45,23 +45,21 @@
         </v-row>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueue',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         snackbar: {},
@@ -80,6 +78,10 @@
     async created() {
       this.getWorkQueueCategories()
       this.getWorkQueueOwners()
+      this.selectedWorkQueueCategory.id = parseInt(localStorage.getItem('wqCategoryId'))
+      if(this.selectedWorkQueueCategory.id) {
+        this.getWorkQueues()
+      }
     },
     methods: {
       async getWorkQueueCategories() {
@@ -89,6 +91,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getWorkQueueOwners() {
@@ -101,13 +104,15 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getWorkQueues(reset, c) {
         if(reset) {
           this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
         }
-        if(this.selectedWorkQueueCategory?.id) {
+        localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategory.id))
+        if(this.selectedWorkQueueCategory?.id || this.showAll) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             const {data} = await getRequestWithParams(`/workQueue`, { params: {
@@ -120,8 +125,11 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
+        } else {
+          this.workQueues = []
         }
       },
       loadDrilldown(wq) {

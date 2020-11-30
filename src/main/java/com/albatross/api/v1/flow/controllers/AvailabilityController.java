@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.AvailabilityService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,12 +21,11 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping(value = "/api/v1/flow/availability")
 public class AvailabilityController {
 
-  @Autowired
-  private AvailabilityService availabilityService;
-
+  private final AvailabilityService availabilityService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ResourceSchedule> getResourceAvailability(@RequestParam(required = false) Long userId,
@@ -39,7 +39,7 @@ public class AvailabilityController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResourceSchedule saveSchedule(@RequestBody ResourceSchedule resourceAvailability) {
+  public List<ResourceSchedule> saveSchedule(@RequestBody ResourceSchedule resourceAvailability) {
     return availabilityService.saveSchedule(resourceAvailability);
   }
 
@@ -77,6 +77,11 @@ public class AvailabilityController {
     availabilityService.deleteAppointment(id);
   }
 
+  @DeleteMapping(value = "/appointment/recurrence/{recurringEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteAppointmentsByRecurrence(@PathVariable String recurringEventId) {
+    availabilityService.deleteAppointmentsByRecurrence(recurringEventId);
+  }
+
   @GetMapping(value = "/timeSlots", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<TimeSlot> getTimeSlots(@RequestParam Long projectId,
                                      @RequestParam String startTime,
@@ -88,5 +93,11 @@ public class AvailabilityController {
   @PostMapping(value = "/setCloserAppointment", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Object> setCloserAppointment(@RequestBody CloserAppointmentRequest request) throws Exception {
     return availabilityService.setCloserAppointment(request);
+  }
+
+  //used for the cron
+  @GetMapping(value = "/cacheAvailability", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void cacheAvailability() {
+    availabilityService.cacheAvailability();
   }
 }

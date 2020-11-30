@@ -9,12 +9,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Project {
 
-  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, stateId, countryId;
-  private String projectName, processName, projectStatusType, state, timeZone, country, street1, street2, city, postalCode;
+  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, companyStateId, companyCountryId;
+  private String projectName, processName, projectStatusType, state, timeZone, country, street1, street2, city, postalCode, stateAbbreviation;
   Double latitude, longitude;
   private LocalDate dateCreated;
-
+  private Owner owner;
   private Contact contact;
+  private Boolean projectOwnerReadonly;
 
   //tells server to update geolocation
   private Boolean reloadCoordinates = false;

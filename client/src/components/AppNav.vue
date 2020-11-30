@@ -1,8 +1,20 @@
 <template>
   <div v-if="loadComplete">
     <v-row>
+      <v-col
+        v-if="VUE_APP_ENV === 'uat'"
+        cols="12"
+        style="font-size: 18px; text-align: center; background-color: orange; color: white;"
+      >
+        THIS IS UAT - YOU SHOULD BE WORKING IN PRODUCTION
+        <v-btn
+            href="https://albatross.myblueraven.com"
+        >
+          CLICK HERE
+        </v-btn>
+      </v-col>
       <v-col cols="12" class="pt-0 pb-0">
-        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
+        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primaryCustom'" :size="100"></Spinner>
         <v-app-bar dense id="header" :color="headerColor" tabs dark>
           <v-menu data-app left
                   offset-y
@@ -23,7 +35,28 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-tabs :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
+          <v-menu v-if="constants.IS_MOBILE" data-app left
+                  offset-y
+                  v-model="tabMenuOpen"
+                  class="account-menu"
+                  :close-on-content-click="false">
+            <template v-slot:activator="{ on }">
+              <v-btn class="account-menu-button"
+                     :color="headerColor"
+                     dark
+                     v-on="on">
+                Pages
+                <v-icon>mdi-chevron-down</v-icon>
+              </v-btn>
+            </template>
+            <v-list v-if="displayedTabs.length > 1">
+              <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
+                           @click="[tabMenuOpen = false, goToPath(tab.path)]">
+                <v-list-item-title>{{tab.label}}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+          <v-tabs v-else :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
             </v-tab>
@@ -39,7 +72,6 @@
         </v-app-bar>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
   </div>
 </template>
 
@@ -47,10 +79,11 @@
 import {AppMutations} from '@/stores/AppStore'
 import {UserActions, UserMutations} from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 const { VUE_APP_ENV } = process.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -58,7 +91,7 @@ const { VUE_APP_ENV } = process.env
 export default {
   name: 'appNav',
   components: {
-    Snackbar,
+
     Spinner,
     AccountMenu,
     CompanyTools,
@@ -66,11 +99,13 @@ export default {
   data () {
     return {
       snackbar: {},
+      constants,
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
-      companyName: this.$store.state.user.details.companyName,
+      companyName: this.$store.state.user?.details?.companyName,
       selectedCompany: {},
       menuOpen: false,
+      tabMenuOpen: false,
       companies: [],
       companyTools: [],
       model: '',
@@ -80,36 +115,44 @@ export default {
       tabs: [ {
         label: 'Contacts',
         path: '/contacts',
-          display: this.$store.getters.userHasFeature('CONTACTS')
+        feature: 'CONTACTS',
+        show: true
       }, {
         label: 'Projects',
         path: '/projects',
-        display: this.$store.getters.userHasFeature('PROJECTS')
+        feature: 'PROJECTS',
+        show: true
       },
         {
         label: 'Schedule',
         path: '/schedule',
-        display: this.$store.getters.userHasFeature('SCHEDULE')
+        feature: 'SCHEDULE',
+          show: true
       },
         {
         label: 'Work Queue',
         path: '/workQueue',
-        display: this.$store.getters.userHasFeature('WORK_QUEUE')
+        feature: 'WORK_QUEUE',
+        show: true
       }, {
         label: 'Smartlists',
         path: '/smartlist',
-        display: this.$store.getters.userHasFeature('SMARTLIST')
-      }]
+        feature: 'SMARTLIST',
+        show: true
+      }],
+      VUE_APP_ENV
     }
   },
   created () {
 		this.loadComplete = true
-    this.getCompanies()
-    this.getCompanyTools()
+    if(this.$store.state.user?.details?.id) {
+      this.getCompanies()
+      this.getCompanyTools()
+    }
 	},
   computed: {
     displayedTabs () {
-      return this.tabs.filter(tab => tab.display)
+      return this.tabs.filter(tab => this.$store.getters.userHasFeature(tab.feature) && tab.show)
     },
   },
   methods: {
@@ -134,7 +177,7 @@ export default {
         const {data} = await getRequest(url)
         this.companies = data
         this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
-        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user.details.companyId)
+        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -157,6 +200,9 @@ export default {
               this.$store.commit(AppMutations.SET_LOADING, false)
           }
       },
+      goToPath(path) {
+        this.$router.push({path: `${path}`})
+      },
   }
 }
 </script>
@@ -175,6 +221,13 @@ export default {
 .header-logo {
   max-height: 45px;
   max-width: 45px;
+}
+
+.account-menu-button{
+  text-transform: capitalize;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  border: none !important;
 }
 
 @media (min-width: 769px) {

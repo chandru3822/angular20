@@ -1,6 +1,6 @@
 <template>
-<v-row id="project-container">
-  <v-col cols="12" lg="6" class="text-left">
+<v-row id="project-notes-container">
+  <v-col cols="12" lg="12" class="text-left">
 
     <NotesAndActivity
       :showNotes="true"
@@ -11,11 +11,6 @@
     />
   </v-col>
 
-  <v-col cols="12" lg="6">
-    <Messaging :primaryId="parseInt(projectId)"/>
-  </v-col>
-
-  <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
 
@@ -23,16 +18,13 @@
 
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
-import Messaging from '@/views/flow/components/Messaging'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 
 export default {
   name: 'ProjectNotes',
   components: {
     NotesAndActivity,
-    Messaging,
-    Snackbar,
   },
   data () {
     return {
@@ -63,8 +55,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#project-container {
-  margin-top: -15px;
+#project-notes-container {
+  margin-top: -5px;
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;

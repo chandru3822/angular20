@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Scheduling Tool Event Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]">
+            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -27,12 +27,13 @@
                 </v-text-field>
                 <div v-else>{{st.eventType}}</div>
               </v-list-item-content>
-              <v-list-item-action class="clickable">
+              <v-list-item-action class="clickable" v-if="userCanEdit">
                 <v-icon v-if="selectedEventTypeId === st.id" @click="saveType(st)">save</v-icon>
                 <v-icon v-else @click="selectedEventTypeId = st.id">edit</v-icon>
               </v-list-item-action>
               <v-dialog
                   v-model="st.deleteConfirm"
+                  v-if="userCanDelete"
                   width="500">
                 <template v-slot:activator="{ on }">
                   <v-list-item-action class="clickable" v-on="on">
@@ -60,7 +61,7 @@
                       No
                     </v-btn>
                     <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="[st.archived = true, deleteType(st.id)]">
                       Yes
@@ -73,7 +74,7 @@
         </v-container>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
@@ -83,16 +84,14 @@
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
   import {getEventTypes} from '@/services/scheduleService'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
     name: 'Events',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         snackbar: {},
@@ -102,7 +101,11 @@
         newType: {},
         selectedEventTypeId: null,
         userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
+
       }
     },
     computed: {},
@@ -117,6 +120,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -125,10 +129,12 @@
         try {
           await deleteRequest(`/eventType/type/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Event Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Event Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -139,6 +145,7 @@
           const {data} = await postRequest(`/eventType/type`, this.newType)
 
           this.snackbar = getSnackbar('SUCCESS', 'Event Type Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // add it to the records already on the screen
           this.eventTypes.push(data)
@@ -152,6 +159,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Event Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -162,10 +170,12 @@
           st.modifiedById = this.userId
           await putRequest(`/eventType/type`, st)
           this.snackbar = getSnackbar('SUCCESS', 'Event Type Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Event Type')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

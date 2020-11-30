@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.PayrollService;
+import com.albatross.api.v1.flow.model.OverrideResult;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -123,6 +126,11 @@ public class PayrollController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @RequestMapping(value = "/{payrollId}/overrides", method = RequestMethod.GET)
+    public List<OverrideResult> getAllOverrideDetails(@PathVariable Long payrollId) throws IOException {
+        return payrollService.getAllOverrideDetails(payrollId);
     }
 
 

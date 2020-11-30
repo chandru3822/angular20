@@ -129,20 +129,21 @@ public class AttachmentService {
         }
     }
 
+
     /**
      * Find Attachments by source Id and source type Id, using a custom S3 bucket name.
      *
      * @param attachmentTypeId ID of the attachmentType
      * @return
      */
-    public List<Attachment> getAttachmentsByType(String bucket, Long attachmentTypeId) {
+    public List<Attachment> getAttachmentsByType(Long attachmentTypeId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("attachmentTypeId", attachmentTypeId);
 
         List<Attachment> attachments = sqlCache.query("attachment.getAttachmentsByType", params, Attachment.class);
         attachments.forEach(attachment -> {
-            setAttachmentUrl(bucket, attachment);
-            setAttachmentPresignedUrl(bucket, attachment);
+            setAttachmentUrl(storageBucket, attachment);
+            setAttachmentPresignedUrl(storageBucket, attachment);
         });
 
         return attachments;
@@ -199,20 +200,19 @@ public class AttachmentService {
      * @param sourceIds ID of the source
      * @return
      */
-    public Map<Long, String> getAttachmentPresignedUrlForUserList(String bucket, List<Long> sourceIds, Long attachmentTypeId) {
+    public Map<Long, String> getAttachmentPresignedUrlsForUserList(List<Long> sourceIds, Long attachmentTypeId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("sourceIds", sourceIds);
         params.put("attachmentTypeId", attachmentTypeId);
 
         List<Attachment> attachments = sqlCache.query("attachment.getAttachmentBySourceAndTypeForUserList", params, Attachment.class);
 
-
         Map<Long, String> preSignedUrls = new HashMap<>();
 
         if(!attachments.isEmpty()){
             attachments.stream().forEach(a -> {
 
-                setAttachmentPresignedUrl(bucket, a);
+                setAttachmentPresignedUrl(storageBucket, a);
 
                 preSignedUrls.put(a.getSourceId(), a.getPresignedUrl());
             });
@@ -239,11 +239,10 @@ public class AttachmentService {
     /**
      * Find Attachment by ID, using a custom S3 bucket name.
      *
-     * @param bucket Name of S3 bucket where the attachment is expected to reside.
      * @param id     ID of the Attachment to find.
      * @return
      */
-    public Attachment findById(String bucket, Long id) {
+    public Attachment findById(Long id) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("id", id);
 
@@ -252,8 +251,8 @@ public class AttachmentService {
             return null;
         }
         Attachment attachment = attachments.get(0);
-        setAttachmentUrl(bucket, attachment);
-        setAttachmentPresignedUrl(bucket, attachment);
+        setAttachmentUrl(storageBucket, attachment);
+        setAttachmentPresignedUrl(storageBucket, attachment);
         return attachment;
     }
 
@@ -266,7 +265,7 @@ public class AttachmentService {
     public String getAttachmentUrl(Long id) {
         User currentUser = securityService.getCurrentUser();
 
-        Attachment attachment = findById(currentUser.getAwsBucket(), id);
+        Attachment attachment = findById(id);
 
         String url = s3.getUrl(currentUser.getAwsBucket(), attachment.getS3Key()).toExternalForm();
         return url;
@@ -346,7 +345,7 @@ public class AttachmentService {
         //add to join
         addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
 
-        return findById(storageBucket, attachmentId);
+        return findById(attachmentId);
     }
 
     public void addToJoinTable(Long attachmentId, Long sourceId, Long attachmentTypeId, boolean deleteFirst) {
@@ -361,4 +360,5 @@ public class AttachmentService {
 
         sqlCache.update("attachment.addToJoinTable", params);
     }
+
 }

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Organizations</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newOrg" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
+            <v-btn text to="/newOrg" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Organization</span>
             </v-btn>
@@ -66,7 +66,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
@@ -74,13 +74,11 @@
   import {AppMutations} from '@/stores/AppStore'
   import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import Snackbar from '@/components/Snackbar.vue'
+
 
   export default {
     name: 'Orgs',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -157,9 +155,6 @@
         this.$router.push({name: 'org', params: {id}})
       },
       filterResults(value, search, item) {
-        console.log('we got here', value)
-        console.log('we got here', search)
-        console.log('we got here', item)
       },
       async getOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -172,6 +167,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Organizations')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

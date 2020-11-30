@@ -13,7 +13,8 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="saveOrg" v-if="userCanEdit">Save</v-btn>
+              <v-btn text :disabled="fieldsSaving"
+                     @click="[fieldsSaving = true, saveOrg()]" v-if="userCanEdit">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
@@ -39,7 +40,7 @@
                       item-text="orgName"
                       item-value="id"
             ></v-select>
-            <v-select v-model="org.stateId"
+            <v-select v-model="org.companyStateId"
                       :items="states"
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
@@ -47,6 +48,14 @@
                       item-text="state"
                       item-value="id"
             ></v-select>
+            <v-autocomplete v-model="org.companyTimezoneId"
+                      :items="companyTimezones"
+                      label="Time Zone"
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      item-text="timezone"
+                      item-value="id"
+            ></v-autocomplete>
             <div class="mb-3">
               <label>Active:</label>
               <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.activeFlag">
@@ -79,14 +88,14 @@
         </div>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
-  import {getStates} from '@/services/stateService'
+
+  import {getCompanyStates} from '@/services/stateService'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
@@ -95,7 +104,7 @@
   export default {
     name: 'Org',
     components: {
-      Snackbar,
+
       CustomValueInput
     },
     data () {
@@ -114,7 +123,9 @@
         orgTypes: [],
         parents: [],
         dirtyCfvs: [],
+        companyTimezones: [],
         states: [],
+        fieldsSaving: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
         orgId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
@@ -123,10 +134,11 @@
     },
     async created () {
       this.getCustomFieldGroups()
+      this.getCompanyTimezones()
       this.getOrgTypes()
       await this.getOrg()
       this.getOrgsByType(this.org.parentOrgTypeId)
-      this.getStates()
+      this.getCompanyStates()
     },
     methods: {
       async saveOrg() {
@@ -139,11 +151,15 @@
           this.dirtyCfvs = []
           this.customFieldGroups = data
           this.snackbar = getSnackbar('SUCCESS', 'Organization Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let msg = this.org.id ? 'Error Saving Organization' : 'Error Adding Organization'
           this.snackbar = getSnackbar('ERROR', msg)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -162,6 +178,20 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCompanyTimezones() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequestWithParams(`/timezone`)
+          this.companyTimezones = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Timezones')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -175,6 +205,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Organization')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -187,6 +218,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -199,18 +231,20 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getStates () {
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
+          const {data} = await getCompanyStates()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -230,6 +264,9 @@
   }
   .org-subtitle {
     font-size: 20px;
+  }
+  .v-select ::v-deep .v-select__selection {
+    color: var(--v-primaryText-base);
   }
 </style>
 

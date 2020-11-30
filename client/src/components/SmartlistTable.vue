@@ -1,13 +1,21 @@
 <template>
 <div>
     <v-toolbar class="elevation-1" width="100%">
+        <v-text-field
+          v-model="search"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
         <v-spacer />
         <v-btn
             text
             :disabled="isLoading"
             @click="showConfirmDialog = true"
         >
-            Export
+          <v-icon>mdi-cloud-download</v-icon>
+          <span>Export</span>
         </v-btn>
     </v-toolbar>
 
@@ -20,6 +28,8 @@
         :footer-props="footerProps"
         fixed-header
         :options.sync="options"
+        :search="search"
+        multi-sort
     >
         <template #no-data>
             No available report data
@@ -34,13 +44,17 @@
               class="clickable"
               @click="selectRow(row)"
             >
+              <template
+                v-for="(field, key) in row"
+              >
                 <td
-                    v-for="field in headers"
-                    :key="field.id"
-                    class="text-left"
+                  v-if="key !== 'project_id' && key !== 'contact_id'"
+                  :key="key"
+                  class="text-left"
                 >
-                    {{row[field.text]}}
+                    {{field}}
                 </td>
+              </template>
             </tr>
         </template>
     </v-data-table>
@@ -56,10 +70,11 @@
 
 <script>
 
-import {logError, getRequestWithParams, jsonToCsv} from '@/helpers/helpers'
+import {logError, getRequestWithParams, getRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ExportDialog from '@/components/ExportDialog'
 import saveAs from 'file-saver'
+import {AppMutations} from '@/stores/AppStore'
 
 export default {
     name: 'SmartlistTable',
@@ -81,7 +96,8 @@ export default {
                 'items-per-page-options': [25, 50, 100],
                 'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
             },
-            showConfirmDialog: false
+            showConfirmDialog: false,
+            search: ''
         }
     },
     watch: {
@@ -105,8 +121,21 @@ export default {
                 this.isLoading = false
             }
         },
-        generateReport () {
-            saveAs(new Blob([jsonToCsv(this.reportData)], {type: constants.CSV_BLOB_TYPE}), 'export.csv')
+        async generateReport () {
+          try {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            const {data} = await getRequest(`/smartlist/${this.smartlistId}/csv`)
+            let blob = new Blob([data], {
+              type: 'text/csv;charset=utf-8'
+            });
+            saveAs(blob, "smartlist.csv");
+          } catch (e) {
+            this.snackbar = getSnackbar('ERROR', e.message)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            logError(e)
+          } finally {
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         },
         selectRow (row) {
           this.$emit('row-selected', row)

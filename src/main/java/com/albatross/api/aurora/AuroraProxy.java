@@ -48,14 +48,13 @@ public class AuroraProxy {
   private final ObjectMapper om = new ObjectMapper();
   private final CloseableHttpClient httpClient = HttpClients.createDefault();
 
-  // todo remove from here and put into Vault
-  @Value(value = "${aurora.tenantId}")
+  @Value(value = "${aurora.api.tenantId}")
   private String tenantId;
 
-  @Value(value = "${aurora.apiKey}")
+  @Value(value = "${aurora.api.key}")
   private String apiKey;
 
-  @Value(value = "${aurora.apiSecret}")
+  @Value(value = "${aurora.api.secret}")
   private String apiSecret;
 
   private final String host = "https://api.aurorasolar.com";

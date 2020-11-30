@@ -26,6 +26,22 @@
     order by cf.feature_name
   ]]></feature.getCompanyTools>
 
+  <feature.getHomePagesForCompany><![CDATA[
+    select cf.id,
+           cf.feature_name,
+           f.feature_code,
+           f.feature_path,
+           f.is_system,
+           cf.archived
+    from flow.company_feature cf
+             inner join flow.feature f on f.id = cf.feature_id
+    where company_id = :companyId
+      and cf.archived is not true
+      and f.archived is not true
+      and cf.home_page is true
+    order by cf.feature_name
+  ]]></feature.getHomePagesForCompany>
+
   <feature.getAllForCompany><![CDATA[
     select cf.id,
            cf.feature_name,
@@ -107,16 +123,23 @@
     SELECT *
     FROM T
     UNION
-    select feature_id, cf.feature_name, f.feature_code, ac.access_code, pac.enabled
+    select distinct feature_id,
+           cf.feature_name,
+           f.feature_code,
+           ac.access_code,
+           pac.enabled
     from flow.position_feature_access_control pac
-        inner join flow.company_feature cf on cf.id = pac.company_feature_id
-        inner join flow.company c on c.id = :companyId
-        inner join flow.user_position up on up.position_id = pac.position_id and up.end_date is null and up.user_id = :userId
-        inner join flow.feature f on f.id = cf.feature_id
-        inner join flow.access_control ac on ac.id = pac.access_control_id
+         inner join flow.position p on p.id = pac.position_id and p.company_id = :companyId
+         inner join flow.company_feature cf on cf.id = pac.company_feature_id
+         inner join flow.company c on c.id = cf.company_id and c.id = :companyId
+         inner join flow.user_position up on up.position_id = pac.position_id and up.user_id = :userId
+         inner join flow.feature f on f.id = cf.feature_id
+         inner join flow.access_control ac on ac.id = pac.access_control_id
     WHERE pac.enabled is true
+    and up.archived is not true
+      and up.start_date <= now()
+      and (up.end_date is null or up.end_date >= now())
       and cf.company_id = :companyId
-      and NOT EXISTS (SELECT 1 FROM t);
   ]]></feature.getAccessForUser>
 
   <feature.upsertUserFeatureAccessControl><![CDATA[

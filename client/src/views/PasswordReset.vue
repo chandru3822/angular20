@@ -1,5 +1,5 @@
 <template>
-  <v-content>
+  <v-main>
     <v-container class="fill-height" v-if="!requestValidating && !requestValid">
       <v-row>
         <v-col cols="12">
@@ -23,20 +23,20 @@
       <v-row>
         <v-col cols="12">
           <v-card color="secondaryMaster" class="elevation-12">
-            <v-toolbar dark color="primary">
+            <v-toolbar dark color="primaryCustom">
               <v-toolbar-title>Password Reset</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
               <v-form ref="resetNewForm">
                 <h3 class="error--text mb-3" v-if="!passwordsMatch">PASSWORDS MUST MATCH</h3>
-                <v-text-field color="primary"
+                <v-text-field color="primaryCustom"
                               v-model="newPassword"
                               required
                               type="password"
                               :rules="requiredRules"
                               name="newPass"
                               label="New Password"></v-text-field>
-                <v-text-field color="primary"
+                <v-text-field color="primaryCustom"
                               v-model="newPasswordAgain"
                               type="password"
                               required
@@ -55,22 +55,20 @@
           </v-card>
         </v-col>
       </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-container>
-  </v-content>
+  </v-main>
 </template>
 
 <script>
   import constants from '@/helpers/constants'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
     name: 'PasswordReset',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -100,6 +98,7 @@
           this.requestValid = false
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Validating This Request')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -117,11 +116,13 @@
               await postRequest(`/user/forgotPassword/change/password`, params)
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('SUCCESS', 'Your password has been changed.')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$router.push('/login')
             } catch (e) {
               console.error('*** ERROR ***', e)
               let msg = e?.data?.message ?? 'Error Retrieving Account Details'
               this.snackbar = getSnackbar('ERROR', msg)
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           } else {

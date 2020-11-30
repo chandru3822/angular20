@@ -1,8 +1,10 @@
 package com.albatross.api.config;
 
+import com.albatross.api.v1.flow.services.AvailabilityService;
+import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.SMSService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
+import javax.annotation.PostConstruct;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -21,6 +24,7 @@ import java.util.concurrent.Executors;
 @Configuration
 @EnableAsync
 @EnableScheduling
+@RequiredArgsConstructor
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
 @ConditionalOnProperty(prefix = "app.scheduled", value = "enabled")
 public class ScheduledConfig implements SchedulingConfigurer {
@@ -28,12 +32,38 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Value(value = "${app.cron.sendSms.enabled:false}")
     private Boolean sendSmsNotifications;
 
-    @Autowired
-    private SMSService smsService;
+    @Value(value = "${app.cron.processFutureAppointments.enabled:false}")
+    private Boolean processFutureAppointments;
+
+    @Value(value = "${app.cron.autoTriggers.enabled:false}")
+    private boolean autoTriggers;
+
+    @Value(value = "${app.cron.initialAutoTriggers.enabled:false}")
+    private boolean initialAutoTriggers;
+
+    @Value(value = "${app.cron.cacheAvailability.enabled:false}")
+    private boolean runCachedAvailability;
+
+    @Value(value = "${app.cron.refreshUserPositionOrgs.enabled:false}")
+    private boolean refreshUserPositionOrgs;
+
+    private final SMSService smsService;
+    private final AvailabilityService availabilityService;
+    private final ProjectProcessStepService projectProcessStepService;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(taskExecutor());
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("cron service enabled");
+//      if (initialAutoTriggers) {
+//        log.info("*** CRON: start INITIAL auto triggers ***");
+//        projectProcessStepService.performInitialAutoTriggers();
+//        log.info("*** CRON: end INITIAL auto triggers ***");
+//      }
     }
 
     //    every  minute
@@ -48,6 +78,36 @@ public class ScheduledConfig implements SchedulingConfigurer {
             // about outbound texts
             smsService.processTwilioWebhookPayloads();
         }
+    }
+
+    //    every  day at 1 am
+    @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+    public void cacheAvailability() {
+        if (runCachedAvailability) {
+            log.info("*** CRON: start cache availability ***");
+            availabilityService.cacheAvailability();
+            log.info("*** CRON: end cache availability ***");
+        }
+    }
+
+    // last day of every month
+//    @Scheduled(cron = "0 0 0 L * ?")
+    @Scheduled(cron = "0 0 0 28-31 * ?", zone = "America/Denver")
+    public void processFutureRecurringEvents() {
+        if(processFutureAppointments) {
+            log.info("*** CRON: start populating recurring events ***");
+            availabilityService.processFutureRecurringEvents();
+            log.info("*** CRON: end populating recurring events ***");
+        }
+    }
+
+    @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
+    public void autoTriggers() {
+      if (autoTriggers) {
+        log.info("*** CRON: start auto triggers ***");
+        projectProcessStepService.performTimeBasedAutoTriggers();
+        log.info("*** CRON: end auto triggers ***");
+      }
     }
 
     @Bean(destroyMethod = "shutdown")

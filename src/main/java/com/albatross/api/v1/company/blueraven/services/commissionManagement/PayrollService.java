@@ -8,14 +8,18 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Payroll
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.AccountSearchRequest;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
+import com.albatross.api.v1.flow.model.OverrideResult;
+import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
@@ -160,9 +164,10 @@ public class PayrollService {
         params.put("cancelEndDate", request.getCancelEndDate());
         params.put("overridePlanId", request.getOverridePlanId());
         params.put("commissionPlanId", request.getCommissionPlanId());
+        params.put("selectedProjectIds", null != request.getSelectedProjectIds() ? createSqlArrayOfType("int", request.getSelectedProjectIds()) : null);
 
         if (request.getProjectId() != null) {
-            params.put("projectId", createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
+            params.put("selectedProjectIds", createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
         }
 
         Optional<String> bySql = sqlCache.get("payroll.getAccountReview", params, new SingleColumnRowMapper<>(String.class));
@@ -200,10 +205,29 @@ public class PayrollService {
     }
 
     public String getAccountSummaryByPayrollId(Long payrollId) {
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("payrollId", payrollId);
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("payrollId", payrollId);
 
-            return sqlCache.get("payroll.getSummary", params, new SingleColumnRowMapper<>(String.class)).orElse("[]");
+        return sqlCache.get("payroll.getSummary", params, new SingleColumnRowMapper<>(String.class)).orElse("[]");
+    }
+
+    public List<OverrideResult> getAllOverrideDetails(Long payrollId) {
+        Map<String, Object> params = ImmutableMap.of("payrollId", payrollId);
+        Optional<Integer> payrollStatusId = sqlCache.get("payroll.status", params, SingleColumnRowMapper.newInstance(Integer.class));
+
+        if (payrollStatusId.isPresent()) {
+            String sqlKey;
+            if (payrollStatusId.get() == 3)
+                sqlKey = "payroll.overridesSnapshot";
+            else
+                sqlKey = "payroll.overridesOpen";
+
+            List<OverrideResult> results = sqlCache.query(sqlKey, params, OverrideResult.class);
+            return results;
+        } else {
+            log.info("Payroll {} requested but no status found.", payrollId);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payroll Not Found", new Exception());
+        }
     }
 
     @Transactional

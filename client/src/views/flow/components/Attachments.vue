@@ -1,18 +1,18 @@
 <template>
-<v-col v-if="attachmentTypes.length > 0">
+<v-col v-if="attachmentTypes.length > 0" class="pt-0">
   <v-row>
-    <v-col class="text-left">
+    <v-col class="text-left py-0">
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>Documents</v-toolbar-title>
       </v-toolbar>
     </v-col>
   </v-row>
-  <v-sheet color="#fff" class="elevation-2 mx-4">
+  <v-sheet color="#fff" class="elevation-2 mx-4 square-card">
     <v-col cols="12">
       <v-row v-if="displayType === null" class="d-flex justify-start">
         <v-col
           cols="2"
-          class="type text-center"
+          class="type text-center pb-0"
           @click="drillDown(type)"
           v-for="type in attachmentTypes"
         >
@@ -22,31 +22,74 @@
         </v-col>
       </v-row>
       <v-row v-else>
-        <v-col cols="6" class="text-left">
+        <v-col cols="6" class="text-left" pb-0>
           <v-btn @click="displayType = null">Back</v-btn>
         </v-col>
-        <v-col cols="6">
+        <v-col cols="6" class="pb-0">
             <v-file-input
               dense
+              ref="fileInput"
+              :show-size="error.error"
               outlined
-              label="Upload project document"
+              label="Upload document"
               @change="uploadDocument"
             />
+          <span class="error-text" v-if="error.error">{{error.errorMsg}}</span>
         </v-col>
         <v-row class="d-flex flex-wrap justify-start">
           <v-col
             cols="2"
-            class="type d-flex flex-wrap justify-center"
+            class="type"
             v-for="a in drillDownAttachments"
           >
-            <v-btn
-              width="100%"
-              icon
-              text
-              :href="a.presignedUrl" class="type">
-              <v-icon x-large color="grey">insert_drive_file</v-icon>
-            </v-btn>
-            <a :href="a.presignedUrl" class="type link text-center">{{ a.filename }}</a>
+            <div class="text-right">
+              <v-dialog
+                v-model="a.deleteConfirm"
+                width="500">
+                <template #activator="{ on }">
+                  <v-btn x-small text v-on="on">
+                    <v-icon>close</v-icon>
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                    class="headline grey lighten-2"
+                    primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    Are you sure you want to delete <strong>{{a.filename}}</strong>?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="a.deleteConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="[a.archived = true, deleteAttachment(a.id)]">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </div>
+            <div class=" d-flex flex-wrap justify-center">
+              <v-btn
+                width="100%"
+                icon
+                text
+                :href="a.presignedUrl" class="type">
+                <v-icon x-large color="grey">insert_drive_file</v-icon>
+              </v-btn>
+              <a :href="a.presignedUrl" class="type link text-center">{{ a.filename }}</a>
+            </div>
           </v-col>
         </v-row>
       </v-row>
@@ -59,6 +102,7 @@
 import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, logError, getSnackbar} from '@/helpers/helpers'
+import {deleteAttachment} from '@/services/attachmentService'
 
 // @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
@@ -70,7 +114,8 @@ export default {
       attachments: [],
       displayType: null,
       typePath: null,
-      attachmentPath: null
+      attachmentPath: null,
+      error: {}
     }
   },
   props: {
@@ -95,7 +140,7 @@ export default {
       if (this.displayType === null) {
         return []
       } else {
-        return this.attachments.filter(a => a.attachmentTypeId === this.displayType.attachmentTypeId)
+        return this.attachments.filter(a => !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId)
       }
     }
   },
@@ -106,6 +151,9 @@ export default {
         }})
       this.attachmentTypes = data
     },
+    deleteAttachment: async function (id) {
+      await deleteAttachment(id)
+    },
     fetchAttachments: async function () {
       const {data} = await getRequest(this.attachmentPath)
       this.attachments = data
@@ -115,29 +163,42 @@ export default {
     },
     getTypeCount: function(typeId) {
       try {
-        return this.attachments.filter(a => a.attachmentTypeId === typeId).length
+        return this.attachments.filter(a => a.attachmentTypeId === typeId && !a.archived).length
       } catch {
         return 0
       }
     },
     uploadDocument: async function (file) {
       try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-        await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
-          file,
-          attachmentTypeId: this.displayType.attachmentTypeId,
-          projectId: this.projectId,
-          projectProcessStepId: this.projectProcessStepId,
-          callback: async (newAttachment) => {
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            this.attachments = [...this.attachments, newAttachment]
-          }
-        })
+        if(file && file.size > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          //reset error message when trying to upload new file
+          this.error = {}
+          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+          await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
+            file,
+            attachmentTypeId: this.displayType.attachmentTypeId,
+            projectId: this.projectId,
+            projectProcessStepId: this.projectProcessStepId,
+            callback: async (newAttachment, error) => {
+              if(error) {
+                this.error = error
+                this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$refs.fileInput.reset()
+              } else {
+                this.attachments = [...this.attachments, newAttachment]
+                this.$refs.fileInput.reset()
+              }
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
+          })
+        }
       } catch(e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     }
   }

@@ -63,7 +63,7 @@ public class CommunicationController {
         String groupId = UUID.randomUUID().toString();
 
          for (Long userID : sendTexts.getUserIDs()) {
-            Optional<User> user = userService.getUser(userID);
+            Optional<User> user = userService.getUser(userID, false);
             communicationService.queueTextMessages(groupId, user, sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs());
         }
 
@@ -91,13 +91,19 @@ public class CommunicationController {
                 }
                 temporaryFiles.put(attachment.getOriginalFilename(), tempFile);
             }
-            Future<Void> future = communicationService.sendEmails(subject, userIds, template,
-                    Maps.transformValues(temporaryFiles, FileDataSource::new),
-                    getUnsubscribeURLForEmails(request),
-                    from);
 
             try {
-                future.get();
+                for (Long userId: userIds) {
+                    Optional<User> user = userService.getUser(userId, false);
+                    //do not send email if they do not have access to the system
+                    if (user.isPresent() && user.get().getUserStatusType() != null && user.get().getHasAccess()) {
+                        Future<Void> future = communicationService.sendEmail(subject, user.get().getEmail(), user.get(),
+                            template, Maps.transformValues(temporaryFiles, FileDataSource::new),
+                            getUnsubscribeURLForEmails(request), from);
+
+                        future.get();
+                    }
+                }
             } catch (Exception e) {
                 log.error(e.getMessage());
             }

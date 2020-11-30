@@ -8,7 +8,8 @@ constants.MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN || '***REMOVED***'
 constants.MAPBOX_STYLE = VUE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 constants.IS_MOBILE = window.innerWidth <= 768
 constants.SCREEN_WIDTH = window.innerWidth
-constants.MAX_FILE_SIZE = 10485760
+// constants.MAX_FILE_SIZE = 104857600 //100 mb
+constants.MAX_FILE_SIZE = 209715200 //200 mb
 constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
 constants.STANDARD_IMAGES_ONLY = 'image/*'
 constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
@@ -20,6 +21,10 @@ constants.EMAIL_RULES = [
 ]
 constants.BASIC_REQUIRED_RULE = [
   v => !!v || 'Field is required'
+]
+constants.USERNAME_RULES = [
+  v => !!v || 'Username is required',
+  v => !!v && v.length >= 3 || 'Must be at least 3 characters'
 ]
 constants.COLOR_LIST = [
   '#e7211b', '#39b942', '#181e1e', '#eceb50',

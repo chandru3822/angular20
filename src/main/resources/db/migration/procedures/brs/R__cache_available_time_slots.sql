@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION flow.cache_available_time_slots()
+CREATE OR REPLACE FUNCTION brs.cache_available_time_slots()
     RETURNS void
 AS
 $BODY$
@@ -10,14 +10,15 @@ BEGIN
     (
     select foo.user,count(1) as avail
     from (
-             with active_projects as (
-                 select u.id,u.first_name,u.last_name,up.position_id,s.state,s.time_zone_abbreviation,
-                        date_trunc('day', now() AT TIME ZONE time_zone_abbreviation) AT TIME ZONE time_zone_abbreviation as start_time,
-                        (date_trunc('day', now() AT TIME ZONE time_zone_abbreviation) AT TIME ZONE time_zone_abbreviation) + interval '1 day' - interval '1 second' as end_time
+             with active_users as (
+                 select u.id,u.first_name,u.last_name,up.position_id,
+                        date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone as start_time,
+                        (date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone) + interval '1 day' - interval '1 second' as end_time
                  from flow.user u
                           inner join flow.user_position up on up.user_id = u.id
                           inner join flow.org o on o.id = up.org_id
-                          inner join flow.state s on s.id = o.state_id
+                          inner join flow.company_timezone ct on ct.id = o.company_timezone_id
+                          inner join flow.timezone t on t.id = ct.timezone_id
                           inner join flow.company_user_status cus on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = o.company_id
                      and up.position_id in (1,2,3)
@@ -27,7 +28,7 @@ BEGIN
                      and ust.has_access is true
              )
              select unnest(users) as user, scheduled_start_time
-             from active_projects ap cross join generate_series(ap.start_time - interval '21 days',
+             from active_users ap cross join generate_series(ap.start_time - interval '21 days',
                                                                 ap.end_time, interval '1 day') as gs(d)
                                      join lateral flow.past_available_time_slots(
                      ap.id,

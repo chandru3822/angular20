@@ -1,22 +1,25 @@
 
 CREATE OR REPLACE FUNCTION flow.company_hierarchy_filter_down(
     p_company_id integer)
-  RETURNS TABLE(id integer ,parent_company_id integer,company_name text) AS
+  RETURNS TABLE(id integer ,parent_company_id integer,company_name text, level int) AS
 $BODY$
 declare
 
 BEGIN
     return query
-        WITH RECURSIVE subordinates(id,parent_company_id,company_name) AS (
-            select c.id,c.parent_company_id,c.company_name
+        WITH RECURSIVE subordinates(id,parent_company_id,company_name, level) AS (
+            select c.id,c.parent_company_id,c.company_name, c.level
             from flow.company c
             where c.id = p_company_id
+              and c.archived is not true
             UNION
-            select c.id,c.parent_company_id,c.company_name
+            select c.id,c.parent_company_id,c.company_name, c.level
             from flow.company c
-                     INNER JOIN subordinates s ON s.id = c.parent_company_id
+                 INNER JOIN subordinates s ON s.id = c.parent_company_id
+            where c.archived is not true
+                and c.parent_company_id != 1
         ) SELECT
-              s1.id,s1.parent_company_id,s1.company_name::text
+              s1.id,s1.parent_company_id,s1.company_name::text, s1.level
         FROM
             subordinates s1;
 END

@@ -1,11 +1,13 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.v1.flow.enums.PostalCodeZoneUserType;
 import com.albatross.api.v1.flow.model.PostalCode;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import com.albatross.api.v1.flow.model.PostalCodeZoneUser;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.PostalCodeService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
@@ -44,9 +47,14 @@ public class PostalCodeController {
         postalCodeService.deleteZone(id);
     }
 
-    @PostMapping(value = "/zone/saveUser", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PostalCodeZoneUser insertUser(@RequestBody PostalCodeZoneUser user) {
-        return postalCodeService.insertUser(user);
+    @PostMapping(value = "/zone/saveScheduleToUser", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostalCodeZoneUser insertScheduleToUser(@RequestBody PostalCodeZoneUser user) {
+        return postalCodeService.insertUser(user, PostalCodeZoneUserType.SCHEDULE_TO.id);
+    }
+
+    @PostMapping(value = "/zone/saveScheduleByUser", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostalCodeZoneUser insertScheduleByUser(@RequestBody PostalCodeZoneUser user) {
+        return postalCodeService.insertUser(user, PostalCodeZoneUserType.SCHEDULE_BY.id);
     }
 
     @DeleteMapping(value = "/zone/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -65,7 +73,27 @@ public class PostalCodeController {
     }
 
     @GetMapping(value = "/zone/{id}/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<User> getZoneUsers(@PathVariable Long id) {
-        return postalCodeService.getZoneUsers(id);
+    public List<User> getAvailableZoneUsers(@PathVariable Long id) {
+        return postalCodeService.getAvailableZoneUsers(id, false);
+    }
+
+    @GetMapping(value = "/zone/{id}/schedulers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getAvailableZoneSchedulers(@PathVariable Long id) {
+        return postalCodeService.getAvailableZoneUsers(id, true);
+    }
+
+    @GetMapping(value = "/zone/userCanSchedule", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Boolean userCanSchedule(@RequestParam String postalCode) {
+        return postalCodeService.userCanSchedule(postalCode);
+    }
+
+    @Data
+    public static class ZoneUserRequest {
+        private List<Integer> zoneIds;
+    }
+
+    @PostMapping(value = "/zone/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getAllZoneUsers(@RequestBody ZoneUserRequest request) throws SQLException {
+        return postalCodeService.getAllZoneUsers(request.getZoneIds());
     }
 }

@@ -56,7 +56,7 @@
               </template>
             </v-select>
 
-            <v-select v-model="selectedProcessStepStatusTypes"
+            <v-select v-model="selectedProcessStepStatusType"
                       :items="processStepStatusTypes"
                       label="Status"
                       clearable
@@ -64,26 +64,10 @@
                       item-value="id"
                       :disabled="selectedEventTypes.length === 0"
                       return-object
-                      multiple
-            >
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
-                <div v-if="index === 0 && selectedProcessStepStatusTypes.length < 3">
-                  <v-chip small v-for="sp in selectedProcessStepStatusTypes">
-                    <span>{{ sp.processStepStatusType }}</span>
-                  </v-chip>
-                </div>
-                <span
-                    v-if="index === 1 && selectedProcessStepStatusTypes.length >= 3"
-                    class="primary--text caption"
-                >{{ selectedProcessStepStatusTypes.length }} selected</span>
-              </template>
-            </v-select>
+            />
             <v-btn color="primaryCustom" class="white--text"
                    :disabled="!selectedEventTypes || selectedEventTypes.length === 0
-                   || !state || !selectedProcessStepStatusTypes || selectedProcessStepStatusTypes.length === 0"
+                   || !state || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
                    @click="getProjects(true)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
@@ -96,10 +80,14 @@
                             label="Search for project..."
                             autocomplete="off"
                             :loading="searchProjectsLoading"
-                            item-value="id"
+                            item-value="projectId"
+                            item-key="projectId"
                             return-object
                             >
-
+              <template slot="item" slot-scope="data">
+                <!-- HTML that describe how select should render items when the select is open -->
+                {{ data.item.projectName }} - {{ data.item.projectId }}
+              </template>
             </v-autocomplete>
             <v-select v-model="searchEventType"
                       :items="eventTypes"
@@ -117,12 +105,12 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
+            <v-btn color="primaryCustom" class="white--text" :disabled="!searchProject || !searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
               <v-toolbar-title class="app-title">
-                {{selectedProject.contactFirstName}} {{selectedProject.contactLastName}}
+                {{selectedProject.projectName}}
                 <div class="toolbar-subtitle">{{selectedProject.processStepName}}</div>
               </v-toolbar-title>
               <v-spacer></v-spacer>
@@ -152,7 +140,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
-                :readonly="selectedProject.startFieldReadOnly || !userCanEdit"
+                :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
@@ -162,28 +150,66 @@
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
-                :readonly="selectedProject.endFieldReadOnly || !userCanEdit"
+                :readonly="selectedProject.endFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
                 @input="validateSaveEvent()"
               />
-              <v-select v-model="selectedProject.resource"
+              <v-autocomplete v-model="selectedProject.resource"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
                         placeholder=" "
                         return-object
+                        clearable
                         item-text="name"
-                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit"
-                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit"
+                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
               />
-              <v-btn color="primary"
+              <v-btn color="primaryCustom"
                      class="white--text"
-                     :disabled="saveInvalid || !userCanEdit"
-                     @click="scheduleProject">Save</v-btn>
+                     :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1"
+                     @click="[fieldsSaving = true, scheduleProject()]">Save</v-btn>
+              <v-dialog
+                  v-if="selectedProject.processStepStatusTypeId === 2"
+                  v-model="selectedProject.unscheduleConfirm"
+                  width="500">
+                <template #activator="{ on }">
+                  <v-btn color="secondaryCustom"
+                         class="ml-3"
+                         v-on="on">Unschedule Event</v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    Are you sure you want to unschedule this event?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        @click="selectedProject.unscheduleConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                        color="primaryCustom"
+                        text
+                        @click="cancelProjectProcessStep">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </div>
           </v-card-text>
         </v-card>
@@ -194,21 +220,31 @@
             <v-progress-circular
               indeterminate
               :size="80"
-              :color="'primary'"
+              :color="'primaryCustom'"
             ></v-progress-circular>
           </div>
+          <v-text-field
+            v-model="projectFilter"
+            class="square-card"
+            prepend-inner-icon="search"
+            label="Filter"
+            solo
+            hide-details
+          ></v-text-field>
+          <v-divider></v-divider>
           <v-data-table
               :headers="headers"
               :items="projects"
+              :search="projectFilter"
               :fixed-header="true"
-              :items-per-page="-1"
               :mobile-breakpoint="0"
+              :footer-props="footerProps"
+              :options.sync="options"
               v-model="selectedRows"
               item-key="projectProcessStepId"
-              hide-default-footer
               :show-select="true"
-              :item-selected="(item, value) => addToMap(item, value)"
-              :toggle-select-all="(value) => addToMap(value)"
+              :item-selected="(item, value) => this.zoomToMap(item, value)"
+              :toggle-select-all="(value) => this.zoomToMap(value)"
               class="elevation-1"
           >
             <template #no-data>
@@ -220,25 +256,25 @@
             </template>
 
             <template #item.start="{ item }">
-              {{item.start | formatDate('date')}}
+              {{item.start | formatDate('timestamp', 'MM/DD/YYYY')}}
             </template>
 
             <template #item.projectName="{ item }">
-              <a @click="[selectedProject = item, selectedProject.resource = { id: item.resourceId, name: item.resourceName }]" style="text-decoration: underline">{{item.projectName}}</a>
+              <a @click="[getResources(item), selectedProject = item, selectedProject.resource = { id: item.resourceId, name: item.resourceName }]" style="text-decoration: underline">{{item.projectName}}</a>
             </template>
 
           </v-data-table>
         </div>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import {getEventTypes} from '@/services/scheduleService'
@@ -247,11 +283,12 @@
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'Schedule',
     components: {
-      Snackbar,
+
       Map,
       Calendar,
       DatetimePickerInput
@@ -282,7 +319,7 @@
         state: {},
         states: [],
         processStepStatusTypes: [],
-        selectedProcessStepStatusTypes: [],
+        selectedProcessStepStatusType: {},
         eventTypes: [],
         //used for multi select
         selectedEventTypes: [],
@@ -296,6 +333,7 @@
         eventTypesChanged: false,
         searchProjectsLoading: false,
         search: null,
+        fieldsSaving: false,
         asyncActions: {},
         headers: [
           {text: 'Project', value: 'projectName', show: true},
@@ -305,11 +343,23 @@
           {text: 'Resource', value: 'resourceName', show: true},
         ],
         projects: [],
+        projectFilter: '',
+        options: {
+          itemsPerPage: 100
+        },
+        footerProps: {
+          'items-per-page-options': [25, 50, 100],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
         // masterProjects: []
       }
     },
     watch: {
       search(val) {
+        if(!val) {
+          this.searchProject = {}
+          return
+        }
         if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
           this.getProjectsSearchedFor(val);
         }
@@ -327,11 +377,10 @@
     created() {
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
-      this.selectedProcessStepStatusTypes = JSON.parse(localStorage.getItem('scheduleProcessStepStatusTypes')) || []
+      this.selectedProcessStepStatusType = JSON.parse(localStorage.getItem('scheduleProcessStepStatusType')) || {}
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
-      console.log('router', this.$route)
       if(this.$route.query && this.$route.query.projectProcessStepId) {
         //projectId, eventTypeId, processStepStatusTypeId
         this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
@@ -357,10 +406,30 @@
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
           this.$refs.calendar.getEvents(false, true)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.fieldsSaving = false
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Scheduling Project')
+          this.fieldsSaving = false
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async cancelProjectProcessStep() {
+        try {
+          await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/cancel`, this.selectedProject)
+          // this.selectedProject.unscheduleConfirm = false
+          this.projects = this.projects.filter(p => p.projectProcessStepId !== this.selectedProject.projectProcessStepId)
+          this.selectedProject.processStepStatusTypeId = 3
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Unscheduling Event')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -368,10 +437,11 @@
         if (isProject) {
           this.$router.push({name: 'projectDetails', params: {projectId: ps.projectId}})
         } else if (isProcessStep) {
-          this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}})
+          this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}, query: { processStepId: ps.processStepId, contactId: ps.contactId }})
         }
       },
       resourceMapCallback (newValue) {
+        console.log('testing', newValue)
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {
@@ -387,6 +457,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -403,6 +474,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -410,11 +482,34 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getStatusTypes()
-          this.processStepStatusTypes = data
+          //only show active and complete
+          this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getResources(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          item.resources = []
+
+          let params = {
+            companyId: item.companyId,
+            systemListId: item.systemListId,
+            systemListOptionIds: item.systemListOptionIds,
+            resourceId: item.resourceId
+          }
+          const {data} = await postRequest(`/schedule/projectResources`, params)
+          item.resources = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -426,15 +521,15 @@
         }
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
-        localStorage.setItem('scheduleProcessStepStatusTypes', JSON.stringify(this.selectedProcessStepStatusTypes))
+        localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))
 
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
           try {
             let params = {
               eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
-              processStepStatusTypeIds: this.selectedProcessStepStatusTypes?.length > 0 ? this.selectedProcessStepStatusTypes.map(o => o.processStepStatusTypeId) : [],
-              stateId: this.state.id,
+              processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
+              companyStateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime
             }
@@ -444,40 +539,17 @@
               d.coordinates = [ d.longitude, d.latitude ]
             })
             this.projects = data
-            // this.masterProjects = cloneDeep(data)
-            // if(this.selectedProcessStepStatusTypes?.length > 0) {
-            //   this.filterProjects()
-            // }
             this.listLoading = false
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.listLoading = false
           }
         } else {
           this.projects = []
-          // this.masterProjects = []
         }
       },
-      // filterProjects () {
-      //   let statusIds = this.selectedProcessStepStatusTypes.map(st => st.processStepStatusTypeId)
-      //   if(statusIds?.length === 0) {
-      //     this.projects = cloneDeep(this.masterProjects)
-      //   } else {
-      //     this.projects = this.masterProjects.filter(p => {
-      //       return statusIds.includes(p.processStepStatusTypeId)
-      //     })
-      //   }
-      // },
-      // toggleSelectAllSteps () {
-      //   this.$nextTick(() => {
-      //     if (this.selectAll) {
-      //       this.selectedEventTypes = []
-      //     } else {
-      //       this.selectedEventTypes = cloneDeep(this.eventTypes)
-      //     }
-      //   })
-      // },
       async searchForProjects(search) {
         try {
           let params = {
@@ -488,6 +560,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Searching Projects')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getProjectsSearchedFor(search) {
@@ -526,10 +599,14 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.listLoading = false
         }
       },
 
+    },
+    zoomToMap(item) {
+      console.log('randaLogger', item)
     }
   }
 </script>
@@ -563,11 +640,12 @@
 
   .map-field-label {
     font-size: 12px;
-    color: var(--v-primary-base);
+    color: var(--v-primaryCustom-base);
   }
 
   .list-container {
     position: relative;
+    background-color: white;
   }
 
   #list-loader {

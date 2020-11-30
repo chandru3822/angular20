@@ -14,9 +14,10 @@ public class SmartlistFieldAssignment {
   //@TODO humes: customField brings in fields making some direct fields on this class redundant. Remove the direct redundant fields
 
   private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById,
-      displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId;
+      displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
+      companyId, systemListId;
 
-  private String name, objectType, processStepName, customFieldSqlKey;
+  private String name, objectType, processStepName, customFieldSqlKey, projectDetailsColumn;
 
   private Timestamp dateCreated, dateModified;
 
@@ -28,8 +29,9 @@ public class SmartlistFieldAssignment {
 
   private CustomField customField;
 
+
   // The fields below are used for smartlist generation
   @JsonIgnore
-  private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn;
+  private String referenceTable, referenceColumn, valueReferenceTable, joinTable, joinColumn, ppsTable, userPositionTable;
 
 }

@@ -7,6 +7,8 @@
        ot.org_type,
        p.archived,
        p.schedulable,
+       p.scheduler,
+       p.contact_owner,
        p.available_to_children,
        ot.org_level_id,
        ol.level
@@ -19,7 +21,7 @@
 
   ]]></position.getAllForCompany>
 
-  <position.getSchedulingPositions><![CDATA[
+  <position.getSchedulablePositions><![CDATA[
     select p.id,
            p.position,
            p.id as position_id,
@@ -27,17 +29,18 @@
            ot.org_type,
            p.archived,
            p.schedulable,
+           p.scheduler,
            p.available_to_children
     from flow.position p
              inner join flow.org_type ot on ot.id = p.org_type_id
     where case when :isParent
-            then array[p.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            then p.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else p.company_id = :companyId end
         and p.schedulable is true
         and p.archived is not true
     order by p.position
 
-  ]]></position.getSchedulingPositions>
+  ]]></position.getSchedulablePositions>
 
   <position.getAllForCompanyWithParent><![CDATA[
     select p.id,
@@ -47,6 +50,8 @@
            ot.org_type,
            p.archived,
            p.schedulable,
+           p.scheduler,
+           p.contact_owner,
            p.available_to_children
     from flow.position p
         inner join flow.org_type ot on ot.id = p.org_type_id
@@ -62,6 +67,8 @@
            ot.org_type,
            p.archived,
            p.schedulable,
+           p.scheduler,
+           p.contact_owner,
            p.available_to_children,
            coalesce((
                SELECT array_to_json(array_agg(row_to_json(companyFeatures)))
@@ -98,8 +105,8 @@
   ]]></position.getOne>
 
   <position.insert><![CDATA[
-    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children)
-    values (:companyId, :position, :orgTypeId, :createdById, :schedulable, :availableToChildren)
+    insert into flow.position(company_id, position, org_type_id, created_by_id, schedulable, available_to_children, scheduler, contact_owner)
+    values (:companyId, :position, :orgTypeId, :createdById, :schedulable, :availableToChildren, :scheduler, :contactOwner)
   ]]></position.insert>
 
   <position.update><![CDATA[
@@ -108,7 +115,9 @@
             org_type_id = :orgTypeId,
             modified_by_id = :modifiedById,
             schedulable = :schedulable,
+            scheduler = :scheduler,
             available_to_children = :availableToChildren,
+            contact_owner = :contactOwner,
             date_modified = now()
     where id = :id
   ]]></position.update>
@@ -129,7 +138,7 @@
   <position.updatePositionFeatureAccessControl><![CDATA[
     update flow.position_feature_access_control
     set enabled = :enabled
-    where id = :positionFeatureAccessControlId
+    where id = :id
   ]]></position.updatePositionFeatureAccessControl>
 
 

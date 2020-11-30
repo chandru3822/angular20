@@ -196,8 +196,9 @@ public class CommissionManagementController {
                                      @RequestBody PlanUser user) {
         try {
             commissionManagementService.insertUser(planId, user);
-            String users = commissionManagementService.getCommissionPlanUsers(planId);
-            return ResponseEntity.ok(users);
+//            String users = commissionManagementService.getCommissionPlanUsers(planId);
+            String plans = commissionManagementService.getPlans(user.getUserId());
+            return ResponseEntity.ok(plans);
         } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
             Map<String, String> body = ImmutableMap.of("msg", e.getMessage(),

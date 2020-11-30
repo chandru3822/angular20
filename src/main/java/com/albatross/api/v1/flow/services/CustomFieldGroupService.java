@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,26 +28,15 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CustomFieldGroupService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  CustomFieldService customFieldService;
-
-  @Autowired
-  CustomFieldValueService customFieldValueService;
-
-  @Autowired
-  ProcessStepRequirementService processStepRequirementService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final CustomFieldService customFieldService;
+  private final CustomFieldValueService customFieldValueService;
+  private final ProcessStepRequirementService processStepRequirementService;
+  private final ObjectMapper om;
 
   public CustomField addFieldToGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
@@ -121,7 +111,12 @@ public class CustomFieldGroupService {
       // if field IS read_only archive any white listed positions no longer in the body sent in
       List<Long> positionIdsUsed = customField.getWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
-      sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
+      if(positionIdsUsed.size() > 0) {
+        sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
+      } else {
+        //this means they removed ALL white listed positions
+        sqlCache.update("customFieldGroupAssignment.archiveAllWhiteListedPositions", params);
+      }
 
       for(WhiteListedPosition wlp : customField.getWhiteListedPositions()) {
         params.put("positionId", wlp.getPositionId());
@@ -272,6 +267,7 @@ public class CustomFieldGroupService {
     params.put("id", customFieldGroup.getId());
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
+    params.put("companyObjectTypeTabId", customFieldGroup.getCompanyObjectTypeTabId());
     params.put("modifiedById", user.getId());
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroup", params);
@@ -289,15 +285,16 @@ public class CustomFieldGroupService {
 
   public List<CustomFieldGroup> getInsertFieldsByType(Long companyId, Long objectTypeId) {
     User user = securityService.getCurrentUser();
+    Long realCompanyId = null != companyId ? companyId : user.getCompanyId();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", null != companyId ? companyId : user.getCompanyId());
+    params.put("companyId", realCompanyId);
     params.put("objectTypeId", objectTypeId);
 
     List<CustomFieldGroup> results = sqlCache.query("customFieldGroup.getInsertFieldsByType", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
     results.stream().filter(cfg -> !cfg.getCustomFieldValues().isEmpty()).collect(Collectors.toList());
 
-    customFieldValueService.handleCustomListOfValue(results);
+    customFieldValueService.handleCustomListOfValue(results, realCompanyId);
 
     return results;
   }

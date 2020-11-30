@@ -12,7 +12,7 @@ BEGIN
              inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
              inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where p.id = p_project_id
-      and pst.project_status_type = 'On HOld';
+      and pst.project_status_type = 'On Hold';
 
     return v_on_hold;
 

@@ -65,12 +65,12 @@
         </v-sheet>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
-import Snackbar from '@/components/Snackbar.vue'
+
 import Vue2Filters from 'vue2-filters'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
@@ -78,9 +78,7 @@ import constants from '@/helpers/constants'
 export default {
   name: 'Menu',
   mixins: [Vue2Filters.mixin],
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},

@@ -1,6 +1,7 @@
 package com.albatross.api.security;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -39,7 +40,7 @@ public class SecurityService implements UserDetailsService {
             throw new UsernameNotFoundException("Could not find user " + username);
         }
         // todo: come back and add permissions when the re-write is complete
-        List<FeatureAccessControl> results = this.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        List<FeatureAccessControl> results = getUserFeatureAccess(user.getId(), user.getCompanyId());
         return new UserAccountDetails(user, results);
     }
 
@@ -51,6 +52,10 @@ public class SecurityService implements UserDetailsService {
     public User getUserByUsernameOrEmail(String usernameOrEmail) {
         User user = userService.findByUsernameOrEmailIgnoreCase(usernameOrEmail);
         return user;
+    }
+
+    public void updateLoginAttempts(int loginAttempts, Long userId) {
+        userService.updateLoginAttempts(loginAttempts, userId);
     }
 
     public Optional<UserAccountDetails> getUserDetailsById(Long id) {
@@ -78,9 +83,17 @@ public class SecurityService implements UserDetailsService {
                 user = (User) p;
             } else if (p instanceof UserAccountDetails) {
                 UserAccountDetails details = (UserAccountDetails) p;
-                user = userService.findUserById(details.getId());
-                List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
-                user.setFeatureAccess(results);
+
+                // This is a special system user used for crons
+                if (details.getId() == SystemSettings.CRON_USER.getId()) {
+                  user = new User();
+                  user.setCompanyId(details.getCompanyId());
+                  user.setId(details.getId());
+                } else {
+                  user = userService.findUserById(details.getId());
+                  List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
+                  user.setFeatureAccess(results);
+                }
 
             } else {
 //                    throw new IllegalStateException("Unhandled Security Principal type: " + p);
@@ -197,10 +210,13 @@ public class SecurityService implements UserDetailsService {
         return results;
     }
 
-    public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, String accessCode) {
+    /*
+    Return whether user has any of the given access levels to the given feature
+     */
+    public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, List<String> accessCode) {
         List<FeatureAccessControl> featureAccessControlList = getUserFeatureAccess(userId, companyId);
         for(FeatureAccessControl fac : featureAccessControlList) {
-            if(fac.getFeatureCode().equals(featureCode) && fac.getAccessCode().equals(accessCode)) {
+            if(fac.getFeatureCode().equals(featureCode) && accessCode.contains(fac.getAccessCode())) {
                 return true;
             }
         }

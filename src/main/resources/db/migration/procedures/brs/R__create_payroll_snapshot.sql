@@ -16,7 +16,7 @@ BEGIN
 
   FOR d IN
   SELECT (brs.get_commission_account_details(
-      p_payroll_id, p.period_end,NULL,p.selected_project_ids,NULL,NULL,NULL,NULL,NULL,NULL)).*
+      p_payroll_id, p.selected_project_ids,NULL,NULL,NULL,NULL,NULL,NULL)).*
   FROM brs.payroll p
   WHERE p.id = p_payroll_id
 
@@ -28,7 +28,6 @@ BEGIN
                                                     sales_rep_id,
                                                     sales_rep,
                                                     source,
-                                                    stage,
                                                     cancelled,
                                                     commission_plan_id,
                                                     commission_plan,
@@ -65,7 +64,6 @@ BEGIN
             d.closer_user_id,
             d.closer,
             d.source_name,
-            d.stage_name,
             d.cancelled_date,
             d.commission_plan_id,
             d.commission_plan,

@@ -28,8 +28,8 @@ public class ProcessController {
     private final ProcessService processService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Process>> getProcessesForCompany() {
-        return new ResponseEntity<>(processService.getProcessesForCompany(), HttpStatus.OK);
+    public ResponseEntity<List<Process>> getProcessesForCompany(@RequestParam(required = false) Long contactId) {
+        return new ResponseEntity<>(processService.getProcessesForCompany(contactId), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)

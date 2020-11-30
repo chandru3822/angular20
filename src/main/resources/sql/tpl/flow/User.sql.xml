@@ -1,5 +1,11 @@
 <sql>
   <user.searchUsers><![CDATA[
+      with beat_off as (
+          SELECT (value->'orgId')::integer as org_id,vw.position_id,user_id, hierarchy
+          FROM flow.user_position_hierarchy_vw vw
+                   left join lateral jsonb_array_elements(vw.hierarchy) dr1
+                             on true
+      )
       select distinct upv.user_id as id,
                 upv.first_name,
                 upv.last_name,
@@ -18,9 +24,7 @@
                 upv.has_access,
                 uphv.hierarchy
       from flow.user_positions_vw upv
-            inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
-                                                     and uphv.position_id = upv.position_id
-                                                     and uphv.org_id = upv.org_id
+            inner join beat_off uphv on uphv.user_id = upv.user_id and uphv.position_id = upv.position_id and uphv.org_id = upv.org_id
             inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
       where upv.company_id = :companyId
         and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
@@ -29,9 +33,9 @@
         and coalesce(upv.email, '') ILIKE '%' || :email || '%'
         and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
         and upv.user_status_type_id in (:statuses)
-        and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
-        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
-        and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
+        and case when :primaryFlag is true then upv.primary_flag = true else 1=1 end
+        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then upv.position_id  = any( array[ :positions ]::integer[] ) else 1=1 end
+        and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then upv.org_id = any( array [ :orgs ]::integer[] ) else 1=1 end
       union
       select u.id,u.first_name,u.last_name,uc.company_id,
             concat(u.first_name, ' ', u.last_name) AS full_name,
@@ -80,8 +84,8 @@
           and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
           and upv.user_status_type_id in (:statuses)
           and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
-          and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
-          and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
+          and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then upv.position_id = any(array [ :positions ]::integer[]) else 1=1 end
+          and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then upv.org_id  = any(array [ :orgs ]::integer[]) else 1=1 end
        union
          select u.id
           from flow."user" u
@@ -106,34 +110,6 @@
       from t1
   ]]></user.searchUserCount>
 
-  <user.exportUsers><![CDATA[
-      select
-        u.id,
-        u.first_name,
-        u.last_name,
-        concat(u.first_name, ' ', u.last_name) AS full_name,
-        u.email,
-        u.phone_number,
-        ust.id as user_status_type_id,
-        ust.user_status_type,
-        p.position
-    from flow.user u
-      inner join flow.user_company uc on uc.user_id = u.id
-      inner join flow.user_status_type ust on ust.company_id = uc.company_id
-      inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
-      left join flow.user_position up on up.user_id = u.id
-      left join flow.position p on p.id = up.position_id
-    where uc.company_id = :companyId
-       and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
-       and u.first_name ILIKE '%' || :firstName || '%'
-       and u.last_name ILIKE '%' || :lastName || '%'
-       and u.email ILIKE '%' || :email || '%'
-       and u.phone_number ILIKE '%' || :phone || '%'
-       and ust.id in (:statuses)
-       and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[p.id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
-    order by u.last_name, u.first_name, up.start_date desc
-  ]]></user.exportUsers>
-
   <user.updateUser>
     <![CDATA[
       update flow."user"
@@ -144,9 +120,22 @@
           phone_number = :phone,
           modified_by_id = :modifiedById,
           date_modified = now()
-      where id = :id
+      where id = :id;
+      update flow.user_company uc
+          set home_page_company_feature_id = :homePageCompanyFeatureId
+      where uc.company_id = :companyId
+        and uc.user_id = :id
     ]]>
   </user.updateUser>
+
+  <user.saveUserHomePage>
+    <![CDATA[
+      update flow.user_company uc
+          set home_page_company_feature_id = :homePageCompanyFeatureId
+      where uc.company_id = :companyId
+        and uc.user_id = :userId
+    ]]>
+  </user.saveUserHomePage>
 
   <user.insertUser><![CDATA[
       insert into flow.user(first_name, last_name, created_by_id, phone_number, email, username, password)
@@ -161,12 +150,15 @@
              u.created_by_id,
              u.first_name,
              u.last_name,
+             u.login_attempts,
              concat(u.first_name, ' ', u.last_name) AS full_name,
              uc.company_id,
              u.modified_by_id,
              u.date_modified,
              u.default_company_id,
              ust.user_status_type,
+             uc.home_page_company_feature_id,
+             f.feature_path as home_page_path,
              ust.id as user_status_type_id,
              ust.has_access,
              coalesce((
@@ -181,16 +173,39 @@
                                 inner join flow.company c on c.id = uc.company_id
                        where uc.user_id = u.id
                          and uc.archived is not true
+                         and c.archived is not true
                        order by c.company_name
                    ) companies), '[]') as companies
       from flow."user" u
         inner join flow.user_company uc on uc.user_id = u.id
         inner join flow.company_user_status cus on cus.user_id = u.id
         inner join flow.user_status_type ust on ust.company_id = uc.company_id and ust.id = cus.user_status_type_id
+        left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
+        left join flow.feature f on f.id = cf.feature_id
       where u.id = :id
         and uc.company_id = :companyId
         and uc.archived is not true
   ]]></user.getOne>
+
+  <user.getOneAlbatross><![CDATA[
+      select u.id,
+             u.phone_number,
+             u.email,
+             u.username,
+             u.created_by_id,
+             u.login_attempts,
+             u.first_name,
+             u.last_name,
+             concat(u.first_name, ' ', u.last_name) AS full_name,
+             u.modified_by_id,
+             u.date_modified,
+             u.default_company_id
+      from flow."user" u
+               inner join flow.user_company uc on uc.user_id = u.id
+      where u.id = :id
+        and uc.company_id = 1
+        and u.archived is not true
+  ]]></user.getOneAlbatross>
 
   <user.getSchedulingUsers><![CDATA[
             with t1 as (
@@ -204,13 +219,12 @@
           where upv.position_schedulable is true
             and case
                     when :isParent and :isSchedulingTool
-                        then array [upv.company_id] <@
-                             (select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                        then upv.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                     else (upv.company_id = :companyId OR
                           (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true)) end
             and case
-                    when :stateId::integer is not null
-                        then upv.state_id = :stateId::integer and upv.position_schedulable is true
+                    when :companyStateId::integer is not null
+                        then upv.company_state_id = :companyStateId::integer and upv.position_schedulable is true
                     else upv.position_schedulable is true end
             and upv.user_archived is not true
             and upv.start_date <= now()
@@ -228,9 +242,12 @@
                                    SELECT up.id,
                                           up.user_id as "userId",
                                           p.position,
+                                          p.schedulable,
+                                          p.scheduler,
                                           up.position_id as "positionId",
                                           up.org_id as "orgId",
-                                          o.state_id as "stateId",
+                                          o.company_state_id as "companyStateId",
+                                          cs.state_id as "stateId",
                                           up.start_date as "startDate",
                                           up.end_date as "endDate",
                                           up.primary_flag as "primaryFlag",
@@ -245,6 +262,7 @@
                                    FROM flow.user_position up
                                             inner join flow.position p on p.id = up.position_id
                                             inner join flow.org o on o.id = up.org_id
+                                            left join flow.company_state cs on cs.id = o.company_state_id
                                    WHERE up.user_id = t1.id
                                      and up.archived is not true
                                      and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
@@ -257,7 +275,10 @@
        u.first_name,
        u.last_name,
        u.password,
+       u.username,
        u.email,
+       u.phone_number,
+       u.login_attempts,
        u.username,
        (select has_access
           from flow.company_user_status cus
@@ -266,6 +287,8 @@
            and ust.company_id = uc.company_id
            ) as has_access,
        coalesce(u.default_company_id, uc.company_id) as company_id,
+       uc.home_page_company_feature_id,
+       f.feature_path as home_page_path,
        ( select parent_company_id
           from flow.company c
         where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
@@ -290,6 +313,8 @@
                          SELECT up.id,
                                 up.user_id as "userId",
                                 p.position,
+                                p.schedulable,
+                                p.scheduler,
                                 up.position_id as "positionId",
                                 up.org_id as "orgId",
                                 o.org_name as "orgName",
@@ -312,11 +337,19 @@
                            and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
     from flow.user u
          inner join flow.user_company uc on uc.user_id = u.id
+         left join flow.company_feature cf on cf.company_id = uc.company_id and cf.id = uc.home_page_company_feature_id
+         left join flow.feature f on f.id = cf.feature_id
     where case when :username::text is not null then lower(username) = lower(:username::text)
                else u.id = :userId::integer end
       and uc.is_default = true
     limit 1
   ]]></user.findByUsernameIgnoreCase>
+
+  <user.updateLoginAttempts><![CDATA[
+    update flow."user"
+        set login_attempts = :loginAttempts
+    where id = :userId
+  ]]></user.updateLoginAttempts>
 
   <user.findByUsernameOrEmailIgnoreCase><![CDATA[
     select u.id,
@@ -325,6 +358,7 @@
        u.password,
        u.email,
        u.username,
+       u.phone_number,
        concat(u.first_name, ' ', u.last_name) AS full_name
     from flow.user u
     where lower(:usernameOrEmail::text) = lower(username)
@@ -336,6 +370,8 @@
     select u.id,
            u.first_name,
            u.last_name,
+           u.email,
+           u.phone_number,
            concat(u.first_name, ' ', u.last_name) AS full_name,
            u.password,
            coalesce(u.default_company_id, uc.company_id) as company_id,
@@ -359,6 +395,7 @@
              inner join flow.user_company uc on uc.company_id = c.id
              where uc.user_id = u.id
               and uc.archived is not true
+              and c.archived is not true
              order by level
              limit 1
            ) as highest_company_id
@@ -367,6 +404,8 @@
       inner join flow.company c on c.id = uc.company_id
     where u.id = :id
       and uc.is_default is true
+      and uc.archived is not true
+      and c.archived is not true
   ]]></user.findUserById>
 
   <user.getCompanyUserStatuses><![CDATA[
@@ -380,6 +419,42 @@
          and archived is not true
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
+
+  <user.saveUserStatusType><![CDATA[
+      update flow.user_status_type
+          set has_access = :hasAccess,
+              modified_by_id = :modifiedById,
+              date_modified = now()
+      where id = :id
+  ]]></user.saveUserStatusType>
+
+  <user.archiveUserStatus><![CDATA[
+    update flow.company_user_status cus
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+          from flow.user_status_type ust
+      where ust.id = cus.user_status_type_id
+          and cus.user_id = :userId
+          and ust.company_id = :companyId
+  ]]></user.archiveUserStatus>
+
+  <user.upsertUserStatus><![CDATA[
+    WITH do_upsert AS (
+      update flow.company_user_status cus
+      set user_status_type_id = :userStatusTypeId,
+          date_modified = now(),
+          modified_by_id = :currentUserId
+          from flow.user_status_type ust
+      where ust.id = cus.user_status_type_id
+          and cus.user_id = :userId
+          and ust.company_id = :companyId
+      returning *
+    )
+    INSERT INTO flow.company_user_status (user_status_type_id, user_id)
+    SELECT :userStatusTypeId, :userId
+    WHERE NOT EXISTS (SELECT * FROM do_upsert)
+  ]]></user.upsertUserStatus>
 
   <user.updateUserStatus><![CDATA[
     update flow.company_user_status cus
@@ -414,16 +489,16 @@
   ]]></user.updateAdminDefault>
 
   <user.insertUserCompany><![CDATA[
-      insert into flow.user_company(company_id, user_id, is_default)
-      values (:companyId, :id, :isDefault)
+      insert into flow.user_company(company_id, user_id, is_default, home_page_company_feature_id)
+      values (:companyId, :id, :isDefault, :homePageCompanyFeatureId)
   ]]></user.insertUserCompany>
 
-  <user.archiveUserCompanies><![CDATA[
+  <user.deleteUserCompany><![CDATA[
       update flow.user_company
         set archived = true
       where user_id = :userId
-        and company_id not in (:companyIds)
-  ]]></user.archiveUserCompanies>
+        and company_id = :companyId
+  ]]></user.deleteUserCompany>
 
   <user.upsertUserCompany><![CDATA[
     insert into flow.user_company(company_id, user_id)
@@ -432,13 +507,35 @@
         DO UPDATE SET archived = false;
   ]]></user.upsertUserCompany>
 
+  <user.getUserCompanies><![CDATA[
+    select c.id,
+          c.company_name as "companyName",
+          c.parent_company_id as "parentCompanyId",
+          c.aws_bucket as "awsBucket",
+          c.abbreviation
+    from flow.user_company uc
+            inner join flow.company c on c.id = uc.company_id
+    where uc.user_id = :userId
+     and uc.archived is not true
+     and c.archived is not true
+     order by c.company_name
+  ]]></user.getUserCompanies>
+
   <user.checkEmailExists><![CDATA[
       select id,
          email
       from flow."user"
-      where email ILIKE :email
+      where lower(trim(email)) = lower(trim(:email))
       and case when :userId::int is not null then :userId::int != id else 1=1 end
   ]]></user.checkEmailExists>
+
+  <user.checkUsernameExists><![CDATA[
+      select id,
+         username
+      from flow."user"
+      where lower(trim(username)) = lower(trim(:username))
+      and case when :userId::int is not null then :userId::int != id else 1=1 end
+  ]]></user.checkUsernameExists>
 
   <user.saveForgotPasswordFields><![CDATA[
       update flow."user"

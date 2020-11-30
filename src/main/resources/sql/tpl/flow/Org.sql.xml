@@ -14,24 +14,27 @@
   <org.getSchedulingOrgs><![CDATA[
     select o.id,
      o.company_id,
+     o.company_timezone_id,
      o.org_name,
      o.parent_org_id,
      o.org_type_id,
      o.active_flag,
      o.schedulable,
      o.available_to_children,
-     o.state_id,
+     o.company_state_id,
+     cs.state_id,
      p.org_name as parentOrgName,
      o.org_name as title,
      ot.org_type
     from flow.org o
              left join flow.org p on p.id = o.parent_org_id
              inner join flow.org_type ot on ot.id = o.org_type_id
+             left join flow.company_state cs on cs.id = o.company_state_id
     where case when :isParent and :isSchedulingTool
-        then array[o.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+        then o.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
         else (o.company_id = :companyId OR (:isSchedulingTool AND o.company_id = :parentCompanyId AND o.available_to_children is true )) end
-      and case when :stateId::integer is not null
-          then o.state_id = :stateId::integer and o.schedulable is true
+      and case when :companyStateId::integer is not null
+          then o.company_state_id = :companyStateId::integer and o.schedulable is true
           else o.schedulable is true end
       and o.archived is not true
       and o.active_flag is true
@@ -99,14 +102,15 @@
          org_type_id = :orgTypeId,
          schedulable = :schedulable,
          available_to_children = :availableToChildren,
-         state_id = :stateId,
+         company_timezone_id = :companyTimezoneId,
+         company_state_id = :companyStateId,
          active_flag = :active
     where id = :id
   ]]></org.updateOrg>
 
   <org.insertOrg><![CDATA[
-    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, state_id, available_to_children)
-    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :stateId, :availableToChildren)
+    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, company_state_id, available_to_children, company_timezone_id)
+    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :companyStateId, :availableToChildren, :companyTimezoneId)
   ]]></org.insertOrg>
 
   <org.getOne><![CDATA[
@@ -175,6 +179,7 @@
   <org.getOrgsForLevel><![CDATA[
     select o.id,
            o.company_id,
+           o.company_timezone_id,
            org_name,
            parent_org_id,
            org_type_id,
@@ -188,12 +193,15 @@
          inner join flow.org_filter of on of.org_level_id = ol.id
     where o.company_id = :companyId
       and ot.org_level_id = :orgLevelId
+      and o.archived is not true
+      and o.active_flag is true
     order by o.org_name;
   ]]></org.getOrgsForLevel>
 
   <org.getOrgCalendarsForUser><![CDATA[
       select uoa.id,
              o.org_name,
+             o.company_timezone_id,
              o.id as org_id,
              uoa.user_id,
              uoa.org_id,
@@ -210,6 +218,7 @@
   <org.getOneOrgCalendarAccess><![CDATA[
       select uoa.id,
              o.org_name,
+             o.company_timezone_id,
              uoa.user_id,
              uoa.org_id,
              uoa.archived

@@ -40,15 +40,18 @@ public class InstallAgreementRepository {
   @Autowired
   private PandaDocService pandaDocService;
 
-  @Value(value = "${app.loanpal.baseUrl}")
+  @Value(value = "${loanpal.api.baseUrl}")
   private String baseUrl;
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", "VIEW_ALL");
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", List.of("VIEW_ALL"));
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
+    params.put("companyId", user.getCompanyId());
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
@@ -269,15 +272,16 @@ public class InstallAgreementRepository {
     }
 
   @Data
-  public static class ProposalNumber {
+  public static class ProposalInfo {
       private Long proposalNbr;
+      private String loanType;
   }
 
-  public List<ProposalNumber> getProposalNumbers(Long projectId) {
+  public List<ProposalInfo> getProposalNumbers(Long projectId) {
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
 
-      List<ProposalNumber> results = sqlCache.query("installAgreement.getProposalNumbers", params, ProposalNumber.class);
+      List<ProposalInfo> results = sqlCache.query("installAgreement.getProposalNumbers", params, ProposalInfo.class);
       return results;
   }
 

@@ -26,14 +26,16 @@
     <installAgreement.getProjects>
         <![CDATA[
             SELECT *
-            FROM brs.get_request_for_installation_agreements(:view_all, :user_id, :query, :limit, :offset)
+            FROM brs.get_request_for_installation_agreements(:view_all, :user_id, :isParent, :companyId, :parentCompanyId,
+                :query, :limit, :offset)
         ]]>
     </installAgreement.getProjects>
 
     <installAgreement.getProjectsCount>
         <![CDATA[
             SELECT *
-            FROM brs.get_request_for_installation_agreements_count(:view_all, :user_id, :query)
+            FROM brs.get_request_for_installation_agreements_count(:view_all, :user_id, :isParent, :companyId, :parentCompanyId,
+                :query)
         ]]>
     </installAgreement.getProjectsCount>
 
@@ -69,7 +71,8 @@
 
     <installAgreement.getProposalNumbers>
         <![CDATA[
-            select proposal_nbr
+            select proposal_nbr,
+                   loan_type
             from brs.proposal_log_history plh
             inner join flow.project p on p.id::text = plh.project_id::text
             where p.id = :projectId

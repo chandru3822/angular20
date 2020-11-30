@@ -17,7 +17,7 @@
                   class="account-img"
         >
           <v-img name="accountImg" v-if="loadComplete && userImage && userImage.presignedUrl" :src="userImage.presignedUrl"></v-img>
-          <img name="accountImg" v-else src="../assets/user_img_placeholder.png">
+          <img name="accountImg" v-else src="../assets/flow/user_img_placeholder.png">
         </v-avatar>
       </v-btn>
     </template>
@@ -97,7 +97,7 @@
                      VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
                      VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
         menuOpen: false,
-        timezone: null,
+        timezone: this.$store.state.user.details.timezone || null,
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
         timezones: [
           { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
@@ -133,17 +133,19 @@
             title: 'Admin',
             icon: 'mdi-cogs',
             show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
-          }, {
-            path: '/propToolAdmin',
-            title: 'Prop Tool Temp',
-            icon: 'mdi-cogs',
-            show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
-          },
+          }
+          // turning this off for now until prop tool is being worked on again
+          // , {
+          //   path: '/propToolAdmin',
+          //   title: 'Prop Tool Temp',
+          //   icon: 'mdi-cogs',
+          //   show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
+          // },
 
         ]
       }
     },
-    created () {
+    updated () {
       this.getUserImage()
       if(this.$store.state.user.details.timezone === null) {
         this.timezone = {
@@ -184,7 +186,11 @@
       getFirstName () {
         if (this.$store.state.user.details) {
           const firstName = this.$store.state.user.details.firstName
-          return firstName.substring(firstName.length - 1).toLowerCase() === 's' ? firstName + '\'' : firstName + '\'s'
+          if(firstName) {
+            return firstName.substring(firstName.length - 1).toLowerCase() === 's' ? firstName + '\'' : firstName + '\'s'
+          } else {
+            return ''
+          }
         } else {
           return 'Unknown'
         }

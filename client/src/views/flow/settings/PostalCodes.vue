@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newZone = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newZone = {}]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -55,7 +55,7 @@
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-dialog
-                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      v-if="userCanDelete"
                       v-model="item.deleteConfirm"
                       width="500">
                       <template v-slot:activator="{ on }">
@@ -84,7 +84,7 @@
                             No
                           </v-btn>
                           <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deletePostalCodeZone(item.id)]">
                             Yes
@@ -100,7 +100,7 @@
           </v-card>
         </v-container>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -108,15 +108,13 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'PostalCodes',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -124,6 +122,9 @@
         search: '',
         newZone: {},
         selectedZoneId: null,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
         postalCodeZones: [],
@@ -152,6 +153,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -160,10 +162,12 @@
         try {
           await deleteRequest(`/postalCode/zone/${zoneId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Zone Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Zone')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -173,10 +177,12 @@
           const {data} = await postRequest(`/postalCode/zone`, this.newZone)
           this.$router.push({path: `/settings/postalCode/${data.id}`})
           this.snackbar = getSnackbar('SUCCESS', 'Zone Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Zone')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

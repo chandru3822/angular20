@@ -6,16 +6,26 @@
           <v-toolbar-title class="app-title">Positions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/settings/position" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text to="/settings/position" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon>add</v-icon>
               Add Position
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <div class="pa-4">
+          <v-text-field
+            v-model="search"
+            prepend-inner-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </div>
         <v-data-table
             :headers="headers"
             :items="filterPositions()"
             :fixed-header="true"
+            :search="search"
             disable-sort
             :items-per-page="-1"
             hide-default-footer
@@ -72,7 +82,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deletePosition(item)">
                         Yes
@@ -86,21 +96,19 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import orderBy from 'lodash.orderby'
   import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Positions',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         delay: 500,
@@ -109,8 +117,9 @@
         positions: [],
         descending: true,
         dataLoading: true,
+        search: '',
         headers: [
-          {text: 'Position Name', value: 'positionName', show: true},
+          {text: 'Position Name', value: 'position', show: true},
           {text: 'Org Type', value: 'orgType', show: true},
           {text: '', value: 'icons', show: false, width: '100px'},
         ]
@@ -132,6 +141,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -141,15 +151,17 @@
           await deleteRequest(`/position/${p.id}`)
           p.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Position Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       filterPositions () {
-        return orderBy(this.positions.filter(p => { return !p.archived}), [p => p.position.toLowerCase()])
+        return this.positions.filter(p => { return !p.archived})
       },
     }
   }
@@ -157,7 +169,7 @@
 
 <style lang="scss">
   #positions-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 </style>

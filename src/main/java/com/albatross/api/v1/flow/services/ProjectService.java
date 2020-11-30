@@ -75,7 +75,12 @@ public class ProjectService {
   public Page<Project> searchProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", "VIEW_ALL");
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
+    Boolean viewDownline = false;
+
+    if(!viewAll) {
+      viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
@@ -86,8 +91,8 @@ public class ProjectService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    String searchSqlKey = viewAll ? "project.search" : "project.searchByOwner";
-    String countSqlKey = viewAll ? "project.searchCount" : "project.searchCountByOwner";
+    String searchSqlKey = viewAll ? "project.search" : viewDownline ? "project.searchDownline" : "project.searchByOwner";
+    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
 
     List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
     Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
@@ -95,7 +100,27 @@ public class ProjectService {
   }
 
   public Optional<Project> getProject(Long projectId) {
-    return sqlCache.get("project.get", ImmutableMap.of("projectId", projectId), new ProjectMapper<>(Project.class, om));
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    return sqlCache.get("project.get",
+      ImmutableMap.of("projectId", projectId,
+                      "companyId", user.getCompanyId(),
+                      "isParent", isParent,
+                      "parentCompanyId", user.getHighestParentCompanyId()),
+      new ProjectMapper<>(Project.class, om));
+  }
+
+  public List<Owner> getOwners() {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    return sqlCache.query("project.getOwners",
+      ImmutableMap.of(
+                      "companyId", user.getCompanyId(),
+                      "isParent", isParent,
+                      "parentCompanyId", user.getHighestParentCompanyId()),
+      Owner.class);
   }
 
   public void updateProject(Project project) {
@@ -105,9 +130,9 @@ public class ProjectService {
     params.put("id", project.getId());
     params.put("street1", project.getStreet1());
     params.put("city", project.getCity());
-    params.put("stateId", project.getStateId());
+    params.put("companyStateId", project.getCompanyStateId());
     params.put("postalCode", project.getPostalCode());
-    params.put("countryId", project.getCountryId());
+    params.put("companyCountryId", project.getCompanyCountryId());
     params.put("modifiedById", currentUser.getId());
 
     sqlCache.update("project.update", params);
@@ -118,11 +143,22 @@ public class ProjectService {
     }
   }
 
+  public void updateProjectOwner(Long projectId, Owner owner) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", projectId);
+    params.put("modifiedById", currentUser.getId());
+    params.put("ownerUserPositionId", owner.getUserPositionId());
+
+    sqlCache.update("project.updateOwner", params);
+  }
+
   public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
     User user = securityService.getCurrentUser();
 
     // Get active company project status type so new projects can have an active status
-    CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(user.getCompanyId());
+    CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(contact.getCompanyId());
     Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
     HashMap<String, Object> params = new HashMap<>();
@@ -132,8 +168,8 @@ public class ProjectService {
     params.put("processId", processId );
     params.put("street1", contact.getStreet1() );
     params.put("city", contact.getCity() );
-    params.put("stateId", contact.getStateId() );
-    params.put("countryId", contact.getCountryId() );
+    params.put("companyStateId", contact.getCompanyStateId());
+    params.put("companyCountryId", contact.getCompanyCountryId() );
     params.put("postalCode", contact.getPostalCode() );
     params.put("companyProjectStatusTypeId", companyStatusTypeId );
 
@@ -174,6 +210,11 @@ public class ProjectService {
       throw new RuntimeException("File cannot be empty");
     }
 
+    //had to change this so that a parent looking at a child project could still see project statuses
+    HashMap<String, Object> p2 = new HashMap<>();
+    p2.put("projectId", projectId);
+    Long companyId = sqlCache.queryForObject("project.getCompanyId", p2, Long.class);
+
     //get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key = String.format( currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
@@ -196,7 +237,7 @@ public class ProjectService {
     params.put("key", key);
     params.put("size", file.getSize());
     params.put("createdById", currentUser.getId());
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", companyId);
     params.put("attachmentTypeId", attachmentTypeId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
@@ -208,12 +249,7 @@ public class ProjectService {
 
     sqlCache.update("project.addAttachment", params);
 
-    return attachmentService.findById(storageBucket, attachmentId);
-  }
-
-  public List<Project> getProjectsForContact(Long contactId) {
-    User user = securityService.getCurrentUser();
-    return sqlCache.query("project.getAllForContact", ImmutableMap.of("companyId", user.getCompanyId(), "contactId", contactId), Project.class);
+    return attachmentService.findById(attachmentId);
   }
 
   public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
@@ -225,11 +261,14 @@ public class ProjectService {
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
-    return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
-  }
-
-  public List<Owner> getOwners() {
-    return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    return sqlCache.query("project.getProcessStepsByProjectId",
+      ImmutableMap.of("projectId", projectId,
+        "companyId", user.getCompanyId(),
+        "isParent", isParent,
+        "parentCompanyId", user.getHighestParentCompanyId()),
+      new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
   public List<ProjectStatus> getStatuses(Long projectId) {
@@ -287,6 +326,10 @@ public class ProjectService {
     protected void initBeanWrapper(BeanWrapper bw) {
         TypeReference<Contact> contactRef = new TypeReference<>() {};
         bw.registerCustomEditor(Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
+
+        TypeReference<Owner> ownerRef = new TypeReference<>() {};
+        bw.registerCustomEditor(Object.class, "owner",
+          new JsonCollectionDeserializer(ownerRef, objectMapper));
     }
   }
 

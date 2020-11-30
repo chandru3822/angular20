@@ -14,13 +14,14 @@ import java.util.List;
 @Setter
 public class ScheduleEvent {
 
-  private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, processStepStatusTypeId, companyProcessStepStatusTypeId,
+  private Long resourceId, companyId, systemListId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, processStepStatusTypeId, companyProcessStepStatusTypeId,
       startCustomFieldValueId, startCustomFieldGroupAssignmentId, endCustomFieldValueId, endCustomFieldGroupAssignmentId,
-      resourceCustomFieldValueId, resourceCustomFieldGroupAssignmentId, contactId,
+      resourceCustomFieldValueId, resourceCustomFieldGroupAssignmentId, contactId, eventTypeId,
     //this is annoying but in order to make loading events work for multiple userPositions for the same user we need to pass back the userId. or i am dumb and cant figure it out otherwise.
     userId;
   private String resourceName, groupName, contactFirstName, contactLastName, contactFullName, projectName, processStepName,
-      state, processStepStatusType, startFieldName, endFieldName, resourceFieldName;
+      state, processStepStatusType, startFieldName, endFieldName, resourceFieldName, eventType,
+      street1, city, stateAbbreviation, postalCode;
   private Boolean archived, startFieldReadOnly, endFieldReadOnly, resourceFieldReadOnly;
 
   private Double latitude, longitude;
@@ -28,5 +29,6 @@ public class ScheduleEvent {
   private Timestamp start, end;
 
   private List<ListOfValue> resources;
+  private List<Long> systemListOptionIds;
 }
 

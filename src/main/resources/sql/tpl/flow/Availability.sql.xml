@@ -64,7 +64,9 @@
       and company_id = :companyId
       and archived is not true
       and end_date is null
-      and id != :id
+      and case when :endDate::date is not null then
+          start_date < :startDate
+          else id != :id end
   ]]></availability.updateScheduleWithoutEndDate>
 
   <availability.deleteSchedule><![CDATA[
@@ -84,6 +86,7 @@
     SELECT
         rs.id,
         rs.org_id,
+        rs.user_id,
         rs.start_date,
         rs.end_date,
         rs.company_id,
@@ -132,13 +135,16 @@
         modified_by_id = :modifiedById,
         date_modified = now(),
         all_day = :allDay,
-        description = :description
+        description = :description,
+        recurrence = :recurrence,
+        recurring_start_time = :recurringStartTime,
+        recurring_end_time = :recurringEndTime
     where id = :id
   ]]></availability.updateAppointment>
 
   <availability.insertAppointment><![CDATA[
-    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description)
-    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description)
+    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type)
+    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType)
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
@@ -150,7 +156,13 @@
         ra.company_id,
         ra.archived,
         ra.description,
-        ra.all_day
+        ra.all_day,
+        ra.recurrence,
+        ra.recurring_event_end_type,
+        ra.recurring_event_id,
+        case when ra.recurrence is not null then true else false end as repeat,
+        ra.recurring_start_time as "recurringStartTime",
+        ra.recurring_end_time as "recurringEndTime"
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
              LEFT JOIN flow.user u ON u.id = ra.org_id
@@ -162,19 +174,25 @@
         ra.id,
         ra.org_id,
         ra.start_time,
+       case when ra.recurrence is not null then true else false end as repeat,
         ra.end_time,
         ra.archived,
         ra.description,
         ra.company_id,
-        ra.all_day
+        ra.all_day,
+        ra.recurrence,
+        ra.recurring_event_id,
+        ra.recurring_event_end_type,
+        ra.recurring_start_time as "recurringStartTime",
+        ra.recurring_end_time as "recurringEndTime"
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
-             LEFT JOIN flow.user u ON u.id = ra.org_id
+             LEFT JOIN flow.user u ON u.id = ra.user_id
     WHERE case when :orgId::int is not null then ra.org_id = :orgId
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
-      and (ra.start_time >= now() OR ra.end_time >= now())
+      and (ra.start_time >= (now() - '7 days'::interval) OR ra.end_time >= (now() - '7 days'::interval))
       order by ra.start_time, ra.end_time, ra.all_day
       limit :limit
       offset :offset
@@ -184,12 +202,12 @@
     SELECT count (*)
     FROM flow.resource_appointment ra
              LEFT JOIN flow.org o ON o.id = ra.org_id
-             LEFT JOIN flow.user u ON u.id = ra.org_id
+             LEFT JOIN flow.user u ON u.id = ra.user_id
     WHERE case when :orgId::int is not null then ra.org_id = :orgId
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
-      and (ra.start_time >= now() OR ra.end_time >= now())
+      and (ra.start_time >= (now() - '7 days'::interval) OR ra.end_time >= (now() - '7 days'::interval))
   ]]></availability.getAppointmentsForResourceCount>
 
   <availability.deleteAppointment><![CDATA[
@@ -199,6 +217,14 @@
         archived = true
     where id = :id
   ]]></availability.deleteAppointment>
+
+  <availability.deleteAppointmentsByRecurrence><![CDATA[
+    update flow.resource_appointment
+    set modified_by_id = :modifiedById,
+        date_modified = now(),
+        archived = true
+    where recurring_event_id = :recurringEventId
+  ]]></availability.deleteAppointmentsByRecurrence>
 
   <availability.getUserAppointmentLength><![CDATA[
     select default_appointment_length
@@ -231,7 +257,84 @@
   ]]></availability.getTimeSlots>
 
   <availability.setCloserAppointment><![CDATA[
-    select * from flow.set_closer_appointment(:projectId::int, :projectProcessStepId::int, :appointmentTime::timestamp, :users::int[]);
+    select * from flow.set_closer_appointment(:projectId::int, :userId::int, :projectProcessStepId::int, :appointmentTime::timestamp, :users::int[]);
   ]]></availability.setCloserAppointment>
 
+  <availability.getDistinctRecurringEvents><![CDATA[
+    with recurring as (
+        select distinct ra.recurring_event_id,
+                        ra.recurrence,
+                        ra.company_id,
+                        ra.user_id,
+                        ra.org_id,
+                        ra.recurring_event_end_type,
+                        ra.recurring_start_time,
+                        ra.description, ra.all_day,
+                        EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration
+        from flow.resource_appointment ra
+                 inner join flow."user" u on u.id = ra.user_id
+                 inner join flow.company_user_status cus on cus.user_id = u.id
+                 inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = ra.company_id
+        where ra.recurring_event_end_type is null
+          and ra.recurring_event_id is not null
+          and ra.archived is not true
+          and ust.has_access is true
+        union
+        select distinct ra.recurring_event_id,
+                        ra.recurrence,
+                        ra.company_id,
+                        ra.user_id,
+                        ra.org_id,
+                        ra.recurring_event_end_type,
+                        ra.recurring_start_time,
+                        ra.description, ra.all_day,
+                        EXTRACT(EPOCH FROM (ra.end_time - ra.start_time )) / 60 as duration
+        from flow.resource_appointment ra
+                 inner join flow."org" o on o.id = ra.org_id
+        where ra.recurring_event_end_type is null
+          and ra.recurring_event_id is not null
+          and o.active_flag is true
+          and o.archived is not true
+          and ra.archived is not true
+    )
+    select recurring_event_id,
+           recurrence,
+           user_id,
+           org_id,
+           recurring_event_end_type,
+           recurring_start_time,
+           description,
+           company_id,
+           all_day,
+           duration,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(appointments)))
+                        FROM (
+                                 SELECT
+                                     ra.id,
+                                     ra.org_id as "orgId",
+                                     ra.start_time as "startTime",
+                                     ra.start_time as "startTimeString",
+                                     case when ra.recurrence is not null then true else false end as repeat,
+                                     ra.end_time as "endTime",
+                                     ra.end_time as "endTimeString",
+                                     ra.archived,
+                                     ra.description,
+                                     ra.company_id as "companyId",
+                                     ra.all_day as "allDay",
+                                     ra.recurrence,
+                                     ra.recurring_event_id as "recurringEventId",
+                                     ra.recurring_event_end_type as "recurringEventEndType",
+                                     ra.recurring_start_time as "recurringStartTime",
+                                     ra.recurring_end_time as "recurringEndTime"
+                                 FROM flow.resource_appointment ra
+                                    where ra.recurring_event_id = r.recurring_event_id
+                                      and ra.start_time >= :startingDate
+                             ) appointments), '[]') AS "appointments"
+       from recurring r
+  ]]></availability.getDistinctRecurringEvents>
+
+  <availability.cacheAvailability><![CDATA[
+        select brs.cache_available_time_slots()
+  ]]></availability.cacheAvailability>
 </sql>

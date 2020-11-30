@@ -21,10 +21,10 @@
        c.company_id,
        c.street1,
        c.city,
-       c.state_id,
+       c.company_state_id,
        s.state,
        c.postal_code,
-       c.country_id,
+       c.company_country_id,
        ctr.country,
        c.owner_user_position_id,
        coalesce((
@@ -43,23 +43,22 @@
                      concat(u.first_name, ' ', u.last_name) as "fullName",
                      p.position,
                      up.id as "userPositionId"
-                  FROM blueraven."user" u
+                  FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position p on p.id = up.position_id
                   WHERE up.id = c.owner_user_position_id) o) AS owner
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id
-             left join flow.state s on s.id = c.state_id
-             left join flow.country ctr on ctr.id = c.country_id
+             left outer join flow.company_state cs on cs.id = c.company_state_id
+              left outer join flow.state s on s.id = cs.state_id
+             left outer join flow.company_country cc on cc.id = c.company_country_id
+             left join flow.country ctr on ctr.id = cc.country_id
     where c.id = :contactId
+      and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else c.company_id = :companyId end
 
   ]]></contact.getById>
-
-  <contact.getContactCompanyId><![CDATA[
-      select company_id
-      from flow.contact
-      where id = :primaryId
-  ]]></contact.getContactCompanyId>
 
   <contact.getByProjectId><![CDATA[
     select
@@ -72,18 +71,24 @@
       c.phone,
       c.mobile,
       c.contact_type_id,
+      c.postal_code,
       c.company_id,
       c.street1,
       c.city,
-      c.state_id,
+      c.company_state_id,
       s.state,
-      c.country_id,
+      c.company_country_id,
       ct.country
     from flow.contact c
       inner join flow.project p on p.contact_id = c.id
-      left join flow.state s on s.id = c.state_id
-      inner join flow.country ct on ct.id = c.country_id
+      left outer join flow.company_state cs on cs.id = c.company_state_id
+      left outer join flow.state s on s.id = cs.state_id
+      left join flow.company_country cc on cc.id = c.company_country_id
+      left join flow.country ct on ct.id = cc.country_id
     where p.id = :projectId
+       and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else c.company_id = :companyId end
   ]]></contact.getByProjectId>
 
   <contact.getContactByPhone><![CDATA[
@@ -100,27 +105,32 @@
       c.company_id,
       c.street1,
       c.city,
-      c.state_id,
+      c.company_state_id,
       s.state,
-      c.country_id,
+      c.company_country_id,
       ct.country
     from flow.contact c
       inner join flow.project p on p.contact_id = c.id
-      left join flow.state s on s.id = c.state_id
-      inner join flow.country ct on ct.id = c.country_id
+      left outer join flow.company_state cs on cs.id = c.company_state_id
+      left outer join flow.state s on s.id = cs.state_id
+      inner join flow.company_country cc on cc.id = c.company_country_id
+      inner join flow.country ct on ct.id = cc.country_id
     where c.phone = :phone
+     and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else c.company_id = :companyId end
   ]]></contact.getContactByPhone>
 
   <contact.updateContact><![CDATA[
     update flow.contact set
            contact_type_id = :contactTypeId,
-           first_name = :firstName,
-           last_name = :lastName,
+           first_name = trim(:firstName),
+           last_name = trim(:lastName),
            street1 = :street1,
            city = :city,
-           state_id = :stateId,
+           company_state_id = :companyStateId,
            postal_code = :postalCode,
-           country_id = :countryId,
+           company_country_id = :companyCountryId,
            phone = :phone,
            email = :email,
            mobile = :mobile,
@@ -131,29 +141,12 @@
   ]]></contact.updateContact>
 
   <contact.insertContact><![CDATA[
-    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
-    values (:contactTypeId, :firstName, :lastName, :street1, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
+    values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)
   ]]></contact.insertContact>
 
   <contact.getOwners><![CDATA[
-    select u.id as "userId",
-           u.first_name,
-           u.last_name,
-           concat(u.first_name, ' ', u.last_name) as full_name,
-           up.id as user_position_id,
-           p.position
-    from flow.owner_position_id op
-         inner join flow.user_position up on array[up.position_id] <@ op.position_ids
-         inner join flow."user" u on u.id = up.user_id
-         inner join flow.position p on p.id = up.position_id
-         inner join flow.company_user_status cus on cus.user_id = u.id
-          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
-    where op.company_id = :companyId
-      and op.owner_type_id = 1
-      and ust.has_access is true
-      and up.start_date <= now()
-      and (up.end_date is null or up.end_date >= now())
-    order by u.last_name, u.first_name
+    select * from flow.get_contact_available_owners(:companyId::int, :inParentCompany)
   ]]></contact.getOwners>
 
   <contact.updateOwner><![CDATA[
@@ -169,7 +162,7 @@
            mailing_street1 = :street1,
            mailing_street2 = :street2,
            mailing_city = :city,
-           mailing_state = :state,
+           mailing_company_state_id = :stateId,
            mailing_postal_code = :postalCode,
            modified_by_id = :modifiedById,
            date_modified = now()
@@ -183,5 +176,11 @@
            date_modified = now()
     where id = :contactId
   ]]></contact.convertToContact>
+
+  <contact.getCompanyId><![CDATA[
+    select c.company_id
+    from flow.contact c
+    where c.id = :contactId
+  ]]></contact.getCompanyId>
 
 </sql>

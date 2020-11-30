@@ -1,8 +1,3 @@
--- DROP FUNCTION brs.get_pitches_drilldown(integer, integer, boolean, integer);
-
--- SELECT * FROM brs.get_pitches_drilldown(2399381, 1, false, null); -- setter
--- SELECT * FROM brs.get_pitches_drilldown(2390007, 1, true, 723); -- setter mgr
-
 CREATE OR REPLACE FUNCTION brs.get_pitches_drilldown(p_user_id integer, p_quarter integer, p_is_setter_mgr boolean DEFAULT false, p_setter_mgr_office_id integer DEFAULT null)
 	RETURNS SETOF json AS
 $BODY$
@@ -33,23 +28,19 @@ BEGIN
             select row_number() over (order by (concat(c.first_name, ' ', c.last_name))::bytea),
                    concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
-                   pd.source,
-                   concat(upv.first_name,' ',upv.last_name) as owner_name,
-                   employee_id.employee_id,
-                   pd.closer_appointment_start,
-                   closer_appointment_outcome.text_value
+                   pd.source_name as source,
+                   pd.closer_appointment_start as appointment_date,
+                   pd.closer_appointment_outcome_name as appointment_outcome
             from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                 inner join flow.user u on u.id = upv.user_id
-                left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
-                left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
-                left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
             where pd.closer_appointment_start between v_start_date and v_end_date
-                and pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
-                and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+                and pd.source in (525, 526) --(Setter Gen, Retargeted)
+                and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
                 and upv.primary_flag is true
+                and upv.position_level = 0
                 and case when p_is_setter_mgr is true then upv.org_id = p_setter_mgr_office_id
                     else u.id = p_user_id
                     end

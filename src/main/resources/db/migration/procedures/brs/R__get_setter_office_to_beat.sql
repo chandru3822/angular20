@@ -32,7 +32,7 @@ BEGIN
                    ) as rank
             from (
                 select o.id as org_id,
-                       o.org_name || ' (' || metro_area.metro_area || ')' as org,
+                       concat(o.org_name, ' (', metro_area.metro_area, ')') as org,
                        count(1)::bigint as pitches,
                        rank() over (order by count(1) desc) as rank
                 from flow.project p
@@ -42,15 +42,18 @@ BEGIN
                     inner join flow.user u on u.id = upv.user_id
                     inner join flow.org o on (o.id = upv.org_id and o.active_flag is true)
                     left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
-                where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
+                where pd.source in (525, 526) --(Setter Gen, Retargeted)
                     and case when upv.end_date is not null
                         then p.date_created::date between upv.start_date and upv.end_date
                         else p.date_created::date >= upv.start_date
                         end
+                    and upv.primary_flag is true
+                    and upv.position_level = 0
+                    and upv.position_id = 4
                     and pd.closer_appointment_start between p_start_date and p_end_date
-                    and pd.closer_appointment_outcome = 2 -- 'Pitched'
+                    and pd.closer_appointment_outcome = 2 --Pitched
                     and o.id != 171
-                group by o.id, o.org_name || ' (' || metro_area.metro_area || ')'
+                group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')
             ) as ranks
         ) as office_to_beat
         where org_id = p_office_id

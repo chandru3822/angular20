@@ -19,8 +19,8 @@
               slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedStates.length < 3">
-                <v-chip small close @click:close="selectedStates.splice(index, 1)"
-                        v-for="ss in selectedStates">
+                <v-chip small close @click:close="selectedStates.splice(idx, 1)"
+                        v-for="(ss, idx) in selectedStates">
                   <span>{{ ss.state }}</span>
                 </v-chip>
               </div>
@@ -49,6 +49,7 @@
                     :items="orgTypes"
                     label="Organization Resource Types"
                     multiple
+                    type="search"
                     :loading="orgTypesLoading"
                     hide-details
                     return-object
@@ -62,8 +63,8 @@
                 slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedOrgTypes.length < 3">
-                <v-chip small close @click:close="selectedOrgTypes.splice(index, 1)"
-                        v-for="sr in selectedOrgTypes">
+                <v-chip small close @click:close="selectedOrgTypes.splice(idx, 1)"
+                        v-for="(sr, idx) in selectedOrgTypes">
                   <span>{{ sr.orgType }}</span>
                 </v-chip>
               </div>
@@ -106,8 +107,8 @@
                 slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedPositions.length < 3">
-                <v-chip small close @click:close="selectedPositions.splice(index, 1)"
-                        v-for="sr in selectedPositions">
+                <v-chip small close @click:close="selectedPositions.splice(idx, 1)"
+                        v-for="(sr, idx) in selectedPositions">
                   <span>{{ sr.position }}</span>
                 </v-chip>
               </div>
@@ -146,6 +147,7 @@
                     :error="countSelected >= maxSelectionAllowed"
                     :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                     return-object
+                    type="search"
                     item-text="orgName"
                     item-value="id"
                     @input="[orgValuesChanged = true, limiter()]"
@@ -195,7 +197,7 @@
         <v-progress-circular
           indeterminate
           :size="80"
-          :color="'primary'"
+          :color="'primaryCustom'"
         ></v-progress-circular>
       </div>
       <FullCalendar ref="eventCalendar"
@@ -224,7 +226,7 @@
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
       />
     </div>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </div>
 </template>
 
@@ -238,7 +240,7 @@
   import {getSchedulingOrgTypes} from '@/services/orgService'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
@@ -246,7 +248,6 @@
     name: 'ScheduleCalendar',
     components: {
       FullCalendar,
-      Snackbar
     },
     props: {
       mapResources: {type: Array},
@@ -295,7 +296,7 @@
         return this.selectedPositions.length > 0 && !this.selectAllPositions
       },
       iconPositions () {
-        if (this.positions.length === this.selectedOrgTypes.length) {
+        if (this.positions.length === this.selectedPositions.length) {
           return 'check_box'
         }
         if (this.selectSomePositions) {
@@ -328,8 +329,8 @@
       },
     },
     created() {
-      this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
-      this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
+      // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
+      // this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
@@ -357,7 +358,6 @@
         maxSelectionAllowed: 10,
         countErrorMessage: 'Maximum Selection Reached',
         selectedStates: [],
-        previousStateCount: 0,
         masterOrgs: [],
         orgValuesChanged: false,
         orgs: [],
@@ -371,11 +371,12 @@
         orgTypes: [],
         orgTypeValuesChanged: false,
         selectedOrgTypes: [],
-        previousTypeCount: 0,
         orgTypesLoading: true,
         positions: [],
         positionValuesChanged: false,
         selectedPositions: [],
+        previousStateCount: 0,
+        previousTypeCount: 0,
         previousPositionCount: 0,
         positionsLoading: true,
         resources: [],
@@ -419,6 +420,7 @@
                   calendarApi.prev()
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customNext: {
@@ -429,6 +431,7 @@
                   calendarApi.next()
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customTimelineDay: {
@@ -442,6 +445,7 @@
                   this.calendar.options.slotWidth = 45
                   calendarApi.changeView('resourceTimelineDay')
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
               customTimelineWeek: {
@@ -456,6 +460,7 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.changeView('resourceTimelineWeek')
                   this.getEvents(false, true)
+                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
                 }
               },
             }
@@ -534,6 +539,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -547,19 +553,21 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getPositions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/position/scheduling`)
+          const {data} = await getRequest(`/position/schedulable`)
           this.positions = data
           this.positionsLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -587,6 +595,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -608,28 +617,28 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       limiter(e) {
         this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
-        console.log('count', this.countSelected)
         this.orgs.forEach(o => {
           let match = this.selectedOrgs.find(so => so.id === o.id)
-          o.disabled = !match && this.countSelected >= maxSelectionAllowed
+          o.disabled = !match && this.countSelected >= this.maxSelectionAllowed
         })
         this.users.forEach(u => {
           let match = this.selectedUsers.find(su => su.id === u.id)
-          u.disabled = !match && this.countSelected >= maxSelectionAllowed
+          u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
         })
       },
       async getEvents(isOrgs, reload) {
-        localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
-        localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
+        // localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
+        // localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
         if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
-          if (!this.calendarInitialRender) {
+          if (reload || !this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
           }
           this.calendarInitialRender = false
@@ -667,6 +676,7 @@
             } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.calendarLoading = false
             } finally {
               this.orgValuesChanged = false
@@ -690,7 +700,7 @@
         this.calendarView = this.calendarApi.view?.type
         if(this.calendarView === 'resourceTimelineDay') {
           this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
           // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
           // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
         } else {
@@ -736,6 +746,10 @@
                 id: resource.id,
                 projectName: re.projectName,
                 processStepName: re.processStepName,
+                city: re.city,
+                stateAbbreviation: re.stateAbbreviation,
+                postalCode: re.postalCode,
+                street1: re.street1,
                 color: resource.extendedProps.color,
                 coordinates: [ re.longitude, re.latitude]
               }
@@ -746,6 +760,7 @@
               return r.id !== renderInfo.resource?.id
             })
           }
+          console.log('randaLogger', this.mapResourceEvents)
           this.callback(this.mapResourceEvents)
         }
 
@@ -754,16 +769,22 @@
 
       },
       filterOrgsAndUsers() {
-        //only filter if something is selected
+        //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
         let stateFilterRequired = this.selectedStates?.length > 0
+        let stateReset = this.previousStateCount > 0 && this.selectedStates?.length === 0
+        this.previousStateCount = this.selectedStates?.length
         let orgTypeFilterRequired = this.selectedOrgTypes?.length > 0
+        let typeReset = this.previousTypeCount > 0 && this.selectedOrgTypes?.length === 0
+        this.previousTypeCount = this.selectedOrgTypes?.length
         let positionFilterRequired = this.selectedPositions?.length > 0
-        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired) {
+        let positionReset = this.previousPositionCount > 0 && this.selectedOrgTypes?.length === 0
+        this.previousPositionCount = this.selectedPositions?.length
+        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired || stateReset || typeReset || positionReset) {
           this.orgs = this.masterOrgs.filter(mo => {
             let stateMatch = true
             let orgTypeMatch = true
             if(stateFilterRequired) {
-              let match = this.selectedStates.find(ss => ss.id === mo.stateId)
+              let match = this.selectedStates.find(ss => ss.stateId === mo.stateId)
               stateMatch = match !== null && match !== undefined
             }
             if(orgTypeFilterRequired) {
@@ -773,7 +794,7 @@
             return stateMatch && orgTypeMatch
           })
           let selectedPositionIds = this.selectedPositions.map(p => p.id)
-          let selectedStateIds = this.selectedStates.map(s => s.id)
+          let selectedStateIds = this.selectedStates.map(s => s.stateId)
           this.users = this.masterUsers.filter(mo => {
             let stateMatch = true
             let positionMatch = true
@@ -812,7 +833,13 @@
 
   #calendar-container .fc-rows tr,
   #calendar-container .fc-rows tr .fc-widget-content div{
-    height: 25px !important;
+    padding: 5px 0 !important;
+
+  }
+
+  #calendar-container .fc-rows tr,
+  #calendar-container .fc-rows tr .fc-widget-content{
+    height: auto !important;
   }
 
   #calendar-container .fc-cell-content {

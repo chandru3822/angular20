@@ -1,93 +1,208 @@
 <template>
 <v-container id="smartlist-container">
   <v-row>
-
-    <v-col cols="12" class="text-left">
-      <v-btn
-        text
-        class="btn-back"
-        :ripple="false"
-        @click="$router.go(-1)"
-      >
-        Back
-      </v-btn>
-    </v-col>
-
-    <v-col cols="12">
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-
-<!--          @TODO: Remove once smartlists are "done" -->
-          <v-btn
-            id="runReport"
-            text
-            @click="runReport">
-            <v-icon>warning</v-icon>
-            <span>Run (for testing only)</span>
-          </v-btn>
-
-          <v-btn
-            text
-            color="primary"
-            :disabled="showNewFieldForm"
-            @click="smartlist.id ? updateSmartlist() : addSmartlist()"
-          >
-            <v-icon>save</v-icon>
-            <span v-if="!constants.IS_MOBILE">Save</span>
-          </v-btn>
-<!--          <v-btn text to="/smartlist/null" color="primary">-->
-<!--            <v-icon>cancel</v-icon>-->
-<!--            <span v-if="!constants.IS_MOBILE">Cancel</span>-->
-<!--          </v-btn>-->
-        </v-toolbar-items>
-      </v-toolbar>
-    </v-col>
-
     <v-col cols="12">
       <v-card>
-        <v-card-text>
-          <v-row>
-            <v-col cols="6">
-              <v-text-field
+        <v-form
+          ref="smartlistForm"
+          class="one-hunned"
+          :disabled="!canEdit"
+        >
+          <v-col cols="12">
+            <v-toolbar flat class="app-toolbar">
+              <v-btn
                 text
-                label="Smartlist Name"
-                v-model="smartlist.name"
-              />
-            </v-col>
+                small
+                class="mr-3"
+                color="primaryCustom"
+                @click="$router.go(-1)"
+              >
+                <v-icon>mdi-arrow-left</v-icon>
+              </v-btn>
+              <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn
+                  v-if="smartlist.id"
+                  text
+                  @click="runReport"
+                >
+                  <v-icon>mdi-cloud-download</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Export</span>
+                </v-btn>
 
-            <v-col cols="6">
-              <v-select
-                v-model="smartlist.companyObjectTypeId"
-                :items="companyObjectTypes"
-                item-text="objectType"
-                item-value="companyObjectTypeId"
-                label="Object Type"
-                placeholder="Select one..."
-              />
-            </v-col>
-          </v-row>
+                <v-btn
+                  v-if="canEdit"
+                  text
+                  @click="validateForm"
+                >
+                  <v-icon>save</v-icon>
+                  <span v-if="!constants.IS_MOBILE">Save</span>
+                </v-btn>
 
-          <v-row>
-            <v-col cols="12">
-              <v-checkbox
-                v-model="smartlist.shared"
-                label="Public"
-              />
-            </v-col>
-          </v-row>
-        </v-card-text>
+                <v-dialog
+                  v-model="showDeleteDialog"
+                  width="500"
+                  v-if="smartlist.id && canEdit"
+                >
+                  <template #activator="{on}">
+                    <v-btn
+                      text
+                      color="brRed"
+                      v-on="on"
+                    >
+                      <v-icon>delete</v-icon>
+                      <span v-if="!constants.IS_MOBILE">Delete</span>
+                    </v-btn>
+                  </template>
+
+                  <v-card>
+                    <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title
+                    >
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text>
+                      Are you sure you want to delete this smartlist?
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="showDeleteDialog = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primaryCustom"
+                        text
+                        @click="[showDeleteDialog = false, deleteSmartlist()]">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-toolbar-items>
+            </v-toolbar>
+          </v-col>
+
+          <v-col cols="12">
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    text
+                    label="Smartlist Name"
+                    v-model="smartlist.name"
+                    :rules="requiredRules"
+                  />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-autocomplete
+                    v-model="smartlist.viewObjectTypeId"
+                    :items="viewObjectTypes"
+                    item-text="objectType"
+                    item-value="objectTypeId"
+                    label="Table View Display"
+                    placeholder="Select one..."
+                    :rules="requiredRules"
+                  />
+                </v-col>
+
+
+              </v-row>
+
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-autocomplete
+                    v-model="smartlist.companyObjectTypeId"
+                    :items="companyObjectTypes"
+                    item-text="objectType"
+                    item-value="companyObjectTypeId"
+                    label="Rows"
+                    placeholder="Select one..."
+                    :rules="requiredRules"
+                  />
+                </v-col>
+
+<!--                @TODO: humes, holding off until after MVP -->
+<!--                <v-col cols="6" md="3">-->
+<!--                  <v-checkbox-->
+<!--                    v-model="smartlist.mainProcessSteps"-->
+<!--                    label="Primary Process Steps Only"-->
+<!--                  />-->
+<!--                </v-col>-->
+
+                <v-col cols="6" md="3">
+                  <v-checkbox
+                    v-model="smartlist.shared"
+                    label="Public"
+                  />
+                </v-col>
+
+                <v-col cols="6" md="3">
+
+
+                  <v-dialog
+                    v-model="showToggleDialog"
+                    width="500"
+                  >
+                    <template #activator="{on}">
+                      <v-checkbox
+                        v-model="smartlist.projectDetails"
+                        label="Project Details"
+                        v-on="smartlist.id && on"
+                      />
+                    </template>
+
+                    <v-card>
+                      <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Toggling project details will reset your smartlist, are you sure you want to continue?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="[showToggleDialog = false, smartlist.projectDetails = !smartlist.projectDetails]">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primaryCustom"
+                          text
+                          @click="[showToggleDialog = false, toggleSmartlistType()]">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-col>
+        </v-form>
       </v-card>
     </v-col>
 
     <v-col cols="12">
       <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>Fields</v-toolbar-title>
+        <v-toolbar-title>Columns</v-toolbar-title>
         <v-spacer />
         <v-toolbar-items>
           <v-btn
-            v-if="!showNewFieldForm"
+            v-if="!showNewFieldForm && canEdit"
             text
             :disabled="!smartlist.id"
             @click="showNewFieldForm = true"
@@ -108,37 +223,50 @@
 
       <v-card v-if="showNewFieldForm" class="elevation-1">
         <v-col class="text-left">
-          <v-select
-            v-model="newField.objectTypeId"
-            label="Object Type"
-            :items="companyObjectTypes"
-            item-value="objectTypeId"
-            item-text="objectType"
-            @input="getAvailableFields"
-          />
 
-          <v-select
-            v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
-            v-model="newField.processStepId"
-            label="Process Step"
-            :items="availableProcessSteps"
-            item-value="processStepId"
-            item-text="processStepName"
-            @input="calculateAvailableFields"
-          />
+          <template v-if="smartlist.projectDetails === true">
+            <v-autocomplete
+              v-model="newField.projectDetailsColumn"
+              label="Field"
+              :items="filteredProjectDetailsColumns"
+              item-value="projectDetailsColumn"
+              item-text="name"
+            />
+          </template>
 
-          <v-select
-            v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId !== 4 && newField.objectTypeId != null)"
-            v-model="newField.selectedField"
-            label="Field"
-            :items="availableFields"
-            item-text="name"
-            return-object
-          />
+          <template v-else>
+            <v-autocomplete
+              v-model="newField.objectTypeId"
+              label="Object Type"
+              :items="companyObjectTypes"
+              item-value="objectTypeId"
+              item-text="objectType"
+              @input="getAvailableFields"
+            />
+
+            <v-autocomplete
+              v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
+              v-model="newField.processStepId"
+              label="Process Step"
+              :items="availableProcessSteps"
+              item-value="processStepId"
+              item-text="processStepName"
+              @input="calculateAvailableFields"
+            />
+
+            <v-autocomplete
+              v-if="(newField.objectTypeId === 4 && newField.processStepId) || (newField.objectTypeId !== 4 && newField.objectTypeId != null)"
+              v-model="newField.selectedField"
+              label="Field"
+              :items="availableFields"
+              item-text="name"
+              return-object
+            />
+          </template>
 
           <v-btn
             text
-            color="primary"
+            color="primaryCustom"
             class="text-left"
             :disabled="isNewFieldButtonDisabled"
             @click="addNewField"
@@ -151,13 +279,12 @@
 
         <v-list dense>
           <v-list-item>
-            <v-list-item-action>
+            <v-list-item-action v-if="canEdit">
               <v-icon></v-icon>
             </v-list-item-action>
 
             <v-list-item-content>
               <v-row>
-                <!--                  @TODO: put inline styles in class -->
                 <v-col cols="1" class="text-left smartlist-field">Order</v-col>
                 <v-col cols="3" class="text-left smartlist-field">Field Name</v-col>
                 <v-col cols="4" class="text-left smartlist-field">Object Type</v-col>
@@ -173,11 +300,20 @@
           <v-divider />
           <v-divider />
 
-          <draggable v-model="assignedFields" @change="reorderFields" group="assignedFields">
+          <draggable
+            :disabled="!canEdit"
+            v-model="assignedFields"
+            @change="reorderFields"
+            group="assignedFields"
+          >
 
-            <v-list-item class="grab" v-for="(field, index) in assignedFields" :key="field.id">
+            <v-list-item
+              :class="{grab: canEdit}"
+              v-for="(field, index) in assignedFields"
+              :key="field.id"
+            >
 
-              <v-list-item-action>
+              <v-list-item-action v-if="canEdit">
                 <v-icon>drag_handle</v-icon>
               </v-list-item-action>
 
@@ -191,7 +327,8 @@
               </v-list-item-content>
 
               <v-list-item-action class="clickable">
-                <v-icon @click="deleteField(index)">delete</v-icon>
+                <v-icon v-if="canEdit" @click="deleteField(index)">delete</v-icon>
+                <v-icon v-else></v-icon>
               </v-list-item-action>
             </v-list-item>
           </draggable>
@@ -202,6 +339,10 @@
       :requirements="requirements"
       :company-object-types="companyObjectTypes"
       :reset-form="resetRequirementForm"
+      :disabled="!smartlist.id"
+      :can-edit="canEdit"
+      :is-project-details="smartlist.projectDetails"
+      :project-details-columns="filteredProjectDetailsRequirements"
       @input="addNewRequirement"
       @update="updateRequirement"
       @delete="deleteRequirement"
@@ -271,7 +412,6 @@
 <!--      </v-btn>-->
 <!--    </v-col>-->
   </v-row>
-  <Snackbar :snackbar="snackbar" />
 </v-container>
 </template>
 
@@ -280,7 +420,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar'
+
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
 import { saveAs } from 'file-saver'
@@ -288,7 +428,7 @@ import { saveAs } from 'file-saver'
 export default {
   name: 'Smartlist',
   components: {
-    Snackbar,
+
     draggable,
     SmartlistRequirement
   },
@@ -313,7 +453,15 @@ export default {
       fetchedLogic: [],
       logic: [],
       logicUpdated: false,
-      resetRequirementForm: false
+      resetRequirementForm: false,
+      viewObjectTypes: [
+        {objectTypeId: 1, objectType: 'Project'},
+        {objectTypeId: 2, objectType: 'Contact'}
+      ],
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      showDeleteDialog: false,
+      showToggleDialog: false,
+      projectDetailsColumns: []
     }
   },
   created () {
@@ -322,13 +470,25 @@ export default {
       this.getAssignedFields()
       this.getRequirements()
       this.getLogic()
+      this.getProjectDetailsColumns()
     }
     this.getOperations()
     this.getCompanyObjectTypes()
   },
   computed: {
     isNewFieldButtonDisabled () {
-      return !this.newField?.selectedField
+      return !this.newField?.selectedField && !this.newField?.projectDetailsColumn
+    },
+    canEdit () {
+      return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+    },
+    filteredProjectDetailsColumns () {
+      const columnNames = this.assignedFields.map(f => f.projectDetailsColumn)
+      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
+    },
+    filteredProjectDetailsRequirements () {
+      const columnNames = this.requirements.map(r => r.projectDetailsColumn)
+      return this.projectDetailsColumns.filter(f => !columnNames.includes(f.projectDetailsColumn))
     }
   },
   methods: {
@@ -339,6 +499,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getAssignedFields () {
@@ -348,6 +509,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching assigned fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getCompanyObjectTypes () {
@@ -357,6 +519,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getRequirements () {
@@ -366,6 +529,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching requirements')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getLogic () {
@@ -376,6 +540,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist logic')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getAvailableFields () {
@@ -392,6 +557,17 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async getProjectDetailsColumns () {
+      try {
+        const {data} = await getRequest(`/smartlist/availableProjectDetailsFields`)
+        this.projectDetailsColumns = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching project details fields')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     async getOperations () {
@@ -401,6 +577,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     calculateAvailableFields () {
@@ -408,14 +585,27 @@ export default {
       if (this.newField.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
       }
+
+      this.availableFields = this.availableFields.filter(f => {
+        if (f.customFieldGroupAssignmentId !== null) {
+          return !this.assignedFields.map(a => a.customFieldGroupAssignmentId).includes(f.customFieldGroupAssignmentId)
+        } else {
+          return !this.assignedFields.map(a => a.smartlistFieldId).includes(f.smartlistFieldId)
+        }
+      })
     },
     async addSmartlist () {
       try {
-        await postRequest(`/smartlist`, this.smartlist)
-        this.$router.back()
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/smartlist`, this.smartlist)
+        this.smartlist = data
+        this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+        this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async addNewField () {
@@ -425,13 +615,15 @@ export default {
           ...this.newField.selectedField,
           smartlistId: this.smartlist.id,
           displayOrder: this.assignedFields.length + 1,
-          processStepId: this.newField.processStepId || null
+          processStepId: this.newField.processStepId || null,
+          projectDetailsColumn: this.newField.projectDetailsColumn
         })
         this.assignedFields.push(data)
         this.resetNewFieldForm()
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -444,24 +636,29 @@ export default {
           ...requirement,
           smartlistId: this.smartlist.id,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
-          displayOrder: maxNumber + 1
+          displayOrder: maxNumber + 1,
+          projectDetailsColumn: requirement.projectDetailsColumn
         })
         this.requirements.push(data)
         this.resetRequirementForm = true
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding requirement to smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateSmartlist () {
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
-        this.$router.back()
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+        this.snackbar = getSnackbar('ERROR', e.message || 'Error saving smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateLogic () {
@@ -473,6 +670,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist logic')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -485,6 +683,20 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteSmartlist () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/smartlist/${this.$route.params.smartlistId}`)
+        this.$router.go(-1)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Unable to delete smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -500,6 +712,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -518,6 +731,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating field order')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -534,6 +748,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting requirement')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -545,14 +760,38 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
+        const {data} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });
         saveAs(blob, "smartlist.csv");
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', e.message)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    validateForm () {
+      if (this.$refs.smartlistForm.validate()) {
+        this.smartlist.id ? this.updateSmartlist() : this.addSmartlist()
+        if (this.smartlist.projectDetails && this.projectDetailsColumns.length === 0) {
+          this.getProjectDetailsColumns()
+        }
+      }
+    },
+    async toggleSmartlistType () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await putRequest(`/smartlist/${this.smartlist.id}/toggleType`)
+        this.assignedFields = []
+        this.requirements = []
+      } catch (e) {
+        logError(e)
+        this.smartlist.projectDetails = !this.smartlist.projectDetails
+        this.snackbar = getSnackbar('ERROR', 'Error updating smartlist')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -598,36 +837,6 @@ export default {
   font-size: 12px;
   color: rgba(0,0,0,0.6);
   font-weight: 700; line-height: 18px;
-}
-
-::v-deep {
-  .btn-back {
-
-    text-transform: capitalize;
-    text-decoration: underline;
-
-    &:not(.v-btn--round) {
-      padding: 0;
-    }
-
-    &:hover:before {
-      opacity: 0 !important;
-    }
-
-    .v-btn__content {
-      justify-content: start;
-    }
-  }
-
-  #runReport {
-    .v-btn__content {
-      color: red;
-    }
-
-    .v-icon {
-      color: red !important;
-    }
-  }
 }
 
 .v-list {

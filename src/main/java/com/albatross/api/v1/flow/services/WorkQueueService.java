@@ -71,7 +71,15 @@ public class WorkQueueService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, new WorkQueueDetailMapper<>(WorkQueueDetail.class, om));
+    String sqlKey = "workQueue.getProcessStepsByTypeId";
+
+    //todo: this is a total whack-a-hack, need to remove this after we do a more configurable work queue in a future release
+    if(workQueueTypeId == 98 || workQueueTypeId == 99 || workQueueTypeId == 106) {
+      sqlKey = "workQueue.getProcessStepsByTypeIdForHack";
+    }
+
+    List<WorkQueueDetail> results = sqlCache.query(sqlKey, params, new WorkQueueDetailMapper<>(WorkQueueDetail.class, om));
+    //count should be the same regardless of the hack or not
     Integer count = sqlCache.queryForObject("workQueue.getProcessStepsByTypeIdCount", params, Integer.class);
 
     Page<WorkQueueDetail> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
@@ -108,6 +116,9 @@ public class WorkQueueService {
       bw.registerCustomEditor(List.class, "activeProcessSteps",
         new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
 
+      TypeReference<List<Note>> notesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "notes",
+        new JsonCollectionDeserializer(notesRef, objectMapper));
     }
   }
 }

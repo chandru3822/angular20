@@ -25,213 +25,40 @@
     where p.id = :projectId
   ]]></project.getCompanyId>
 
+  <project.searchDownline><![CDATA[
+    select *
+    from flow.search_projects_with_down_line(:query::character varying, :companyId::int,
+                                                            :userId::int,
+                                                            :isParent::boolean,
+                                                            :limit::int, :offset::int)
+  ]]></project.searchDownline>
+
+  <project.searchDownlineCount><![CDATA[
+      select *
+      from flow.search_projects_with_down_line_count(:query::character varying, :companyId::int,
+                                                              :userId::int,
+                                                              :isParent::boolean)
+    ]]></project.searchDownlineCount>
+
   <project.search><![CDATA[
-    select
-      p.id,
-      p.project_name,
-      p.contact_id,
-      p.date_created,
-      p.street1,
-      p.street2,
-      p.city,
-      s.state,
-      p.postal_code as "postalCode",
-      cp.status_type_id,
-      st.status_type,
-      p.company_project_status_type_id,
-      cpst.project_status_type,
-      pr.process_name,
-      (select row_to_json(contact) from (
-        select
-            c.id,
-            c.phone,
-            c.mobile
-      ) contact) as contact
-    from flow.project p
-    inner join flow.company_process cp on cp.id = p.company_process_id
-    inner join flow.process pr on pr.id = cp.process_id
-    inner join flow.status_type st on st.id = cp.status_type_id
-    inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-    inner join flow.contact c on c.id = p.contact_id
-    left join flow.state s on s.id = p.state_id
-    where
-    case when :isParent
-             then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-         else cp.company_id = :companyId end
-        and p.project_name ilike '%' || :query || '%'
-    order by p.date_created desc
-    limit :limit
-    offset :offset
+    select *
+    from flow.search_all_projects(:query::character varying, :companyId::int,
+                              :isParent::boolean,:limit::int, :offset::int)
   ]]></project.search>
 
   <project.searchCount><![CDATA[
-    select count(*)
-    from flow.project p
-      inner join flow.company_process cp on cp.id = p.company_process_id
-      inner join flow.process pr on pr.id = cp.process_id
-      inner join flow.status_type st on st.id = cp.status_type_id
-      inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-      inner join flow.contact c on c.id = p.contact_id
-      left join flow.state s on s.id = p.state_id
-    where
-    case when :isParent
-             then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-         else cp.company_id = :companyId end
-        and p.project_name ilike '%' || :query || '%'
+    select * from flow.search_all_projects_count(:query::character varying, :companyId::int, :isParent::boolean)
   ]]></project.searchCount>
 
   <project.searchByOwner><![CDATA[
-    with user_position_ids as (
-        select distinct user_position_id
-        from flow.user_positions_vw
-        where user_id = :userId
-          and primary_flag is true
-          and archived is not true
-          and ( (now()::date between start_date and end_date) OR (end_date is null and now()::date > start_date))
-    ), project_ids as (
-        select distinct pps.project_id
-        from flow.project_process_step_custom_field_value ppscfv
-             inner join user_position_ids upi on ppscfv.int_value = upi.user_position_id
-             inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
-             inner join flow.project p on p.id = pps.project_id
-             inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
-             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
-             inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-             inner join flow.company_system_list csl on cf.company_system_list_id = csl.id
-        where cfg.event_type_id is not null
-          and csl.system_list_id in (1, 2, 4)
-          and p.project_name ilike '%' || :query || '%'
-        union distinct
-        select distinct pps.project_id
-        from flow.project p
-                 inner join flow.project_process_step pps on pps.project_id = p.id
-                 inner join flow.company_process cp on cp.id = p.company_process_id
-                 inner join flow.user_position up on up.id = pps.user_position_id
-                 inner join flow."user" u on u.id = up.user_id
-        where cp.company_id = :companyId
-          and p.project_name ilike '%' || :query || '%'
-          and u.id = :userId
-      union distinct
-        select distinct pps.project_id
-        from flow.project_process_step_custom_field_value cfv
-        inner join flow.project_process_step pps on pps.id = cfv.project_process_step_id
-          inner join flow.project p on p.id = pps.project_id
-        inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
-        inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-        inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
-        inner join flow.company_system_list csl on cf.company_system_list_id = csl.id
-        inner join flow.user_positions_vw upv on upv.org_id = cfv.int_value
-        inner join flow.user_status_type ust on ust.id = upv.user_status_type_id and ust.has_access is true
-        where cfv.int_value is not null
-          and p.project_name ilike '%' || :query || '%'
-          and upv.user_id = :userId
-          and cfg.archived is not true
-          and cfga.archived is not true
-          and pps.archived is not true
-          and cfg.event_type_id is not null
-          and cfga.schedule_field_type_id = 3
-          and csl.system_list_id = 3
-    )
-    select
-        distinct
-        p.id,
-        p.project_name,
-        p.contact_id,
-        p.date_created,
-        p.street1,
-        p.street2,
-        p.city,
-        s.state,
-        p.postal_code as "postalCode",
-        cp.status_type_id,
-        p.company_project_status_type_id,
-        st.status_type,
-        cpst.project_status_type,
-        pr.process_name,
-        (select jsonb_build_object(
-                        'id', c.id,
-                        'phone', c.phone,
-                        'mobile', c.mobile
-                    ))                                     as contact
-    from flow.project p
-        inner join project_ids pi on pi.project_id = p.id
-         inner join flow.project_process_step pps on pps.project_id = p.id
-         inner join flow.company_process cp on cp.id = p.company_process_id
-         inner join flow.process pr on pr.id = cp.process_id
-         inner join flow.status_type st on st.id = cp.status_type_id
-         inner join flow.contact c on c.id = p.contact_id
-         inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-         inner join flow.state s on s.id = p.state_id
-    where pps.archived is not true
-    order by date_created desc
-    limit :limit
-    offset :offset
+    select *
+    from flow.search_projects_by_user(:query::character varying, :companyId::int,
+                                 :userId::int,  :isParent::boolean,:limit::int, :offset::int)
   ]]></project.searchByOwner>
 
-  <project.searchCountByOwner><![CDATA[
-    with user_position_ids as (
-        select distinct user_position_id
-        from flow.user_positions_vw
-        where user_id = :userId
-          and primary_flag is true
-          and archived is not true
-          and ( (now()::date between start_date and end_date) OR (end_date is null and now()::date > start_date))
-    ), project_ids as (
-        select distinct pps.project_id
-        from flow.project_process_step_custom_field_value ppscfv
-                 inner join user_position_ids upi on ppscfv.int_value = upi.user_position_id
-                 inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
-                 inner join flow.project p on p.id = pps.project_id
-                 inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
-                 inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
-                 inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-                 inner join flow.company_system_list csl on cf.company_system_list_id = csl.id
-        where cfg.event_type_id is not null
-          and csl.system_list_id in (1, 2, 4)
-          and p.project_name ilike '%' || :query || '%'
-        union distinct
-        select distinct pps.project_id
-        from flow.project p
-                 inner join flow.project_process_step pps on pps.project_id = p.id
-                 inner join flow.company_process cp on cp.id = p.company_process_id
-                 inner join flow.user_position up on up.id = pps.user_position_id
-                 inner join flow."user" u on u.id = up.user_id
-        where cp.company_id = :companyId
-          and p.project_name ilike '%' || :query || '%'
-          and u.id = :userId
-            union distinct
-        select distinct pps.project_id
-          from flow.project_process_step_custom_field_value cfv
-          inner join flow.project_process_step pps on pps.id = cfv.project_process_step_id
-            inner join flow.project p on p.id = pps.project_id
-          inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
-          inner join flow.custom_field cf on cfga.custom_field_id = cf.id
-          inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
-          inner join flow.company_system_list csl on cf.company_system_list_id = csl.id
-          inner join flow.user_positions_vw upv on upv.org_id = cfv.int_value
-          inner join flow.user_status_type ust on ust.id = upv.user_status_type_id and ust.has_access is true
-          where cfv.int_value is not null
-            and p.project_name ilike '%' || :query || '%'
-          and upv.user_id = :userId
-          and cfg.archived is not true
-          and cfga.archived is not true
-          and pps.archived is not true
-          and cfg.event_type_id is not null
-          and cfga.schedule_field_type_id = 3
-          and csl.system_list_id = 3
-    )
-    select count(distinct p.id)
-    from flow.project p
-             inner join project_ids pi on pi.project_id = p.id
-             inner join flow.project_process_step pps on pps.project_id = p.id
-             inner join flow.company_process cp on cp.id = p.company_process_id
-             inner join flow.process pr on pr.id = cp.process_id
-             inner join flow.status_type st on st.id = cp.status_type_id
-             inner join flow.contact c on c.id = p.contact_id
-             inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-             inner join flow.state s on s.id = p.state_id
-    where pps.archived is not true
-  ]]></project.searchCountByOwner>
+  <project.searchByOwnerCount><![CDATA[
+    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::int, :userId::int, :isParent::boolean)
+  ]]></project.searchByOwnerCount>
 
   <project.generateReport><![CDATA[
     select
@@ -250,28 +77,6 @@
     order by p.date_created desc
   ]]></project.generateReport>
 
-  <project.getSharedByObjectType><![CDATA[
-    select
-        s.id,
-        s.name,
-        s.company_object_type_id,
-        cot.object_type_id,
-        s.shared,
-        s.owner_id,
-        s.date_created,
-        s.date_modified,
-        s.created_by_id,
-        s.modified_by_id,
-        s.archived
-    from flow.smartlist s
-    inner join flow.company_object_type cot on cot.id = s.company_object_type_id
-    where
-        (s.shared is true or s.owner_id = :userId) and
-        cot.object_type_id = :objectTypeId and
-        cot.company_id = :companyId
-    order by s.name
-  ]]></project.getSharedByObjectType>
-
   <project.get>
     <![CDATA[
       select
@@ -279,26 +84,46 @@
         p.street1,
         p.street2,
         p.city,
-        p.state_id,
+        p.company_state_id,
         s.state,
         p.postal_code,
-        p.country_id,
+        p.company_country_id,
         c.country,
+        p.contact_id,
         p.date_created,
         cp.company_id,
         cp.process_id,
+        p.time_zone,
         pro.process_name,
         p.contact_id,
+        comp.project_owner_readonly,
+        (SELECT row_to_json(o)
+            FROM (SELECT u.id as "userId",
+                     u.first_name as "firstName",
+                     u.last_name as "lastName",
+                     concat(u.first_name, ' ', u.last_name) as "fullName",
+                     pos.position,
+                     up.id as "userPositionId"
+                  FROM flow."user" u
+                    inner join flow.user_position up on up.user_id = u.id
+                    inner join flow.position pos on pos.id = up.position_id
+                  WHERE up.id = p.user_position_id) o) AS owner,
         p.project_name,
         p.company_project_status_type_id,
         cpst.project_status_type
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
       inner join flow.process pro on pro.id = cp.process_id
-      left join flow.state s on s.id = p.state_id
-      left join flow.country c on c.id = p.country_id
+      inner join flow.company comp on cp.company_id = comp.id
+      left join flow.company_state cs on cs.id = p.company_state_id
+      left join flow.state s on s.id = cs.state_id
+      left join flow.company_country cc on cc.id = p.company_country_id
+      left join flow.country c on c.id = cc.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.id = :projectId
+        and case when :isParent
+            then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else cp.company_id = :companyId end
     ]]>
   </project.get>
 
@@ -306,9 +131,9 @@
     update flow.project set
       street1 = :street1,
       city = :city,
-      state_id = :stateId,
+      company_state_id = :companyStateId,
+      company_country_id = :companyCountryId,
       postal_code = :postalCode,
-      country_id = :countryId,
       modified_by_id = :modifiedById,
       date_modified = now()
     where id = :id
@@ -316,26 +141,10 @@
 
   <project.insert>
     <![CDATA[
-      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, state_id, country_id, postal_code)
-      values (:contactId, :processId, :projectName, :createdById, :companyProjectStatusTypeId, :street1, :city, :stateId, :countryId, :postalCode)
+      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code)
+      values (:contactId, :processId, trim(:projectName), :createdById, :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, :postalCode)
     ]]>
   </project.insert>
-
-  <project.getAllForContact>
-    <![CDATA[
-      select p.id,
-         cp.company_id,
-         cp.process_id,
-         p.contact_id,
-         p.project_name,
-         p.company_project_status_type_id,
-         cpst.project_status_type
-      from flow.company_process cp
-          inner join flow.project p on cp.id = p.company_process_id and p.id = :projectId
-          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-      where p.contact_id = :contactId;
-    ]]>
-  </project.getAllForContact>
 
   <project.getProcessStepsByProjectId><![CDATA[
     select
@@ -343,9 +152,9 @@
       pps.id as project_process_step_id,
       pps.process_step_complete_date,
       pps.project_id,
+      pps.date_created,
       pps.main,
       ps.process_step_name,
-      ps.unique_behavior_type_id,
       coalesce(pps.date_modified, pps.date_created) as last_updated,
       cpsst.process_step_status_type,
       cpsst.process_step_status_type_id,
@@ -372,7 +181,10 @@
     left join flow.user u on u.id = up.user_id
     where
       p.id = :projectId and
-      pps.archived is not true
+        case when :isParent
+            then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else ps.company_id = :companyId end
+      and pps.archived is not true
     order by ps.process_step_name;
   ]]></project.getProcessStepsByProjectId>
 
@@ -385,16 +197,50 @@
       a.filename,
       a.attachment_type_id,
       a.content_type,
-      a.s3_key
+      a.s3_key,
+      a.archived
     from flow.project_attachment pa
            inner join flow.attachment a on a.id = pa.attachment_id
-    where pa.project_id = :projectId;
+    where pa.project_id = :projectId
+      and a.archived is not true
   ]]></project.getAttachments>
 
   <project.addAttachment><![CDATA[
     insert into flow.project_attachment(attachment_id, project_id, created_by_id)
     values (:attachmentId, :projectId, :createdById)
   ]]></project.addAttachment>
+
+  <project.updateOwner><![CDATA[
+    update flow.project
+        set user_position_id = :ownerUserPositionId,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></project.updateOwner>
+
+  <project.getOwners><![CDATA[
+    select u.id as user_id,
+       u.first_name,
+       u.last_name,
+       concat(u.first_name, ' ', u.last_name) as full_name,
+       up.id as user_position_id,
+       p.position,
+       up.position_id
+    from flow.user_position up
+             inner join flow.position p on up.position_id = p.id
+             inner join flow."user" u on up.user_id = u.id
+             inner join flow.company_user_status cust on cust.user_id = u.id
+             inner join flow.user_status_type ust on ust.id = cust.user_status_type_id and ust.company_id = p.company_id
+    where up.archived is not true
+      and ust.has_access is true
+      and case when :isParent then
+                       p.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+               else p.company_id = :companyId end
+                   and up.start_date <= now()
+                    and (up.end_date is null or up.end_date >= now())
+                   and p.project_owner is true
+    order by u.first_name, u.last_name
+  ]]></project.getOwners>
 
   <project.getActiveProjectStatusTypeByCompanyId><![CDATA[
     select
@@ -412,29 +258,6 @@
       company_id = :companyId and
       project_status_type_id = 1
   ]]></project.getActiveProjectStatusTypeByCompanyId>
-
-  <project.getOwners><![CDATA[
-    select
-      u.id as user_id,
-      u.first_name,
-      u.last_name,
-      concat(u.first_name, ' ', u.last_name) AS full_name,
-      up.id as user_position_id,
-      p.position
-    from flow.owner_position_id op
-    inner join flow.user_position up on array[up.position_id] <@ op.position_ids
-    inner join flow."user" u on u.id = up.user_id
-    inner join flow.position p on p.id = up.position_id
-    inner join flow.user_status_type ust on ust.company_id = p.company_id
-    inner join flow.company_user_status cus on cus.user_status_type_id = ust.id and cus.user_id = u.id
-    where
-      op.owner_type_id = 2 and
-      op.company_id = :companyId and
-      ust.has_access is true and
-      up.start_date <= now() and
-      (up.end_date is null or up.end_date >= now())
-    order by u.last_name, u.first_name
-  ]]></project.getOwners>
 
 <project.getStatuses><![CDATA[
     select
@@ -465,4 +288,12 @@
            time_zone = :timeZone
     where id = :id
   ]]></project.updateTimeZone>
+
+<project.updateNameByContactId><![CDATA[
+update flow.project
+set project_name = :name,
+    modified_by_id = :userId,
+    date_modified = now()
+where contact_id = :contactId
+]]></project.updateNameByContactId>
 </sql>

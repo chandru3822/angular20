@@ -121,7 +121,7 @@
                             No
                           </v-btn>
                           <v-btn
-                              color="primary"
+                              color="primaryCustom"
                               text
                               @click="deleteField(item)">
                             Yes
@@ -141,8 +141,8 @@
                     <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
                     <v-text-field
                         label="Field Name"
-                        :readonly="!userCanEdit"
-                        :disabled="!userCanEdit"
+                        :readonly="!item.custom"
+                        :disabled="!item.custom"
                         tabindex=1
                         v-model="item.newFieldName"
                     ></v-text-field>
@@ -163,11 +163,6 @@
                         autocomplete="off"
                         return-object
                     ></v-autocomplete>
-                    <div class="text-left read-only-label" v-if="item.companyDataType && item.companyDataType.dataTypeId === 5">
-                      <label>Multi-Line:</label>
-                      <input type="checkbox" :readonly="!userCanEdit"
-                             :disabled="!userCanEdit" class="ml-2" v-model="item.multiLine">
-                    </div>
                     <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
                       <v-text-field
                                     v-model="item.customFieldSqlKey"
@@ -187,11 +182,11 @@
                               :readonly="!item.custom || !userCanEdit"
                               label="System List Type"
                               item-text="systemList"
-                              item-value="id"
+                              item-value="companySystemListId"
                               @change="getSystemListOptions(item.companySystemListId)"
                     ></v-select>
 
-                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
+                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
                               v-model="item.systemListOptionIds"
                               :items="systemListOptions"
                               multiple
@@ -208,7 +203,7 @@
                       <draggable v-model="item.listOfValues"
                                  group="listOfValues" @start="drag=true" @end="drag=false">
                         <v-list v-for="(ddo, index2) in filterBy(item.listOfValues, false, 'archived')"
-                                :class="{'shaded-row': index % 2}"
+                                :class="{'shaded-row': selectedIndex % 2}"
                                 :key="index2">
                           <v-list-item class="grab">
                             <v-list-item-content>
@@ -271,7 +266,7 @@
         </v-card>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
@@ -281,17 +276,15 @@
   import cloneDeep from 'lodash.clonedeep'
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
-  import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
     name: 'CustomFields',
     mixins: [Vue2Filters.mixin],
     components: {
       draggable,
-      Snackbar
     },
     data() {
       return {
@@ -365,6 +358,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -377,11 +371,12 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getSystemListOptions(listId) {
-        let match = this.systemLists.find(sl => sl.id === listId)
+        let match = this.systemLists.find(sl => sl.companySystemListId === listId)
         if(listId && match?.hasSubOptions) {
 
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -397,6 +392,7 @@
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -414,6 +410,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -426,6 +423,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -438,17 +436,20 @@
             this.deleteError = true
             this.fieldsInUse = data
             this.snackbar = getSnackbar('ERROR', 'Field Cannot Be Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             this.fieldsInUse = []
             this.customFields = this.customFields.filter((cf) => {
               return cf.id !== item.id
             })
             this.snackbar = getSnackbar('SUCCESS', 'Field Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Field')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -516,10 +517,12 @@
           // re-sort in case the fieldName changed
           this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase())
           this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

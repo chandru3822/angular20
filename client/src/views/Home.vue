@@ -1,18 +1,37 @@
 <template>
-  <v-container class="home-page">
-    <v-row class="height-one-hunned">
-      <v-col cols="12" class="home-background">
-        <v-card color="white" class="home-card">
-          This is a home page. Content in progress...
-        </v-card>
-      </v-col>
-    </v-row>
+  <v-container v-if="logoLoaded" class="home-page home-background"
+    :style="{'background-image': null != homePageLogo.presignedUrl
+                  ? `url(${homePageLogo.presignedUrl})` : ''}">
+    <v-card color="white" class="home-card">
+      <v-card-title>Welcome to Albatross!</v-card-title>
+      <v-card-text>
+        <v-autocomplete v-if="!userIsAlbatross"
+                        v-model="user.homePageCompanyFeatureId"
+                        :items="homePages"
+                        label="Set a Default Home Page"
+                        clearable
+                        item-text="featureName"
+                        item-value="id"
+                        autocomplete="off"
+                        persistent-hint
+                        hint="* This will be used the next time you log in and can be changed at any time under Settings - User Profile"
+                        type="search"
+        ></v-autocomplete>
+        <v-btn @click="saveUserHomePage"
+               v-if="!userIsAlbatross"
+               color="primaryCustom" class="mt-4 white--text">
+          Save
+        </v-btn>
+      </v-card-text>
+    </v-card>
   </v-container>
 </template>
 
 <script>
 
 import {AppMutations} from "@/stores/AppStore";
+import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
+import {Actions} from "@/store";
 
 export default {
   name: 'home',
@@ -20,15 +39,75 @@ export default {
   data () {
     return {
       snackbar: {},
+      logoLoaded: false,
+      homePages: [],
+      homePageLogo: {},
+      //todo: 333 = home page logo - do this on backend?
+      homePageAttachmentTypeId: 333,
+      companyId: this.$store.state.user.details.companyId,
+      userIsAlbatross: this.$store.state.user.details.highestCompanyId === 1,
+      user: this.$store.state.user.details,
+
     }
   },
   created () {
-    //on context switching had to turn of the spinner
+    //on context switching had to turn off the spinner
+    this.loadHomePageLogo()
+    this.getHomePages()
     this.$store.commit(AppMutations.SET_LOADING, false)
 	},
   computed: {},
   methods: {
-
+    async saveUserHomePage () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let tempUsr = {
+          homePageCompanyFeatureId: this.user.homePageCompanyFeatureId
+        }
+        await putRequest(`/user/homePage`, tempUsr)
+        this.snackbar = getSnackbar('SUCCESS', 'Default Home Page Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Default Home Page')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getHomePages () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/feature/homePages`)
+        this.homePages = data.filter(d => {
+          return this.$store.getters.userHasFeature(d.featureCode)
+        })
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Home Pages')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadHomePageLogo () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          attachmentTypeId: this.homePageAttachmentTypeId,
+          sourceId: this.companyId,
+          callback: async (img) => {
+            this.homePageLogo = img
+            this.logoLoaded = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      } catch(e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Background Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
 }
 </script>
@@ -39,21 +118,20 @@ export default {
 <style scoped lang="scss">
 .home-page {
   height: 100%;
-  padding-top: 0;
+  padding-top: 50px;
 }
 
 .home-card {
-  height: 200px;
+  height: 235px;
   width: 50%;
-  margin: 50px auto;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width: 300px;
+  margin: auto;
+  padding-top: 15px;
 }
 
 .home-background {
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQwAAAC8CAMAAAC672BgAAABO1BMVEVTb3tyZljp6979/vlbSkL///////1bbnZ2ZVRPbHhTcHxoW0xOa3jW08x0ZlVmfIVkbG1ie4fo6tzy8+Wgrqt5jZNrgYnc4dVAX3Hz9O/q6ORgbnJjVEWGmqZ0iI1HaXa9xb+Poqx5kJtviJT3jB7a399taGOBlaFKb36LXzxjVkxUZm+Wqbf7jRlwZ12Ib2fEmWyLg3VYYGP5bhSxb1Sqe1F8dGv2eh3NhD5aTkjwiSOyf06UjIJDKiLCysbuZAC5tK7Hz9CknpRYWFmZqKikrq9PPTbliC6KeGXn9O3ViDjDvbP8dxEyYXSUeWHos4DjpYlbRDWupp2LkpLyrXHtezPr0Lztolrbv6vAgke0v8PI0NSJfnGsj26DYUigjHLPnmmTXDGRhXXuy6ijd1jr28j1oE10fHoqUWUOEG6IAAAO/UlEQVR4nO2dCX/aRhrGhWUNljTYEcQgyeAxNopJfLRxNiROfEHATtY5Wnfb7hJ3N+22zX7/T7AzuhBII82AwFDrafJLmsSj13/eOTXzjCBkypQpU6ZMmTJlypTpXkuGECEI7zqMuZCudR9idYUMh4C2SqXS0hL+2UV3HctdC51hEo5KvXtOA3ZtFqUi/qVY2rzfNQVV7KS4vjwkv2zd69SAmlNBbi9PCZWKftcBTS6INE1bU9AYSb7mNBeFww6pJ0WUJ2o2049xVkIPnVw/K3NnubzmNZ6YxbtXjVe2rt4uLo2K1x+UuDtHHwbRu4ang9aC0kCFwbfD3R3QYPx9MWHI6yQvKtdu3edMjSCM4rvz82eO3l8tJgx0Rr6R08sTZ7ywJnN99VBmYH1oOnqrTCncKUlxwv5AWoyiD2Odr56MwvC61gUbfCnNj69tffpEqsdNcSkVGAuWEa7kqwNXjXeBFvRewmi+PvCa/lcZjKuDF54yGC//5uq775buOwwl3wz0Jvcchi+9spTB8JTBCChlGFOKckbKYASUKgzRQgtdT9KEIQKpvdCroCnCELFAfZFppAdDtCVpfIsAc6XUYIjAhgGsBU6NtGCInqT6gi1mBJQSDHEgY3H713RgiBIRmL/UUDwx/WsMo7hU9DQejJJR6Ny2bjsFQyI04lsNGcphQV8pN797nvJMqhilCTOjdJFTc1iqmrsGCR0KhGvrUdp2tLteZgqaOcDvl12tsGg1d2JJwJUojQPj1kZhS31KOpQetRBUq5RGJQ1k3LSYYl5hpaF4LJZzjKqeGMDrCnb4YbSCZaktXJRFa0LRw+DiiaOi3/KCjqrSYhzWKuugX3nDCwMnueEFxP/epLU6XNaNJBqUQuTdMIsAjKeMKHhg7HkwmMvO5Vpet8g7z1q7XR0pqmqKgJJfyAqz8GFIJ+wsWuxhHrswnrDDIJ8nkck3fFSEw6iiaJ2rUipG0HCyElxzfHZf2SPc464n+FuwQwKck04lzAJLorSgctnZCBcNgyPY1R/YWzblaAwYF6QNBV2u9jOahWpK/UimBEbp5rYyzKK4ZD+5wJEYuRpHy+bR4KgnuRNSTySeJkOJZpFTLcqqBoFROb28Hc0Nu8W4YYeh3nC1bIrwhrcJzZHPh9onRj7kcLTtTIAhkMxYPr0ZhWHYzSd7pOoZ58RYEfaOjo44cK8CsjLDUUsUaqwmiK4mArS3goSbUPxo6Sk7iwueWuLEioUs9keQzKCNDyKLj64jRJLUp3StWxHjDKee8GSGMdZEEG4bzE/AbQbg2OFLqyPkg5NAnUJViWRBaLC3Gao55qwYWayNNOlN2Ikr1DpCgsUzHNoQtFwpLb37x9XVjz8NdSgiYO5N1GtpzKU0WZMKVbZnGFzrEPQ6Ur3AKUZt7SHqFqyfDxrn/6wMiXmcgYvfHneWj3oSE3I8bATsXQm9juRU0kXHlQTRh5cHjfffIBiQ3pfYRqC4DrbHX0hDlmTmkh/T4hhjxLWd6gnplCidiavmy0bj2TfD2wF1EzDMTVS1IBkTrDfL0ADgImFqTGatoMxYSeJZ4LwACesAUTAEBUeQNGutdkQgapOsKcoaECXzJg6HemIAifnlT2wdAQyzvUgYsAyA2IkLUj0xcWu0Pdn6qqzhEZ4ECp1WtaqGVVVPCpLIzCKxjoiJPXQkDAHt4CjNjhoZYzXXuSbrq2B70pcyNg2cvEA0C2HhjhB/C7usLGL6EbuOECW09gTGixAMBZVxTZGiYzTsIEWwPvkLKhlabpggLPKnBvNxgtg64j4jvvl0NhqGYeAwBTvMiBjdd3XmRO2FL70requcYeFpFWPPHZ8X7hMSx/RKvnEQBUOQ9T6ghwn6ekqvEZD2GUQ/CJgcucdQR6TdxI+vmX/56l+UMC1KlMDiPwxDlYzW2lLoOUCyahy8E/sRkmYMYyKybT16VCPrO1ZkmOtppYX7HKT0LFHy6gvALarR11hrCGMdAZyLqGFBHKYp+mlMWgwTh5n+G0uob/f7ny3cuRhmu18vI3YUtDW+YRaioUwetQx1rdb/bBrADrNf09N+5+g+Z2dfQ7q+XdN1DILvEQx1JLWdKjJEJMxdHKZSn3CcRX/Izn5ZFuRanfcLFeGYurzst53ASKfv84K1w9T25w2GohxTF9vJnN1JC0tIt5GbTxgOi8jVdvXW9Jq6Pk8LxBLsXMLwWIRwqNVWwUNhbKa9l2s+YfjvK20cLXfCV1VvL0xvs47RT7/zm0sYMMhieXnXMkxn9gQkb3S4u8vdJDMEO4cwlHwQxTEeJK712oa9hQvgn4bVVXTE3z8xBDuHMPzXc0Rv7FG0jBDStmv12raGtLrGU+Jg/DSYqVHWG+cSBon2iFSV46NA3Pa2NPwTD+ME5hKV5i/+KfmPD5zfKfl/5yNxzCkMfwdhZIkcMIRfvv3yG2EA88+fv7a5NDceP368EXVafG5hxJXIDAPmv8X68p8mJvD6uUOj+ehXDOPXR1HLG39lGM2v3zr6pdkiLDCNt81DwiKaxixg4E+otp9miYww4NMvLowvz187MJ6/fuywwDRWwkVPGYag7eDQhfJOagWyw8j/9tTVbcvXI1+HG6Gv2LHDtCOejuyejXPyHlseezUZvE1UFKiEFFG27Ee8GOLsTf7aymAElMEIyIex0Ec4U1IGI1OmTJkyZcqUKVOmTJkyZUpBrL4RdyLbJ2JmT1OEozdv5pUGRGViFTGNfXxRchwCZvIofnneEUtnqe4Dowi6h8Cn/6RxhHqDc4ysB13Gl38gftoPGkvQNjt3eVSm/WZEEZanBCPCMMcRTyHORSCdC8fem27Eko4GjiKpFguRVo7WmqYgnXW7n+PU07k8dW4GKEzXy2qQGKnC0LuVpZBlDpZ9JMQwrJ6GElwfXa/eHZISF6enzlHwKd+K4ptGpApDP4s+ve15owAgmT0hbgdk8+1LRz//F6dGwT0WP20Yb6YAI9gDRMKwgYh9ujd/8/cD1+384FPg66cN43gKMGgH2YdgkD2hXdo3p/jG74sOw70XKxEGfRO58vXgxXvb9v3Z+XcLDuNhYGwQC4N2vEBp/f6No99++mPBYfRI3CcFBhhYkcNK9xaRZnNziOmCwigdXi6H3aWiYIjlmDEHXHgYpDMp3Z4+YcsM0Yg5S3VnMFKbwsMacdm6Zmkz7HYjxghztjCEJ742YkTdth0pOYIDHYYo0Y/EzxhG4KThKlUrq4cPOMp0+9Z3WCwwRKDQKsrdwYjVao7dZ1TQ7SHon3/++WORCQbVG2+2MOAj6rnLUa3k2a88Q+WtYrFx0DhnygwR0A52zjgzvjLDyDG7rgrkoImuv2o0nulD+p/FmRqzhSGvrzDDyB3ydTgExvBXIAoMkeaPM+PMKN+yw8iFd23TpfDAALXoCeyMYSgc7nC5RxypwQeDUk9mDAP2eQwfpwWDZkU0axj1DjuL8FGPOPHAoDjPhWAoikD+ixgDBv6Ez1x+OEAOs9E2x/J08wrDGH0WFUa0WTXcNIIqbDxg0ZEnfhj9C2YaVTHJMygI4+NB4/0wPDoMEO14CMuS/y/Adct2H1xdtX+QceCq83/u79y/zOW82db3Mn9uiOwdSpLn2giNq8bboe8xJjOivTBlzWdhtpg/swnmnqgn5hhHXh0p4a6FERpNZbgzjoNB8dw2PBYc7bx/6HqMiTgyGJ1RVQuwO7hFPok3M3BsjqGAwTqHImF6MPbGgAE3JYMpB21jlEnMFGNgUHyqdOcrpDgzv1E98RJjvBh7ktipJlcVx359ghtadItmNUbpTXDzbn+FwWbc6miSxCCPbEtSISk5VMcZhflep4jLRva2XAu+kOEYzeFWXreN63gc+XOTsSD5i8M7a8XYX1aferd5sHqjHkasEnn+ka2LERzUyod4vcbdWnI8Ngubhggk8+Ikp1YjlCPul65ibmgZ0qO4iImVa4AFfXkHtQm1VlxZIyXbKI4m2qOmt+18lIBhhuUaS7pirCcP4oOuXgdo0C2a5W2JC4Z6kd/bEybdrkdaUTaxGW0rGwktcrUwAAzobwt0E/81+7DwxNLT2LiIyiYjDjb3tXxi9+TfohN3QQisSTw9K9hMyRoOj0XpLpuBnKY5p48oaZzkXA5il7gTUyJp3JmN183PqfleIdQ3wr6SIRg0T/1hKQ+SUuPQy8TYm2PsyRoji4KUoj2AgtDuZ4PijurDYN1nlgRDNd0C4y+bQqzG6zlT6qZriCYjYb/fb1tDCwnGEI3EaxucpZVmbOdqf5DOMC5pXYBUlGTjdTwSmsKNuFp9ByG0U4P+Ev+HLXLP4JL9o7i09DDhkYq3uMIEI9kmFUKD2NDHJpqaK0jATH9ZUKtvywLcrg+MStBWcPGtlAjD2yiWcLuQmxnJ26ChJsa65atq6xr/CyNF7xNPNgx5Ehj+FsL4hRK7zWCyjodrODeMi9uo4bHaOrkm1oHApL6ynUATwxCgv9YUmxl2b8Lm6i4reGokkT2kIeEGmPSAwJKnsX94chiBXR9xiUFma6w2+hC2Y4eElEvIJlYKMPa+Z6EhShaHrbJeN6g9PjBS8OOP1OQwgnttqbeSqT2JzzIWCtE+9PgPp2Ay6ioNGEEa0X3Kyg/7a7yfJlLCI2TcsPbh9O4RTwHG0Kb0KByrh939ZHv+sBCqtXHHYo+RiTu8aLS30TSvVE8HBjEHHbQcVXUluC3q8IEC67tj9YQQyeVar922rHa7V9/ncMofS6nAEGwee0PylkLX90lOjAlDIMd6ENJrNR0hbT9uvpuG0oIhBF4BB18Dw90JYdiF1MmWjoWCEanFgrFvw9jX/Nf89xiGYntJajtK86O7nf3D0MmiewXDXSyShebLF88cnZ//cV9heCIXNHkHgu49DJjPYAzUbF25LAiMknu66J7CEGAzv5HPb+xtFclZ22Xn0uX7CsMdNtlda+n08tKB0Z0sAAyD/FLnvoB5qJC7gGFL/qHkZIZTTeIOUrGUphEzaNyBLyYMAZIjx8TEgqgy8SwxBTPou4SxWRqcHJmFqUei5P36XcEQ0LrTlZRKlelbejBJI8NkRbsTcxyIultYD1O+zW9RRS5uQRDOq09RpkyZMmXKlClTpkyZFkH/Bwq9Cq9EiEelAAAAAElFTkSuQmCC');
-  background-repeat: repeat;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
 }
 </style>

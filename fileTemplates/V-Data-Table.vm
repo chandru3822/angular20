@@ -7,7 +7,7 @@
           <v-toolbar-title class="app-title">${UPPER_ITEM}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/new${UPPER_ITEM}" color="primary">
+            <v-btn text to="/new${UPPER_ITEM}" color="primaryCustom">
               <v-icon>add</v-icon>
               Add ${UPPER_ITEM}
             </v-btn>
@@ -59,7 +59,7 @@
                     Cancel
                   </v-btn>
                   <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="export${UPPER_ITEM}"
                   >
@@ -97,22 +97,20 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
   import { saveAs } from 'file-saver'
 
   export default {
     name: '${NAME}',
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         delay: 500,

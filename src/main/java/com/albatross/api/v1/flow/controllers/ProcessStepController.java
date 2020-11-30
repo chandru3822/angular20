@@ -2,12 +2,11 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.FieldInUse;
+import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.services.ProcessStepService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,11 +30,6 @@ public class ProcessStepController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getProcessStepsForCompany() {
     return processStepService.getProcessStepsForCompany();
-  }
-
-  @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Page<ProcessStep>> searchProcessStepsForCompany(@RequestParam(required = false) String query, Pageable pageable) {
-    return new ResponseEntity<>(processStepService.searchProcessStepsForCompany(query, pageable), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -71,5 +65,10 @@ public class ProcessStepController {
   @GetMapping(value = "/getByCompany", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProcessStep>> getProcessStepsByCompanyId() {
     return new ResponseEntity<>(processStepService.getByCompanyId(), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{id}/owners", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Owner>> getAvailableProcessStepOwners(@PathVariable Long id) {
+    return new ResponseEntity<>(processStepService.getOwners(id), HttpStatus.OK);
   }
 }

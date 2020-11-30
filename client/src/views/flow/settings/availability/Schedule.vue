@@ -252,7 +252,7 @@
                   <v-card-actions>
                     <v-btn color="primaryCustom"  @click="saveSchedule(schedule, false)" class="white--text"
                            v-if="userCanEdit"
-                           :disabled="!schedule.startDate || !schedule.endDate">
+                           :disabled="!schedule.startDate">
                       Save
                     </v-btn>
                   </v-card-actions>
@@ -300,13 +300,13 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
@@ -316,7 +316,7 @@
   export default {
     name: 'Schedule',
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     props: {
@@ -379,6 +379,7 @@
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
             this.snackbar = getSnackbar('ERROR', 'Error Loading Schedules')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
         }
       },
@@ -392,6 +393,7 @@
           console.error('*** ERROR ***', e)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Work Days')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async saveSchedule(sched, isNew) {
@@ -409,7 +411,7 @@
 
 
         // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
-        if(new Date(s.startDate) > new Date(s.endDate)) {
+        if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
           this.saveError = true
           this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
         }
@@ -436,32 +438,31 @@
             this.saveErrorMsg = '* End times must be after start times'
           } else {
 
-            //if there is not an end date, update any other's without an end date (there should only ever be one) - backend will handle actual save
-            if(!s.endDate) {
-              let match = this.schedules.find(sc => !sc.endDate)
-              if (match) {
-                match.endDate = moment.utc(s.startDate).subtract(1, 'd').format("YYYY-MM-DD")
-              }
-            }
             //check that no other schedules overlap this one
             let scheduleOverlap = false
+            let unEndingScheduleBeforeOthers = false
             this.schedules.forEach(sd => {
               if(s.id !== sd.id && ((new Date(s.startDate) >= new Date(sd.startDate) && new Date(s.startDate) <= new Date(sd.endDate)) ||
                  (new Date(s.endDate) >= new Date(sd.startDate) && new Date(s.endDate) <= new Date(sd.endDate)))) {
                 scheduleOverlap = true
+              }
+              if(!s.endDate && s.startDate < sd.startDate) {
+                unEndingScheduleBeforeOthers = true
               }
             })
 
             if(scheduleOverlap) {
               this.saveError = true
               this.saveErrorMsg = '* Schedule dates cannot overlap other schedules'
+            } else if(unEndingScheduleBeforeOthers) {
+              this.saveError = true
+              this.saveErrorMsg = '* A schedule without an end date cannot be created before any other existing schedule'
             } else {
               this.saveError = false
               this.saveErrorMsg = ''
               this.$store.commit(AppMutations.SET_LOADING, true)
               try {
                 let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
-                // console.log('randaLogger', formattedTimestamps)
                 formattedTimestamps.forEach(ft => {
                   ft.startTime = ft.startTime != null ? moment.utc(ft.startTime, 'hh:mm:ss').format('HH:mm:ss') : null
                   ft.endTime = ft.endTime != null ? moment.utc(ft.endTime, 'hh:mm:ss').format('HH:mm:ss') : null
@@ -481,10 +482,8 @@
                 //   rsa.startTime = rsa.startTime != null ? moment.utc(rsa.startTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
                 //   rsa.endTime = rsa.endTime != null ? moment.utc(rsa.endTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
                 // })
-                if(!s.id) {
-                  this.schedules.push(data)
-                }
-                this.schedules = orderBy(this.schedules, [s => s.startDate])
+                this.schedules = data
+                this.newSchedule = {}
                 this.addNew = false
                 this.expanded = []
                 this.$store.commit(AppMutations.SET_LOADING, false)
@@ -492,6 +491,7 @@
                 console.error('*** ERROR ***', e)
                 this.$store.commit(AppMutations.SET_LOADING, false)
                 this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               }
             }
           }
@@ -533,10 +533,12 @@
           //remove it from the schedules list so they can recreate one with the same dates
           this.schedules = this.schedules.filter(s => { return s.id !== item.id })
           this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting schedule')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

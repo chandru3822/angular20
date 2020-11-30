@@ -1,0 +1,86 @@
+<sql>
+  <app.getLatestAppByAppTypeIdAndType><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.archived,
+      a.app_type_id,
+      a.date_created,
+      a.date_modified,
+      a.show
+    FROM flow.app_attachment a
+    WHERE a.app_type_id = :appTypeId
+      AND a.attachment_type_id = :attachmentTypeId
+      AND a.archived IS NOT TRUE
+        and a.show is true
+    order by a.date_created desc
+    LIMIT 1
+  ]]></app.getLatestAppByAppTypeIdAndType>
+
+  <app.deleteById><![CDATA[
+    UPDATE flow.app_attachment
+    SET
+      archived = TRUE,
+      date_modified = now(),
+      modified_by_id = :modifiedById
+    WHERE id = :id
+  ]]></app.deleteById>
+
+  <app.getAttachmentsByType><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.show,
+      a.app_type_id,
+      ap.app_type,
+      a.date_created,
+      a.date_modified,
+      a.archived
+    FROM flow.app_attachment a
+      INNER JOIN flow.app_type ap ON ap.id = a.app_type_id
+      INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
+    WHERE at.id = :attachmentTypeId
+      AND a.archived IS NOT TRUE
+      order by a.date_created desc
+  ]]></app.getAttachmentsByType>
+
+  <app.showOrHideAttachment><![CDATA[
+        UPDATE flow.app_attachment
+            SET show = :show,
+                date_modified = now(),
+                modified_by_id = :userId
+        WHERE id = :id
+    ]]></app.showOrHideAttachment>
+
+  <app.insertAttachmentRecord><![CDATA[
+        INSERT INTO flow.app_attachment (filename, content_type, s3_key, size, date_created, company_id, attachment_type_id, app_type_id, created_by_id, display_name, version_number, build_number)
+        VALUES (:filename, :contentType, :key, :size, now(), :companyId, :attachmentTypeId, :appTypeId, :createdById, :displayName, :versionNumber, :buildNumber)
+    ]]></app.insertAttachmentRecord>
+
+  <app.findById><![CDATA[
+    SELECT aa.*,
+           ap.app_type
+    FROM flow.app_attachment aa
+        inner join flow.app_type ap on ap.id = aa.app_type_id
+    WHERE aa.id = :id
+  ]]></app.findById>
+
+  <app.deleteBySourceAndType><![CDATA[
+    UPDATE flow.app_attachment a
+    SET
+      archived = TRUE,
+      date_modified = now(),
+      modified_by_id = :modifiedById
+    WHERE a.app_type_id = :appTypeId
+        AND a.attachment_type_id = :attachmentTypeId
+  ]]></app.deleteBySourceAndType>
+
+</sql>

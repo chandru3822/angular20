@@ -25,13 +25,13 @@
         <v-btn @click="exportProposalLog">Export</v-btn>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { saveAs } from 'file-saver'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
@@ -41,7 +41,7 @@
   export default {
     name: 'Export',
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     data() {
@@ -77,6 +77,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Exporting Proposal Logs')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

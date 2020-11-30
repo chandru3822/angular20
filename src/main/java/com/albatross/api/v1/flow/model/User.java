@@ -12,7 +12,8 @@ import java.util.UUID;
 @Setter
 public class User {
 
-    private Long id, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId, defaultAppointmentLength;
+    private Long id, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId, defaultAppointmentLength, homePageCompanyFeatureId;
+    private int loginAttempts;
     //not sure if i should put this here.  there are times when i need a unique list of users so i can coalesce their positions. but other times i need lists of all users so 1 user can show up multiple times with different positions
     private Long userPositionId;
     // companyId = context
@@ -20,7 +21,7 @@ public class User {
     // highestParentCompanyId = highest company id within company_id's hierarchy
     // highestCompanyId = highest company a user has access to (regardless of context and hierarchies) <- mostly used to determine if user is system admin/has access to albatross
     private String email, phoneNumber, username, firstName, lastName, fullName, newPassword,
-        userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position, title; //title used for scheduling tool resource name
+        userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position, homePagePath, title; //title used for scheduling tool resource name
     private Long companyUserStatusId, userStatusTypeId;
     private List<Company> companies;
     private List<FeatureAccessControl> featureAccess;

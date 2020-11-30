@@ -41,6 +41,40 @@ public class AttachmentTypeService {
     return attachmentTypes;
   }
 
+  public void updateOrderInProcessStep(List<ProcessStepAttachmentType> attachmentTypes) {
+    for(ProcessStepAttachmentType at : attachmentTypes){
+      updateTypeOrderInProcessStep(at);
+    }
+  }
+
+  public void updateTypeOrderInProcessStep(ProcessStepAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", attachmentType.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("displayOrder", attachmentType.getDisplayOrder());
+
+    sqlCache.update("attachmentType.updateTypeOrderInProcessStep", params);
+  }
+
+  public void updateOrderInProject(List<ProjectAttachmentType> attachmentTypes) {
+    for(ProjectAttachmentType at : attachmentTypes){
+      updateTypeOrderInProject(at);
+    }
+  }
+
+  public void updateTypeOrderInProject(ProjectAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", attachmentType.getId());
+    params.put("modifiedById", currentUser.getId());
+    params.put("displayOrder", attachmentType.getDisplayOrder());
+
+    sqlCache.update("attachmentType.updateTypeOrderInProject", params);
+  }
+
   public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -126,7 +160,7 @@ public class AttachmentTypeService {
     }
 
     List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
-        ImmutableMap.of("companyId", companyId), ProjectAttachmentType.class);
+      ImmutableMap.of("companyId", companyId), ProjectAttachmentType.class);
 
     return result;
   }

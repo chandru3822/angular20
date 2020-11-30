@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.ScheduleAvailability;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.services.ScheduleService;
@@ -7,10 +8,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -42,6 +40,11 @@ public class ScheduleController {
     return scheduleService.getScheduleProjects(params);
   }
 
+  @PostMapping(value = "/projectResources", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ListOfValue> getAvailableProjectResources(@RequestBody ResourceRequest request) {
+    return scheduleService.getAvailableProjectResource(request);
+  }
+
   @PostMapping(value = "/getProject", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleEvent> getProject(@RequestBody EventSearchParams params) {
     //this returns a list because if they search for canceled or complete they could get more than one
@@ -61,9 +64,15 @@ public class ScheduleController {
 
   @Data
   public static class EventSearchParams {
-    private List<Long> userIds, orgIds, eventTypeIds, processStepStatusTypeIds, userPositionIds;
+    private List<Long> userIds, orgIds, eventTypeIds, userPositionIds;
     private String startTime, endTime, search;
-    private Long stateId, projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId;
+    private Long companyStateId, projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId;
+  }
+
+  @Data
+  public static class ResourceRequest {
+    private List<Long> systemListOptionIds;
+    private Long companyId, systemListId, resourceId;
   }
 
 }

@@ -4,7 +4,7 @@
     <v-row class="project-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/projectId/${projectId}/details`">{{ contact.fullName}}</router-link>
+          <router-link :to="`/project/${projectId}/details`">{{ contact.fullName}}</router-link>
         </div>
         <div class="project-subtitle">
           {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
@@ -78,11 +78,45 @@
               />
             </td>
             <td class="text-left">
-                <v-checkbox
+              <v-dialog
+                v-model="projectProcessStep.changeActiveConfirm"
+                width="500">
+                <template #activator="{ on }">
+                  <v-checkbox
+                    v-on="on"
                     v-model="projectProcessStep.main"
                     :disabled="projectProcessStep.main"
-                    @change="updateMain(projectProcessStep.projectProcessStepId)"
-                />
+                  />
+                </template>
+                <v-card>
+                  <v-card-title
+                    class="headline grey lighten-2"
+                    primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    Modifying the primary flag will cancel the current active process step. It will also run any automatic actions that have not yet been run where the criteria is met using values from the new active process step.
+                    Are you sure you want to set <strong>{{projectProcessStep.processStepName}} - {{projectProcessStep.projectProcessStepId}}</strong> to Primary?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      @click="[projectProcessStep.changeActiveConfirm = false, projectProcessStep.main = false]">
+                      No
+                    </v-btn>
+                    <v-btn
+                      color="primaryCustom"
+                      text
+                      @click="updateMain(projectProcessStep.projectProcessStepId)">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </td>
 <!--            <td class="text-right">-->
 <!--              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>-->
@@ -93,14 +127,13 @@
     </v-col>
   </v-col>
 
-  <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
-import Snackbar from '@/components/Snackbar.vue'
+
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
@@ -133,12 +166,11 @@ export default {
     }
   },
   components: {
-    Snackbar,
+
     AddProcessStep
   },
   async created () {
     this.getContact()
-    this.getAvailableOwners()
     await this.getProject()
     this.getProcess()
     await this.getAvailableStatuses()
@@ -152,6 +184,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching project')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     getProjectProcessSteps: async function () {
@@ -165,6 +198,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.isProjectProcessStepsLoading = false
       }
@@ -179,6 +213,7 @@ export default {
         this.process = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
       }
     },
@@ -190,22 +225,16 @@ export default {
         console.error('*** ERROR ***', e)
       }
     },
-    async getAvailableOwners () {
-      try {
-        //@TODO: @randa, pretty sure the contact list will work for process steps and projects but double checking
-        const {data} = await getRequest(`/project/owners`)
-        this.availableOwners = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
-      }
-    },
     async getAvailableStatuses () {
       try {
-        const {data} = await getRequest(`/processStep/status`)
+        let params = {
+          projectId: parseInt(this.projectId)
+        }
+        const {data} = await getRequestWithParams(`/processStep/status`, { params })
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         logError(e)
       }
     },
@@ -218,6 +247,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -231,6 +261,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
         const previousStatus = this.availableProcessStepStatuses.find(status => status.id ===  selectedStep.companyProcessStepStatusTypeId)
 
@@ -251,7 +282,7 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/`, {
           projectId: this.projectId,
           processStepId: this.selectedNewProjectProcessStep.processStepId,
-          companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.id === 1)?.processStepStatusTypeId,
+          companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1)?.processStepStatusTypeId,
           main: true
         })
         this.selectedNewProjectProcessStep = null
@@ -260,6 +291,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -272,6 +304,7 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting process step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -279,11 +312,12 @@ export default {
     updateMain: async function (projectProcessStepId) {
         try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.id === 1))
+            await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1))
             await this.getProjectProcessSteps()
         } catch (e) {
             logError(e)
             this.snackbar = getSnackbar('ERROR', 'Unable to update the primary process step')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             const selectedStep = this.projectProcessSteps.find(s => s.projectProcessStepId === projectProcessStepId)
             if (selectedStep) {
                 selectedStep.main = false

@@ -20,7 +20,6 @@ import com.twilio.type.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +39,7 @@ import java.net.URISyntaxException;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -119,7 +119,7 @@ public class SMSService {
         if (!mediaURLs.isEmpty()) {
 
             try (Connection connection = dataSource.getConnection()) {
-                String[] mediaUrls = mediaURLs.stream().map(p -> p.toString()).toArray(String[]::new);
+                String[] mediaUrls = mediaURLs.stream().map(URI::toString).toArray(String[]::new);
                 Array varchar = connection.createArrayOf("varchar", mediaUrls);
                 source.addValue("mediaUrls", varchar);
             } catch (SQLException e) {
@@ -176,8 +176,7 @@ public class SMSService {
 
                 Date twilioCreated = null;
                 if (message.getDateCreated() != null) {
-
-                    twilioCreated = message.getDateCreated().withZone(DateTimeZone.UTC).toLocalDateTime().toDate();
+                    twilioCreated = Date.from(message.getDateCreated().withZoneSameInstant(ZoneId.of("UTC")).toInstant());
                 }
 
                 HashMap<String, Object> params = new HashMap<>();

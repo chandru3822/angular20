@@ -37,12 +37,16 @@ public class OrgTypeService {
     return results;
   }
 
-  public List<OrgType> getSchedulingOrgTypesForCompany() {
+  public List<OrgType> getSchedulableOrgTypesForCompany() {
     User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<OrgType> results = sqlCache.query("orgType.getSchedulingForCompany", params, OrgType.class);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+
+    List<OrgType> results = sqlCache.query("orgType.getSchedulableForCompany", params, OrgType.class);
     return results;
   }
 

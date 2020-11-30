@@ -2,14 +2,11 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.config.ScheduledConfig;
-import com.albatross.api.exceptions.EmailInUseException;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.flow.model.UserStatusType;
-import com.albatross.api.v1.flow.model.PasswordResetRequest;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserSearch;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CommunicationService;
 import com.albatross.api.v1.flow.services.UserService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -22,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.InputStream;
 import java.util.*;
@@ -36,7 +34,7 @@ public class UserController {
     private final CommunicationService communicationService;
     private final UserService userService;
 
-    @Value("${home_url}")
+    @Value("${app.home_url}")
     private String homeUrl;
 
     @PostMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -44,36 +42,74 @@ public class UserController {
         return new ResponseEntity<>(userService.searchUsers(search, pageable), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/exportUsers", produces = "text/csv")
-    public ResponseEntity exportUsers(@RequestBody UserSearch search) {
-        return userService.exportUsers(search);
+    @PutMapping(value="/homePage", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void saveUserHomePage(@RequestBody User user) {
+        userService.saveUserHomePage(user.getHomePageCompanyFeatureId());
     }
 
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity saveUser(@RequestBody User user) throws EmailInUseException {
+    public ResponseEntity saveUser(@RequestParam(required = false) Boolean userIsAlbatross,
+                                   @RequestBody User user) {
         if (userService.emailExists(user.getEmail(), user.getId())) {
-            throw new EmailInUseException(user.getEmail(), "Email");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use", new Exception());
+        }
+        if (userService.usernameExists(user.getUsername(), user.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use", new Exception());
+        }
+        if(null != user.getNewPassword() && user.getNewPassword().length() < 8) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
+        }
+        if(user.getUsername().length() < 3) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Username", new Exception());
         }
 
-        Optional<User> result = userService.saveUser(user);
+        Optional<User> result = userService.saveUser(user, null != userIsAlbatross ? userIsAlbatross : false);
         return result.isEmpty() ? ResponseEntity.badRequest().body("Cannot Access User") : ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getUser(@PathVariable Long id) {
-        Optional<User> result = userService.getUser(id);
+    public ResponseEntity getUser(@PathVariable Long id,
+                                  @RequestParam(required = false) Boolean userIsAlbatross) {
+        Optional<User> result = userService.getUser(id, null != userIsAlbatross ? userIsAlbatross : false);
         return result.isEmpty() ? ResponseEntity.badRequest().body("Cannot Access User") : ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/getSchedulingUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<User> getSchedulingUsers(@RequestParam(required = false) Long stateId,
+    public List<User> getSchedulingUsers(@RequestParam(required = false) Long companyStateId,
                                          @RequestParam Boolean isSchedulingTool) {
-        return userService.getSchedulingUsers(stateId, isSchedulingTool);
+        return userService.getSchedulingUsers(companyStateId, isSchedulingTool);
     }
 
     @GetMapping(value = "/statuses", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<UserStatusType> getCompanyUserStatuses() {
-        return userService.getCompanyUserStatuses();
+    public List<UserStatusType> getCompanyUserStatuses(@RequestParam(required = false) Long companyId) {
+        //pass in company when the statuses you want back are not from the logged in user
+        return userService.getCompanyUserStatuses(companyId);
+    }
+
+    @PutMapping(value = "/statusType", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void saveUserStatusType(@RequestBody UserStatusType userStatusType) {
+        userService.saveUserStatusType(userStatusType);
+    }
+
+    @PutMapping(value = "/{id}/unlock", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void unlockUser(@PathVariable Long id) {
+        userService.unlockUser(id);
+    }
+
+    @Data
+    public static class NewUserCompanyRequest {
+        private Long companyId, companyUserStatusTypeId, userId;
+    }
+
+    @PostMapping(value = "/removeFromCompany", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Company> removeFromCompany(@RequestBody NewUserCompanyRequest req) {
+        return userService.removeFromCompany(req);
+    }
+
+    @PostMapping(value = "/addToCompany", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Company> addToCompany(@RequestBody NewUserCompanyRequest req) {
+        //pass in company when the statuses you want back are not from the logged in user
+        return userService.addToCompany(req);
     }
 
     @PostMapping(value = "/{userId}/status/{userStatusTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -136,6 +172,7 @@ public class UserController {
         try {
             if(null != passwordResetRequest.getUserId() && null != passwordResetRequest.getNewPassword()) {
                 result = userService.updatePassword(passwordResetRequest);
+                userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
             }
 
         } catch (Exception e) {

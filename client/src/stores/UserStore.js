@@ -1,4 +1,5 @@
 import {postRequest} from "@/helpers/helpers"
+import moment from "moment-timezone";
 
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
@@ -14,7 +15,8 @@ export const UserMutations = {
   INIT: 'storeInt',
   SET_DETAILS: 'setDetails',
   SET_USER_IMAGE: 'setUserImage',
-  SET_COMPANIES: 'setCompanies'
+  SET_COMPANIES: 'setCompanies',
+  RESET_STATE: 'resetState'
 }
 
 export const UserStore = {
@@ -31,16 +33,30 @@ export const UserStore = {
     [UserMutations.SET_DETAILS]: (state, details) => (state.details = details),
     [UserMutations.SET_USER_IMAGE]: (state, image) => (state.userImage = image),
     [UserMutations.SET_COMPANIES]: (state, companies) => (state.companies = companies),
+    [UserMutations.RESET_STATE]: (state) => (Object.assign(state, {
+      authorized: false,
+      jwt: null,
+      loginError: null,
+      details: {},
+      userImage: {},
+      companies: []
+    })),
   },
   actions: {
     [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {
       state.details.timezone = timezone
       //todo: date/time inputs don't update when the zone is changed. should we refresh?
-
       commit(UserMutations.SET_DETAILS, state.details)
     },
     [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
       commit(UserMutations.LOGIN_ERROR, '')
+      //pls fix the undefined timezone issue!
+      if(!details.timezone) {
+        details.timezone = {
+          friendlyValue: moment.tz.guess(),
+          value: moment.tz.guess()
+        }
+      }
       commit(UserMutations.SET_DETAILS, details)
 
       if (getters.userHasAnyFeature) {
@@ -56,15 +72,19 @@ export const UserStore = {
       //change context
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
-      // dont do this. the vuex store gets refreshed anyway on the href = '/'
       //update vuex store - user details
-      // await commit(UserMutations.SET_DETAILS, data)
+      await commit(UserMutations.SET_DETAILS, data)
 
-      //refresh entire app and go to home screen
-      window.location.href = '/'
+      //refresh entire app and go to users home page if they have one
+      if(data.homePagePath) {
+        window.location.href = data.homePagePath
+      } else {
+        window.location.href = '/'
+      }
     },
-    [UserActions.LOGOUT]: () => {
+    [UserActions.LOGOUT]: ({ commit }) => {
       localStorage.removeItem('store')
+      commit(UserMutations.RESET_STATE)
     }
   },
   getters: {

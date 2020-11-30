@@ -59,9 +59,10 @@
                   :accept="acceptedFileTypes"
                   class="file-input clickable"
                   :disabled="savingCompanyLogo"
-                  @change="uploadFile($event.target.files, attachmentTypeId, companyId)"
+                  @change="uploadFile(true, $event.target.files, attachmentTypeId, companyId, 1048576)"
                   name="avatar"
               >
+              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
             </form>
           </div>
           <div class="company-logo-background" v-else-if="companyLogo.presignedUrl">
@@ -73,7 +74,48 @@
         </div>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
+
+    <v-divider class="mt-3 mb-3"></v-divider>
+    <v-row>
+      <v-col cols="12">
+        <v-toolbar color="white" class="elevation-1">
+          <v-toolbar-title class="app-title">Home Page Logo</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <div v-if="userCanEdit">
+            <v-btn text v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
+              <v-icon v-if="addHomePageImage">remove</v-icon>
+              <v-icon v-else>add</v-icon>
+            </v-btn>
+            <v-btn v-else text class="mr-2" @click="deleteAttachment(homePageLogo.id)">
+              <v-icon>delete</v-icon>
+            </v-btn>
+          </div>
+        </v-toolbar>
+        <div class="text-center">
+          <div class="mt-4" v-if="addHomePageImage">
+            <form enctype="multipart/form-data" novalidate>
+              <input
+                type="file"
+                :accept="acceptedFileTypes"
+                class="file-input clickable"
+                :disabled="savingHomePageLogo"
+                @change="uploadFile(false, $event.target.files, homePageAttachmentTypeId, companyId, 1048576)"
+                name="avatar"
+              >
+              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+            </form>
+          </div>
+          <div class="company-logo-background" v-else-if="homePageLogo.presignedUrl">
+            <img class="company-logo" :src="homePageLogo.presignedUrl">
+          </div>
+          <div class="mt-4" v-else>
+            No image uploaded
+          </div>
+        </div>
+      </v-col>
+    </v-row>
+
   </v-container>
 </template>
 
@@ -85,13 +127,11 @@ import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Snackbar from '@/components/Snackbar.vue'
+
 
 export default {
   name: 'UserProfile',
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       loadComplete: false,
@@ -105,7 +145,12 @@ export default {
       savingCompanyLogo: false,
       //todo: 29 = company logo - do this on backend?
       attachmentTypeId: 29,
-      companyLogo: {}
+      companyLogo: {},
+      addHomePageImage: false,
+      savingHomePageLogo: false,
+      homePageLogo: {},
+      //todo: 333 = home page logo - do this on backend?
+      homePageAttachmentTypeId: 333,
     }
   },
   computed: {
@@ -121,6 +166,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Company')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -132,6 +178,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Company')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -144,34 +191,48 @@ export default {
             this.companyLogo = {}
             // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
             this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         })
       } catch(e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async uploadFile (files, attachmentTypeId, sourceId) {
+    async uploadFile (isCompanyLogo, files, attachmentTypeId, sourceId, sizeLimit) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await this.$store.dispatch(Actions.FILE_UPLOAD, {
           file: files[0],
+          sizeLimit,
           attachmentTypeId,
           sourceId,
-          callback: async (img) => {
-            this.companyLogo = img
-
-            // this.$store.commit(UserMutations.SET_USER_IMAGE, img)
-            this.addImage = false
-            this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-            this.$store.commit(AppMutations.SET_LOADING, false)
+          callback: async (img, error) => {
+            if(error?.error) {
+              this.snackbar = getSnackbar('ERROR', error.errorMsg)
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            } else {
+              if(isCompanyLogo) {
+                this.companyLogo = img
+                this.addImage = false
+              } else {
+                this.homePageLogo = img
+                this.addHomePageImage = false
+              }
+              this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
           }
         })
       } catch(e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -189,6 +250,25 @@ export default {
       } catch(e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadHomePageLogo () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          attachmentTypeId: this.homePageAttachmentTypeId,
+          sourceId: this.companyId,
+          callback: async (img) => {
+            this.homePageLogo = img
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      } catch(e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -196,6 +276,7 @@ export default {
   async created () {
     this.loadCompany()
     this.loadCompanyLogo()
+    this.loadHomePageLogo()
   }
 }
 </script>

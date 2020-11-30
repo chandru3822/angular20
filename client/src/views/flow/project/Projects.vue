@@ -7,7 +7,8 @@
 
                 <v-spacer />
 
-                <v-select
+                <v-autocomplete
+                    v-if="$store.getters.userHasFeature('SMARTLIST')"
                     v-model="selectedSmartlistId"
                     :items="smartlists"
                     item-text="name"
@@ -50,6 +51,7 @@
                 fixed-header
                 :options.sync="options"
                 disable-sort
+                :mobile-breakpoint="0"
                 :footer-props="footerProps"
                 :server-items-length="totalProjects"
                 :loading="isProjectsLoading"
@@ -68,7 +70,7 @@
                         @click="$router.push({name: 'projectDetails', params: {projectId: project.id}})">
                         <td class="text-left">{{project.id}}</td>
                         <td class="text-left">{{project.projectName}}</td>
-                        <td class="text-left">{{project.processName}}</td>
+                        <td class="text-left">{{project.stateAbbreviation}}</td>
                         <td class="text-left">{{project.projectStatusType}}</td>
                         <td class="text-left">{{project.dateCreated | formatDate('date')}}</td>
                     </tr>
@@ -91,7 +93,6 @@
         @confirm="[showConfirmDialog = false, generateReport()]"
     />
 
-    <Snackbar :snackbar="snackbar" />
 </v-container>
 </template>
 
@@ -104,14 +105,13 @@ import debounce from 'lodash.debounce'
 import saveAs from 'file-saver'
 import SmartlistTable from '@/components/SmartlistTable'
 import ExportDialog from '@/components/ExportDialog'
-import Snackbar from '@/components/Snackbar'
+
 
 export default {
     name: 'Projects',
     components: {
         SmartlistTable,
         ExportDialog,
-        Snackbar
     },
     data() {
         return {
@@ -121,7 +121,7 @@ export default {
             headers: [
                 {text: 'ID', value: 'id', show: true},
                 {text: 'Name', value: 'projectName', show: true},
-                {text: 'Process', value: 'processName', show: true},
+                {text: 'State', value: 'stateAbbreviation', show: true},
                 {text: 'Status', value: 'projectStatusType', show: true},
                 {text: 'Date Created', value: 'dateCreated', show: true}
             ],
@@ -147,7 +147,9 @@ export default {
         }
     },
     created () {
-        this.getSharedSmartlists()
+        if (this.$store.getters.userHasFeature('SMARTLIST')) {
+          this.getSharedSmartlists()
+        }
     },
     methods: {
         async getProjects() {
@@ -193,20 +195,7 @@ export default {
             }
         },
       goToSelectedProject (selectedRow) {
-        let projectId = null
-
-        for (const [key, val] of Object.entries(selectedRow)) {
-          if (key === 'Project ID') {
-            projectId = val
-            break
-          }
-        }
-
-        if (projectId === null) {
-          this.snackbar = getSnackbar('ERROR', 'Smartlist must contain the "Project ID" column')
-        } else {
-          this.$router.push({name: 'projectDetails', params: {projectId: projectId}})
-        }
+        this.$router.push({name: 'projectDetails', params: {projectId: selectedRow.project_id}})
       }
     }
 }

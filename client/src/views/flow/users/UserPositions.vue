@@ -3,49 +3,52 @@
     <v-row>
       <v-col>
         <v-card class="pa-4 text-left" v-if="addNew">
-          <h3>Add User Position</h3>
-          <DatetimePickerInput
-            v-model="newPosition.startDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MM/DD/YYYY'"
-            label="Start Date"
-          />
-          <DatetimePickerInput
-            v-model="newPosition.endDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MM/DD/YYYY'"
-            label="End Date"
-          />
-          <v-autocomplete v-model="newPosition.positionId"
-                          :items="positions"
-                          label="Positions"
-                          item-text="position"
-                          item-value="id"
-                          @input="populateHierarchy(newPosition, true)"/>
-          <div v-if="newPositionHierarchyPopulated">
-            <div v-for="(f, index) in filters" :key="index">
-              <v-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
-                v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
-                :items="f.orgs"
-                :label="f.levelName"
-                item-value="id"
-              >
-                <template slot="selection" slot-scope="{ item, index }">
-                  {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
-                </template>
-                <template slot='item' slot-scope='{ item }'>
-                  {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
-                </template>
-              </v-autocomplete>
+          <v-form ref="newPositionForm">
+            <h3>Add User Position</h3>
+            <DatetimePickerInput
+              v-model="newPosition.startDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MM/DD/YYYY'"
+              label="Start Date"
+            />
+            <DatetimePickerInput
+              v-model="newPosition.endDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MM/DD/YYYY'"
+              label="End Date"
+            />
+            <v-autocomplete v-model="newPosition.positionId"
+                            :items="positions"
+                            label="Positions"
+                            item-text="position"
+                            item-value="id"
+                            @input="populateHierarchy(newPosition, true)"/>
+            <div v-if="newPositionHierarchyPopulated">
+              <div v-for="(f, index) in filters" :key="index">
+                <v-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
+                  v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
+                  :items="f.orgs"
+                  :rules="requiredRules"
+                  :label="f.levelName"
+                  item-value="id"
+                >
+                  <template slot="selection" slot-scope="{ item, index }">
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                  </template>
+                  <template slot='item' slot-scope='{ item }'>
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                  </template>
+                </v-autocomplete>
+              </div>
             </div>
-          </div>
-          <v-btn color="secondary" class="mr-2"
-                 @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
-          <v-btn color="primary" class="white--text mr-2"
-                 :disabled="!newPosition.startDate || !newPosition.positionId"
-                 @click="savePosition(newPosition)">Add</v-btn>
+            <v-btn color="secondary" class="mr-2"
+                   @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
+            <v-btn color="primaryCustom" class="white--text mr-2"
+                   :disabled="!newPosition.positionId || (newPosition.positionId && newPosition.endDate && !newPosition.startDate )"
+                   @click="validate(newPosition)">Add</v-btn>
+          </v-form>
         </v-card>
 
 <!--        existing positions -->
@@ -70,11 +73,11 @@
           </template>
 
           <template #header.icons="{}">
-            <th>
+            <div class="text-right mr-2">
               <v-btn text x-small @click="addNew = !addNew" v-if="userCanAdd">
                 <v-icon>add</v-icon>
               </v-btn>
-            </th>
+            </div>
           </template>
 
           <template #expanded-item="{ headers, item }">
@@ -116,6 +119,7 @@
                           :items="f.orgs"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
+                          :rules="requiredRules"
                           :label="f.levelName"
                           item-text="orgName"
                           item-value="id"
@@ -128,7 +132,7 @@
                   </template>
                 </v-autocomplete>
               </div>
-              <v-btn color="primary" class="white--text mr-2"
+              <v-btn color="primaryCustom" class="white--text mr-2"
                      :disabled="validatePositionFields(item)"
                      v-if="userCanEdit"
                      @click="savePosition(item)">Save</v-btn>
@@ -183,7 +187,7 @@
                         No
                       </v-btn>
                       <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="deleteUserPosition(item)">
                         Yes
@@ -198,23 +202,24 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
   import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'UserPositions',
     components: {
-      Snackbar,
+
       DatetimePickerInput
     },
     data() {
@@ -222,6 +227,7 @@
         snackbar: {},
         newPosition: {},
         userPositions: [],
+        requiredRules: constants.BASIC_REQUIRED_RULE,
         positions: [],
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
@@ -245,6 +251,11 @@
       this.getPositions()
     },
     methods: {
+      validate (item) {
+        if (this.$refs.newPositionForm.validate()) {
+          this.savePosition(item)
+        }
+      },
       async getPositions() {
         try {
           const {data} = await getRequest(`/position`)
@@ -253,6 +264,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -282,6 +294,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Levels')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -321,6 +334,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -345,6 +359,7 @@
         item.orgId = lowestHierarchy.orgId
         let params = {
           ...item,
+          primaryFlag: !itemId && this.userPositions.filter(up => !up.archived).length === 0 ? true : item.primaryFlag,
           userId: this.userId
         }
 
@@ -359,6 +374,15 @@
             this.$set(this.userPositions, itemIndex, item)
           }
         }
+        if(item.primaryFlag) {
+          //clear out any other primary flags in the ui - the db should have already done it
+          this.userPositions.forEach(up => {
+            if(up.primaryFlag && up.id !== item.id) {
+              up.primaryFlag = false
+            }
+          })
+        }
+        this.newPosition = {}
         this.addNew = false
         this.expanded = []
       },
@@ -384,6 +408,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error deleting user position')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
     },

@@ -1,6 +1,6 @@
 <template>
   <v-snackbar
-      v-model="snackbar.enabled"
+      v-model="show"
       :bottom="snackbar.y === 'bottom'"
       :left="snackbar.x === 'left'"
       :multi-line="snackbar.mode === 'multi-line'"
@@ -12,19 +12,33 @@
       :vertical="snackbar.mode === 'vertical'"
   >
     {{ snackbar.text }}
-    <v-btn text
-           @click="snackbar.enabled = false">
-      <v-icon color="secondary">clear</v-icon>
-    </v-btn>
+    <template v-slot:action="{ attrs }">
+      <v-btn text v-bind="attrs"
+             @click="show = false">
+        <v-icon color="secondary">clear</v-icon>
+      </v-btn>
+    </template>
   </v-snackbar>
 </template>
 
 <script>
   export default {
     name: 'Snackbar',
-    props: {
-      snackbar: Object
-    }
+    props: {},
+    data() {
+      return {
+        snackbar: {},
+        show: false
+      }
+    },
+    created() {
+      this.$store.subscribe((mutation, state) => {
+        if (mutation.type === "SHOW_SNACK") {
+          this.snackbar = state.app.snack
+          this.show = true
+        }
+      });
+    },
   }
 </script>
 

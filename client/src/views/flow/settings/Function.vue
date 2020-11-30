@@ -28,19 +28,20 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': details.companyFunctionParams.indexOf(item) % 2}">
-              <v-select v-if="item.parameterTypeId === 1"
-                          v-model="item.systemValueId"
-                          :items="systemValues"
-                          label="System Value"
-                          item-text="systemValue"
-                          item-value="id"></v-select>
-              <div v-else-if="item.parameterTypeId === 3">
+<!--              they should not be able to edit system value types-->
+<!--              <v-select v-if="item.parameterTypeId === 1"-->
+<!--                          v-model="item.systemValueId"-->
+<!--                          :items="systemValues"-->
+<!--                          label="System Value"-->
+<!--                          item-text="systemValue"-->
+<!--                          item-value="id"></v-select>-->
+              <div v-if="item.parameterTypeId === 3">
                 <v-select v-model="item.processStepId"
                           :items="parentObjects"
                           label="Parent Object"
                           item-text="processStepName"
                           item-value="id"
-                          @input="loadFieldsByParent(item.processStepId)"
+                          @input="loadFieldsByParent(item.processStepId, item.dataTypeId)"
                 ></v-select>
                 <v-select v-if="item.processStepId"
                           v-model="item.customFieldGroupAssignmentId"
@@ -86,10 +87,10 @@
               </td>
               <!-- icon column -->
               <td>
-                <v-btn text v-if="userCanEdit && item.parameterTypeId !== 2 && !expanded.includes(item)" @click="handleExpand(item, true)">
+                <v-btn text v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)" @click="handleExpand(item, true)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn text v-if="item.parameterTypeId !== 2 && expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
+                <v-btn text v-if="item.parameterTypeId === 3 && expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
               </td>
             </tr>
           </template>
@@ -105,7 +106,7 @@
           </template>
         </v-data-table>
 
-        <Snackbar :snackbar="snackbar"></Snackbar>
+
       </v-col>
     </v-row>
   </v-container>
@@ -115,14 +116,12 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import Snackbar from '@/components/Snackbar.vue'
+
 
   export default {
     name: 'ProcessSteps',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         headers: [
@@ -164,21 +163,11 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getSystemValues () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/function/systemValues`)
-          this.systemValues = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+
       async loadParentObjects () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -188,18 +177,22 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async loadFieldsByParent(id) {
+      async loadFieldsByParent(id, dataTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/customField/getByParentProcessStep/${id}`)
-          this.availableCustomFields = data
+          this.availableCustomFields = data.filter(d => {
+            return d.dataTypeId === dataTypeId
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -218,25 +211,24 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data} = await postRequest(`/function/${this.functionId}/param`, item)
-          if(item.parameterTypeId === 1) {
-            item.systemValue = data.systemValue
-          }else if(item.parameterTypeId === 3) {
+          if(item.parameterTypeId === 3) {
             item.fieldName = data.fieldName
             item.processStepName = data.processStepName
           }
           this.expanded = []
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Parameter Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Parameter')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
 
       }
     },
     async created () {
       this.getFunctionDetails()
-      this.getSystemValues()
       this.loadParentObjects()
     }
   }

@@ -5,7 +5,7 @@
         Add Organization
         <v-spacer></v-spacer>
         <v-btn text class="mr-3" to="/orgs">Cancel</v-btn>
-        <v-btn color="primary" dark @click="validate">Save</v-btn>
+        <v-btn color="primaryCustom" dark @click="validate">Save</v-btn>
       </v-card-title>
 
       <v-form ref="orgForm">
@@ -47,16 +47,17 @@
         <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
                           :key="idx"
                           :readonly="getReadOnly(cf)"
+                          :callback="populateDirtyCfvs"
                           :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
@@ -68,7 +69,7 @@
   export default {
     name: 'NewLead',
     components: {
-      Snackbar,
+
       CustomValueInput
     },
     data () {
@@ -77,6 +78,7 @@
         org: {},
         orgTypes: [],
         parents: [],
+        dirtyCfvs: [],
         customFieldGroups: [],
         parentId: this.$store.state.user.details.parentCompanyId,
         requiredRules: constants.BASIC_REQUIRED_RULE,
@@ -106,6 +108,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -119,6 +122,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Org')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -131,6 +135,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -143,7 +148,14 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      populateDirtyCfvs (field) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+        if (!match) {
+          this.dirtyCfvs.push(field)
         }
       },
       getReadOnly: function (field) {
@@ -161,5 +173,8 @@
 </script>
 
 <style lang="scss" scoped>
+  .v-select ::v-deep .v-select__selection {
+    color: var(--v-primaryText-base);
+  }
 </style>
 

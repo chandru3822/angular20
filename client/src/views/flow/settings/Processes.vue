@@ -60,7 +60,7 @@
                       No
                     </v-btn>
                     <v-btn
-                        color="primary"
+                        color="primaryCustom"
                         text
                         @click="[p.archived = true, deleteProcess(p.id)]">
                       Yes
@@ -73,7 +73,7 @@
           <!--<v-btn v-else-if="groupOrderChanged" @click="saveGroupChanges">Save Changes</v-btn>-->
         </v-container>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -81,16 +81,14 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
-import Snackbar from '@/components/Snackbar.vue'
+
 import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 export default {
   name: 'Processes',
   mixins: [Vue2Filters.mixin],
-  components: {
-    Snackbar
-  },
+
   data () {
     return {
       snackbar: {},
@@ -119,6 +117,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -127,10 +126,12 @@ export default {
       try {
         await deleteRequest(`/processes/${processId}`)
         this.snackbar = getSnackbar('SUCCESS', 'Process Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Process')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -148,6 +149,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Process')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

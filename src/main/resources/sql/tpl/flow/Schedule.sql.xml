@@ -6,12 +6,17 @@
                ppscfv.project_process_step_id,
                ppscfv.int_value,
                cfga.custom_field_group_id,
-               cfga.custom_field_id
+               cfga.custom_field_id,
+               cfg.group_name,
+               cfg.event_type_id
         from flow.project_process_step_custom_field_value ppscfv
                  inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-        where cfga.schedule_field_type_id = 3
+                 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+        where cfg.archived is not true
+          and cfga.archived is not true
+          and cfga.schedule_field_type_id = 3
           and ppscfv.int_value is not null
-          and ARRAY [ppscfv.int_value] <@ coalesce(ARRAY [ :combined ]::INT[], '{}')
+          and ppscfv.int_value = any(array[ :combined ])
     ), start_time as (
         select ppscfv.id,
                ppscfv.custom_field_group_assignment_id,
@@ -34,7 +39,9 @@
          where cfga.schedule_field_type_id = 2
      )
     select
-        cfg.group_name,
+        r.group_name,
+        r.event_type_id,
+        evt.event_type,
         pps.process_step_id,
         pps.project_id,
         pps.id as project_process_step_id,
@@ -48,81 +55,93 @@
         c.last_name as contact_last_name,
         p.latitude,
         p.longitude,
+        p.street1,
+        p.city,
+        p.postal_code,
+        s.abbreviation as state_abbreviation,
         case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
         p.project_name,
         ps.process_step_name,
-        p.state_id,
+        p.company_state_id,
         s.state,
         pps.company_process_step_status_type_id,
         cpsst.process_step_status_type
     from resource r
-        inner join flow.custom_field_group cfg on cfg.id = r.custom_field_group_id
+
         inner join flow.project_process_step pps on pps.id = r.project_process_step_id
-        inner join end_time et on et.project_process_step_id = pps.id and et.custom_field_group_id = cfg.id
-        inner join start_time st on st.project_process_step_id = pps.id and st.custom_field_group_id = cfg.id
+        inner join end_time et on et.project_process_step_id = pps.id and et.custom_field_group_id = r.custom_field_group_id
+        inner join start_time st on st.project_process_step_id = pps.id and st.custom_field_group_id = r.custom_field_group_id
         inner join flow.project p on p.id = pps.project_id
         inner join flow.process_step ps on ps.id = pps.process_step_id
         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
         inner join flow.contact c on c.id = p.contact_id
-        inner join flow.state s on s.id = p.state_id
+        inner join flow.company_state cs on cs.id = p.company_state_id
+        inner join flow.state s on s.id = cs.state_id
         inner join flow.custom_field cf on cf.id = r.custom_field_id
+        inner join flow.event_type evt on evt.id = r.event_type_id
         left join flow.user_position up on up.id = r.int_value
         left join flow.user u on u.id = up.user_id
         left join flow.org o on o.id = r.int_value
         inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
         inner join flow.system_list sl on sl.id = csl.system_list_id
-    where cfg.event_type_id is not null
-      and cfg.archived is not true
-      and st.timestamp_value is not null
+    where  st.timestamp_value is not null
       and et.timestamp_value is not null
       and r.int_value is not null
       and case when :startTime::timestamp is not null then st.timestamp_value >= :startTime::timestamp else 1=1 end
         and case when :endTime::timestamp is not null then et.timestamp_value <= :endTime::timestamp else 1=1 end
+      and case when :isParent
+                       then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+                   else ps.company_id = :companyId end
+      and ps.archived is not true
+      and cpsst.process_step_status_type_id != 3 --include active and complete, not cancelled
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
-  with dates as (
-      select :startTime::date + d.date as date,
-             extract(dow from :startTime::date + d.date) + 1 as day_of_week_id
-      from generate_series(0, 99) as d(date)
-      where :startTime::date + d.date BETWEEN :startTime::date and :endTime::date - 1
-  )
-  select coalesce(rs.user_id, rs.org_id) as resource_id,
-         (concat(d.date, ' ', rsa.start_time))::timestamp as "start",
-         (concat(d.date, ' ', rsa.end_time))::timestamp as "end",
-         rsa.day_of_week_id,
-         false as all_day,
-         null as title,
-         'inverse-background' as rendering,
-         case when rs.org_id is not null then 1 else 2 end as system_list_type_id
-  from dates d
-           inner join flow.resource_schedule_availability rsa on rsa.day_of_week_id = d.day_of_week_id
-           inner join flow.resource_schedule rs on rs.id = rsa.resource_schedule_id and d.date between rs.start_date and rs.end_date
-  where rs.archived is not true
-    and rsa.archived is not true
-    and ( case when array_length(ARRAY[ :orgIds ]::INTEGER[], 1) > 0 then ARRAY[coalesce(rs.org_id, -1)] <@ ARRAY[ :orgIds ]::INTEGER[] end
-      OR case when array_length(ARRAY [ :userIds ]::INTEGER[], 1) > 0 then ARRAY [coalesce(rs.user_id, -1)] <@ ARRAY [ :userIds ]::INTEGER[] end )
-  union all
-  select coalesce(ra.user_id, ra.org_id) as resource_id,
-         ra.start_time as "start",
-         ra.end_time as "end",
-         null::int,
-         ra.all_day,
-         ra.description as "title",
-         'background' as rendering,
-         case when ra.org_id is not null then 1 else 2 end as system_list_type_id
-  from flow.resource_appointment ra
-  where ra.start_time >= :startTime::timestamp
-    and ra.end_time <= :endTime::timestamp
-    and ra.archived is not true
-    and ( case when array_length(ARRAY[ :orgIds ]::INTEGER[], 1) > 0 then ARRAY[coalesce(ra.org_id, -1)] <@ ARRAY[ :orgIds ]::INTEGER[] end
-      OR case when array_length(ARRAY [ :userIds ]::INTEGER[], 1) > 0 then ARRAY [coalesce(ra.user_id, -1)] <@ ARRAY [ :userIds ]::INTEGER[] end )
+    with dates as (
+        select :startTime::date + d.date as date,
+               extract(dow from :startTime::date + d.date) + 1 as day_of_week_id
+        from generate_series(0, 99) as d(date)
+        where :startTime::date + d.date BETWEEN :startTime::date and :endTime::date - 1
+    )
+    select coalesce(rs.user_id, rs.org_id) as resource_id,
+           (concat(d.date, ' ', rsa.start_time))::timestamp as "start",
+           (concat(d.date, ' ', rsa.end_time))::timestamp as "end",
+           rsa.day_of_week_id,
+           false as all_day,
+           null as title,
+           'inverse-background' as rendering,
+           case when rs.org_id is not null then 1 else 2 end as system_list_type_id
+    from dates d
+             inner join flow.resource_schedule_availability rsa on rsa.day_of_week_id = d.day_of_week_id
+             inner join flow.resource_schedule rs on rs.id = rsa.resource_schedule_id and d.date between rs.start_date and rs.end_date
+    where rs.archived is not true
+      and rsa.archived is not true
+      and ( rs.org_id = any (array[ :orgIds ]::int[])
+        OR rs.user_id = any (array[ :userIds ]::int[]) )
+    union all
+    select coalesce(ra.user_id, ra.org_id) as resource_id,
+           ra.start_time as "start",
+           ra.end_time as "end",
+           null::int,
+           ra.all_day,
+           ra.description as "title",
+           'background' as rendering,
+           case when ra.org_id is not null then 1 else 2 end as system_list_type_id
+    from flow.resource_appointment ra
+    where ra.start_time >= :startTime::timestamp
+      and ra.end_time <= :endTime::timestamp
+      and ra.archived is not true
+      and ( ra.org_id = any (array[ :orgIds ]::int[])
+        OR ra.user_id = any (array[ :userIds ]::int[]) )
  ]]></schedule.getAvailability>
 
   <schedule.getProjects><![CDATA[
     select cfg.group_name,
        pps.process_step_id,
        pps.project_id,
+       ps.company_id,
+       sl.id as system_list_id,
+       array_to_json(resource_cf.system_list_option_ids) as system_list_option_ids,
        pps.id as project_process_step_id,
        sl.system_list_type_id,
        start_cfv.timestamp_value as start,
@@ -143,28 +162,28 @@
        c.first_name as contact_first_name,
        c.last_name as contact_last_name,
        p.latitude,
+       p.contact_id,
        p.longitude,
        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
        p.project_name,
        ps.process_step_name,
-       p.state_id,
+       p.company_state_id,
        s.state,
+       p.street1,
+       p.city,
+       p.postal_code,
+       s.abbreviation as state_abbreviation,
        pps.company_process_step_status_type_id,
        cpsst.process_step_status_type,
-       cpsst.process_step_status_type_id,
-       case when sl.id is not null then coalesce((
-                                                     SELECT array_to_json(array_agg(row_to_json(sys)))
-                                                     FROM (
-                                                              select *
-                                                              from flow.get_system_list_options(ps.company_id::integer, sl.id::integer, true, resource_cf.system_list_option_ids::integer[])
-                                                          ) sys), '[]') else '[]' end as resources
+       cpsst.process_step_status_type_id
       from flow.project_process_step pps
                inner join flow.process_step ps on ps.id = pps.process_step_id
                inner join flow.custom_field_group cfg on cfg.process_step_id = pps.process_step_id
                inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                inner join flow.project p on p.id = pps.project_id
                inner join flow.contact c on c.id = p.contact_id
-               inner join flow.state s on s.id = c.state_id
+               inner join flow.company_state cs on cs.id = c.company_state_id
+                inner join flow.state s on s.id = cs.state_id
                left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
                left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
                left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3
@@ -180,23 +199,34 @@
                left join flow.company_system_list csl on csl.id = resource_cf.company_system_list_id
                left join flow.system_list sl on sl.id = csl.system_list_id
       where case when :isParent
-                     then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                     then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                  else ps.company_id = :companyId end
         and ps.archived is not true
-        and p.state_id = :stateId
+        and case when :isParent then
+           p.company_state_id in (select id from flow.company_state where state_id = (select state_id from flow.company_state where id = :companyStateId))
+        else p.company_state_id = :companyStateId end
         and cfg.archived is not true
-        and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::date else 1=1 end
-        and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::date else 1=1 end
-        and ARRAY[coalesce(cfg.event_type_id,-1)] <@ ARRAY[ :eventTypeIds ]::INTEGER[]
-        and ARRAY[coalesce(cpsst.process_step_status_type_id,-1)] <@ ARRAY[ :processStepStatusTypeIds ]::INTEGER[]
+        and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::timestamp else 1=1 end
+        and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::timestamp else 1=1 end
+        and cfg.event_type_id  = any(array[ :eventTypeIds ])
+        and cpsst.process_step_status_type_id = :processStepStatusTypeId
+      order by start, p.project_name
     ]]>
 </schedule.getProjects>
+
+<schedule.getAvailableProjectResources><![CDATA[
+    select *
+      from flow.get_system_list_options(:companyId::integer, :systemListId::integer, true, array[ :systemListOptionIds ]::integer[], :resourceId::integer)
+]]></schedule.getAvailableProjectResources>
 
 <schedule.getProject>
   <![CDATA[
      select cfg.group_name,
            pps.process_step_id,
            pps.project_id,
+            ps.company_id,
+           sl.id as system_list_id,
+           array_to_json(resource_cf.system_list_option_ids) as system_list_option_ids,
            pps.id as project_process_step_id,
            sl.system_list_type_id,
            start_cfv.timestamp_value as start,
@@ -218,10 +248,15 @@
            c.last_name as contact_last_name,
            p.latitude,
            p.longitude,
+           p.street1,
+           p.contact_id,
+           p.city,
+           p.postal_code,
+           s.abbreviation as state_abbreviation,
            case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
            p.project_name,
            ps.process_step_name,
-           p.state_id,
+           p.company_state_id,
            s.state,
            pps.company_process_step_status_type_id,
            cpsst.process_step_status_type,
@@ -238,7 +273,8 @@
              inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
              inner join flow.project p on p.id = pps.project_id
              inner join flow.contact c on c.id = p.contact_id
-             inner join flow.state s on s.id = p.state_id
+             inner join flow.company_state cs on cs.id = p.company_state_id
+             inner join flow.state s on s.id = cs.state_id
              left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
              left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
              left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3
@@ -254,7 +290,7 @@
              left join flow.company_system_list csl on csl.id = resource_cf.company_system_list_id
              left join flow.system_list sl on sl.id = csl.system_list_id
     where case when :isParent
-                   then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                   then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
                else ps.company_id = :companyId end
       and ps.archived is not true
       and cfg.archived is not true
@@ -268,6 +304,7 @@
   <schedule.searchProjectsByName><![CDATA[
         select c.first_name as contact_first_name,
                c.last_name as contact_last_name,
+               c.id as contact_id,
                concat(c.first_name, ' ', c.last_name) as contact_full_name,
                p.project_name,
                p.id as project_id
@@ -275,9 +312,10 @@
             inner join flow.contact c on c.id = p.contact_id
         where c.archived is not true
           and case when :isParent
-            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            then c.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else c.company_id = :companyId end
-          and concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
+          and (concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
+                  OR p.id::text = :search)
         order by c.first_name, c.last_name
   ]]></schedule.searchProjectsByName>
 

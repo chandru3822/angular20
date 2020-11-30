@@ -48,12 +48,13 @@ const store = new Vuex.Store({
       const {status} = await deleteRequest(`/attachment/${id}`)
       callback(status)
     },
-    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst = true, callback }) => {
+    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst = true, sizeLimit, callback }) => {
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
-        if (file.size > constants.MAX_FILE_SIZE) {
-          const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
-          callback(error)
+        let maxFileSize = sizeLimit ?? constants.MAX_FILE_SIZE
+        if (file.size > maxFileSize) {
+          const error = { error: true, errorMsg: `File size cannot exceed ${maxFileSize / 1048576}MB` }
+          callback(null, error)
         } else {
           let formData = new FormData()
           formData.append('file', file)
@@ -76,8 +77,8 @@ const store = new Vuex.Store({
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
         if (file.size > constants.MAX_FILE_SIZE) {
-          const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
-          callback(error)
+          const error = { error: true, errorMsg: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` }
+          callback(null, error)
         } else {
           let formData = new FormData()
           formData.append('file', file)
@@ -98,8 +99,8 @@ const store = new Vuex.Store({
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
         if (file.size > constants.MAX_FILE_SIZE) {
-          const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
-          callback(error)
+          const error = { error: true, errorMsg: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` }
+          callback(null, error)
         } else {
           let formData = new FormData()
           formData.append('file', file)

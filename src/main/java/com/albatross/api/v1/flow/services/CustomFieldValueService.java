@@ -37,11 +37,11 @@ public class CustomFieldValueService {
   @Autowired
   ObjectMapper om;
 
-  public void handleCustomListOfValue (List<CustomFieldGroup> results) {
-    handleCustomListOfValue(results, null, null);
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
+    handleCustomListOfValue(results, null, null, companyId);
   }
 
-  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId) {
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId, Long companyId) {
     for(CustomFieldGroup cfg : results) {
       for(CustomFieldValue cv : cfg.getCustomFieldValues()){
         if(null != cv.getCustomFieldSqlKey()) {
@@ -58,7 +58,7 @@ public class CustomFieldValueService {
         } else if (null != cv.getCompanySystemListId()) {
           cv.setHasListValues(true);
 //          cv.getIntValue() is passed so we can add to the sub option list any option already selected but no longer available in the list
-          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue());
+          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue(), companyId);
           cv.setListOfValues(listOfValues);
         }
       }
@@ -72,24 +72,20 @@ public class CustomFieldValueService {
       HashMap<String, Object> params = new HashMap<>();
       params.put("dateValue", cfv.getDateValue());
       params.put("timestampValue", cfv.getTimestampValue());
-      params.put("booleanValue", null != cfv.getBooleanValue() ? cfv.getBooleanValue() : false);
+      params.put("booleanValue", cfv.getBooleanValue());
       params.put("textValue", cfv.getTextValue());
       params.put("numericValue", cfv.getNumericValue());
       params.put("intValue", cfv.getIntValue());
       params.put("intArrayValue", cfv.getIntArrayValue());
       params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
       params.put("sourceId", sourceId);
+      params.put("userId", currentUser.getId());
 
-      String sqlPrefix = "customFieldValues." + objectType;
+      //only used on upsert
+      params.put("id", cfv.getId());
 
-      if(null != cfv.getId()){
-        params.put("id", cfv.getId());
-        params.put("modifiedById", currentUser.getId());
-        sqlCache.update(sqlPrefix + ".updateCustomFieldValue", params);
-      } else {
-        params.put("createdById", currentUser.getId());
-        sqlCache.update(sqlPrefix + ".insertCustomFieldValue", params);
-      }
+      String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
+      sqlCache.update(sql, params);
     }
     return getCustomFieldGroupsAndValues(objectType, sourceId);
   }
@@ -114,15 +110,28 @@ public class CustomFieldValueService {
 
     // this allows us to pass project_id and user_id to custom sql queries
     if(objectType.equals("project")) {
-      handleCustomListOfValue(fieldGroups, id, user.getId());
+      handleCustomListOfValue(fieldGroups, id, user.getId(), companyId);
     } else if (objectType.equals("process_step")) {
       Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
-      handleCustomListOfValue(fieldGroups, projectId, user.getId());
+      handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId);
     } else {
-      handleCustomListOfValue(fieldGroups);
+      handleCustomListOfValue(fieldGroups, companyId);
     }
 
     return fieldGroups;
+  }
+
+  public void updateProjectCustomFieldValue(CustomFieldValue cfv, Long projectId, Long customFieldId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("customFieldId", customFieldId);
+    params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+    params.put("intValue", cfv.getIntValue());
+    params.put("timestampValue", cfv.getTimestampValue());
+    params.put("dateValue", cfv.getDateValue());
+    params.put("userId", user.getId());
+    sqlCache.update("customFieldValue.project.updateValueUsingCfId", params);
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

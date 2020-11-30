@@ -88,6 +88,7 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
+    params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
 
     Long id = sqlCache.updateReturningId("processStepAction.updateAction", params, "id").longValue();
 
@@ -142,6 +143,7 @@ public class ProcessStepActionService {
     params.put("processStepId", action.getProcessStepId());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
+    params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
 
     Long id = sqlCache.updateReturningId("processStepAction.insertAction", params, "id").longValue();
     return getActionById(id);
@@ -164,7 +166,6 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", child.getProcessStepId());
     params.put("processStepActionId", actionId);
-    params.put("triggerAutomatically", child.getTriggerAutomatically() != null && child.getTriggerAutomatically());
     params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.getId());
 
@@ -196,7 +197,6 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
-    params.put("triggerAutomatically", child.getTriggerAutomatically() != null && child.getTriggerAutomatically());
     sqlCache.update("processStepAction.updateActionChildStep", params);
   }
 

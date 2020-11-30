@@ -21,7 +21,7 @@
                           label="Level" />
           </div>
           <v-btn :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
-                 color="primary" class="white--text mr-2"
+                 color="primaryCustom" class="white--text mr-2"
                  @click="saveOrgLevel(newOrgLevel, true)">
             Save
           </v-btn>
@@ -56,7 +56,7 @@
                               label="Rank" />
               </div>
               <v-btn :disabled="!item.levelName || !item.level"
-                     color="primary" class="white--text mr-2"
+                     color="primaryCustom" class="white--text mr-2"
                      @click="saveOrgLevel(item, false)">
                 Save
               </v-btn>
@@ -103,7 +103,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deleteOrgLevel(item)">
                         Yes
@@ -118,22 +118,20 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getOrgLevels} from '@/services/orgService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
     name: 'OrgLevels',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         snackbar: {},
@@ -166,14 +164,17 @@
             this.addNew = false
             this.newOrgLevel = {}
             this.snackbar = getSnackbar('SUCCESS', 'Org Level Added')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             this.expanded = []
             this.snackbar = getSnackbar('SUCCESS', 'Org Level Updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -186,6 +187,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -197,10 +199,12 @@
             return ol.id !== level.id
           })
           this.snackbar = getSnackbar('SUCCESS', 'Org Level Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Level')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

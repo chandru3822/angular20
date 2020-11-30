@@ -60,7 +60,7 @@
 <!--                      No-->
 <!--                    </v-btn>-->
 <!--                    <v-btn-->
-<!--                        color="primary"-->
+<!--                        color="primaryCustom"-->
 <!--                        text-->
 <!--                        @click="s.archived = true; deleteType(s.id)">-->
 <!--                      Yes-->
@@ -72,7 +72,7 @@
           </v-list>
         </v-container>
       </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+
     </v-row>
   </v-container>
 </template>
@@ -81,7 +81,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import orderBy from 'lodash.orderby'
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
@@ -90,9 +90,7 @@
   export default {
     name: 'Statuses',
     mixins: [Vue2Filters.mixin],
-    components: {
-      Snackbar
-    },
+
     data () {
       return {
         snackbar: {},
@@ -117,6 +115,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -125,10 +124,12 @@
         try {
           await deleteRequest(`/processStep/status/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -146,10 +147,12 @@
           this.addNew = false
           this.newType = {}
           this.snackbar = getSnackbar('SUCCESS', 'Status Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -159,10 +162,12 @@
           this.selectedStatusTypeId = null
           await putRequest(`/processStep/status`, s)
           this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

@@ -34,7 +34,7 @@
             ></v-select>
           </div>
           <v-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
-                 color="primary" class="white--text mr-2"
+                 color="primaryCustom" class="white--text mr-2"
                  @click="saveFeature(true)">
             Save
           </v-btn>
@@ -73,7 +73,7 @@
                 </div>
               </div>
               <v-btn :disabled="!item.featureName"
-                     color="primary" class="white--text mr-2"
+                     color="primaryCustom" class="white--text mr-2"
                      @click="saveFeature(false, item)">
                 Save
               </v-btn>
@@ -120,7 +120,7 @@
                         No
                       </v-btn>
                       <v-btn
-                          color="primary"
+                          color="primaryCustom"
                           text
                           @click="deleteFeature(item)">
                         Yes
@@ -135,22 +135,20 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
 
   export default {
     name: 'Features',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         constants,
@@ -192,14 +190,17 @@
             this.addNew = false
             this.selectedFeature = {}
             this.snackbar = getSnackbar('SUCCESS', 'Feature Added')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } else {
             this.expanded = []
             this.snackbar = getSnackbar('SUCCESS', 'Feature Updated')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Feature' : 'Error Updating Feature')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -212,6 +213,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Features')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -224,6 +226,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Features')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -233,10 +236,12 @@
           await deleteRequest(`${this.apiUrl}/${feature.id}`)
           feature.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Feature Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Feature')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

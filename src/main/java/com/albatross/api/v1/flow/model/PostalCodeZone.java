@@ -14,6 +14,6 @@ public class PostalCodeZone {
   private Long id, companyId, distributionTimeFrameDays;
   private String zoneName;
   private Boolean archived;
-  private List<PostalCodeZoneUser> postalCodeZoneUsers;
+  private List<PostalCodeZoneUser> scheduleToUsers, scheduleByUsers;
   private List<PostalCode> postalCodes;
 }

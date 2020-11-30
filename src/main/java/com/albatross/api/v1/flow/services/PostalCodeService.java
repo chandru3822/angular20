@@ -17,6 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -26,15 +30,11 @@ import java.util.Optional;
 @Service
 public class PostalCodeService {
 
-  @Autowired
-  SqlCache sqlCache;
 
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  ObjectMapper om;
-
+  private final SqlCache sqlCache;
+  private final DataSource dataSource;
+  private final SecurityService securityService;
+  private final ObjectMapper om;
 
   public List<PostalCodeZone> getZones() {
     User user = securityService.getCurrentUser();
@@ -84,13 +84,14 @@ public class PostalCodeService {
     sqlCache.update("postalCode.deleteZone", params);
   }
 
-  public PostalCodeZoneUser insertUser(PostalCodeZoneUser zoneUser) {
+  public PostalCodeZoneUser insertUser(PostalCodeZoneUser zoneUser, Long postalCodeZoneUserTypeId) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
-    params.put("userId", zoneUser.getUserId());
+    params.put("userPositionId", zoneUser.getUserPositionId());
     params.put("createdById", user.getId());
+    params.put("postalCodeZoneUserTypeId", postalCodeZoneUserTypeId);
 
     Long id = sqlCache.updateReturningId("postalCode.insertZoneUser", params, "id").longValue();
 
@@ -154,7 +155,7 @@ public class PostalCodeService {
     sqlCache.update("postalCode.deleteZoneCode", params);
   }
 
-  public List<User> getZoneUsers(Long zoneId) {
+  public List<User> getAvailableZoneUsers(Long zoneId, Boolean loadSchedulers) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -164,9 +165,43 @@ public class PostalCodeService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("isSchedulingTool", true);
+    params.put("loadSchedulers", loadSchedulers);
 
-    List<User> results = sqlCache.query("postalCode.getZoneUsers", params, User.class);
+    List<User> results = sqlCache.query("postalCode.getAvailableZoneUsers", params, User.class);
     return results;
+  }
+
+  public Boolean userCanSchedule(String postalCode) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("postalCode", postalCode);
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+
+    List<User> results = sqlCache.query("postalCode.userCanSchedule", params, User.class);
+    return results.size() > 0;
+  }
+
+  public List<User> getAllZoneUsers(List<Integer> zoneIds) throws SQLException {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("zoneIds", createSqlArrayOfType("int", zoneIds));
+
+    List<User> results = sqlCache.query("postalCode.getAllZoneUsers", params, new UserService.UserMapper<>(User.class, om));
+    return results;
+  }
+
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
+      }
+    }
+    return null;
   }
 
   public PostalCode getZonePostalCode(Long id) {
@@ -191,9 +226,13 @@ public class PostalCodeService {
       bw.registerCustomEditor(List.class, "postalCodes",
         new JsonCollectionDeserializer(postalCodesRef, objectMapper));
 
-      TypeReference<List<PostalCodeZoneUser>> postalCodeZoneUsersRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "postalCodeZoneUsers",
-        new JsonCollectionDeserializer(postalCodeZoneUsersRef, objectMapper));
+      TypeReference<List<PostalCodeZoneUser>> scheduleToUsersRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "scheduleToUsers",
+        new JsonCollectionDeserializer(scheduleToUsersRef, objectMapper));
+
+      TypeReference<List<PostalCodeZoneUser>> scheduleByUsersRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "scheduleByUsers",
+        new JsonCollectionDeserializer(scheduleByUsersRef, objectMapper));
 
     }
   }

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Incentives</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newIncentive = {}, incentiveEntities = []]" color="primary">
+            <v-btn text @click="[addNew = !addNew, newIncentive = {}, incentiveEntities = []]" color="primaryCustom">
               <v-icon>add</v-icon>
               Add New
             </v-btn>
@@ -156,7 +156,7 @@
                           No
                         </v-btn>
                         <v-btn
-                            color="primary"
+                            color="primaryCustom"
                             text
                             @click="[item.archived = true, deleteIncentive(item.id)]">
                           Yes
@@ -171,13 +171,13 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import { v4 as uuidv4 } from 'uuid'
 
@@ -185,9 +185,7 @@
 
   export default {
     name: 'Incentives',
-    components: {
-      Snackbar
-    },
+
     data() {
       return {
         delay: 500,
@@ -231,6 +229,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Incentives')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -242,6 +241,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Incentive Categories')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -253,6 +253,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Incentive Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -264,6 +265,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Entities')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -272,10 +274,12 @@
         try {
           await deleteRequest(`/propTool/incentive/type/${type}/${id}/`)
           this.snackbar = getSnackbar('SUCCESS', 'Incentive Deleted')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Incentive')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -297,6 +301,7 @@
           }
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Incentive Saved' : 'Incentive Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
           // reset the new fields
           this.addNew = false
@@ -307,6 +312,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', item.id ? 'Error Updating Incentive' : 'Error Adding Incentive')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

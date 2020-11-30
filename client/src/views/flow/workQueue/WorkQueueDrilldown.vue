@@ -9,7 +9,7 @@
           <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
         </v-toolbar>
         <v-data-table
-            :headers="headers"
+            :headers="filterHeaders()"
             :items="results"
             :fixed-header="true"
             disable-sort
@@ -32,6 +32,9 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left underline" @click="clickRow(item)">{{item.projectName}}</td>
               <td class="text-left">{{item.processStepName}}</td>
+              <td class="text-left">{{item.daysInQueue}}</td>
+              <td class="text-left">{{item.stateAbbreviation}}</td>
+              <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item.proposalDueDate  | formatDate('timestamp')}}</td>
               <td class="text-left">
                 <div v-if="item.owner">{{item.owner}}</div>
                 <v-btn v-else-if="userCanOwnProcessStep(item)">
@@ -43,32 +46,78 @@
                   {{ aps.processStepName }}
                 </div>
               </td>
+              <td class="notes-column">
+                <div class="flex-display align-center" >
+                  <pre class="app-pre-wrapper"  v-if="item.notes && item.notes.length > 0">
+                    {{item.notes[0].note}}
+                  </pre>
+                  <v-spacer></v-spacer>
+                  <v-btn small fab text @click="item.showNotesModal = true">
+                    <v-icon>mdi-comment-text-multiple</v-icon>
+                  </v-btn>
+                </div>
+                <v-dialog
+                  v-model="item.showNotesModal"
+                >
+                  <v-card class="wqt-notes-container">
+                    <v-card-title class="primary-custom-bg white--text">{{ item.projectName }} - {{item.processStepName}}</v-card-title>
+                    <v-card-text class="py-3">
+                      <NotesAndActivity
+                        :showNotes="true"
+                        :showActivity="false"
+                        :notes="item.notes"
+                        :is-wqt-note="true"
+                        :primary-id="item.projectProcessStepId"
+                        :secondary-id="item.processStepWorkQueueTypeId"
+                        type="ProjectProcessStep"
+                      />
+                    </v-card-text>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+
+                      <v-btn
+                        color="primaryCustom"
+                        class="white--text mr-2 mb-3"
+                        @click="item.showNotesModal = false"
+                      >
+                        Close
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </td>
             </tr>
           </template>
         </v-data-table>
 
       </v-col>
     </v-row>
-    <Snackbar :snackbar="snackbar"></Snackbar>
+
   </v-container>
 </template>
 
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import Snackbar from '@/components/Snackbar.vue'
+
+  import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
   import constants from '@/helpers/constants'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueueDrilldown',
     components: {
-      Snackbar
+
+      NotesAndActivity
     },
     data() {
       return {
         snackbar: {},
+        showNotesModal: false,
+        selectedPps: {},
         constants,
+        showPropCustom: false,
         dataLoading: true,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
@@ -86,8 +135,12 @@
         headers: [
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
+          { text: 'Days In Queue', value: 'daysInQueue', show: true },
+          { text: 'State', value: 'stateAbbreviation', show: true },
+          { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
           { text: 'Owner', value: 'owner', show: true },
           { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
+          { text: 'Notes', value: 'notes', show: true },
         ],
       }
     },
@@ -100,9 +153,11 @@
       },
     },
     computed: {},
-    async created() {
-    },
+    async created() {},
     methods: {
+      filterHeaders () {
+        return this.headers.filter(header => header.show === true)
+      },
       async getWorkDetails() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { page, itemsPerPage } = this.options
@@ -120,6 +175,7 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -128,12 +184,14 @@
           let userPosition = this.userPositions.find(up => up.canAssign)
           await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
           this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           item.owner = this.$store.state.user.details.fullName
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           let msg = e.data.includes('already assigned') ? e.data : 'Error Saving Owner'
           this.snackbar = getSnackbar('ERROR', msg)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -164,7 +222,6 @@
 </style>
 
 <style scoped lang="scss">
-
 .card-main {
   /* @click adds the pointer but i didnt want the pointer on count == 0 */
   cursor: default;
@@ -184,10 +241,18 @@
   left: 0;
 }
 
+.notes-column {
+  max-width: 300px;
+}
+
 #work-queue-drilldown-container {
   margin-top: -15px;
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.wqt-notes-container {
+  min-height: 400px;
 }
 </style>

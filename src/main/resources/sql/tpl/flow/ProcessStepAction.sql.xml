@@ -33,7 +33,6 @@
                                     psacp.archived,
                                     psacp.process_step_action_id as "processStepActionId",
                                     psacp.process_step_id as "processStepId",
-                                    psacp.trigger_automatically as "triggerAutomatically",
                                     psacp.display_order as "displayOrder",
                                     psacp.created_by_id as "createdById",
                                     psacp.modified_by_id as "modifiedById",
@@ -142,6 +141,7 @@
     update flow.process_step_action
     set action_name = :actionName,
         trigger_automatically = :triggerAutomatically,
+        time_based_trigger = :timeBasedTrigger,
         action_type_id = :actionTypeId,
         company_process_step_status_type_id = :companyProcessStepStatusTypeId,
         always_enabled = :alwaysEnabled,
@@ -151,8 +151,8 @@
   ]]></processStepAction.updateAction>
 
   <processStepAction.insertAction><![CDATA[
-    insert into flow.process_step_action(process_step_id, action_name, trigger_automatically, action_type_id, company_process_step_status_type_id, created_by_id, archived, display_order)
-     values (:processStepId, :actionName, :triggerAutomatically, :actionTypeId, :companyProcessStepStatusTypeId, :createdById, false, (select coalesce(max(display_order) + 1, 0) from flow.process_step_action where process_step_id = :processStepId and archived is not true))
+    insert into flow.process_step_action(process_step_id, action_name, trigger_automatically, action_type_id, company_process_step_status_type_id, created_by_id, archived, display_order, time_based_trigger)
+     values (:processStepId, :actionName, :triggerAutomatically, :actionTypeId, :companyProcessStepStatusTypeId, :createdById, false, (select coalesce(max(display_order) + 1, 0) from flow.process_step_action where process_step_id = :processStepId and archived is not true), :timeBasedTrigger)
   ]]></processStepAction.insertAction>
 
   <processStepAction.archiveOldLogic><![CDATA[
@@ -186,15 +186,14 @@
   ]]></processStepAction.getChildProcessStepsForAction>
 
   <processStepAction.addChildStepToAction><![CDATA[
-    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, trigger_automatically, display_order, created_by_id)
-    values (:processStepActionId, :processStepId, :triggerAutomatically, :displayOrder, :createdById)
+    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, display_order, created_by_id)
+    values (:processStepActionId, :processStepId, :displayOrder, :createdById)
   ]]></processStepAction.addChildStepToAction>
 
   <processStepAction.getActionChildStep><![CDATA[
     select cp.id,
        cp.process_step_action_id,
        cp.process_step_id,
-       cp.trigger_automatically,
        cp.display_order,
        cp.archived,
        cp.date_created,
@@ -217,8 +216,7 @@
 
   <processStepAction.updateActionChildStep><![CDATA[
     update flow.process_step_action_child_process
-      set trigger_automatically = :triggerAutomatically,
-          display_order = :displayOrder,
+      set display_order = :displayOrder,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
@@ -364,11 +362,11 @@ select
                    ppscfv.boolean_value as "booleanValue",
                    ppscfv.numeric_value as "numericValue",
                    ppscfv.int_value as "intValue",
-                   cfp.system_value_id as "systemValueId",
+                   dfp.system_value_id as "systemValueId",
                    apdv.dynamic_value as "dynamicValue"
             from flow.db_function_param dfp
-                   left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
-                   left join flow.system_value sv on sv.id = cfp.system_value_id
+                   left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true and cfp.company_function_id = cf.id
+                   left join flow.system_value sv on sv.id = dfp.system_value_id
                    left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_action_company_function_id = psacf.id
                    left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
             where dfp.db_function_id = df.id

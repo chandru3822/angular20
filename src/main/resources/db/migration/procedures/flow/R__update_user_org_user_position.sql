@@ -9,9 +9,9 @@ BEGIN
 
     insert into flow.user_positions_vw(user_id, first_name, last_name,
                                        org_id, org_name, org_level_id, position_level,
-                                       primary_flag, start_date, end_date, archived, state_id,
-                                       user_archived, position_schedulable, position,
-                                       position_id, user_position_id, company_id, email,
+                                       primary_flag, start_date, end_date, archived, company_state_id,
+                                       user_archived, position_schedulable, position_scheduler,
+                                       position, position_id, user_position_id, company_id, email,
                                        phone_number, available_to_children,
                                        user_status_type_id, has_access)
         (select u.id                             as user_id,
@@ -25,9 +25,10 @@ BEGIN
                 up.start_date,
                 up.end_date,
                 up.archived,
-                o.state_id,
+                o.company_state_id,
                 u.archived,
                 p.schedulable,
+                p.scheduler,
                 p.position,
                 p.id,
                 up.id,
@@ -51,8 +52,10 @@ BEGIN
                   left join flow.user_position up on up.user_id = u.id
                   left join flow.position p on p.id = up.position_id
                   left join flow.org o on o.id = up.org_id and o.company_id = p.company_id
-                  cross join flow.user_org_hierarchy(o.id) org_hierarchy
-         where u.id = any (p_user_ids));
+                  left join flow.company_state cs on cs.id = o.company_state_id
+                  left join flow.user_org_hierarchy(o.id) org_hierarchy on true
+         where u.id = any (p_user_ids)
+            and up.archived is false);
 
     insert into flow.user_position_hierarchy_vw(user_id, org_id, user_position_id, position_id, hierarchy)
         (select up.user_id,
@@ -69,7 +72,8 @@ BEGIN
                                      ) order by h.org_level_id)::jsonb
                  from flow.user_org_hierarchy(up.org_id) as h) as hierarchy
          from flow.user_position up
-         where up.user_id = any (p_user_ids));
+         where up.user_id = any (p_user_ids)
+            and up.archived is false);
 END;
 $BODY$
     LANGUAGE plpgsql VOLATILE
