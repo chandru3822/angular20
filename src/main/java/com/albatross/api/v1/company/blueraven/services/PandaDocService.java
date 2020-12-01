@@ -337,8 +337,16 @@ public class PandaDocService {
    * @throws JSONException
    */
   public JSONObject setRecipientInfo(JSONObject body, PandaDocProjectDetails deets) throws JSONException {
+    User user = securityService.getCurrentUser();
     JSONObject customer = deets.getCustomerInfo(pandaDoc.getCustomerRole());
     JSONObject brs = deets.getBlueRavenInfo(pandaDoc.getSupportRole());
+
+    if (isBlank(deets.getCloserEmail())) {
+        deets.setCloserEmail(user.getEmail());
+        deets.setCloserFirstName(user.getFirstName());
+        deets.setCloserLastName(user.getLastName());
+    }
+
     JSONObject closer = deets.getCloserInfo(pandaDoc.getCloserRole());
 
     // allow the recipient email addresses to be overridden FOR TESTING
