@@ -3,14 +3,14 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-select
+          <v-autocomplete
             v-model="selectedWorkQueueCategoryId"
             :items="filteredCategories"
             label="Work Queue Category"
             item-text="workQueueCategory"
             item-value="id"
             @input="filterCategories()"
-          ></v-select>
+          ></v-autocomplete>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="userCanAdd">
@@ -25,13 +25,13 @@
                           placeholder="Enter a type"
                           label="Work Queue Type">
             </v-text-field>
-            <v-select
+            <v-autocomplete
                 v-model="newType.workQueueCategoryId"
                 :items="workQueueCategories"
                 label="Work Queue Category"
                 item-text="workQueueCategory"
                 item-value="id"
-            ></v-select>
+            ></v-autocomplete>
             <v-btn :disabled="!newType.workQueueType || !newType.workQueueCategoryId" @click="addNewType">Save</v-btn>
           </div>
           <v-data-table
@@ -67,14 +67,14 @@
                   <div v-else>{{item.workQueueType}}</div>
                 </td>
                 <td class="text-left">
-                  <v-select
+                  <v-autocomplete
                       v-if="selectedWorkQueueTypeId === item.id"
                       v-model="item.workQueueCategoryId"
                       :items="workQueueCategories"
                       label="Work Queue Category"
                       item-text="workQueueCategory"
                       item-value="id"
-                  ></v-select>
+                  ></v-autocomplete>
                   <div v-else>{{item.workQueueCategory}}</div>
                 </td>
                 <td class="text-right">

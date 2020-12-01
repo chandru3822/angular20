@@ -129,6 +129,7 @@
 
   <project.update>
     update flow.project set
+      project_name = :projectName,
       street1 = :street1,
       city = :city,
       company_state_id = :companyStateId,
