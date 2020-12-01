@@ -175,7 +175,7 @@
 
                     </div>
 
-                    <v-select v-if="item.companyDataType && item.companyDataType.systemList"
+                    <v-autocomplete v-if="item.companyDataType && item.companyDataType.systemList"
                               v-model="item.companySystemListId"
                               :items="systemLists"
                               :disabled="!item.custom || !userCanEdit"
@@ -184,9 +184,9 @@
                               item-text="systemList"
                               item-value="companySystemListId"
                               @change="getSystemListOptions(item.companySystemListId)"
-                    ></v-select>
+                    ></v-autocomplete>
 
-                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
+                    <v-autocomplete v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.companySystemListId === item.companySystemListId).hasSubOptions"
                               v-model="item.systemListOptionIds"
                               :items="systemListOptions"
                               multiple
@@ -195,7 +195,7 @@
                               label="System List Options"
                               item-text="name"
                               item-value="id"
-                    ></v-select>
+                    ></v-autocomplete>
 
                     <v-col class="options-container"
                             v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">

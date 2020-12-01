@@ -199,23 +199,21 @@
     <!-- IRONMAN END -->
 
     <!-- RANKING TABLES FIRST HEADER START -->
-    <div v-if="showDashboard && (isCloser || isCloserMgr || isCloserRegional)"
-         class="ranking-tables-section-header">
-      Your Office Ranking
+    <div v-if="showDashboard" class="ranking-tables-section-header">
+      <span v-if="!userCanViewAll">Your </span>Office Ranking
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
 
     <!-- RANKING TABLES TOP ROW START -->
-    <div v-if="showDashboard && ((isCloser || isCloserMgr || isCloserRegional) || userCanViewAll)"
-         class="ranking-tables-section">
+    <div v-if="showDashboard" class="ranking-tables-section">
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
-        <div class="ranking-table-header" id="lead-allocation-table-header">
-          <div class="lead-allocation-table-header-left-side">
+        <div class="ranking-table-header user-office-ranking-table-header">
+          <div class="user-office-ranking-table-header-left-side">
             <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
             <span>Office Lead Allocation Rank</span>
           </div>
-          <v-select class="round-robin-dropdown"
+          <v-select class="table-header-dropdown"
                     label="Round Robin"
                     v-model="selectedRoundRobin"
                     :items="roundRobins"
@@ -225,7 +223,7 @@
                     outlined
                     dense
                     hide-details
-                    @input="loadRankingTables"
+                    @input="loadOfficeLeadAllocationRankData"
           ></v-select>
         </div>
 
@@ -256,10 +254,11 @@
             <td class="center-text">{{ row.score }}%</td>
           </tr>
         </table>
-        <div v-else-if="!selectedRoundRobin" class="ranking-tables-no-data left-text">
+        <div v-if="!selectedRoundRobin" class="ranking-tables-no-data left-text">
           Please select a round robin
         </div>
-        <div v-else class="ranking-tables-no-data left-text">
+        <div v-else-if="selectedRoundRobin && leadAllocationRankingData.length === 0"
+             class="ranking-tables-no-data left-text">
           Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
         </div>
       </div>
@@ -267,9 +266,23 @@
 
       <!-- OFFICE FDC RANK START -->
       <div class="ranking-table">
-        <div class="ranking-table-header">
-          <v-icon class="ranking-table-icon mr-2">mdi-chevron-double-down</v-icon>
-          <span>Office FDC Rank</span>
+        <div class="ranking-table-header user-office-ranking-table-header">
+          <div class="user-office-ranking-table-header-left-side">
+            <v-icon class="ranking-table-icon mr-2">mdi-chevron-double-down</v-icon>
+            <span>Office FDC Rank</span>
+          </div>
+          <v-select class="table-header-dropdown"
+                    label="Closer Office"
+                    v-model="selectedCloserOffice"
+                    :items="closerOffices"
+                    item-text="orgName"
+                    item-value="id"
+                    no-data-text="No Closer Offices available"
+                    outlined
+                    dense
+                    hide-details
+                    @input="loadOfficeFdcRankData"
+          ></v-select>
         </div>
 
         <table v-if="officeFdcRankingData.length > 0">
@@ -297,10 +310,11 @@
             <td class="center-text">{{ row.totalFdc }}</td>
           </tr>
         </table>
-        <div v-else-if="!isCloser && !isCloserMgr && !isCloserRegional && userCanViewAll" class="ranking-tables-no-data left-text">
-          Section under construction for this role
+        <div v-if="!selectedCloserOffice" class="ranking-tables-no-data left-text">
+          Please select a closer office
         </div>
-        <div v-else class="ranking-tables-no-data left-text">
+        <div v-else-if="selectedCloserOffice && officeFdcRankingData.length === 0"
+             class="ranking-tables-no-data left-text">
           Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
         </div>
       </div>
@@ -1109,6 +1123,7 @@
         milestoneDialog: false,
         funnelDrilldownDialog: false,
         currentUserId: null,
+        currentUserOrgId: null,
         isCloser: false,
         isCloserMgr: false,
         isCloserRegional: false,
@@ -1161,6 +1176,8 @@
         searchText: '',
         roundRobins: [],
         selectedRoundRobin: null,
+        closerOffices: [],
+        selectedCloserOffice: null,
         leadAllocationRankingData: [],
         officeFdcRankingData: [],
         officeRankingData: [],
@@ -1385,11 +1402,11 @@
     },
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
-      '$store.state.app.loading': function () {
-        if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsToFdcPipelineLoaded)) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-        }
-      },
+      // '$store.state.app.loading': function () {
+      //   if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsToFdcPipelineLoaded)) {
+      //     this.$store.commit(AppMutations.SET_LOADING, true)
+      //   }
+      // },
       appts_created_pipeline_dt1 () {
         this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
       },
@@ -1436,6 +1453,8 @@
 
             if (!this.dashboardWasLoaded) {
               await this.loadRoundRobins()
+              await this.loadCloserOffices()
+              await this.loadRankingTables()
               this.dashboardWasLoaded = true
             }
         }
@@ -1688,9 +1707,9 @@
           // if there's only one Round Robin for the current user, this auto-selects it
           if (this.roundRobins?.length === 1) {
             this.selectedRoundRobin = this.roundRobins[0]?.id
+            await this.loadOfficeLeadAllocationRankData()
           }
 
-          await this.loadRankingTables()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1700,7 +1719,64 @@
         }
       },
 
-      setTimeInterval (timeIntervalString) {
+      async loadOfficeLeadAllocationRankData () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
+          const {data} = await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven')
+          this.processRankingData(data, 'Office Lead Allocation Rank')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving office lead allocation rank data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+
+      async loadCloserOffices () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            userOrgId: this.currentUserOrgId
+          }
+          const {data} = await getRequestWithParams('/closerDashboard/getCloserOffices', {params}, 'blueraven')
+          this.closerOffices = data
+
+          // if there's only one Closer Office for the current user, this auto-selects it
+          if (this.closerOffices?.length === 1) {
+            this.selectedCloserOffice = this.closerOffices[0]?.id
+            await this.loadOfficeFdcRankData()
+          }
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving list of closer offices')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+
+      async loadOfficeFdcRankData () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            timeInterval: this.timeInterval,
+            officeFdcRank: true,
+            selectedOrgId: this.selectedCloserOffice
+          }
+          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
+
+          this.processRankingData(cloneDeep(data.officeFdcRankValues), 'Office FDC Rank')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving office FDC rank data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+
+      async setTimeInterval (timeIntervalString) {
         this.timeIntervalString = timeIntervalString
 
         switch (this.timeIntervalString) {
@@ -1718,9 +1794,15 @@
             break
         }
 
-        if (this.selectedRoundRobin || (!this.isCloser && !this.isCloserMgr && !this.isCloserRegional)) {
-          this.loadRankingTables()
+        if (this.selectedRoundRobin) {
+          await this.loadOfficeLeadAllocationRankData()
         }
+
+        if (this.selectedCloserOffice) {
+          await this.loadOfficeFdcRankData()
+        }
+
+        await this.loadRankingTables()
       },
 
       async loadRankingTables () {
@@ -1730,18 +1812,16 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if (((this.isCloser || this.isCloserMgr || this.isCloserRegional) && this.selectedRoundRobin) || this.selectedRoundRobin) {
-            const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
-            await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven').then(res => this.processRankingData(res?.data, 'Office Lead Allocation Rank'))
+          let params = {
+            timeInterval: this.timeInterval,
+            officeFdcRank: false
           }
-
-          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params: {timeInterval: this.timeInterval}}, 'blueraven')
+          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
 
           if (data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
             this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
           }
 
-          this.processRankingData(cloneDeep(data.officeFdcRankValues), 'Office FDC Rank')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Top Reps')
 
@@ -2781,7 +2861,10 @@
     },
     created () {
       this.currentUserId = this.$store.state.user.details.id
+
       if (this.$store.state.user.details.userPositions?.length > 0) {
+        let positionId = null
+
         this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
           return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
@@ -2793,6 +2876,20 @@
         this.isCloserRegional = this.$store.state.user.details.userPositions.filter(position => {
           return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
         }).length > 0
+
+        if (this.isCloser) {
+          positionId = 1
+        } else if (this.isCloserMgr) {
+          positionId = 2
+        } else if (this.isCloserRegional) {
+          positionId = 3
+        }
+
+        if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+          this.currentUserOrgId = this.$store.state.user.details.userPositions.filter(position => {
+            return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
+          })[0]?.orgId
+        }
       }
 
       this.switchTabs(this.tabNum)
@@ -3242,10 +3339,10 @@
     padding: 10px 5px 5px 10px;
   }
 
-  #lead-allocation-table-header {
+  .user-office-ranking-table-header {
     justify-content: space-between;
 
-    .round-robin-dropdown {
+    .table-header-dropdown {
       transform: scale(0.875);
       transform-origin: left;
       margin: 0 0 5px 5px;
@@ -4233,6 +4330,7 @@
 
     .ranking-tables-no-data {
       font-size: 14px;
+      padding: 10px 10px 15px 15px;
     }
 
     .ranking-table {
@@ -4246,8 +4344,8 @@
       padding: 20px 15px 15px 15px;
     }
 
-    #lead-allocation-table-header {
-      .round-robin-dropdown {
+    .user-office-ranking-table-header {
+      .table-header-dropdown {
         transform: none;
         margin: 0 0 10px 10px;
         max-width: 200px;
@@ -4796,8 +4894,8 @@
       font-size: 19px;
     }
 
-    #lead-allocation-table-header {
-      .round-robin-dropdown {
+    .user-office-ranking-table-header {
+      .table-header-dropdown {
         max-width: 135px;
       }
     }
