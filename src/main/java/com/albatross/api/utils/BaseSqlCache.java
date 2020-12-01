@@ -13,6 +13,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -105,6 +106,18 @@ public class BaseSqlCache {
 
     //noinspection unchecked
     return (T) jdbc.queryForObject(sql, paramSource, elementType);
+  }
+  
+  public <T> Optional<T> queryForObjectOptional(String key, Map<String, Object> params, Class<T> elementType) {
+    try {
+      MapSqlParameterSource paramSource = scrubParams(params);
+      String sql = getByKey(key);
+      
+      //noinspection unchecked
+      return Optional.ofNullable((T) jdbc.queryForObject(sql, paramSource, elementType));
+    } catch (DataAccessException e) {
+      return Optional.empty();
+    }
   }
 
   public void query(String key, Map<String, Object> params, RowCallbackHandler rse) {
