@@ -68,7 +68,7 @@ public class CommunicationService {
         mailService.sendMessage(emailAddress, subject, output.toString(), attachments, sentByEmail);
 
       } catch (Exception ex) {
-        log.error("EMAIL_ERROR: Error sending email to address={}", emailAddress, ex);
+        log.error("EMAIL: ERROR: Error sending email to address={}", emailAddress, ex);
       }
     }
     return new AsyncResult<>(null);
@@ -82,7 +82,7 @@ public class CommunicationService {
       mailService.sendMessage(email, subject, baos.toString(), null, sentByEmail);
     } catch (Exception e) {
       e.printStackTrace();
-      log.error("EMAIL_ERROR: Error sending email to address={}", email, e);
+      log.error("EMAIL: ERROR: Error sending email to address={}", email, e);
     }
   }
 

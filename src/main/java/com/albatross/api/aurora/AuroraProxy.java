@@ -72,7 +72,7 @@ public class AuroraProxy {
       InputStream content = resp.getEntity().getContent();
       return new DesignSummary(content);
     } catch (Exception e) {
-      String msg = "Failed to get design summary for design " + designId;
+      String msg = "AURORA: Failed to get design summary for design " + designId;
       log.error(msg, e);
       throw new IOException(msg, e);
     }
@@ -95,7 +95,7 @@ public class AuroraProxy {
       content.close();
       return responseStrBuilder.toString();
     } catch (Exception e) {
-      String msg = "Failed to get tenants projects";
+      String msg = "AURORA: Failed to get tenants projects";
       // If 503, server is unavailable, try again
       if (e.getMessage().contains("503")) {
         return getTenantsProjects(pageNumber);
@@ -122,7 +122,7 @@ public class AuroraProxy {
       content.close();
       return responseStrBuilder.toString();
     } catch (Exception e) {
-      String msg = "Failed to get tenants projects";
+      String msg = "AURORA: Failed to get tenants projects";
       log.error(msg, e);
       throw new IOException(msg, e);
     }

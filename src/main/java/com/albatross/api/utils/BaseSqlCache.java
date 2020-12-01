@@ -162,7 +162,7 @@ public class BaseSqlCache {
   public <T> Optional<T> getBySql(String sql, Map<String, Object> params, Class<T> elementType) {
     List<T> results = queryBySql(sql, params, elementType);
     if (results.size() > 1) {
-      log.warn("More than a single result returned for a GET of type {} on key={}", elementType, sql);
+      log.warn("SQL: More than a single result returned for a GET of type {} on key={}", elementType, sql);
     }
 
     return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
@@ -171,7 +171,7 @@ public class BaseSqlCache {
   public <T> Optional<T> getBySql(String sql, Map<String, Object> params, RowMapper<T> rowMapper) {
     List<T> results = queryBySql(sql, params, rowMapper);
     if (results.size() > 1) {
-      log.warn("More than a single result returned for a GET of type {} on rowMapper={}", rowMapper, sql);
+      log.warn("SQL: More than a single result returned for a GET of type {} on rowMapper={}", rowMapper, sql);
     }
 
     return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));

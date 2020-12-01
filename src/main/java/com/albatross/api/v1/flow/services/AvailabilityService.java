@@ -291,10 +291,7 @@ public class AvailabilityService {
           boolean alreadyExists = false;
           LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
           LocalDateTime currentEventEnd = currentEventStart.plusMinutes(rra.getDuration());
-          log.info("recurrence: {}", rra.getRecurrence());
-          log.info("recurring start date: {}", recurringStartDate);
-          log.info("current event start: {}", currentEventStart);
-          log.info("current event end: {}", currentEventEnd);
+          log.info("CRON: recurrence: {}", rra.getRecurrence());
           //if the recurring event start time is greater than 1 year from the cron start, stop adding appointments
           if(currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
             limitReached = true;
@@ -331,7 +328,7 @@ public class AvailabilityService {
 
 
       } catch (InvalidRecurrenceRuleException e) {
-        log.error(e.getMessage());
+        log.error("RECURRENCE: " + e.getMessage());
       }
     }
   }
@@ -370,10 +367,6 @@ public class AvailabilityService {
       while (it.hasNext() && !limitReached) {
         LocalDateTime currentEventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(it.nextDateTime().getTimestamp()), ZoneOffset.UTC);
         LocalDateTime currentEventEnd = currentEventStart.plusMinutes(duration);
-        log.info("NEW recurrence: {}", ra.getRecurrence());
-        log.info("NEW recurring start date: {}", recurringStartDate);
-        log.info("NEW current event start: {}", currentEventStart);
-        log.info("NEW current event end: {}", currentEventEnd);
         //if the recurring event start time is greater than 1 year from now, stop adding appointments
         if(currentEventStart.isAfter(LocalDateTime.now().plusYears(1))) {
           limitReached = true;
@@ -399,7 +392,7 @@ public class AvailabilityService {
       }
 
     } catch (InvalidRecurrenceRuleException e) {
-      log.error(e.getMessage());
+      log.error("RECURRENCE: " + e.getMessage());
     }
   }
 

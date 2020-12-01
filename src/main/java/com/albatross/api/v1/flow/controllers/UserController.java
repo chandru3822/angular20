@@ -157,9 +157,9 @@ public class UserController {
                 context.put("mailTo", "saleshr@blueravensolar.com");
 
                 communicationService.sendEmail("Click on link to reset your password", StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()), template, context, "SalesOps@blueravensolar.com");
-                log.info("Password reset email has been sent to {}", passwordResetRequest.getUsernameOrEmail());
+                log.info("AUTH: Password reset email has been sent to {}", passwordResetRequest.getUsernameOrEmail());
             } else {
-                log.info("Password reset attempted for unknown user email {}.", passwordResetRequest.getUsernameOrEmail());
+                log.info("AUTH: Password reset attempted for unknown user email {}.", passwordResetRequest.getUsernameOrEmail());
                 return ResponseEntity.badRequest().body("{\"message\" : \"No user found for that email or username\"}");
             }
         }
@@ -196,12 +196,12 @@ public class UserController {
             float time = currentTimestamp.getTime() - user.getExpiryDate().getTime();
             float time1 = time / divider;
             if (time1 > 24) {
-                log.info("Password reset for user {} attempted with expired link.", userUuid);
+                log.info("AUTH: Password reset for user {} attempted with expired link.", userUuid);
                 ResponseEntity.badRequest().body("{\"message\" : \"This link has expired.  Please retry for a new link by clicking on the login link above.\"}");
             }
 
         } else {
-            log.info("Password reset attempted for unknown user {}.", userUuid);
+            log.info("AUTH: Password reset attempted for unknown user {}.", userUuid);
             ResponseEntity.badRequest().body("{\"message\" : \"Can't find user for this request\"}");
         }
 

@@ -193,7 +193,7 @@ public class ProposalService {
       // finally, write to network because no errors were encountered
       return ResponseEntity.ok(buffer.toString(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      log.error("Encountered error while writing proposal log to CSV", e);
+      log.error("PROP: Encountered error while writing proposal log to CSV", e);
       return ResponseEntity.status(500)
         .body("Encountered error while writing proposal log export to CSV");
     }
