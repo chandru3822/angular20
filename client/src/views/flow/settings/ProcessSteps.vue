@@ -77,7 +77,7 @@
             >
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left">{{item.processStepName}}</td>
+                  <td class="text-left clickable" @click="goToProcessStep(item.id)">{{item.processStepName}}</td>
                   <td class="text-right">
                     <v-btn small text @click="goToProcessStep(item.id)">
                       <v-icon>edit</v-icon>

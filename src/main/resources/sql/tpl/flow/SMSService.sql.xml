@@ -38,9 +38,9 @@
                 sms.recipient_type_id
             FROM flow.sms_queue sms
             WHERE
-                sms.to_phone ILIKE '%' || (select c.phone from flow.project p
+                sms.to_phone ILIKE '%' || translate((select c.phone from flow.project p
                                             inner join flow.contact c on c.id = p.contact_id
-                                            where p.id = :projectId)
+                                            where p.id = :projectId), '() -', '')
             AND (
                 error_message IS NULL OR
                    (LOWER(error_message) IN
@@ -52,9 +52,9 @@
             UNION ALL
                 SELECT body as message, array_to_json(media_urls),
                    date_received as created, from_phone, 1 as recipient_type_id from flow.sms_reply
-                WHERE from_phone ILIKE '%' || (select c.phone from flow.project p
+                WHERE from_phone ILIKE '%' || translate((select c.phone from flow.project p
                                                inner join flow.contact c on c.id = p.contact_id
-                                               where p.id = :projectId)
+                                               where p.id = :projectId), '() -', '')
             )
             ORDER BY created ASC
         ]]>

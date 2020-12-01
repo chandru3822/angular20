@@ -633,7 +633,7 @@ export default new Router({
       path: '/projectAdmin/:projectId',
       meta: { title: 'Albatross - Projects'},
       component: () => {
-        if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+        if (store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')) {
           return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
         } else {
           return accessDenied()
