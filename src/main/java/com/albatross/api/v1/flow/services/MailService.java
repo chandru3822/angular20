@@ -91,10 +91,10 @@ public class MailService {
 
             Transport.send(msg);
 
-            log.info("EMAIL MESSAGE SENT");
+            log.info("EMAIL: MESSAGE SENT");
 
         } catch (Exception e) {
-            log.error("SEND_MAIL_EXCEPTION", e);
+            log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
         }
     }
 
@@ -152,7 +152,7 @@ public class MailService {
         msg.setContent(multiPart);
         Transport.send(msg);
 
-        log.info("EMAIL MESSAGE SENT");
+        log.info("EMAIL: MESSAGE SENT");
     }
 
 }

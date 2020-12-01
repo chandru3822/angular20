@@ -396,8 +396,8 @@ public class SmartlistService {
     query.append(";");
 
     //@TODO: humes, logging queries for debugging/testing
-    log.info("\n\nRunning smartlist ID: " + smartlist.getId());
-    log.info(query.toString() + "\n\n");
+    log.info("\n\nSMARTLIST: Running smartlist ID: " + smartlist.getId());
+    log.info("SMARTLIST: " + query.toString() + "\n\n");
 
     return query.toString();
   }
@@ -999,8 +999,8 @@ public class SmartlistService {
     query.append(";");
 
     //@TODO: humes, logging queries for debugging/testing
-    log.info("\n\nRunning smartlist ID: " + smartlist.getId());
-    log.info(query.toString() + "\n\n");
+    log.info("\n\nSMARTLIST: Running smartlist ID: " + smartlist.getId());
+    log.info("SMARTLIST: " + query.toString() + "\n\n");
 
     return query.toString();
   }

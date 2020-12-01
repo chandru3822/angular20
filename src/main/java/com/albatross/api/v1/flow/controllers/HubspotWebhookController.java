@@ -24,7 +24,7 @@ public class HubspotWebhookController {
     public void saveContact(@RequestBody HubspotContact contact) throws Exception {
         if(ricochetEnabled) {
             log.info(
-                "Received new contact information from HubSpot. " +
+                "HUBSPOT: Received new contact information from HubSpot. " +
                     "hubspotId: {}, " +
                     "First Name: {}, " +
                     "Last Name: {}, " +
@@ -45,7 +45,7 @@ public class HubspotWebhookController {
             lead.setLeadOwner(null);
 
             if (contact.getProperties().getLead_source() != null && !contact.getProperties().getLead_source().getValue().equals("")) {
-                log.info("(Additional contact information from HubSpot) " +
+                log.info("HUBSPOT: (Additional contact information from HubSpot) " +
                              "lead_source: {}", contact.getProperties().getLead_source().getValue());
                 lead.setLead_source(contact.getProperties().getLead_source().getValue());
             } else {
@@ -53,7 +53,7 @@ public class HubspotWebhookController {
             }
 
             if (contact.getProperties().getLead_source_detail() != null && !contact.getProperties().getLead_source_detail().getValue().equals("")) {
-                log.info("(Additional contact information from HubSpot) " +
+                log.info("HUBSPOT: (Additional contact information from HubSpot) " +
                              "lead_source_detail: {}", contact.getProperties().getLead_source_detail().getValue());
                 lead.setLead_source_detail(contact.getProperties().getLead_source_detail().getValue());
             } else {

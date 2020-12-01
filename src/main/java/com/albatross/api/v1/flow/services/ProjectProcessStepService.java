@@ -284,8 +284,8 @@ public class ProjectProcessStepService {
       }
     }
 
-    log.info("PPSs created by initial auto triggers: " + createdPpsIds.size());
-    log.info("PPS ids created by initial auto triggers: " + createdPpsIds);
+    log.info("TRIGGERS: PPSs created by initial auto triggers: " + createdPpsIds.size());
+    log.info("TRIGGERS: PPS ids created by initial auto triggers: " + createdPpsIds);
 
     return createdPpsIds;
   }
@@ -307,8 +307,8 @@ public class ProjectProcessStepService {
       }
     }
 
-    log.info("PPS created by time based auto triggers: " + createdPpsIds.size());
-    log.info("PPS ids created by time based auto triggers: " + createdPpsIds);
+    log.info("TRIGGERS: PPS created by time based auto triggers: " + createdPpsIds.size());
+    log.info("TRIGGERS: PPS ids created by time based auto triggers: " + createdPpsIds);
   }
 
   @Transactional
@@ -340,7 +340,7 @@ public class ProjectProcessStepService {
                           }
                       }
                   } catch (Exception e) {
-                      log.error(String.format("Unable to automatically trigger action ID: %s, with project process step ID: %s",  action.getId(), ppsId));
+                      log.error(String.format("PPS: Unable to automatically trigger action ID: %s, with project process step ID: %s",  action.getId(), ppsId));
                   }
               }
           });
@@ -418,7 +418,7 @@ public class ProjectProcessStepService {
       try {
         r.setFulfilled(this.isRequirementMet(r, pps.getProjectProcessStepId()));
       } catch (Exception e) {
-        log.error(String.format("Exception while parsing date requirement value for process step requirement ID: %s", r.getId()));
+        log.error(String.format("PPS: Exception while parsing date requirement value for process step requirement ID: %s", r.getId()));
         e.printStackTrace();
         throw e;
       }
@@ -808,7 +808,7 @@ public class ProjectProcessStepService {
                 String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
                 sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
             } catch (Exception e) {
-                log.error(String.format("Unable to run child action function. CFA ID: %s, action ID: %s", childFunction.getId(), actionId));
+                log.error(String.format("PPS: Unable to run child action function. CFA ID: %s, action ID: %s", childFunction.getId(), actionId));
                 e.printStackTrace();
             }
         });

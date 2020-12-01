@@ -79,11 +79,11 @@ public class OverridePlanController {
                 String overridePlanDetail = overridePlanService.findOverridePlanDetail(cloneOverridePlan.get());
                 return ResponseEntity.ok(overridePlanDetail);
             }else{
-                log.error("Unable to create a clone of override plan id={}", id);
+                log.error("COMMISSION: Unable to create a clone of override plan id={}", id);
             }
 
         } catch (SQLException e) {
-            log.error("Error creating cloned override plane", e);
+            log.error("COMMISSION: Error creating cloned override plane", e);
         } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
             Map<String, String> body = ImmutableMap.of("msg", e.getMessage(),

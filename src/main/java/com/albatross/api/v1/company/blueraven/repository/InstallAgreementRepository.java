@@ -98,12 +98,12 @@ public class InstallAgreementRepository {
           }
 
           if (loanStatus.equals("Approved")) {
-            log.info("sending LoanPal Docs");
+            log.info("LOANPAL: sending LoanPal Docs");
             String uri = "/applications/" + loanPalId + "/sendLoanDocs";
             loanPalService.POST(uri, null);
           }
         } catch (JSONException ex){
-          log.error("JSON object not found", ex);
+          log.error("IARQ: JSON object not found", ex);
         }
       }
     }

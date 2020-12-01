@@ -116,7 +116,7 @@ public class RicochetWebhookService {
 
             // unrecognized lead statuses are not saved to the database
             if (mappedLeadStatus.contains("not recognized")) {
-                log.error(mappedLeadStatus);
+                log.error("RICOCHET: " + mappedLeadStatus);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + mappedLeadStatus);
             } else {
                 lead.setStatus(mappedLeadStatus);
@@ -170,11 +170,11 @@ public class RicochetWebhookService {
 
             processCustomFieldValues(lead, Long.parseLong(contactId), leadOwnerUserId);
 
-            String msg = "Ricochet lead info has been successfully saved for Contact ID " + contactId + " / Ricochet Lead ID " + lead.getUniqueIdentifier() + ".";
+            String msg = "RICOCHET: Ricochet lead info has been successfully saved for Contact ID " + contactId + " / Ricochet Lead ID " + lead.getUniqueIdentifier() + ".";
             log.info(msg);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(msg);
         } catch (Exception e) {
-            String msg = "Failed to save Ricochet lead info.";
+            String msg = "RICOCHET: Failed to save Ricochet lead info.";
             log.error(msg, e);
             throw new Exception(msg, e);
         }

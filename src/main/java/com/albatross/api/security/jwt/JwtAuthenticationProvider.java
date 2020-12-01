@@ -58,7 +58,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         JwtClaims token = jwtUtils.validateAuthHeader(authHeader);
         Optional<UserAccountDetails> uad = retrieveUserAccountDetails(token);
         if (!uad.isPresent()) {
-            log.warn("Attempted authentication on a JWT but could not find the specified user; token: "
+            log.warn("AUTH: Attempted authentication on a JWT but could not find the specified user; token: "
                      + authHeader);
             throw new JwtUtils.JwtParseException("JWT appears corrupted.");
         }
@@ -79,7 +79,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     public void logFailedAuthAttempt(HttpServletRequest request, HttpServletResponse response,
                                      AuthenticationException e) throws IOException, ServletException {
-        log.info("Failed to authenticate request; exception: " + e.getMessage());
+        log.info("AUTH: Failed to authenticate request; exception: " + e.getMessage());
     }
 
     @SneakyThrows

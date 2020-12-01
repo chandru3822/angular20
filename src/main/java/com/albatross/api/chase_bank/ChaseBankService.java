@@ -70,7 +70,7 @@ public class ChaseBankService {
         } catch (BadDataException e) {
             throw e;
         } catch (Exception ex) {
-            log.error("Failed to generate Ap6DelimitedSingleLine CSV file", ex);
+            log.error("CHASE: Failed to generate Ap6DelimitedSingleLine CSV file", ex);
             throw ex;
         }
     }
@@ -110,7 +110,7 @@ public class ChaseBankService {
         } catch (RebatePaymentValidationException e) {
             throw e;
         } catch (RuntimeException e){
-            log.error("Failed to generate CSV entry for project with Project id " + payment.getProjectId() + "; " + e.getMessage(), e);
+            log.error("CHASE: Failed to generate CSV entry for project with Project id " + payment.getProjectId() + "; " + e.getMessage(), e);
             throw e;
         }
     }
@@ -216,7 +216,7 @@ public class ChaseBankService {
 
                 return writer.toString();
             } catch (Exception e) {
-                String msg = "Failed to generate CSV of validation failures";
+                String msg = "CHASE: Failed to generate CSV of validation failures";
                 log.error(msg, e);
                 throw new RuntimeException(msg, e);
             }

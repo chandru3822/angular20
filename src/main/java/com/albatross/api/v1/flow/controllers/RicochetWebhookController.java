@@ -28,31 +28,31 @@ public class RicochetWebhookController {
         String msg;
 
         if (!StringUtils.equals(authHeader, (apiKey))) {
-            msg = "Invalid authorization configured";
+            msg = "RICOCHET: Invalid authorization configured";
             log.error(msg);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + msg);
         }
 
         if (lead.getUniqueIdentifier() == null) {
-            msg = "Ricochet Lead ID is missing";
+            msg = "RICOCHET: Ricochet Lead ID is missing";
             log.error(msg);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
         }
 
         if (lead.getCustomer().getLastName().isBlank()) {
-            msg = "Last name cannot be blank";
+            msg = "RICOCHET: Last name cannot be blank";
             log.error(msg);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
         }
 
         if (!lead.getCustomer().getAddress().getZip().isBlank() && lead.getCustomer().getAddress().getZip().length() > 10) {
-            msg = "Character limit exceeded for provided Zip \"" + lead.getCustomer().getAddress().getZip() + "\". The maximum number of characters allowed is 10.";
+            msg = "RICOCHET: Character limit exceeded for provided Zip \"" + lead.getCustomer().getAddress().getZip() + "\". The maximum number of characters allowed is 10.";
             log.error(msg);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
         }
 
         log.info(
-            "Received new lead info from Ricochet. " +
+            "HUBSPOT: Received new lead info from Ricochet. " +
                 "uniqueIdentifier: {}, " +
                 "status: {}, " +
                 "leadOwner: {}, " +
