@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.CloserDashboardService;
 
+import com.albatross.api.v1.flow.model.Org;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +38,20 @@ public class CloserDashboardController {
 
   @GetMapping(value = "/getOfficeLeadAllocationRank")
   public List<OfficeLeadAllocationScores> getOfficeLeadAllocationRank(@RequestParam Integer postalCodeZoneId,
-                                                             @RequestParam Integer timeInterval) {
+                                                                      @RequestParam Integer timeInterval) {
     return closerDashboardService.getOfficeLeadAllocationRank(postalCodeZoneId, timeInterval);
   }
 
+  @GetMapping(value = "/getCloserOffices")
+  public List<Org> getCloserOffices(@RequestParam(required = false) Long userOrgId) {
+    return closerDashboardService.getCloserOffices(userOrgId);
+  }
+
   @GetMapping(value = "/getCloserTableScores")
-  public String getCloserTableScores(@RequestParam Integer timeInterval) {
-    return closerDashboardService.getCloserTableScores(timeInterval);
+  public String getCloserTableScores(@RequestParam Integer timeInterval,
+                                     @RequestParam Boolean officeFdcRank,
+                                     @RequestParam(required = false) Long selectedOrgId) {
+    return closerDashboardService.getCloserTableScores(timeInterval, officeFdcRank, selectedOrgId);
   }
 
   @GetMapping(value = "/getBrsProvidedSources")

@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.flow.model.Org;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
@@ -97,51 +98,70 @@ public class CloserDashboardService {
     return officeLeadAllocationData;
   }
 
-  public String getCloserTableScores(int timeInterval) {
-    JSONObject closerDashboardData = new JSONObject();
-    closerDashboardData.put("officeFdcRankValues", processCloserData(timeInterval, true));
-    closerDashboardData.put("companyRankingValues", processCloserData(timeInterval, false));
+  public List<Org> getCloserOffices(Long userOrgId) {
+    User user = securityService.getCurrentUser();
+    Boolean viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CLOSER_DASHBOARD", List.of("VIEW_DOWNLINE"));
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CLOSER_DASHBOARD", List.of("VIEW_ALL"));
 
-    return getUserImages(new String[] {"officeFdcRankValues", "companyRankingValues"}, closerDashboardData);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+
+    if (viewAll) {
+      return sqlCache.query("closerDashboard.getAllCloserOffices", params, Org.class);
+    } else {
+      params.put("userOrgId", userOrgId);
+      String sqlKey = viewDownline ? "closerDashboard.getCloserDownline" : "closerDashboard.getCloserOffice";
+
+      return sqlCache.query(sqlKey, params, Org.class);
+    }
+  }
+
+  public String getCloserTableScores(Integer timeInterval, Boolean officeFdcRank, Long selectedOrgId) {
+    JSONObject closerDashboardData = new JSONObject();
+
+    if (officeFdcRank) {
+      closerDashboardData.put("officeFdcRankValues", processCloserData(timeInterval, true, selectedOrgId));
+      return getUserImages("officeFdcRankValues", closerDashboardData);
+    } else {
+      closerDashboardData.put("companyRankingValues", processCloserData(timeInterval, false, null));
+      return getUserImages("companyRankingValues", closerDashboardData);
+    }
   }
 
   public Map<Long, String> getUserImages(List<Long> userIds) {
     return attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
   }
 
-  public String getUserImages(String[] keys, JSONObject closerDashboardData) {
+  public String getUserImages(String key, JSONObject closerDashboardData) {
     List<Long> userIds = new ArrayList<>();
 
-    for (String key : keys) {
-      for (Object row : closerDashboardData.getJSONArray(key)) {
-        JSONObject rowObject = (JSONObject)row;
-        userIds.add(rowObject.getLong("userId"));
-      }
+    for (Object row : closerDashboardData.getJSONArray(key)) {
+      JSONObject rowObject = (JSONObject)row;
+      userIds.add(rowObject.getLong("userId"));
     }
 
     Map<Long, String> userImageUrls = attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
 
-    for (String key : keys) {
-      for (Object row : closerDashboardData.getJSONArray(key)) {
-        JSONObject rowObject = (JSONObject)row;
+    for (Object row : closerDashboardData.getJSONArray(key)) {
+      JSONObject rowObject = (JSONObject)row;
 
-        if (userImageUrls.get(rowObject.getLong("userId")) != null) {
-          rowObject.put("userImageUrl", userImageUrls.get(rowObject.getLong("userId")));
-          rowObject.put("userImageAltText", "Photo of " + rowObject.get("name") + ", a Blue Raven Solar employee");
-        } else {
-          rowObject.put("userImageAltText", "User photo placeholder");
-        }
+      if (userImageUrls.get(rowObject.getLong("userId")) != null) {
+        rowObject.put("userImageUrl", userImageUrls.get(rowObject.getLong("userId")));
+        rowObject.put("userImageAltText", "Photo of " + rowObject.get("name") + ", a Blue Raven Solar employee");
+      } else {
+        rowObject.put("userImageAltText", "User photo placeholder");
       }
     }
 
     return closerDashboardData.toString();
   }
 
-  private JSONArray processCloserData(Integer timeInterval, boolean officeFdcRank) {
+  private JSONArray processCloserData(Integer timeInterval, boolean officeFdcRank, Long selectedOrgId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", securityService.getCurrentUser().getId());
     params.put("timeInterval", timeInterval);
     params.put("officeFdcRank", officeFdcRank);
+    params.put("selectedOrgId", selectedOrgId);
 
     List<CloserTableScores> closerTableScores = sqlCache.query("closerDashboard.getCloserTableScores", params, CloserTableScores.class);
 
