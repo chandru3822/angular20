@@ -48,6 +48,10 @@
             <label>Can Own Contacts:</label>
             <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.contactOwner">
           </div>
+          <div class="mb-3" v-if="!position.projectOwnerReadonly">
+            <label>Can Own Projects:</label>
+            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.projectOwner">
+          </div>
           <div v-if="$store.getters.isParent(parentId)">
             <label>Make Available in Children</label>
             <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
@@ -87,7 +91,9 @@
     data() {
       return {
         snackbar: {},
-        position: {},
+        position: {
+          companyFeatures: []
+        },
         selectedRows: [],
         positionLoaded: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),

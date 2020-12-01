@@ -42,10 +42,10 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">
+              <td class="text-left" @click="clickRow(item.id)">
                 {{item.position}}
               </td>
-              <td class="text-left">
+              <td class="text-left" @click="clickRow(item.id)">
                 {{item.orgType}}
               </td>
               <td class="px-0">

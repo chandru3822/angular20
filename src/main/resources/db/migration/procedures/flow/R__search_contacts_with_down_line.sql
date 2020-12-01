@@ -1,7 +1,7 @@
 -- DROP FUNCTION flow.search_contacts(character varying, integer, boolean, boolean, integer, integer, integer);
-CREATE OR REPLACE FUNCTION flow.search_contacts(p_searchterm character varying, p_company_id integer,
-                                                p_is_parent boolean,
-                                                p_limit integer, p_offset integer)
+CREATE OR REPLACE FUNCTION flow.search_contacts_with_down_line(p_searchterm character varying, p_company_id integer,
+                                                               p_is_parent boolean, p_userid integer,
+                                                               p_limit integer, p_offset integer)
     RETURNS TABLE
             (
                 id               integer,
@@ -61,6 +61,31 @@ BEGIN
                    limited_contacts.date_created,
                    limited_contacts.owner
             FROM (
+                     with contacts_ids as (
+                         with positions as (
+                             select up.org_id as parent_org_id
+                             from flow.user_position up
+                             where up.primary_flag is true
+                               and user_id = p_userid
+                         ),
+                              org_ids as (
+                                  select t.id
+                                  from positions p
+                                           join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
+                                                on true)
+                         select array_agg(contact_ids) as contact_ids
+                         from (
+                                  select distinct c.id as contact_ids
+                                  from org_ids o
+                                           inner join flow.user_position up2 on up2.org_id = o.id
+                                           inner join flow.contact c on c.owner_user_position_id = up2.id
+                                  union
+                                  select distinct c.id as contact_ids
+                                  from org_ids o
+                                           inner join flow.user_position up2 on up2.org_id = o.id
+                                           inner join flow.project p on p.user_position_id = up2.id
+                                           inner join flow.contact c on c.id = p.contact_id
+                              ) as foo)
                      SELECT c.id,
                             c.first_name,
                             c.last_name,
@@ -82,6 +107,7 @@ BEGIN
                                             'fullName', concat(u.first_name, ' ', u.last_name)
                                         ))::jsonb                  as owner
                      FROM flow.contact c
+                              inner join contacts_ids ci on c.id = any (ci.contact_ids)
                               inner join flow.contact_type ct on ct.id = c.contact_type_id
                               left join flow.company_state cs on cs.id = c.company_state_id
                               left join flow.state s on s.id = cs.state_id
@@ -134,7 +160,32 @@ BEGIN
                          group by 1
                          order by count(1) desc, sum(rank)
                          limit p_limit offset p_offset
-                     )
+                     ),
+                     contacts_ids as (
+                         with positions as (
+                             select up.org_id as parent_org_id
+                             from flow.user_position up
+                             where up.primary_flag is true
+                               and user_id = p_userid
+                         ),
+                              org_ids as (
+                                  select t.id
+                                  from positions p
+                                           join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
+                                                on true)
+                         select array_agg(contact_ids) as contact_ids
+                         from (
+                                  select distinct c.id as contact_ids
+                                  from org_ids o
+                                           inner join flow.user_position up2 on up2.org_id = o.id
+                                           inner join flow.contact c on c.owner_user_position_id = up2.id
+                                  union
+                                  select distinct c.id as contact_ids
+                                  from org_ids o
+                                           inner join flow.user_position up2 on up2.org_id = o.id
+                                           inner join flow.project p on p.user_position_id = up2.id
+                                           inner join flow.contact c on c.id = p.contact_id
+                              ) as foo)
                 select c.id,
                        c.first_name,
                        c.last_name,
@@ -157,6 +208,7 @@ BEGIN
                                    ))::jsonb                  as owner
                 from ranked_contacts ranked
                          inner join flow.contact c on c.id = ranked.id
+                         inner join contacts_ids ci2 on c.id = any (ci2.contact_ids)
                          inner join flow.contact_type ct on ct.id = c.contact_type_id
                          left join flow.company_state cs on cs.id = c.company_state_id
                          left join flow.state s on s.id = cs.state_id

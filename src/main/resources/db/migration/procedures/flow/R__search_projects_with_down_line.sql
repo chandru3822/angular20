@@ -76,16 +76,18 @@ BEGIN
                                   from positions p
                                            join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
                                                 on true)
-                         select distinct array_agg(p.id) as project_ids
+                         select array_agg(project_ids) as project_ids
+                         from (
+                         select distinct p.id as project_ids
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                 inner join flow.project p on p.user_position_id = up2.id
                          union
-                         select distinct array_agg(p.id) as project_ids
+                         select distinct p.id as project_ids
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                   inner join flow.contact c on c.owner_user_position_id = up2.id
-                                  inner join flow.project p on p.contact_id = c.id)
+                                  inner join flow.project p on p.contact_id = c.id)as foo)
                      select p.id,
                             p.project_name,
                             p.contact_id,
@@ -200,16 +202,18 @@ BEGIN
                                   from positions p
                                            join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
                                                 on true)
-                         select distinct array_agg(p.id) as project_ids
+                         select array_agg(project_ids)as project_ids
+                         from (
+                         select distinct p.id as project_ids
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                 inner join flow.project p on p.user_position_id = up2.id
                          union
-                         select distinct array_agg(p.id) as project_ids
+                         select distinct p.id as project_ids
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                   inner join flow.contact c on c.owner_user_position_id = up2.id
-                                  inner join flow.project p on p.contact_id = c.id)
+                                  inner join flow.project p on p.contact_id = c.id)as foo)
                          select p.id,
                                 p.project_name,
                                 p.contact_id,
