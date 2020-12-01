@@ -13,13 +13,9 @@
 
     <installAgreement.getUtilityFromProposalLog>
         <![CDATA[
-            WITH p AS (
-                SELECT proposal ->> 'Utility Name' AS loan_type
-                FROM brs.proposal_log
-                WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
-            )
-            SELECT substring(p.loan_type, 1, position(' ' IN p.loan_type) - 1) AS utility_company
-            FROM p
+            SELECT proposal ->> 'Utility Name' AS utility_company
+            FROM brs.proposal_log
+            WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
         ]]>
     </installAgreement.getUtilityFromProposalLog>
 
