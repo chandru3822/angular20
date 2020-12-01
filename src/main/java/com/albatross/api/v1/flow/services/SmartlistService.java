@@ -979,7 +979,11 @@ public class SmartlistService {
           } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 2)) {
             whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
           } else {
-            whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+            if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
+              whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+            } else {
+              whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+            }
           }
       }
 
