@@ -161,7 +161,7 @@ public class LoanPalService {
 
   private HttpResponse request(String method, String uri, InputStream content) throws Exception {
     String url = String.format("%s%s%s", config.getApiHost(), config.getUriPrefix(), uri);
-    log.info("sending to loanpal url: {}", url);
+    log.info("LOANPAL: sending to loanpal url: {}", url);
     Map<String, String> headers = new HashMap<>();
     headers.put("X-Api-Key", config.getApiKey());
     headers.put("Content-Type", "application/json");

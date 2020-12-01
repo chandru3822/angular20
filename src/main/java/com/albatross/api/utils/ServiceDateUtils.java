@@ -24,7 +24,7 @@ public class ServiceDateUtils {
             return LocalDate.parse(s, DATE_FORMATTER);
         } catch (DateTimeParseException e) {}
 
-        String errorMsg = String.format("Could not parse '%s' as a recognized date string; format must be one of: %s",
+        String errorMsg = String.format("DATE_PARSER: Could not parse '%s' as a recognized date string; format must be one of: %s",
                 s, ACCEPTED_DATE_FORMATS);
         log.warn(errorMsg);
         throw new IllegalArgumentException(errorMsg);

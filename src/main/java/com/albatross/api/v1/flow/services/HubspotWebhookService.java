@@ -59,17 +59,17 @@ public class HubspotWebhookService {
             req.setHeader("Accept", "application/json");
             req.setHeader("Content-type", "application/json");
 
-            log.info("Preview of lead information that will be sent: {}", contact.toString());
-            log.info("Sending HTTP POST request to Ricochet with HubSpot contact / lead information...");
+            log.info("HUBSPOT: Preview of lead information that will be sent: {}", contact.toString());
+            log.info("HUBSPOT: Sending HTTP POST request to Ricochet with HubSpot contact / lead information...");
 
             try (CloseableHttpResponse resp = client.execute(req)) {
                 if (resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                    String msg = "Received unexpected response code from Ricochet post: " + resp.getStatusLine().getStatusCode();
+                    String msg = "HUBSPOT: Received unexpected response code from Ricochet post: " + resp.getStatusLine().getStatusCode();
                     log.error(msg);
 
                     try {
                         log.error(
-                            "Response body from Ricochet post: {}",
+                            "HUBSPOT: Response body from Ricochet post: {}",
                             IOUtils.toString(resp.getEntity().getContent(), UTF_8)
                         );
                     } catch (IOException ignored) {}
@@ -77,9 +77,9 @@ public class HubspotWebhookService {
                     throw new Exception(msg);
                 }
             }
-            log.info("HTTP POST request made to Ricochet with HubSpot contact / lead information was successful.");
+            log.info("HUBSPOT: HTTP POST request made to Ricochet with HubSpot contact / lead information was successful.");
         } catch (Exception e) {
-            String msg = "Failed to post HubSpot contact / lead information to Ricochet.";
+            String msg = "HUBSPOT: Failed to post HubSpot contact / lead information to Ricochet.";
             log.error(msg, e);
             throw new Exception(msg, e);
         }

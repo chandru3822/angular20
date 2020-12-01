@@ -79,7 +79,7 @@ public class InstallAgreementController {
           JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
           return ResponseEntity.ok(loanApp.toString());
       } catch (Exception e) {
-          log.warn("Installation agreement: Failed to get loan status: {}", e.getMessage());
+          log.warn("IARQ: Installation agreement: Failed to get loan status: {}", e.getMessage());
           if (e.getMessage().contains("locate")) {
               throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
           }

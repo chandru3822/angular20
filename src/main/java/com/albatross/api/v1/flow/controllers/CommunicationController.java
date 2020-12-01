@@ -105,7 +105,7 @@ public class CommunicationController {
                     }
                 }
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.error("EMAIL" + e.getMessage());
             }
         } finally {
             // delete temp files

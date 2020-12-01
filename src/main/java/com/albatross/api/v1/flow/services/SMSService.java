@@ -189,7 +189,7 @@ public class SMSService {
 
                 jdbcTemplate.update(queueUpdate, params);
 
-                log.info("TWILIO_SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
+                log.info("TWILIO: SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
             } catch (ApiException e) {
 
                 HashMap<String, Object> params = new HashMap<>();
@@ -213,7 +213,7 @@ public class SMSService {
      * @param msg
      */
     public void saveTwilioStatusUpdate(TwilioSMSResponse msg) {
-        log.info("TWILIO_WEBHOOK: Message SID: {} From: {} Status: {} | received webhook update",
+        log.info("TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | received webhook update",
                 msg.getMessageSid(),
                 msg.getFrom(),
                 msg.getMessageStatus());
@@ -268,7 +268,7 @@ public class SMSService {
      * @return
      */
     public boolean updateMessageBySid(String sid, String status, String fromPhone, Date dateReceived) {
-        log.info("TWILIO_WEBHOOK: Message SID: {} From: {} Status: {} | updating", sid, fromPhone, status);
+        log.info("TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | updating", sid, fromPhone, status);
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("messageSid", sid);
@@ -298,7 +298,7 @@ public class SMSService {
             msg.addAttempt();
 
             if (msg.getAttempts() >= 3) {
-                log.warn("TWILIO_WEBHOOK_ERROR: SID: {} too many failed attempts to update status", msg.getMessageSid());
+                log.warn("TWILIO: WEBHOOK_ERROR: SID: {} too many failed attempts to update status", msg.getMessageSid());
 
                 try (Jedis jedis = jedisPool.getResource()) {
                     jedis.lpush(webhookPayloadErrorsKey, msg.toJSON());
@@ -321,7 +321,7 @@ public class SMSService {
      * @param msg
      */
     private void queueTwilioWebhookPayload(TwilioSMSResponse msg) {
-        log.info("TWILIO_WEBHOOK: Message SID: {} From: {} Status: {} | queuing update Attempts: {}",
+        log.info("TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | queuing update Attempts: {}",
                 msg.getMessageSid(),
                 msg.getFrom(),
                 msg.getMessageStatus(),
@@ -378,7 +378,7 @@ public class SMSService {
     }
 
     public void saveReply(TwilioMessageRequest sms) {
-        log.info("saving Twilio SMS reply: {}", sms.getMessageSid());
+        log.info("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
 
         RecordType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
 
@@ -401,7 +401,7 @@ public class SMSService {
         try {
             output = cleanPhoneNumber(input);
         } catch (NumberParseException ex) {
-            log.warn("invalid phone number: {}", input);
+            log.warn("TWILIO: invalid phone number: {}", input);
             output = input;
         }
 
@@ -411,7 +411,7 @@ public class SMSService {
     public Optional<TwilioMessageRequest> getReply(String phone, Date since) throws NumberParseException {
         String phoneE164 = cleanPhoneNumber(phone);
 
-        log.info("input phone: {}; clean phone: {}", phone, phoneE164);
+        log.info("TWILIO: input phone: {}; clean phone: {}", phone, phoneE164);
         HashMap<String, Object> params = new HashMap<>();
         params.put("phone", phoneE164);
         params.put("since", since);

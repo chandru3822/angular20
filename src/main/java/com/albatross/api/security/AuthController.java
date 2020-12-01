@@ -44,13 +44,13 @@ public class AuthController {
   public ResponseEntity getJwtToken(@RequestBody Credentials creds) {
     User user = securityService.getUser(creds.getUsername());
     if (user == null) {
-      log.info("Login attempted with unknown username"
+      log.info("AUTH: Login attempted with unknown username"
           + (log.isDebugEnabled() ? ": " + creds.getUsername()
           : "."));
       return ResponseEntity.badRequest().body("No such username found");
     } else if (user.getLoginAttempts() >= 9) {
       String msg = "Too Many Attempts. Account is Locked";
-      log.info("Too many attempts; account is locked: " + creds.getUsername());
+      log.info("AUTH: Too many attempts; account is locked: " + creds.getUsername());
       return ResponseEntity.badRequest().body(msg);
     }
 
@@ -58,7 +58,7 @@ public class AuthController {
     if (!validPassword) {
       int attempts = user.getLoginAttempts() + 1;
       securityService.updateLoginAttempts(attempts, user.getId());
-      log.info("Login attempted with bad password for user: " + creds.getUsername() + ": count: " + attempts);
+      log.info("AUTH: Login attempted with bad password for user: " + creds.getUsername() + ": count: " + attempts);
       return ResponseEntity.badRequest().body("Invalid Username or Password");
     } else if (user.getLoginAttempts() > 0) {
       //after successful login, if any previous unsuccessful, reset the count
@@ -66,7 +66,7 @@ public class AuthController {
     }
 
     if (!user.isUnlocked()) {
-      log.info("Cannot log in; account is locked: " + creds.getUsername());
+      log.info("AUTH: Cannot log in; account is locked: " + creds.getUsername());
       return ResponseEntity.badRequest().body("Account is Locked");
     }
 
