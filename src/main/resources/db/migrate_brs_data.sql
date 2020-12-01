@@ -9312,7 +9312,8 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
          inner join blueraven.customer c1 on c1.id = d.customer_id
           inner join flow.contact c on c.id = c1.id
      WHERE needs_final_referral_followup_date IS NOT NULL
-        limit 1);
+        and c.id  != 718 and c.id != 22091 and c.id != 22586
+        and c.id != 45135 and c.id != 25648);
 
 
 
