@@ -76,27 +76,34 @@ public class LoanPalService {
   }
 
   public JSONObject getApplicationByProjectId(String projectId) throws Exception {
-    String refNum = "";
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", Long.valueOf(projectId));
 
     Optional<Object> dealId = sqlCache.get("installAgreement.getDealId", params, new SingleColumnRowMapper<>(Object.class));
+    JSONArray applications = null;
+    // First try to find a Loan Application for the Deal ID, if none is found - then try the Project ID
     if (dealId.isPresent()) {
-        refNum = dealId.get().toString();
+        String uri = "/applications/reference/" + dealId.get().toString();
+        HttpResponse res = GET(uri);
+        if (res.getResponseCode() == 200) {
+            applications = res.getJSONArray();
+            if (applications.length() != 1) {
+                log.warn("LOANPAL: unexpected number of applications for project {} ({})", projectId, applications.length());
+            }
+        }
     }
-    else {
-        refNum = projectId;
-    }
+    // Try to find a Loan application for the project Id
+    if (applications == null) {
+        String uri = "/applications/reference/" + projectId;
+        HttpResponse res = GET(uri);
+        if (res.getResponseCode() != 200) {
+            throw new Exception(String.format("Unable to locate LoanPal application for project %s: %s", projectId, res.getBody()));
+        }
 
-    String uri = "/applications/reference/" + refNum;
-    HttpResponse res = GET(uri);
-    if (res.getResponseCode() != 200) {
-      throw new Exception(String.format("Unable to locate LoanPal application for project %s: %s", projectId, res.getBody()));
-    }
-
-    JSONArray applications = res.getJSONArray();
-    if (applications.length() != 1) {
-      log.warn("LOANPAL: unexpected number of applications for project {} ({})", projectId, applications.length());
+        applications = res.getJSONArray();
+        if (applications.length() != 1) {
+          log.warn("LOANPAL: unexpected number of applications for project {} ({})", projectId, applications.length());
+        }
     }
 
     JSONObject application = applications.getJSONObject(0);

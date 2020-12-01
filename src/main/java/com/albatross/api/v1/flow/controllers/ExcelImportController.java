@@ -1,39 +1,35 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.aurora.AuroraProxy;
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.Params;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.albatross.api.aurora.AuroraProxy;
-import com.albatross.api.utils.Params;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.util.Assert;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.security.SecurityService;
-
-import com.albatross.api.utils.SqlCache;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -139,6 +135,7 @@ public class ExcelImportController {
     params.put("proposalId", propId);
     params.put("projectId", projectId);
 
+    log.info("EXCEL_IMPORT: lets figure this out {} {} {} {}", proposal.getSource(), proposal.getProposal(), propId, projectId);
     Optional<ProposalResponse> created = cache.get("excel.import.insert", params,
         (rs, rowNum) -> {
             try {
