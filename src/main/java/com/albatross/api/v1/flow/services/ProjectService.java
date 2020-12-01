@@ -92,10 +92,11 @@ public class ProjectService {
     params.put("offset", pageable.getOffset());
 
     String searchSqlKey = viewAll ? "project.search" : viewDownline ? "project.searchDownline" : "project.searchByOwner";
-    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
+//    String countSqlKey = viewAll ? "project.searchCount" : viewDownline ? "project.searchDownlineCount" : "project.searchByOwnerCount";
 
     List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
-    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
+//    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
+    Integer total = 10000;
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 

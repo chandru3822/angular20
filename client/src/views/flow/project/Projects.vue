@@ -201,6 +201,11 @@ export default {
 }
 </script>
 
+<style lang="scss">
+#projects-container .v-data-footer__pagination {
+  display: none !important;
+}
+</style>
 <style scoped lang="scss">
 
 @import "@/styles/main.scss";

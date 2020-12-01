@@ -1,11 +1,23 @@
 <sql>
-  <contact.searchContacts><![CDATA[
-      select * from flow.search_contacts(:query, :companyId::int, :isParent::boolean, :viewAll::boolean, :userId::int, :limit::int, :offset::int)
-  ]]></contact.searchContacts>
-
-  <contact.searchContactsCount><![CDATA[
-      select count from flow.search_contacts_count(:query, :companyId::int, :isParent::boolean, :viewAll::boolean, :userId::int)
-  ]]></contact.searchContactsCount>
+  <contact.searchDownline><![CDATA[
+    select *
+    from flow.search_contacts_with_down_line(:query::character varying, :companyId::int,
+                                                            :isParent::boolean,
+                                                            :userId::int,
+                                                            :limit::int, :offset::int)
+  ]]></contact.searchDownline>
+  
+  <contact.search><![CDATA[
+    select *
+    from flow.search_contacts(:query::character varying, :companyId::int,
+                              :isParent::boolean,:limit::int, :offset::int)
+  ]]></contact.search>
+  
+  <contact.searchByOwner><![CDATA[
+    select *
+    from flow.search_contacts_by_user(:query::character varying, :companyId::int,
+                                   :isParent::boolean,:userId::int,:limit::int, :offset::int)
+  ]]></contact.searchByOwner>
 
   <contact.getById><![CDATA[
     select c.id,

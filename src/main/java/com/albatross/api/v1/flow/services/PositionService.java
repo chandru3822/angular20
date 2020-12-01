@@ -85,6 +85,7 @@ public class PositionService {
     params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
     params.put("scheduler", null != p.getScheduler() ? p.getScheduler() : false);
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
+    params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
     params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("createdById", user.getId());
     Long positionId = sqlCache.updateReturningId("position.insert", params, "id").longValue();
@@ -113,6 +114,7 @@ public class PositionService {
     params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
     params.put("scheduler", null != p.getScheduler() ? p.getScheduler() : false);
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
+    params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
     params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("id", p.getId());
     params.put("modifiedById", user.getId());
