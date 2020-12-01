@@ -268,7 +268,12 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
-              this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
+              if (e.message.includes('locate')) {
+                  this.snackbar = getSnackbar('ERROR', 'Error: Unable to locate a loan application for this project')
+              }
+              else {
+                  this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
+              }
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               console.error('*** ERROR ***', e)
           }
