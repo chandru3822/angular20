@@ -54,6 +54,7 @@
       auto-grow
       rows="1"
       :readonly="readonly"
+      :disabled="readonly"
       placeholder=" "
       :label="field.fieldName"
       v-model="field.textValue"
