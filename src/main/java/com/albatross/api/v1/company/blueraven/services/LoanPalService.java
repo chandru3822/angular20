@@ -78,9 +78,9 @@ public class LoanPalService {
   public JSONObject getApplicationByProjectId(String projectId) throws Exception {
     String refNum = "";
     HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
+    params.put("projectId", Long.valueOf(projectId));
 
-    Optional<Long> dealId = sqlCache.get("installAgreement.getDealId", params, new SingleColumnRowMapper<>(Long.class));
+    Optional<Object> dealId = sqlCache.get("installAgreement.getDealId", params, new SingleColumnRowMapper<>(Object.class));
     if (dealId.isPresent()) {
         refNum = dealId.get().toString();
     }
