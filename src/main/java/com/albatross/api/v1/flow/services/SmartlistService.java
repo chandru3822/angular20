@@ -443,7 +443,7 @@ public class SmartlistService {
           f.setReferenceTable(UUID.randomUUID().toString());
 
           // If field is a system list, we need the int_value from the object value table to get the actual display value (name column) from the with clause
-          if (f.getSystemListTypeId() != null) {
+          if (f.getSystemListTypeId() != null || f.getAllowMultiple()) {
             f.setValueReferenceTable(UUID.randomUUID().toString());
           }
           f.setPpsTable(UUID.randomUUID().toString());
@@ -492,7 +492,13 @@ public class SmartlistService {
 
       final String referenceTable = joinTables.stream()
         .filter(t -> t.getCustomFieldGroupAssignmentId() != null && t.getCustomFieldGroupAssignmentId().equals(f.getCustomFieldGroupAssignmentId()))
-        .map(SmartlistFieldAssignment::getReferenceTable)
+        .map(t -> {
+          if (t.getAllowMultiple()) {
+            return t.getValueReferenceTable();
+          } else {
+            return t.getReferenceTable();
+          }
+        })
         .findFirst()
         .orElse(null);
 
@@ -641,15 +647,18 @@ public class SmartlistService {
 
           if ((f.getHasListValues() != null && f.getHasListValues()) || f.getCustomFieldSqlKey() != null) {
 
-            final String pcfvUUID = UUID.randomUUID().toString();
-            query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), pcfvUUID, pcfvUUID, joinField, joinedField, pcfvUUID, f.getCustomFieldGroupAssignmentId()));
-            f.setValueReferenceTable(pcfvUUID);
+            if (f.getValueReferenceTable() == null) {
+              f.setValueReferenceTable(UUID.randomUUID().toString());
+            }
+            final String valueTable = f.getValueReferenceTable();
+
+            query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), valueTable, valueTable, joinField, joinedField, valueTable, f.getCustomFieldGroupAssignmentId()));
 
             if (f.getCustomFieldSqlKey() != null) {
               //custom value sql
-              query.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, pcfvUUID));
+              query.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, valueTable));
             } else {
-              query.append(String.format(" left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, pcfvUUID));
+              query.append(String.format(" left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, valueTable));
             }
           } else {
             if (f.getJoinTable() != null && f.getJoinColumn() != null) {
