@@ -315,7 +315,6 @@ public class SmartlistService {
 
     if (ahjCount > 0) {
       query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
-      query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
     }
 
     query.append(" select");
