@@ -179,14 +179,7 @@
 }
 .user-img-tooltip {
   background-color: transparent;
-  opacity: 100% !important;
-}
-</style>
-
-<style lang="scss">
-.user-img-tooltip {
-  background-color: transparent;
-  opacity: 100% !important;
+  opacity: 1 !important;
 }
 </style>
 

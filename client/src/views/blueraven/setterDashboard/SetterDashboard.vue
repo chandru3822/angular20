@@ -2321,7 +2321,7 @@
           &:hover {
             background-color: var(--v-primaryCustom-base);
             color: #fff !important;
-            opacity: 75%;
+            opacity: .75;
           }
         }
 
