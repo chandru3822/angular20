@@ -81,8 +81,10 @@
                     @click="getDrilldownData(item.milestone, 'Total')">{{ item.actualTotal }}</td>
                 <td v-if="isBrCorporateUser" class="data-col-td clickable"
                     @click="getDrilldownData(item.milestone, 'BRS')">{{ item.actualBrs }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td clickable"
-                    @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
+                <td v-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) === -1"
+                    class="data-col-td clickable" @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
+                <td v-else-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) !== -1"
+                    class="data-col-td">{{ item.actualPartner }}</td>
                 <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ item.plannedTotal }}</td>
                 <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedBrs }}</td>
                 <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedPartner }}</td>
@@ -92,7 +94,7 @@
               </tr>
             </template>
             <template v-slot:footer>
-              <div id="company-funnel-background"></div>
+              <div v-if="dashValues.length > 0" id="company-funnel-background"></div>
             </template>
           </v-data-table>
         </v-col>
@@ -123,73 +125,73 @@
                 <td class="text-left">{{ item.projectId ? item.projectId : '' }}</td>
                 <td class="text-left customer-name">{{ item.customerName ? item.customerName : '' }}</td>
                 <td v-if="drilldownHeaders[3].show" class="text-left">
-                  {{ item.appointmentDateFormatted ? item.appointmentDateFormatted : '' }}
+                  {{ item.appointmentDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[4].show" class="text-left">
                   {{ item.appointmentOutcome ? item.appointmentOutcome : '' }}
                 </td>
                 <td v-if="drilldownHeaders[5].show" class="text-left">
-                  {{ item.installationAgreementSignedDateFormatted ? item.installationAgreementSignedDateFormatted : '' }}
+                  {{ item.installationAgreementSignedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[6].show" class="text-left">
-                  {{ item.siteSurveyVerifiedDateFormatted ? item.siteSurveyVerifiedDateFormatted : '' }}
+                  {{ item.siteSurveyVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[7].show" class="text-left">
-                  {{ item.finalDesignQADateFormatted ? item.finalDesignQADateFormatted : '' }}
+                  {{ item.finalDesignQADate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[8].show" class="text-left">
-                  {{ item.finalDesignSentToHomeownerDateFormatted ? item.finalDesignSentToHomeownerDateFormatted : '' }}
+                  {{ item.finalDesignSentToHomeownerDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[9].show" class="text-left">
-                  {{ item.finalDesignSignedDateFormatted ? item.finalDesignSignedDateFormatted : '' }}
+                  {{ item.finalDesignSignedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[10].show" class="text-left">
-                  {{ item.planSetCreatedDateFormatted ? item.planSetCreatedDateFormatted : '' }}
+                  {{ item.planSetCreatedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[11].show" class="text-left">
-                  {{ item.permitPackCompleteDateFormatted ? item.permitPackCompleteDateFormatted : '' }}
+                  {{ item.permitPackCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[12].show" class="text-left">
-                  {{ item.permitPackSubmittalVerifiedDateFormatted ? item.permitPackSubmittalVerifiedDateFormatted : '' }}
+                  {{ item.permitPackSubmittalVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[13].show" class="text-left">
-                  {{ item.permitApprovedDateFormatted ? item.permitApprovedDateFormatted : '' }}
+                  {{ item.permitApprovedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[14].show" class="text-left">
-                  {{ item.installationScheduledDateFormatted ? item.installationScheduledDateFormatted : '' }}
+                  {{ item.installationScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[15].show" class="text-left">
-                  {{ item.installationDateFormatted ? item.installationDateFormatted : '' }}
+                  {{ item.installationDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[16].show" class="text-left">
-                  {{ item.installationCloseoutDateFormatted ? item.installationCloseoutDateFormatted : '' }}
+                  {{ item.installationCloseoutDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[17].show" class="text-left">
-                  {{ item.substantialCompletionDateFormatted ? item.substantialCompletionDateFormatted : '' }}
+                  {{ item.substantialCompletionDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[18].show" class="text-left">
-                  {{ item.ahjInspectionScheduledDateFormatted ? item.ahjInspectionScheduledDateFormatted : '' }}
+                  {{ item.ahjInspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[19].show" class="text-left">
-                  {{ item.ahjReinspectionScheduledDateFormatted ? item.ahjReinspectionScheduledDateFormatted : '' }}
+                  {{ item.ahjReinspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[20].show" class="text-left">
-                  {{ item.ahjInspectionDateFormatted ? item.ahjInspectionDateFormatted : '' }}
+                  {{ item.ahjInspectionDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[21].show" class="text-left">
-                  {{ item.ahjReinspectionDateFormatted ? item.ahjReinspectionDateFormatted : '' }}
+                  {{ item.ahjReinspectionDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[22].show" class="text-left">
-                  {{ item.ahjFinalInspectionVerifiedDateFormatted ? item.ahjFinalInspectionVerifiedDateFormatted : '' }}
+                  {{ item.ahjFinalInspectionVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[23].show" class="text-left">
-                  {{ item.verifiedInspectionApprovalReceivedByUtilityDateFormatted ? item.verifiedInspectionApprovalReceivedByUtilityDateFormatted : '' }}
+                  {{ item.verifiedInspectionApprovalReceivedByUtilityDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[24].show" class="text-left">
-                  {{ item.ahjInspectionApprovalSubmittedDateFormatted ? item.ahjInspectionApprovalSubmittedDateFormatted : '' }}
+                  {{ item.ahjInspectionApprovalSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[25].show" class="text-left">
-                  {{ item.finalCompletionSubmittedDateFormatted ? item.finalCompletionSubmittedDateFormatted : '' }}
+                  {{ item.finalCompletionSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
               </tr>
             </template>
@@ -251,37 +253,29 @@
           {text: '', value: '', show: true, sortable: false}, // 0
           {text: 'Project ID', value: 'projectId', show: true}, // 1
           {text: 'Customer Name', value: 'customerName', show: true}, // 2
-          {text: 'Appointment Date', value: 'appointmentDateFormatted', show: false}, // 3
+          {text: 'Appointment Date', value: 'appointmentDate', show: false}, // 3
           {text: 'Appointment Outcome', value: 'appointmentOutcome', show: false}, // 4
-          {text: 'Installation Agreement Signed Date', value: 'installationAgreementSignedDateFormatted', show: false}, // 5
-          {text: 'Site Survey Verified Date', value: 'siteSurveyVerifiedDateFormatted', show: false}, // 6
-          {text: 'Final Design QA Date', value: 'finalDesignQADateFormatted', show: false}, // 7
-          {text: 'Final Design Sent to Homeowner Date', value: 'finalDesignSentToHomeownerDateFormatted', show: false}, // 8
-          {text: 'Final Design Approved Date', value: 'finalDesignApprovedDateFormatted', show: false}, // 9
-          {text: 'Plan Set Created Date', value: 'planSetCreatedDateFormatted', show: false}, // 10
-          {text: 'Permit Pack Complete Date', value: 'permitPackCompleteDateFormatted', show: false}, // 11
-          {text: 'Permit Pack Submittal Verified Date', value: 'permitPackSubmittalVerifiedDateFormatted', show: false}, // 12
-          {text: 'Permit Approved Date', value: 'permitApprovedDateFormatted', show: false}, // 13
-          {text: 'Installation Scheduled Date', value: 'installationScheduledDateFormatted', show: false}, // 14
-          {text: 'Installation Date', value: 'installationDateFormatted', show: false}, // 15
-          {text: 'Installation Closeout Date', value: 'installationCloseoutDateFormatted', show: false}, // 16
-          {text: 'Substantial Completion Date', value: 'substantialCompletionDateFormatted', show: false}, // 17
-          {text: 'AHJ Inspection Scheduled Date', value: 'ahjInspectionScheduledDateFormatted', show: false}, // 18
-          {text: 'AHJ Reinspection Scheduled', value: 'ahjReinspectionScheduledDateFormatted', show: false}, // 19
-          {text: 'AHJ Inspection Date', value: 'ahjInspectionDateFormatted', show: false}, // 20
-          {text: 'AHJ Reinspection Date', value: 'ahjReinspectionDateFormatted', show: false}, // 21
-          {text: 'AHJ Final Inspection Verified Date', value: 'ahjFinalInspectionVerifiedDateFormatted', show: false}, // 22
-          {
-            text: 'Verified Inspection Approval Received by Utility Date',
-            value: 'verifiedInspectionApprovalReceivedByUtilityDateFormatted',
-            show: false
-          }, // 23
-          {
-            text: 'AHJ Inspection Approval Submitted Date',
-            value: 'ahjInspectionApprovalSubmittedDateFormatted',
-            show: false
-          }, // 24
-          {text: 'Final Completion Submitted Date', value: 'finalCompletionSubmittedDateFormatted', show: false} // 25
+          {text: 'Installation Agreement Signed Date', value: 'installationAgreementSignedDate', show: false}, // 5
+          {text: 'Site Survey Verified Date', value: 'siteSurveyVerifiedDate', show: false}, // 6
+          {text: 'Final Design QA Date', value: 'finalDesignQADate', show: false}, // 7
+          {text: 'Final Design Sent to Homeowner Date', value: 'finalDesignSentToHomeownerDate', show: false}, // 8
+          {text: 'Final Design Approved Date', value: 'finalDesignApprovedDate', show: false}, // 9
+          {text: 'Plan Set Created Date', value: 'planSetCreatedDate', show: false}, // 10
+          {text: 'Permit Pack Complete Date', value: 'permitPackCompleteDate', show: false}, // 11
+          {text: 'Permit Pack Submittal Verified Date', value: 'permitPackSubmittalVerifiedDate', show: false}, // 12
+          {text: 'Permit Approved Date', value: 'permitApprovedDate', show: false}, // 13
+          {text: 'Installation Scheduled Date', value: 'installationScheduledDate', show: false}, // 14
+          {text: 'Installation Date', value: 'installationDate', show: false}, // 15
+          {text: 'Installation Closeout Date', value: 'installationCloseoutDate', show: false}, // 16
+          {text: 'Substantial Completion Date', value: 'substantialCompletionDate', show: false}, // 17
+          {text: 'AHJ Inspection Scheduled Date', value: 'ahjInspectionScheduledDate', show: false}, // 18
+          {text: 'AHJ Reinspection Scheduled', value: 'ahjReinspectionScheduledDate', show: false}, // 19
+          {text: 'AHJ Inspection Date', value: 'ahjInspectionDate', show: false}, // 20
+          {text: 'AHJ Reinspection Date', value: 'ahjReinspectionDate', show: false}, // 21
+          {text: 'AHJ Final Inspection Verified Date', value: 'ahjFinalInspectionVerifiedDate', show: false}, // 22
+          {text: 'Verified Inspection Approval Received by Utility Date', value: 'verifiedInspectionApprovalReceivedByUtilityDate', show: false}, // 23
+          {text: 'AHJ Inspection Approval Submitted Date', value: 'ahjInspectionApprovalSubmittedDate', show: false}, // 24
+          {text: 'Final Completion Submitted Date', value: 'finalCompletionSubmittedDate', show: false} // 25
         ],
         drilldownData: [],
         footerProps: {
@@ -431,7 +425,6 @@
           if (this.drilldownData?.length > 0) {
             this.drilldownData.forEach(row => row.customerName = row.customerName.toLowerCase())
             this.drilldownData = orderBy(this.drilldownData, row => row.customerName)
-            this.reformatDrilldownDates()
           }
 
           this.drilldownTitle = milestone
@@ -512,98 +505,6 @@
             this.drilldownHeaders[25].show = true // Final Completion Submitted Date
             break
         }
-      },
-
-      reformatDrilldownDates () {
-        this.drilldownData.forEach(row => {
-          if (row.appointmentDate) {
-            row.appointmentDateFormatted = moment(row.appointment_date).format('MMM D, YYYY')
-          }
-
-          if (row.installationAgreementSignedDate) {
-            row.installationAgreementSignedDateFormatted = moment(row.installationAgreementSignedDate).format('MMM D, YYYY')
-          }
-
-          if (row.siteSurveyVerifiedDate) {
-            row.siteSurveyVerifiedDateFormatted = moment(row.siteSurveyVerifiedDate).format('MMM D, YYYY')
-          }
-
-          if (row.finalDesignQADate) {
-            row.finalDesignQADateFormatted = moment(row.finalDesignQADate).format('MMM D, YYYY')
-          }
-
-          if (row.finalDesignSentToHomeownerDate) {
-            row.finalDesignSentToHomeownerDateFormatted = moment(row.finalDesignSentToHomeownerDate).format('MMM D, YYYY')
-          }
-
-          if (row.finalDesignSignedDate) {
-            row.finalDesignSignedDateFormatted = moment(row.finalDesignSignedDate).format('MMM D, YYYY')
-          }
-
-          if (row.planSetCreatedDate) {
-            row.planSetCreatedDateFormatted = moment(row.planSetCreatedDate).format('MMM D, YYYY')
-          }
-
-          if (row.permitPackCompleteDate) {
-            row.permitPackCompleteDateFormatted = moment(row.permitPackCompleteDate).format('MMM D, YYYY')
-          }
-
-          if (row.permitPackSubmittalVerifiedDate) {
-            row.permitPackSubmittalVerifiedDateFormatted = moment(row.permitPackSubmittalVerifiedDate).format('MMM D, YYYY')
-          }
-
-          if (row.permitApprovedDate) {
-            row.permitApprovedDateFormatted = moment(row.permitApprovedDate).format('MMM D, YYYY')
-          }
-
-          if (row.installationScheduledDate) {
-            row.installationScheduledDateFormatted = moment(row.installationScheduledDate).format('MMM D, YYYY')
-          }
-
-          if (row.installationDate) {
-            row.installationDateFormatted = moment(row.installationDate).format('MMM D, YYYY')
-          }
-
-          if (row.installationCloseoutDate) {
-            row.installationCloseoutDateFormatted = moment(row.installationCloseoutDate).format('MMM D, YYYY')
-          }
-
-          if (row.substantialCompletionDate) {
-            row.substantialCompletionDateFormatted = moment(row.substantialCompletionDate).format('MMM D, YYYY')
-          }
-
-          if (row.ahjInspectionScheduledDate) {
-            row.ahjInspectionScheduledDateFormatted = moment(row.ahjInspectionScheduledDate).format('MMM D, YYYY')
-          }
-
-          if (row.ahjReinspectionScheduledDate) {
-            row.ahjReinspectionScheduledDateFormatted = moment(row.ahjReinspectionScheduledDate).format('MMM D, YYYY')
-          }
-
-          if (row.ahjInspectionDate) {
-            row.ahjInspectionDateFormatted = moment(row.ahjInspectionDate).format('MMM D, YYYY')
-          }
-
-          if (row.ahjReinspectionDate) {
-            row.ahjReinspectionDateFormatted = moment(row.ahjReinspectionDate).format('MMM D, YYYY')
-          }
-
-          if (row.ahjFinalInspectionVerifiedDate) {
-            row.ahjFinalInspectionVerifiedDateFormatted = moment(row.ahjFinalInspectionVerifiedDate).format('MMM D, YYYY')
-          }
-
-          if (row.verifiedInspectionApprovalReceivedByUtilityDate) {
-            row.verifiedInspectionApprovalReceivedByUtilityDateFormatted = moment(row.verifiedInspectionApprovalReceivedByUtilityDate).format('MMM D, YYYY')
-          }
-
-          if (row.ahjInspectionApprovalSubmittedDate) {
-            row.ahjInspectionApprovalSubmittedDateFormatted = moment(row.ahjInspectionApprovalSubmittedDate).format('MMM D, YYYY')
-          }
-
-          if (row.finalCompletionSubmittedDate) {
-            row.finalCompletionSubmittedDateFormatted = moment(row.finalCompletionSubmittedDate).format('MMM D, YYYY')
-          }
-        })
       },
 
       close () {

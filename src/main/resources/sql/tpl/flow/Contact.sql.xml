@@ -135,8 +135,7 @@
            email = :email,
            mobile = :mobile,
            modified_by_id = :modifiedById,
-           date_modified = now(),
-           owner_user_position_id = :ownerUserPositionId
+           date_modified = now()
     where id = :id
   ]]></contact.updateContact>
 
