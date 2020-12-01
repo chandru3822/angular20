@@ -236,10 +236,9 @@ export default {
     height: calc(100vh - 290px);
     min-height: 300px;
   }
-
-
-
-
+  #contacts-container .v-data-footer__pagination {
+    display: none !important;
+  }
 </style>
 
 <style lang="scss" scoped>
@@ -252,8 +251,6 @@ export default {
   .contact-table {
     margin-top: 2px;
   }
-
-
 
 
 </style>
