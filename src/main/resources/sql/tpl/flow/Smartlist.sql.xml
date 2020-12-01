@@ -489,7 +489,7 @@ select sr.id,
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
        case when sr.project_details_column is not null then
-         case when sr.project_details_column = 'ahj' then 8 else pdc.data_type_id end else
+         case when sr.project_details_column = 'ahj' then 8 else coalesce(pdc.second_data_type_id, pdc.data_type_id) end else
          case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
        end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
@@ -602,7 +602,7 @@ select sr.id,
          case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
        end as name,
        case when sr.project_details_column is not null then
-         case when sr.project_details_column = 'ahj' then 8 else pdc.data_type_id end else
+         case when sr.project_details_column = 'ahj' then 8 else coalesce(pdc.second_data_type_id, pdc.data_type_id) end else
          case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end
        end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
