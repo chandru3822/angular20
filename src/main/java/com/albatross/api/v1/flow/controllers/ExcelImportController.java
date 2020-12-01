@@ -135,7 +135,7 @@ public class ExcelImportController {
     params.put("proposalId", propId);
     params.put("projectId", projectId);
 
-    log.info("EXCEL_IMPORT: lets figure this out {} {} {} {}", proposal.getSource(), proposal.getProposal(), propId, projectId);
+    log.info("EXCEL_IMPORT: lets figure this out PROP_ID: {} PROJECT_ID: {} SOURCE: {} PROPOSAL: {}", propId, projectId, proposal.getSource(), proposal.getProposal());
     Optional<ProposalResponse> created = cache.get("excel.import.insert", params,
         (rs, rowNum) -> {
             try {
