@@ -52,7 +52,7 @@ public class RicochetWebhookController {
         }
 
         log.info(
-            "HUBSPOT: Received new lead info from Ricochet. " +
+            "RICOCHET: Received new lead info from Ricochet. " +
                 "uniqueIdentifier: {}, " +
                 "status: {}, " +
                 "leadOwner: {}, " +

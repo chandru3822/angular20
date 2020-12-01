@@ -155,6 +155,7 @@ public class RicochetWebhookService {
 
             // tries to get a contact ID using the Ricochet Lead ID
             String contactId = getContactIdByRicochetLeadId(lead.getUniqueIdentifier().toString());
+            log.info("RICOCHET: saving for contact CONTACT_ID: {} UNIQUE: {}, LOE: {} LOUI: {} LOUPI: {}", contactId, lead.getUniqueIdentifier(), lead.getLeadOwner(), leadOwnerUserId, leadOwnerUserPositionId);
 
             if (contactId.equalsIgnoreCase("null")) {
                 // tries to get a contact ID using the provided contact info, if the previous attempt failed
