@@ -92,7 +92,7 @@
         <![CDATA[
             SELECT deal_id
             from brs.project_details
-            where project_id = :projectId::integer
+            where project_id = :projectId
         ]]>
     </installAgreement.getDealId>
 
