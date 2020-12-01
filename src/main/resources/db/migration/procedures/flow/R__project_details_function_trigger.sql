@@ -226,7 +226,7 @@ BEGIN
       and cf.field_name = 'AHJ'
     limit 1;
 
-    if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6) then
+    if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6, 5) then
         if v_data_type_id = 1 then
             case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
             v_value = v_value || '::date';
@@ -239,6 +239,9 @@ BEGIN
         elsif v_data_type_id = 6 then
             case when new.int_value is null then select 'null' into v_value; else select quote_literal(new.int_value) into v_value; end case;
             v_value = v_value || '::integer';
+        elsif v_data_type_id = 5 then
+            case when new.text_value is null then select 'null' into v_value; else select quote_literal(new.text_value) into v_value; end case;
+            v_value = v_value || '::text';
         elsif v_data_type_id = 3 then
             case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
             v_value = v_value || '::boolean';
