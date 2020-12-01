@@ -46,7 +46,7 @@ BEGIN
             from flow.project p
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
-                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1
+                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                      inner join flow.user_position up on up.id = pczu.user_position_id and up.primary_flag is true
             where p.id = p_project_id),
              lead_gen_num as (
@@ -180,7 +180,7 @@ BEGIN
                                             from flow.project p
                                                      inner join flow.postal_code pc on pc.postal_code = p.postal_code
                                                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
-                                                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1
+                                                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pc.archived is false
                                                      inner join flow.user_position up2 on up2.id = pczu.user_position_id and up2.primary_flag is true
                                                      left join lead_gen_num lgn on lgn.user_id = up2.user_id
                                                      left join lead_gen_den lgd on lgd.user_id = up2.user_id

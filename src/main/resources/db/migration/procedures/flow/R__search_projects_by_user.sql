@@ -68,15 +68,17 @@ BEGIN
                          from flow.user_position up
                          where user_id = p_user_id
                      ),project_ids as (
-                         select array_agg(p.id) as project_ids
+                         select array_agg(project_ids) as project_ids
+                         from (
+                         select p.id as project_ids
                          from flow.project p
                          inner join user_position_ids upi on p.user_position_id = any(user_position_ids)
                          union
-                         select array_agg(p2.id) as project_ids
+                         select p2.id as project_ids
                          from flow.contact c
                              inner join flow.project p2 on p2.contact_id = c.id
                                   inner join user_position_ids upi on c.owner_user_position_id = any(user_position_ids)
-                     )
+                     )as foo)
                      select p.id,
                             p.project_name,
                             p.contact_id,
@@ -184,15 +186,17 @@ BEGIN
                          from flow.user_position up
                          where user_id = p_user_id
                      ),project_ids as (
-                         select array_agg(p.id) as project_ids
+                         select array_agg(project_ids) as project_ids
+                         from (
+                         select p.id as project_ids
                          from flow.project p
                          inner join user_position_ids upi on p.user_position_id = any(user_position_ids)
                          union
-                         select array_agg(p2.id) as project_ids
+                         select p2.id as project_ids
                          from flow.contact c
                              inner join flow.project p2 on p2.contact_id = c.id
                                   inner join user_position_ids upi on c.owner_user_position_id = any(user_position_ids)
-                     )
+                     )as foo)
                          select p.id,
                                 p.project_name,
                                 p.contact_id,
