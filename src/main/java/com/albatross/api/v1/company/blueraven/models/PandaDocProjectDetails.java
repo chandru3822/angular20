@@ -24,7 +24,7 @@ public class PandaDocProjectDetails {
             sj.add("1");
         }
         else {
-            sj.add("0");
+            sj.add(companyId.toString());
         }
 
         if (isSpanish) {
