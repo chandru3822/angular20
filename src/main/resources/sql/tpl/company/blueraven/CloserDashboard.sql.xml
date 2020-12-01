@@ -142,9 +142,56 @@
 
   <closerDashboard.getOfficeLeadAllocationRank>
     <![CDATA[
-      SELECT * FROM brs.get_office_lead_allocation_rank(:postalCodeZoneId::integer, :timeInterval::integer);
+      SELECT * FROM brs.get_office_lead_allocation_rank(:postalCodeZoneId::integer, :timeInterval::integer)
     ]]>
   </closerDashboard.getOfficeLeadAllocationRank>
+
+  <closerDashboard.getAllCloserOffices>
+    <![CDATA[
+      SELECT o.id,
+             o.company_id,
+             o.org_name,
+             o.active_flag
+      FROM flow.org o
+        INNER JOIN flow.org_type ot ON ot.id = o.org_type_id
+      WHERE o.active_flag IS TRUE
+        AND o.company_id = :companyId
+        AND ot.org_type = 'Closer Sales Office'
+      ORDER BY o.org_name
+    ]]>
+  </closerDashboard.getAllCloserOffices>
+
+  <closerDashboard.getCloserDownline>
+    <![CDATA[
+      SELECT o.id,
+             o.company_id,
+             o.org_name,
+             o.active_flag
+      FROM flow.org o
+        INNER JOIN flow.org_type ot ON ot.id = o.org_type_id
+      WHERE (o.id = :userOrgId or o.parent_org_id = :userOrgId)
+        AND o.active_flag IS TRUE
+        AND o.company_id = :companyId
+        AND ot.org_type = 'Closer Sales Office'
+      ORDER BY o.org_name
+    ]]>
+  </closerDashboard.getCloserDownline>
+
+  <closerDashboard.getCloserOffice>
+    <![CDATA[
+      SELECT o.id,
+             o.company_id,
+             o.org_name,
+             o.active_flag
+      FROM flow.org o
+        INNER JOIN flow.org_type ot ON ot.id = o.org_type_id
+      WHERE o.id = :userOrgId
+        AND o.active_flag IS TRUE
+        AND o.company_id = :companyId
+        AND ot.org_type = 'Closer Sales Office'
+      ORDER BY o.org_name
+    ]]>
+  </closerDashboard.getCloserOffice>
 
   <closerDashboard.getCloserTableScores>
     <![CDATA[
@@ -232,7 +279,7 @@
         LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
       WHERE CASE WHEN :officeFdcRank IS TRUE
         THEN -- Office FDC Rank table
-          up.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived is false and up.primary_flag is true)
+          up.org_id = :selectedOrgId
         ELSE -- Company Ranking (2nd row of tables)
           up.position_id = 1
           AND up.archived IS FALSE
