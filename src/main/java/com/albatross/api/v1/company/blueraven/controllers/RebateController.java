@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,10 +59,10 @@ public class RebateController {
     try {
       return ResponseEntity.ok(chaseService.generateCsv_Ap6DelimitedSingleLine(batchId));
     } catch (ChaseBankService.BadDataException e) {
-      log.info("Failed to generate CSV; encountered {} data validation errors.", e.getFailures().size());
+      log.info("REBATE: Failed to generate CSV; encountered {} data validation errors.", e.getFailures().size());
       return ResponseEntity.badRequest().body(e.toCsv());
     } catch (Exception e) {
-      String msg = "Encountered an error while exported CSV for batch " + batchId;
+      String msg = "REBATE: Encountered an error while exported CSV for batch " + batchId;
       log.error(msg + "; " + e.getMessage());
       return ResponseEntity.status(500).body(msg);
     }

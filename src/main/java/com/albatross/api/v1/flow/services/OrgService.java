@@ -101,7 +101,7 @@ public class OrgService {
       // finally, write to network because no errors were encountered
       return ResponseEntity.ok(buffer.toString(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      log.error("Encountered error while writing org export to CSV", e);
+      log.error("ORG: Encountered error while writing org export to CSV", e);
       return ResponseEntity.status(500)
           .body("Encountered error while writing org export to CSV");
     }

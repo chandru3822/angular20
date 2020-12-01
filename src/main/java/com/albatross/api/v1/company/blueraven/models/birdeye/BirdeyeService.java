@@ -75,12 +75,12 @@ public class BirdeyeService {
                                                                   o.getString("alias")))
                                     .collect(Collectors.toList());
             } else {
-                log.error("Encountered error while retrieving BirdEye locations: {}",
+                log.error("BIRDEYE: Encountered error while retrieving BirdEye locations: {}",
                         IOUtils.toString(resp.getErrorStream(), StandardCharsets.UTF_8));
                 throw new Exception("Failed to retrieve locations from Birdeye");
             }
         } catch (Exception e) {
-            log.error("Birdeye unavailable", e);
+            log.error("BIRDEYE: Birdeye unavailable", e);
             throw new RuntimeException("Birdeye unavailable at this time.");
         }
     }
@@ -98,11 +98,11 @@ public class BirdeyeService {
             String birdeyeCustomerId = null;
 
             if (sendInvitesFoReals) {
-                log.info("Sending review invitation to customer on project {}", invitation.getProjectId());
+                log.info("BIRDEYE: Sending review invitation to customer on project {}", invitation.getProjectId());
                 birdeyeCustomerId = sendInvitation(invitationId, url, body);
             }
             else {
-                log.info("*Not* sending review invitation to customer on project {}; generating random Birdeye customerId for testing.",
+                log.info("BIRDEYE: *Not* sending review invitation to customer on project {}; generating random Birdeye customerId for testing.",
                         invitation.getProjectId());
                 birdeyeCustomerId = RandomStringUtils.randomAlphanumeric(16);
             }
@@ -110,7 +110,7 @@ public class BirdeyeService {
             invitation.setBirdeyeCustomerId(birdeyeCustomerId);
             return invitation;
         } catch (Exception e) {
-            log.error("Problem sending Birdeye review invitation", e);
+            log.error("BIRDEYE: Problem sending Birdeye review invitation", e);
             throw new RuntimeException("Problem sending Birdeye review invitation: " + e.getMessage());
         }
     }
@@ -126,7 +126,7 @@ public class BirdeyeService {
             saveBirdeyeCustomerId(invitationId, customerId);
             return customerId;
         } else {
-            log.error("Encountered error while attempting to send BirdEye review invitation: {}",
+            log.error("BIRDEYE: Encountered error while attempting to send BirdEye review invitation: {}",
                     IOUtils.toString(resp.getErrorStream()));
             throw new Exception("Failed to retrieve locations from Birdeye");
         }
@@ -154,14 +154,14 @@ public class BirdeyeService {
                 return reviews;
             }
 
-            log.error("Encountered error while attempting to send BirdEye review invitation: {}",
+            log.error("BIRDEYE: Encountered error while attempting to send BirdEye review invitation: {}",
                     IOUtils.toString(resp.getErrorStream()));
             throw new Exception("Failed to retrieve locations from Birdeye");
         } catch (JsonProcessingException e) {
-            log.error("Birdeye returned invalid JSON", e);
+            log.error("BIRDEYE: Birdeye returned invalid JSON", e);
             throw new RuntimeException("Birdeye returned invalid data.");
         } catch (Exception e) {
-            log.error("Birdeye unavailable", e);
+            log.error("BIRDEYE: Birdeye unavailable", e);
             throw new RuntimeException("Birdeye unavailable at this time.");
         }
     }

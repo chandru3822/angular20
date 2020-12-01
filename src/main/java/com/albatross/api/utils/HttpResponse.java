@@ -56,7 +56,7 @@ public class HttpResponse {
         } else if (errorStream != null) {
             body = IOUtils.toString(errorStream);
         } else {
-            log.warn("HTTP [{}] no response body found", responseCode);
+            log.warn("HTTP: [{}] no response body found", responseCode);
         }
 
         return body;

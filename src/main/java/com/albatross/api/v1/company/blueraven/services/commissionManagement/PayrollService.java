@@ -41,9 +41,9 @@ public class PayrollService {
         List<Long> payrollIds = sqlCache.queryBySql("SELECT id FROM brs.payroll WHERE current IS TRUE", new HashMap<>(), new SingleColumnRowMapper<>(Long.class));
 
         if (payrollIds.size() > 1) {
-            log.error("PAYROLL_ERROR: There are multiple payrolls marked as current and the first one will be returned.");
+            log.error("COMMISSION: There are multiple payrolls marked as current and the first one will be returned.");
         } else if (payrollIds.isEmpty()) {
-            log.error("PAYROLL_ERROR: No Current Payroll Available");
+            log.error("COMMISSION: No Current Payroll Available");
         }
 
         return payrollIds.isEmpty() ? null : payrollIds.get(0);

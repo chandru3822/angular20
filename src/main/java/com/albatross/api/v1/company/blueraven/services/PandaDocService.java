@@ -91,8 +91,8 @@ public class PandaDocService {
     String name = deets.getTemplateName(isSpanish);
     String tplId = findTemplateIdByName(name);
 
-    log.info("Template Name we are looking for: {}", name);
-    log.info("Template ID we found: {}", tplId);
+    log.info("PANDADOC: Template Name we are looking for: {}", name);
+    log.info("PANDADOC: Template ID we found: {}", tplId);
     // attempt to find a generic template for the state and financier
     if (tplId == null) {
       log.warn("PANDADOC: falling back to generic utility company");

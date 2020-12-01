@@ -72,13 +72,13 @@ public class ExcelImportController {
            return ResponseEntity.ok(result);
        } catch(IncorrectResultSizeDataAccessException e) {
            if( e.getActualSize() < 1 ){
-               log.info("Could not find project identified by Project id {}.", projectId);
+               log.info("EXCEL_IMPORT: Could not find project identified by Project id {}.", projectId);
                return ResponseEntity.notFound().build();
            }
-           log.error("Encountered error retrieving project with Project id {}", projectId, e);
+           log.error("EXCEL_IMPORT: Encountered error retrieving project with Project id {}", projectId, e);
            return ResponseEntity.status(INTERNAL_SERVER_ERROR).body("Encountered error retrieving project with Project id " + projectId);
        } catch(Exception e) {
-           log.error("Encountered error retrieving project with Project id {}", projectId, e);
+           log.error("EXCEL_IMPORT: Encountered error retrieving project with Project id {}", projectId, e);
            return ResponseEntity.status(INTERNAL_SERVER_ERROR).body("Encountered error retrieving project with Project id " + projectId);
        }
    }
@@ -99,11 +99,11 @@ public class ExcelImportController {
         List<String> results = jdbc.queryForList(sql, params, String.class);
 
         if (results.isEmpty()) {
-            String msg = "Found no proposals for " + params;
+            String msg = "EXCEL_IMPORT: Found no proposals for " + params;
             log.warn(msg);
             return ResponseEntity.notFound().build();
         } else if(results.size() > 1) {
-            log.warn("Found {} proposals for params {}. Returning the most recent.",
+            log.warn("EXCEL_IMPORT: Found {} proposals for params {}. Returning the most recent.",
                 results.size(), params);
         }
 
@@ -113,7 +113,7 @@ public class ExcelImportController {
   @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> importProposal(HttpServletRequest req,
                                         @RequestBody Proposal proposal) {
-    log.info("Attempting Excel Proposal Log");
+    log.info("EXCEL_IMPORT: Attempting Excel Proposal Log");
 
     Assert.notNull(proposal, "Proposal Required");
     Assert.hasText(proposal.getSource(), "Source is required; must have text");
@@ -157,7 +157,7 @@ public class ExcelImportController {
       throw new IllegalStateException("Did not get back a created proposal_log");
     }
 
-    log.info("Created Excel Proposal Log id={}", created.get().getId());
+    log.info("EXCEL_IMPORT: Created Excel Proposal Log id={}", created.get().getId());
 
     return ResponseEntity
       .status(HttpStatus.CREATED)
@@ -176,7 +176,7 @@ public class ExcelImportController {
   @PostMapping(value = "/design/import", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> designImport(HttpServletRequest req,
                                         @RequestBody Design design) {
-    log.info("Attempting Excel Design Log");
+    log.info("EXCEL_IMPORT: Attempting Excel Design Log");
 
     Assert.notNull(design, "Design Required");
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -233,7 +233,7 @@ public class ExcelImportController {
       throw new IllegalStateException("Did not get back a created design_log");
     }
 
-    log.info("Created Excel Design Log id={}", created.get().getId());
+    log.info("EXCEL_IMPORT: Created Excel Design Log id={}", created.get().getId());
 
     return ResponseEntity
       .status(HttpStatus.CREATED)
@@ -245,7 +245,7 @@ public class ExcelImportController {
     try {
       return ResponseEntity.ok(aurora.getDesignSummary(designId));
     } catch (Exception e) {
-      String msg = "Failed to get design summary for design " + designId;
+      String msg = "EXCEL_IMPORT: Failed to get design summary for design " + designId;
       log.error(msg, e);
       return ResponseEntity.status(500).body(msg);
     }
