@@ -11,9 +11,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,20 +28,12 @@ import java.util.List;
 @Service
 public class CustomFieldValueService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  SystemListService systemListService;
-
-  @Autowired
-  ProjectService projectService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final SystemListService systemListService;
+  private final ProjectService projectService;
+  private final ObjectMapper om;
+  private final DataSource dataSource;
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
     handleCustomListOfValue(results, null, null, companyId);
@@ -66,28 +64,42 @@ public class CustomFieldValueService {
   }
 
   public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
-    User currentUser = securityService.getCurrentUser();
-    for(CustomFieldValue cfv : values) {
-      //if the field came here it was dirty and should always be saved
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("dateValue", cfv.getDateValue());
-      params.put("timestampValue", cfv.getTimestampValue());
-      params.put("booleanValue", cfv.getBooleanValue());
-      params.put("textValue", cfv.getTextValue());
-      params.put("numericValue", cfv.getNumericValue());
-      params.put("intValue", cfv.getIntValue());
-      params.put("intArrayValue", cfv.getIntArrayValue());
-      params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-      params.put("sourceId", sourceId);
-      params.put("userId", currentUser.getId());
-
-      //only used on upsert
-      params.put("id", cfv.getId());
-
-      String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
-      sqlCache.update(sql, params);
+    try {
+      User currentUser = securityService.getCurrentUser();
+      for (CustomFieldValue cfv : values) {
+        //if the field came here it was dirty and should always be saved
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("dateValue", cfv.getDateValue());
+        params.put("timestampValue", cfv.getTimestampValue());
+        params.put("booleanValue", cfv.getBooleanValue());
+        params.put("textValue", cfv.getTextValue());
+        params.put("numericValue", cfv.getNumericValue());
+        params.put("intValue", cfv.getIntValue());
+        //      params.put("intArrayValue", cfv.getIntArrayValue());
+        params.put("intArrayValue", createSqlArrayOfType("int", cfv.getIntArrayValue()));
+        params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+        params.put("sourceId", sourceId);
+        params.put("userId", currentUser.getId());
+  
+        //only used on upsert
+        params.put("id", cfv.getId());
+  
+        String sql = "customFieldValues." + objectType + ".upsertCustomFieldValue";
+        sqlCache.update(sql, params);
+      }
+      return getCustomFieldGroupsAndValues(objectType, sourceId);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
-    return getCustomFieldGroupsAndValues(objectType, sourceId);
+  }
+  
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
+      }
+    }
+    return null;
   }
 
   public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
