@@ -80,7 +80,7 @@
 
             <template #item="{ item, index }">
               <tr  :class="{'shaded-row': index % 2}">
-                <td class="text-left">
+                <td class="text-left clickable" @click="[expanded.includes(item) ? expanded = [] : expanded = [item], item.newFieldName = item.fieldName, selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
                   {{item.custom ? 'Add New' : item.fieldName}}
                 </td>
                 <td class="text-right">

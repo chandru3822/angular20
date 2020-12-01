@@ -15,7 +15,11 @@
               </div>
               <div class="project-subtitle">
                 <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
-                <div v-else-if="userCanEdit">
+                <div v-else-if="userCanEdit" class="mt-4">
+                  <v-text-field
+                    v-model="project.projectName"
+                    label="ProjectName"
+                  ></v-text-field>
                   <v-text-field
                     v-model="project.street1"
                     label="Street"
@@ -45,7 +49,9 @@
                   <span v-if="editAddress">Cancel</span>
                   <v-icon v-else>edit</v-icon>
                 </v-btn>
-                <v-btn small color="primaryCustom" dark class="white--text" v-if="editAddress" @click="saveProjectAddress">
+                <v-btn small color="primaryCustom"
+                       :disabled="!project.projectName"
+                       class="white--text" v-if="editAddress" @click="saveProjectAddress">
                   Save
                 </v-btn>
               </div>

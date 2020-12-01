@@ -129,6 +129,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", project.getId());
     params.put("street1", project.getStreet1());
+    params.put("projectName", project.getProjectName());
     params.put("city", project.getCity());
     params.put("companyStateId", project.getCompanyStateId());
     params.put("postalCode", project.getPostalCode());
