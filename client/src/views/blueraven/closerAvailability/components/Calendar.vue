@@ -488,7 +488,7 @@
         // inverse-background = blocked before start and after end (resource_schedule_availability)
         if(info.event.rendering === 'background') {
           info.el.textContent = info.event.title
-          info.el.style.cssText += `font-size: 11px; padding-left: 5px; cursor: default; margin-left: 1px; margin-right: 1px; opacity: 100%; color: black; overflow: hidden; border: solid 1px black;`
+          info.el.style.cssText += `font-size: 11px; padding-left: 5px; cursor: default; margin-left: 1px; margin-right: 1px; opacity: 1; color: black; overflow: hidden; border: solid 1px black;`
           info.el.title = info.event.title + ': ' + moment(info.event.start).format('h:mm') + '-' + moment(info.event.end).format('h:mm')
         } else if(info.event.rendering !== 'inverse-background') {
           info.el.querySelector('.fc-title').innerHTML = info.event.title
