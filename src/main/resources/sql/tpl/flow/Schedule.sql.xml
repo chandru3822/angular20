@@ -16,7 +16,7 @@
           and cfga.archived is not true
           and cfga.schedule_field_type_id = 3
           and ppscfv.int_value is not null
-          and ppscfv.int_value = any(array[ :combined ])
+          and ppscfv.int_value = any(array[ :combined ]::int[])
     ), start_time as (
         select ppscfv.id,
                ppscfv.custom_field_group_assignment_id,
