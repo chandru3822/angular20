@@ -142,6 +142,10 @@ public class ContactService {
     } else {
       UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
       params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
+      if(null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
+        //todo: come back and remove this at some point
+        log.info("RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}", currentUser.getId(), contact.getFirstName(), contact.getLastName(), contact.getEmail());
+      }
       params.put("contactTypeId", ContactType.LEAD.id);
       params.put("createdById", currentUser.getId());
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
