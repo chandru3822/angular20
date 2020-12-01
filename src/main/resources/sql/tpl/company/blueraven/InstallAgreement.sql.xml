@@ -2,19 +2,19 @@
     <installAgreement.getFinancierFromProposalLog>
         <![CDATA[
             WITH p AS (
-                SELECT proposal ->> 'Loan Type' AS loan_type
-                FROM brs.proposal_log
+                SELECT loan_type
+                FROM brs.proposal_log_history
                 WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
             )
-            SELECT substring(p.loan_type, 1, position(' ' IN p.loan_type) - 1) AS financier
+            SELECT case when position(' ' IN p.loan_type) = 0 then p.loan_type else substring(p.loan_type, 1, position(' ' IN p.loan_type) - 1) end AS financier
             FROM p
         ]]>
     </installAgreement.getFinancierFromProposalLog>
 
     <installAgreement.getUtilityFromProposalLog>
         <![CDATA[
-            SELECT proposal ->> 'Utility Name' AS utility_company
-            FROM brs.proposal_log
+            SELECT utility_name
+            FROM brs.proposal_log_history
             WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
         ]]>
     </installAgreement.getUtilityFromProposalLog>
