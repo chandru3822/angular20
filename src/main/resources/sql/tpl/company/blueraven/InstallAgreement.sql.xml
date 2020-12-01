@@ -13,7 +13,7 @@
 
     <installAgreement.getUtilityFromProposalLog>
         <![CDATA[
-            SELECT proposal ->> 'Utility Name' AS loan_type
+            SELECT proposal ->> 'Utility Name' AS utility_company
             FROM brs.proposal_log
             WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
         ]]>
