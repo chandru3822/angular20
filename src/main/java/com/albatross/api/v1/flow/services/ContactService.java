@@ -129,7 +129,6 @@ public class ContactService {
 
       Contact existingContact = getContact(id);
 
-      params.put("ownerUserPositionId", contact.getOwner() != null ? contact.getOwner().getUserPositionId() : null);
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
