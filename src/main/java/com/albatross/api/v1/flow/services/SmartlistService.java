@@ -314,47 +314,48 @@ public class SmartlistService {
     ahjCount += requirements.stream().filter(r -> Objects.equals(r.getCustomFieldSqlKey(), "customFieldSql.brs.ahjList")).count();
 
     if (ahjCount > 0) {
-      query.append(String.format("\nwith \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
+      query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
+      query.append(String.format(" with \"customFieldSql.brs.ahjList\" as (%s)", sqlCache.getByKey("customFieldSql.brs.ahjList")));
     }
 
-    query.append("\nselect");
+    query.append(" select");
 
     for (SmartlistFieldAssignment f: fields) {
       if (f.getDataTypeId() == 1) {
-        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format(" \nto_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       } else if (f.getCustomFieldSqlKey() != null) {
-        query.append(String.format(" \n\"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
+        query.append(String.format("  \"%s\".name as \"%s\", ",f.getCustomFieldSqlKey(), f.getName()));
       } else {
-        query.append(String.format(" \n%s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        query.append(String.format("  %s as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
       }
     }
 
     // Remove comma and space from last select field
     query.deleteCharAt(query.length() - 1);
 
-    query.append("\nflow.project.id as project_id,");
-    query.append("\nflow.project.contact_id as contact_id");
+    query.append(" flow.project.id as project_id,");
+    query.append(" flow.project.contact_id as contact_id");
 
     // @TODO: Eventually de-hardcode brs schema
-    query.append("\nfrom brs.project_details");
-    query.append("\ninner join flow.project on flow.project.id = brs.project_details.project_id");
+    query.append(" from brs.project_details");
+    query.append(" inner join flow.project on flow.project.id = brs.project_details.project_id");
 
     if (ahjCount > 0) {
-      query.append("\nleft join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
+      query.append(" left join \"customFieldSql.brs.ahjList\" on \"customFieldSql.brs.ahjList\".id = brs.project_details.ahj");
     }
 
-    query.append("\nwhere");
+    query.append(" where");
 
     // If user is in a parent company, get all rows. else if user is the child, limit rows to that company
     User user = securityService.getCurrentUser();
     boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     if (inParentCompany) {
-      query.append(String.format("\nbrs.project_details.company_id = any(select id from flow.company c where (c.id = %s or c.parent_company_id = %s) and c.archived is not true) and ", user.getCompanyId(), user.getCompanyId()));
+      query.append(String.format(" brs.project_details.company_id = any(select id from flow.company c where (c.id = %s or c.parent_company_id = %s) and c.archived is not true) and ", user.getCompanyId(), user.getCompanyId()));
     } else {
-      query.append(String.format("\nbrs.project_details.company_id = %s and ", user.getCompanyId()));
+      query.append(String.format(" brs.project_details.company_id = %s and ", user.getCompanyId()));
     }
 
     for (SmartlistRequirement r: requirements) {
@@ -374,17 +375,17 @@ public class SmartlistService {
 
       if (r.getDataTypeId() == 7) {
         if (r.getDataTypeRequirementId() != null) {
-          query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" %s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
         } else {
-          query.append(String.format("\nsort(%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" sort(%s) %s sort(array%s::int[]) and ", r.getProjectDetailsColumn(), operator, requirementValue));
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
-        query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+        query.append(String.format(" %s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
       } else {
         if (requirementValue instanceof String && requirementValue.toString().contains("null")) {
-          query.append(String.format("\n%s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" %s %s %s and ", r.getProjectDetailsColumn(), operator, requirementValue));
         } else {
-          query.append(String.format("\n%s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
+          query.append(String.format(" %s %s '%s' and ", r.getProjectDetailsColumn(), operator, requirementValue));
         }
       }
     }
@@ -395,7 +396,8 @@ public class SmartlistService {
     query.append(";");
 
     //@TODO: humes, logging queries for debugging/testing
-    log.info("\n\n" + query.toString() + "\n\n");
+    log.info("\n\nRunning smartlist ID: " + smartlist.getId());
+    log.info(query.toString() + "\n\n");
 
     return query.toString();
   }
@@ -418,16 +420,16 @@ public class SmartlistService {
     StringBuilder whereClause = new StringBuilder();
 
     // Get smartlist system lists
-    withClause.append("\n\"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
-    withClause.append("\n\"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
-    withClause.append("\n\"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_1\" as (select * from flow.get_smartlist_system_list_options(1::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_2\" as (select * from flow.get_smartlist_system_list_options(2::int, 3::int)), ");
+    withClause.append(" \"smartlistSystemList_3\" as (select * from flow.get_smartlist_system_list_options(3::int, 3::int)), ");
 
     // Get tables for system lists
-    withClause.append("\n\"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
-    withClause.append("\n\"systemList_3\" as (select id, org_name::text as name from flow.org), ");
-    withClause.append("\n\"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
+    withClause.append(" \"systemList_1\" as (select up.id, concat(u.first_name, ' ', u.last_name::text) as name from flow.user_position up inner join flow.user u on u.id = up.user_id), ");
+    withClause.append(" \"systemList_3\" as (select id, org_name::text as name from flow.org), ");
+    withClause.append(" \"systemList_4\" as (select id, concat(first_name, ' ', last_name::text) as name from flow.user), ");
 
-    StringBuilder query = new StringBuilder("\nselect");
+    StringBuilder query = new StringBuilder(" select");
 
     for (SmartlistFieldAssignment f : fields) {
 
