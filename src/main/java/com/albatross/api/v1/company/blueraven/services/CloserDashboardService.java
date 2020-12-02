@@ -72,21 +72,21 @@ public class CloserDashboardService {
     return sqlCache.query(sqlKey, params, PostalCodeZone.class);
   }
 
-  public List<OfficeLeadAllocationScores> getOfficeLeadAllocationRank(Integer postalCodeZoneId, Integer timeInterval) {
+  public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(Integer postalCodeZoneId, Integer timeInterval) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", postalCodeZoneId);
     params.put("timeInterval", timeInterval);
 
-    List<OfficeLeadAllocationScores> officeLeadAllocationData = sqlCache.query("closerDashboard.getOfficeLeadAllocationRank", params, OfficeLeadAllocationScores.class);
+    List<RoundRobinLeadAllocationScores> roundRobinLeadAllocationData = sqlCache.query("closerDashboard.getRoundRobinLeadAllocationRank", params, RoundRobinLeadAllocationScores.class);
     List<Long> userIds = new ArrayList<>();
 
-    for (OfficeLeadAllocationScores row : officeLeadAllocationData) {
+    for (RoundRobinLeadAllocationScores row : roundRobinLeadAllocationData) {
       userIds.add(row.getUserId());
     }
 
     Map<Long, String> userImageUrls = getUserImages(userIds);
 
-    for (OfficeLeadAllocationScores row : officeLeadAllocationData) {
+    for (RoundRobinLeadAllocationScores row : roundRobinLeadAllocationData) {
       if (userImageUrls.get(row.getUserId()) != null) {
         row.setUserImageUrl(userImageUrls.get(row.getUserId()));
         row.setUserImageAltText("Photo of " + row.getCloserName() + ", a Blue Raven Solar employee");
@@ -95,7 +95,7 @@ public class CloserDashboardService {
       }
     }
 
-    return officeLeadAllocationData;
+    return roundRobinLeadAllocationData;
   }
 
   public List<Org> getCloserOffices(Long userOrgId) {

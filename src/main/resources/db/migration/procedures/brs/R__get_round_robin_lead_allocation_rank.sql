@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.get_office_lead_allocation_rank(p_postal_code_zone_id integer, p_time_interval integer)
+CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id integer, p_time_interval integer)
     RETURNS table
             (
                 user_id              integer,

@@ -157,7 +157,7 @@
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
                 <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td class="text-left">{{ item.id ? item.id : '' }}</td>
+                <td class="text-left"><a :href="'/project/' + item.id">{{ item.id ? item.id : '' }}</a></td>
                 <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
                 <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
                 <td class="text-left">
@@ -206,12 +206,12 @@
 
     <!-- RANKING TABLES TOP ROW START -->
     <div v-if="showDashboard" class="ranking-tables-section">
-      <!-- OFFICE LEAD ALLOCATION RANK START -->
+      <!-- ROUND ROBIN LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
         <div class="ranking-table-header user-office-ranking-table-header">
           <div class="user-office-ranking-table-header-left-side">
             <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
-            <span>Office Lead Allocation Rank</span>
+            <span>Round Robin Lead Allocation Rank</span>
           </div>
           <v-select class="table-header-dropdown"
                     label="Round Robin"
@@ -223,7 +223,7 @@
                     outlined
                     dense
                     hide-details
-                    @input="loadOfficeLeadAllocationRankData"
+                    @input="loadRoundRobinLeadAllocationRankData"
           ></v-select>
         </div>
 
@@ -262,7 +262,7 @@
           Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
         </div>
       </div>
-      <!-- OFFICE LEAD ALLOCATION RANK END -->
+      <!-- ROUND ROBIN LEAD ALLOCATION RANK END -->
 
       <!-- OFFICE FDC RANK START -->
       <div class="ranking-table">
@@ -1000,7 +1000,9 @@
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td>{{ item.state ? item.state : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td>{{ item.project_id ? item.project_id : '' }}</td>
+                <td>
+                  <a :href="'/project/' + item.project_id">{{ item.project_id ? item.project_id : '' }}</a>
+                </td>
                 <td :class="item.source_name_class">{{ item.source_name ? item.source_name : '' }}</td>
                 <td :class="item.system_size_class">{{ item.system_size ? item.system_size : '' }}</td>
                 <td :class="item.financier_class">{{ item.financier ? item.financier : '' }}</td>
@@ -1098,7 +1100,6 @@
     </v-dialog>
     <!-- FUNNEL DRILLDOWN END -->
     <!----------------------------------- PIPELINE TAB END ----------------------------------->
-
 
   </v-container>
 </template>
@@ -1402,11 +1403,11 @@
     },
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
-      // '$store.state.app.loading': function () {
-      //   if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsToFdcPipelineLoaded)) {
-      //     this.$store.commit(AppMutations.SET_LOADING, true)
-      //   }
-      // },
+      '$store.state.app.loading': function () {
+        if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsToFdcPipelineLoaded)) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+        }
+      },
       appts_created_pipeline_dt1 () {
         this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
       },
@@ -1707,7 +1708,7 @@
           // if there's only one Round Robin for the current user, this auto-selects it
           if (this.roundRobins?.length === 1) {
             this.selectedRoundRobin = this.roundRobins[0]?.id
-            await this.loadOfficeLeadAllocationRankData()
+            await this.loadRoundRobinLeadAllocationRankData()
           }
 
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1719,15 +1720,15 @@
         }
       },
 
-      async loadOfficeLeadAllocationRankData () {
+      async loadRoundRobinLeadAllocationRankData () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
-          const {data} = await getRequestWithParams('/closerDashboard/getOfficeLeadAllocationRank', {params}, 'blueraven')
-          this.processRankingData(data, 'Office Lead Allocation Rank')
+          const {data} = await getRequestWithParams('/closerDashboard/getRoundRobinLeadAllocationRank', {params}, 'blueraven')
+          this.processRankingData(data, 'Round Robin Lead Allocation Rank')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving office lead allocation rank data')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving round robin lead allocation rank data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
@@ -1795,7 +1796,7 @@
         }
 
         if (this.selectedRoundRobin) {
-          await this.loadOfficeLeadAllocationRankData()
+          await this.loadRoundRobinLeadAllocationRankData()
         }
 
         if (this.selectedCloserOffice) {
@@ -1837,7 +1838,7 @@
       },
 
       processRankingData (rankingData, currentTable) {
-        if (currentTable === 'Office Lead Allocation Rank') {
+        if (currentTable === 'Round Robin Lead Allocation Rank') {
           this.leadAllocationRankingData = this.assignCloserRanks(rankingData, 'score')
         } else {
           switch (currentTable) {
@@ -2759,6 +2760,10 @@
         this.filteredFunnelDrilldownData = filteredItems
         this.funnelDrilldownRowCount = filteredItems.length
       },
+
+      // goToProjectDetails (item) {
+      //   this.$router.push({name: 'project', params: {id: item.project_id}})
+      // },
 
       toggleSelectAllBrsProvidedSources () {
         this.$nextTick(() => {
@@ -4891,7 +4896,7 @@
     }
 
     .ranking-table-header {
-      font-size: 19px;
+      font-size: 15px;
     }
 
     .user-office-ranking-table-header {
@@ -5225,7 +5230,7 @@
     }
 
     .ranking-table-header {
-      font-size: 24px;
+      font-size: 18px;
     }
 
     #appts-created-pipeline-funnel-background {
