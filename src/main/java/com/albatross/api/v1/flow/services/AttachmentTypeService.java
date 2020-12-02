@@ -10,7 +10,9 @@ import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -156,7 +158,13 @@ public class AttachmentTypeService {
       //had to change this so that a parent looking at a child project could still see attachments
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      Optional<Long> overrideCompanyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+      if(overrideCompanyId.isPresent()) {
+        companyId = overrideCompanyId.get();
+      } else {
+        log.info("ATTACHMENT: No Company ID found for project. {}", projectId);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
+      }
     }
 
     List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
