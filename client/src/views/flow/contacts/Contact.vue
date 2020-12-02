@@ -2,6 +2,7 @@
   <v-container class="pt-0" v-if="contact && contact.id">
     <v-row class="contact-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
+        <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
         <div class="contact-title">
           {{contact.fullName}}
           <v-menu
@@ -244,7 +245,15 @@ export default {
       timezone: this.$store.state.user.details.timezone?.value,
       changeOwner: false,
       selectedProcess: null,
-      availableProcesses: []
+      availableProcesses: [],
+      breadcrumbs: [
+        {
+          text: 'Back to Contacts',
+          disabled: false,
+          exact: true,
+          to: `/contacts`
+        },
+      ]
     }
   },
   created () {
