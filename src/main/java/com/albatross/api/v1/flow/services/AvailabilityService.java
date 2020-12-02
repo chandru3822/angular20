@@ -139,9 +139,16 @@ public class AvailabilityService {
   }
 
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
+    if((null == rsa.getStartTime() && null != rsa.getEndTime()) || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
+      String msg = "AVAILABILITY: Daily schedule must have start and end time. ID: " + rsa.getId()
+          + ", Day of Week: " + rsa.getDayOfWeekId() + ", Start Time: " + rsa.getStartTime() + ", End Time: " + rsa.getEndTime();
+      log.error(msg);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Daily schedule must have start and end time.", new Exception());
+    }
     User user = securityService.getCurrentUser();
+    boolean archived = null == rsa.getArchived() ? false : rsa.getArchived();
+    boolean hasId = null != rsa.getId();
     HashMap<String, Object> params = new HashMap<>();
-
     params.put("startTime", rsa.getStartTime());
     params.put("endTime", rsa.getEndTime());
     params.put("dayOfWeekId", rsa.getDayOfWeekId());
@@ -149,15 +156,18 @@ public class AvailabilityService {
     params.put("resourceScheduleId", resourceScheduleId);
     params.put("createdById", user.getId());
 
-    if(null != rsa.getId()) {
-      params.put("archived", null == rsa.getArchived() ? false : rsa.getArchived());
+    //if existing and archived, or existing and they send in null start and end time
+    if(hasId && (archived || (null == rsa.getStartTime() && null == rsa.getEndTime() ))) {
+      params.put("id", rsa.getId());
+      params.put("modifiedById", user.getId());
+      sqlCache.update("availability.archiveHours", params);
+    } else if(hasId) {
       params.put("id", rsa.getId());
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.updateHours", params);
     } else {
       sqlCache.update("availability.insertHours", params);
     }
-
   }
   // appt length
   public Long getResourceAppointmentLength(Long userId, Long orgId) {
