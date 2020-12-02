@@ -635,7 +635,7 @@ public class SmartlistService {
     }
 
     for (SmartlistFieldAssignment f : joinTables) {
-      final String joinAlias = (f.getSystemListTypeId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null)) ? f.getValueReferenceTable() : f.getReferenceTable();
+      final String joinAlias = (f.getSystemListTypeId() != null || (f.getJoinTable() != null && f.getJoinColumn() != null) || f.getAllowMultiple()) ? f.getValueReferenceTable() : f.getReferenceTable();
 
       if (f.getSmartlistSystemListId() == null) {
         if (f.getObjectTypeId() == 1 || f.getObjectTypeId() == 2) {
