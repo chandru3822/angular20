@@ -51,7 +51,7 @@ BEGIN
                     and upv.position_level = 0
                     and upv.position_id = 4
                     and pd.closer_appointment_start between p_start_date and p_end_date
-                    and pd.closer_appointment_outcome = 2 --Pitched
+                    and pd.closer_appointment_outcome in (2,1139,1140)
                     and o.id != 171
                 group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')
             ) as ranks
