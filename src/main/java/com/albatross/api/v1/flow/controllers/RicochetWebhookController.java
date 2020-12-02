@@ -24,7 +24,9 @@ public class RicochetWebhookController {
 
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/lead")
-    public ResponseEntity saveLead(@RequestBody RicochetLead lead, @RequestHeader("Authorization") String authHeader) throws Exception {
+    public ResponseEntity createLead(@RequestBody RicochetLead lead, @RequestHeader("Authorization") String authHeader) throws Exception {
+        log.info("RICOCHET: Incoming POST request from Ricochet. Details to follow.");
+
         String msg;
 
         if (!StringUtils.equals(authHeader, (apiKey))) {
@@ -53,6 +55,73 @@ public class RicochetWebhookController {
 
         log.info(
             "RICOCHET: Received new lead info from Ricochet. " +
+                "uniqueIdentifier: {}, " +
+                "status: {}, " +
+                "leadOwner: {}, " +
+                "firstName: {}, " +
+                "lastName: {}, " +
+                "mobile: {}, " +
+                "email: {}, " +
+                "street1: {}, " +
+                "city: {}, " +
+                "zip: {}, " +
+                "state: {}, " +
+                "lead_source: {}, " +
+                "lead_source_detail: {}, " +
+                "hubspot_id: {}",
+                lead.getUniqueIdentifier() != null ? lead.getUniqueIdentifier() : "null",
+                !isBlank(lead.getStatus()) ? lead.getStatus() : "null",
+                !isBlank(lead.getLeadOwner()) ? lead.getLeadOwner() : "null",
+                !isBlank(lead.getCustomer().getFirstName()) ? lead.getCustomer().getFirstName() : "null",
+                !isBlank(lead.getCustomer().getLastName()) ? lead.getCustomer().getLastName() : "null",
+                !isBlank(lead.getCustomer().getPhone1()) ? lead.getCustomer().getPhone1() : "null",
+                !isBlank(lead.getCustomer().getEmail()) ? lead.getCustomer().getEmail() : "null",
+                !isBlank(lead.getCustomer().getAddress().getAddress1()) ? lead.getCustomer().getAddress().getAddress1() : "null",
+                !isBlank(lead.getCustomer().getAddress().getCity()) ? lead.getCustomer().getAddress().getCity() : "null",
+                !isBlank(lead.getCustomer().getAddress().getZip()) ? lead.getCustomer().getAddress().getZip() : "null",
+                !isBlank(lead.getCustomer().getAddress().getState()) ? lead.getCustomer().getAddress().getState() : "null",
+                !isBlank(lead.getLead_source()) ? lead.getLead_source() : "null",
+                !isBlank(lead.getLead_source_detail()) ? lead.getLead_source_detail() : "null",
+                lead.getHubspot_id() != null ? lead.getHubspot_id() : "null"
+        );
+
+        return ricochetWebhookService.saveLead(lead);
+    }
+
+    // This is just a temporary fix. Adding a PUT endpoint for realz soon.
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PutMapping(value = "/lead")
+    public ResponseEntity updateLead(@RequestBody RicochetLead lead, @RequestHeader("Authorization") String authHeader) throws Exception {
+        log.info("RICOCHET: Incoming PUT request from Ricochet. Details to follow.");
+
+        String msg;
+
+        if (!StringUtils.equals(authHeader, (apiKey))) {
+            msg = "RICOCHET: Invalid authorization configured";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + msg);
+        }
+
+        if (lead.getUniqueIdentifier() == null) {
+            msg = "RICOCHET: Ricochet Lead ID is missing";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
+
+        if (lead.getCustomer().getLastName().isBlank()) {
+            msg = "RICOCHET: Last name cannot be blank";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
+
+        if (!lead.getCustomer().getAddress().getZip().isBlank() && lead.getCustomer().getAddress().getZip().length() > 10) {
+            msg = "RICOCHET: Character limit exceeded for provided Zip \"" + lead.getCustomer().getAddress().getZip() + "\". The maximum number of characters allowed is 10.";
+            log.error(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + msg);
+        }
+
+        log.info(
+            "RICOCHET: Received updated lead info from Ricochet. " +
                 "uniqueIdentifier: {}, " +
                 "status: {}, " +
                 "leadOwner: {}, " +
