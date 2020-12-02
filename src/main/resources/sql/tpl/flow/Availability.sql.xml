@@ -19,7 +19,7 @@
                         rsa.end_time as "endTime",
                         coalesce(rsa.archived, false) as archived
                     from flow.day_of_week dow
-                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id
+                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id and rsa.archived is not true
                     order by dow.id < (select day_of_week_id
                                         from flow.company_week_start
                                         where company_id = :companyId), "dayOfWeekId") d
@@ -101,7 +101,7 @@
                         rsa.end_time as "endTime",
                         coalesce(rsa.archived, false) as archived
                     from flow.day_of_week dow
-                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id
+                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id rsa.archived is not true
                     order by dow.id < (select day_of_week_id
                                         from flow.company_week_start
                                         where company_id = :companyId), "dayOfWeekId") d
@@ -117,10 +117,17 @@
      set start_time = :startTime::time,
          end_time = :endTime::time,
          modified_by_id = :modifiedById,
-         date_modified = now(),
-         archived = :archived
+         date_modified = now()
     where id = :id
   ]]></availability.updateHours>
+
+  <availability.archiveHours><![CDATA[
+    update flow.resource_schedule_availability
+     set modified_by_id = :modifiedById,
+         date_modified = now(),
+         archived = true
+    where id = :id
+  ]]></availability.archiveHours>
 
   <availability.insertHours><![CDATA[
     insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, created_by_id)
