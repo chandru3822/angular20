@@ -52,11 +52,16 @@
     </v-row>
 <v-row>
   <v-col class="text-left px-5 py-0">
+<!--    <v-btn-->
+<!--      class="back-btn"-->
+<!--      text-->
+<!--      :ripple="false"-->
+<!--      @click="$router.go(-1)">Back</v-btn>-->
     <v-btn
       class="back-btn"
       text
       :ripple="false"
-      @click="$router.go(-1)">Back</v-btn>
+      :to="`/project/${projectId}/details`">Back to Project</v-btn>
   </v-col>
 
   <v-col cols="12" class="py-0 process-step-header" >

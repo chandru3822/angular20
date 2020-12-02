@@ -61,7 +61,7 @@ BEGIN
                     end
                 and upv.position_level = 0
                 and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
-                and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
                 and o.id != 171
             group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')
             limit p_limit
