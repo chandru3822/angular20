@@ -1143,9 +1143,9 @@
           { text: 'Financier', value: 'financier', show: true }
         ],
         drilldownData: [],
-        timeIntervalBtnGroup: 0,
-        timeIntervalString: 'MTD', // MTD is selected by default
-        timeInterval: +moment().format('DD'),
+        timeIntervalBtnGroup: 1, // determines which time interval button gets the active class
+        timeIntervalString: '60 days', // 60 days is selected by default
+        timeInterval: 60, // default time interval selection
         tabNum: 1, // Dashboard tab is selected by default
         showDashboard: true,
         showFunnels: false,
