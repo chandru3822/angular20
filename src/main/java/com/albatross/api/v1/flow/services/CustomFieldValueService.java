@@ -75,8 +75,8 @@ public class CustomFieldValueService {
         params.put("textValue", cfv.getTextValue());
         params.put("numericValue", cfv.getNumericValue());
         params.put("intValue", cfv.getIntValue());
-        //      params.put("intArrayValue", cfv.getIntArrayValue());
-        params.put("intArrayValue", cfv.getIntArrayValue().size() > 0 ? createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
+              params.put("intArrayValue", cfv.getIntArrayValue());
+//        params.put("intArrayValue", cfv.getIntArrayValue().size() > 0 ? createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
         params.put("sourceId", sourceId);
         params.put("userId", currentUser.getId());
