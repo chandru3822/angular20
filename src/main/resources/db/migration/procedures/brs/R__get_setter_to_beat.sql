@@ -47,7 +47,7 @@ BEGIN
                       and upv.position_id = 4 --Setter
                       and pd.source in (525, 526) --(Setter Gen, Retargeted)
                       and pd.closer_appointment_start between p_start_date and p_end_date
-                      and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+                      and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
                       and u.id is not null
                       and u.id not in (2354810, 2390159)
                   group by u.id, name

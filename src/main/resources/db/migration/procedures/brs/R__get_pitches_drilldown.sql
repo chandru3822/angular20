@@ -38,7 +38,7 @@ BEGIN
                 inner join flow.user u on u.id = upv.user_id
             where pd.closer_appointment_start between v_start_date and v_end_date
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
-                and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
                 and upv.primary_flag is true
                 and upv.position_level = 0
                 and case when p_is_setter_mgr is true then upv.org_id = p_setter_mgr_office_id
