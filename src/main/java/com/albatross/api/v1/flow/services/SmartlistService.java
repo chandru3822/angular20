@@ -395,7 +395,7 @@ public class SmartlistService {
     query.append(";");
 
     //@TODO: humes, logging queries for debugging/testing
-    log.info("SMARTLIST: Running smartlist ID: " + smartlist.getId() + " --> " + query.toString());
+    log.info("SMARTLIST: Running smartlist ID: " + smartlist.getId());
 
     return query.toString();
   }
@@ -1010,7 +1010,7 @@ public class SmartlistService {
     query.append(";");
 
     //@TODO: humes, logging queries for debugging/testing
-    log.info("SMARTLIST: Running smartlist ID: " + smartlist.getId() + " --> " + query.toString());
+    log.info("SMARTLIST: Running smartlist ID: " + smartlist.getId());
 
     return query.toString();
   }
