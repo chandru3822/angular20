@@ -24,14 +24,14 @@
   ]]></ricochetWebhook.getContactIdByContactInfo>
 
   <ricochetWebhook.getUserIdByLeadOwnerEmail><![CDATA[
-    select coalesce(id, 2371412) user_id
+    select id user_id
     from flow.user
     where lower(email) = lower(:leadOwnerEmail)
     limit 1
   ]]></ricochetWebhook.getUserIdByLeadOwnerEmail>
 
   <ricochetWebhook.getUserPositionIdByUserId><![CDATA[
-    select coalesce(id, 9016) user_position_id
+    select id user_position_id
     from flow.user_position
     where user_id = :leadOwnerUserId
       and primary_flag is true

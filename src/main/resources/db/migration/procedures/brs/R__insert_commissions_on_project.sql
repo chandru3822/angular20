@@ -4,17 +4,24 @@ CREATE OR REPLACE FUNCTION brs.insert_commissions_on_project(p_project_id intege
 AS
 $function$
 declare
-    v_override_plan_id   integer;
-    v_commission_plan_id integer;
-    v_residual_plan_id   integer;
-    v_user_id            integer;
-    v_company_feature_id integer;
-    v_company_id integer;
+    v_override_plan_id                 integer;
+    v_commission_plan_id               integer;
+    v_residual_plan_id                 integer;
+    v_user_id                          integer;
+    v_company_feature_id               integer;
+    v_company_id                       integer;
+    v_custom_field_group_assignment_id integer;
 BEGIN
     select pd.closer_user_id
     into v_user_id
     from brs.project_details pd
     where project_id = p_project_id;
+
+    select c.company_id
+    into v_company_id
+    from flow.project p
+             inner join flow.contact c on c.id = p.contact_id
+    where p.id = p_project_id;
 
     select op.id
     into v_override_plan_id
@@ -52,11 +59,6 @@ BEGIN
         insert into brs.project_commission(project_id, commission_plan_id)
         values (p_project_id, v_commission_plan_id);
     else
-        select c.company_id
-        into v_company_id
-        from flow.project p
-                 inner join flow.contact c on c.id = p.contact_id;
-
         select cf.id
         into v_company_feature_id
         from flow.company_feature cf
@@ -72,10 +74,6 @@ BEGIN
         insert into brs.project_override(project_id, override_plan_id)
         values (p_project_id, v_override_plan_id);
     else
-        select c.company_id
-        into v_company_id
-        from flow.project p
-                 inner join flow.contact c on c.id = p.contact_id;
 
         select cf.id
         into v_company_feature_id
@@ -90,6 +88,19 @@ BEGIN
     end if;
     --         insert into brs.project_residual( project_id, residual_plan_id)
 --         values (p_project_id,v_residual_plan_id);
+
+
+    select cfga.id
+    into v_custom_field_group_assignment_id
+    from flow.process_step ps
+             inner join flow.custom_field_group cfg on ps.id = cfg.process_step_id and cfg.archived is false
+             left join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+             left join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where ps.process_step_name = 'Final Design Completion'
+      and cf.field_name = 'Final Design Complete'
+      and cf.company_id = v_company_id;
+
+    perform flow.set_pps_cfv(p_project_id, 99999999, v_custom_field_group_assignment_id, (now() at time zone 'US/Mountain')::text);
 
 END;
 $function$
