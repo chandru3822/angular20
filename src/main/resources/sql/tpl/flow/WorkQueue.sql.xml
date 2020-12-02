@@ -358,9 +358,9 @@
                inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
                inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
                inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-               left join flow.project_process_step pps2 on pps2.project_id = p.id and pps2.process_step_id = 1
+               left join flow.project_process_step pps2 on pps2.project_id = p.id and pps2.process_step_id = 1 and pps2.main is true
                left join flow.project_process_step_custom_field_value ppscfv on pps2.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
-               left join flow.project_process_step pps3 on pps3.project_id = p.id and pps3.process_step_id in (247,249,251,252,250)
+               left join flow.project_process_step pps3 on pps3.project_id = p.id and pps3.process_step_id in (247,249,251,252,250) and pps3.main is true
                left join flow.project_process_step_custom_field_value ppscfv3 on pps3.id = ppscfv3.project_process_step_id and ppscfv3.custom_field_group_assignment_id in (17263, 17349, 17350, 17351, 17352)
                left join flow.company_state cs on cs.id = p.company_state_id
                left join flow.state st on st.id = cs.state_id
