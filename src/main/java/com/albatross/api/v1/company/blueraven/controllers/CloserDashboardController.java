@@ -36,10 +36,10 @@ public class CloserDashboardController {
     return closerDashboardService.getRoundRobins();
   }
 
-  @GetMapping(value = "/getOfficeLeadAllocationRank")
-  public List<OfficeLeadAllocationScores> getOfficeLeadAllocationRank(@RequestParam Integer postalCodeZoneId,
+  @GetMapping(value = "/getRoundRobinLeadAllocationRank")
+  public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(@RequestParam Integer postalCodeZoneId,
                                                                       @RequestParam Integer timeInterval) {
-    return closerDashboardService.getOfficeLeadAllocationRank(postalCodeZoneId, timeInterval);
+    return closerDashboardService.getRoundRobinLeadAllocationRank(postalCodeZoneId, timeInterval);
   }
 
   @GetMapping(value = "/getCloserOffices")
