@@ -456,7 +456,7 @@
 
   <customFieldValues.organization.upsertCustomFieldValue><![CDATA[
     insert into flow.organization_custom_field_value(org_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :userId)
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId)
     ON CONFLICT (org_id, custom_field_group_assignment_id)
       DO UPDATE
         set date_value = :dateValue::date,
@@ -465,14 +465,14 @@
         text_value = :textValue,
         numeric_value = :numericValue,
         int_value = :intValue,
-        int_array_value = :intArrayValue,
+        int_array_value = :intArrayValue::int[],
         modified_by_id = :userId,
         date_modified = now()
   ]]></customFieldValues.organization.upsertCustomFieldValue>
 
   <customFieldValues.user.upsertCustomFieldValue><![CDATA[
     insert into flow.user_custom_field_value(user_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :userId)
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId)
     ON CONFLICT (user_id, custom_field_group_assignment_id)
       DO UPDATE
         set date_value = :dateValue::date,
@@ -481,14 +481,14 @@
         text_value = :textValue,
         numeric_value = :numericValue,
         int_value = :intValue,
-        int_array_value = :intArrayValue,
+        int_array_value = :intArrayValue::int[],
         modified_by_id = :userId,
         date_modified = now()
   ]]></customFieldValues.user.upsertCustomFieldValue>
 
    <customFieldValues.process_step.upsertCustomFieldValue><![CDATA[
        insert into flow.project_process_step_custom_field_value(project_process_step_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-        values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, array[ :intArrayValue ]::int[], :userId)
+        values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId)
       ON CONFLICT (project_process_step_id, custom_field_group_assignment_id)
       DO UPDATE
         set date_value = :dateValue::date,
@@ -497,14 +497,14 @@
             text_value = :textValue,
             numeric_value = :numericValue,
             int_value = :intValue,
-            int_array_value = ARRAY[ :intArrayValue ]::integer[],
+            int_array_value = :intArrayValue::int[],
             modified_by_id = :userId,
             date_modified = now()
   ]]></customFieldValues.process_step.upsertCustomFieldValue>
 
   <customFieldValues.project.upsertCustomFieldValue><![CDATA[
     insert into flow.project_custom_field_value (project_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :userId)
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue::int[], :userId)
     ON CONFLICT (project_id, custom_field_group_assignment_id)
     do update
       set date_value = :dateValue::date,
@@ -513,7 +513,7 @@
       text_value = :textValue,
       numeric_value = :numericValue,
       int_value = :intValue,
-      int_array_value = ARRAY[ :intArrayValue ]::integer[],
+      int_array_value = :intArrayValue::int[],
       modified_by_id = :userId,
       date_modified = now()
   ]]></customFieldValues.project.upsertCustomFieldValue>
