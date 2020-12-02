@@ -189,10 +189,11 @@ public class ExcelImportController {
     design.setSource(source);
 
     Map<String, Object> json = design.getDesign();
+    log.info("EXCEL_IMPORT: Design Log JSON: {}", json.toString());
     Integer designId = null, projectId = null;
     if( json != null ){
       designId = (Integer) json.get("Design ID");
-      projectId = (Integer) json.get("Base Deal ID");
+      projectId = (Integer) json.get("Project ID");
     }
 
     Map<String, Object> bomJson = design.getBom();
