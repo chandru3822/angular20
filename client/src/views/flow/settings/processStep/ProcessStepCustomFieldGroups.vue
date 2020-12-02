@@ -274,6 +274,7 @@
                                   :items="positions"
                                   :loading="positionsLoading"
                                   multiple
+                                  clearable
                                   label="White Listed Positions"
                                   item-text="position"
                                   item-value="positionId"
