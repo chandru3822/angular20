@@ -64,6 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .cors()
         .and()
         .authorizeRequests()
+        .antMatchers(ExcelEndpointSecurityConfig.EXCEL_URL_PATH).permitAll()
         .antMatchers("/auth/login").permitAll()
         .antMatchers("/actuator/**").permitAll()
         .antMatchers("/api/v1/flow/user/forgotPassword/**").permitAll()
