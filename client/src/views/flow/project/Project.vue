@@ -213,7 +213,7 @@ export default {
       projectLoading: true,
       breadcrumbs: [
         {
-          text: 'Back',
+          text: 'Back to Projects',
           disabled: false,
           exact: true,
           to: `/projects`

@@ -13,6 +13,7 @@ declare
     v_owner_user_id          integer;
     v_user_id                integer;
     v_closer_name            varchar;
+    v_pd_closer_user_position_id integer;
 BEGIN
     select company_id
     into v_company_id
@@ -20,11 +21,18 @@ BEGIN
     where process_id = new.company_process_id
     limit 1;
 
-    select u.id,first_name||' '||last_name
-    into v_user_id,v_closer_name
-    from flow.user_position up
-    inner join flow.user u on u.id = up.user_id
-    where up.id = new.user_position_id;
+    if new.user_position_id is not null then
+        select u.id,first_name||' '||last_name
+        into v_user_id,v_closer_name
+        from flow.user_position up
+        inner join flow.user u on u.id = up.user_id
+        where up.id = new.user_position_id;
+    else
+        select pd.closer_user_id,pd.closer_name,pd.closer_user_position_id
+        into v_user_id,v_closer_name,v_pd_closer_user_position_id
+        from brs.project_details pd
+        where pd.project_id = new.id;
+    end if;
 
     select email, phone, mobile, first_name || ' ' || last_name, owner_user_position_id, up.user_id
     into v_contact_email,v_contact_phone,v_contact_mobile_phone,v_contact_name,v_owner_user_position_id,v_owner_user_id
@@ -46,7 +54,7 @@ BEGIN
                                         setter_user_position_id, setter_user_id,closer_user_id,closer_user_position_id,closer_name)
         values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
                 new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
-                v_owner_user_position_id, v_owner_user_id,v_user_id,new.user_position_id,v_closer_name);
+                v_owner_user_position_id, v_owner_user_id,v_user_id,coalesce(new.user_position_id,v_pd_closer_user_position_id),v_closer_name);
     elsif (TG_OP = 'UPDATE') THEN
         update brs.project_details
         set contact_email              = v_contact_email,
@@ -62,7 +70,7 @@ BEGIN
             setter_user_position_id    = v_owner_user_position_id,
             setter_user_id             = v_owner_user_id,
             closer_name                = v_closer_name,
-            closer_user_position_id    = new.user_position_id,
+            closer_user_position_id    = coalesce(new.user_position_id,v_pd_closer_user_position_id),
             closer_user_id             = v_user_id
         where project_id = new.id;
 

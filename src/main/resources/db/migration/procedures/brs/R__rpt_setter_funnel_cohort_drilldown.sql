@@ -113,7 +113,7 @@ BEGIN
                     left outer join flow.state s on s.id = cs.state_id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
-                    and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+                    and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
                     and pd.closer_appointment_start is not null
                     and p.date_created::date between p_start_date and p_end_date
                     and upv.position_level = 0
@@ -231,7 +231,7 @@ BEGIN
                     left outer join flow.state s on s.id = cs.state_id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
-                    and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+                    and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
                     and pd.closer_appointment_start is not null
                     and p.date_created::date between p_start_date and p_end_date
                     and upv.position_level = 0

@@ -111,7 +111,7 @@
       return {
         breadcrumbs: [
           {
-            text: 'Back',
+            text: 'Back to Organizations',
             disabled: false,
             exact: true,
             to: `/orgs`

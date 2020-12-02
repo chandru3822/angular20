@@ -51,7 +51,7 @@ BEGIN
                      end
                  and upv.position_level = 0
                  and pd.closer_appointment_start between p_start_date and p_end_date
-                 and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
                  and u.id = any(v_setter_ids)
             ) as total_pitches
         ) rpt
