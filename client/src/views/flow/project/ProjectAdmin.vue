@@ -18,7 +18,7 @@
   <v-col cols="12">
 
     <v-col cols="12" class="text-left">
-      <router-link :to="`/project/${projectId}/details`">Back</router-link>
+      <router-link :to="`/project/${projectId}/details`">Back to Project</router-link>
     </v-col>
 
     <v-col cols="12" class="text-left">

@@ -136,21 +136,21 @@ BEGIN
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date = (now() at time zone 'US/Mountain')::date) as today_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date = (now() at time zone 'US/Mountain')::date - 1) as yesterday_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 7
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 1) as seven_day_count,
@@ -158,7 +158,7 @@ BEGIN
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 14
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 7) as prev_seven_day_count,
@@ -166,7 +166,7 @@ BEGIN
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 30
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 1) as thirty_day_count,
@@ -174,7 +174,7 @@ BEGIN
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 60
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 30) as prev_thirty_day_count,
@@ -182,7 +182,7 @@ BEGIN
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
 				from brs.setter_funnel
@@ -459,7 +459,7 @@ BEGIN
                      inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
                      inner join flow.user u on u.id = upv.user_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date = (now() at time zone 'US/Mountain')::date
 				     and u.id is not null
@@ -473,7 +473,7 @@ BEGIN
                      inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
                      inner join flow.user u on u.id = upv.user_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date = (now() at time zone 'US/Mountain')::date - 1
 				     and u.id is not null
@@ -487,7 +487,7 @@ BEGIN
                      inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
                      inner join flow.user u on u.id = upv.user_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 7
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 1
@@ -502,7 +502,7 @@ BEGIN
                      inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
                      inner join flow.user u on u.id = upv.user_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 14
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 7
@@ -517,7 +517,7 @@ BEGIN
                      inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
                      inner join flow.user u on u.id = upv.user_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 30
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 1
@@ -532,7 +532,7 @@ BEGIN
                      inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
                      inner join flow.user u on u.id = upv.user_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 60
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 30
@@ -547,7 +547,7 @@ BEGIN
                      inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
                      inner join flow.user u on u.id = upv.user_id
 				 where pd.source = 525 --Setter Gen
-				     and pd.closer_appointment_outcome in (2, 3) --(Pitched, Missed)
+				     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
 				     and pd.closer_appointment_start is not null
 				     and p.date_created::date between p_custom_start_date and p_custom_end_date
                      and u.id is not null

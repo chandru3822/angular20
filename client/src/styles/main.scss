@@ -80,6 +80,8 @@ body {
   justify-content: center;
   max-width: 100vw;
   overflow: auto;
+  display: flex;
+  padding: 0;
   height: calc(100vh - 48px);
   max-height: calc(100vh - 48px);
 }
@@ -259,10 +261,12 @@ label[for="adminOriginatorSelect"] {
     margin: 0 32px 0 24px !important;
   }
 
-  .router-container{
-    display: flex;
-  }
+  //i cant figure out why this was down here. hopefully nothing breaks
+  //.router-container{
+  //  display: flex;
+  //}
   .router-view{
+    padding: 12px !important;
     /* @joe - do we even need this?  lets just use the full screen till they complain. i hate the white space on the sides */
     /*margin-left: 107px !important;*/
     /*margin-right: 107px !important;*/
