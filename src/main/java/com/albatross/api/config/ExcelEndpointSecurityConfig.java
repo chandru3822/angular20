@@ -4,6 +4,7 @@ import com.albatross.api.security.excel.ExcelSharedSecretBasicAuthProvider;
 import com.albatross.api.security.excel.UserBasicAuthProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -22,7 +23,7 @@ import java.io.IOException;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
-@Order(2147483640 - 1) // higher priority than SecurityConfig
+@Order(SecurityProperties.BASIC_AUTH_ORDER - 1) // higher priority than SecurityConfig
 @EnableWebSecurity
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ExcelEndpointSecurityConfig extends WebSecurityConfigurerAdapter {
