@@ -71,7 +71,7 @@
             v-on="on"
             dense
             v-model="processStep.main"
-            :disabled="processStep.main || !userCanEdit || projectHasActiveProcessStep(processStep)"
+            :disabled="processStep.main || !userCanEdit"
             label="Primary"
           />
         </template>
@@ -357,9 +357,6 @@ export default {
     this.getAvailableOwners()
   },
   methods: {
-    projectHasActiveProcessStep(ps) {
-      console.log('project', this.project)
-    },
     anyGroupNonUnique () {
       let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
       return null != nonUniqueGroups
