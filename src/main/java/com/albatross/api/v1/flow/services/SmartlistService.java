@@ -655,7 +655,7 @@ public class SmartlistService {
             if (f.getCustomFieldSqlKey() != null) {
               //custom value sql
               query.append(String.format(" left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", f.getCustomFieldSqlKey(), joinAlias, joinAlias, valueTable));
-            } else {
+            } else if (!f.getAllowMultiple()) {
               query.append(String.format(" left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", joinAlias, joinAlias, valueTable));
             }
           } else {
