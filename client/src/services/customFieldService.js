@@ -1,10 +1,22 @@
 export function getCustomFieldReadOnly(store, field) {
-  return field.ancillaryCustomFieldGroupAssignmentId !== null
-    || field.readonly
-    || ( field.customFieldGroupAssignmentReadOnly && field.whiteListedPositions?.length === 0 )
-    || ( field.customFieldGroupAssignmentReadOnly
-      && field.whiteListedPositions?.length > 0
-      && !store.getters.userHasAnyPosition(field.whiteListedPositions?.map(wlp => wlp.positionId)) )
+  let readonly = false
+  //more verbose but easier to figure out what is going on
+  if(field.ancillaryCustomFieldGroupAssignmentId !== null) {
+    //all ancillary fields are ALWAYS readonly
+    readonly = true
+  } else if (field.whiteListedPositions?.length > 0) {
+    //this is a change to how it used to work.  now having white listed positions overrides the master/higher level readonly
+    //do any of the users active positions match the white listed positions
+    readonly = !store.getters.userHasAnyPosition(field.whiteListedPositions?.map(wlp => wlp.positionId))
+  } else if (field.customFieldGroupAssignmentReadOnly) {
+    //the cfga is marked as readonly but there are no whitelisted positions.  always readonly
+    readonly = true
+  } else if(field.readonly) {
+    //no other scenario is true, and the master level readonly flag is true
+    readonly = true
+  }
+  
+  return readonly
 }
 
 
