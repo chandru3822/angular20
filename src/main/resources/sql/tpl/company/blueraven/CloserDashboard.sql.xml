@@ -140,11 +140,11 @@
     ]]>
   </closerDashboard.getRoundRobins>
 
-  <closerDashboard.getOfficeLeadAllocationRank>
+  <closerDashboard.getRoundRobinLeadAllocationRank>
     <![CDATA[
-      SELECT * FROM brs.get_office_lead_allocation_rank(:postalCodeZoneId::integer, :timeInterval::integer)
+      SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::integer, :timeInterval::integer)
     ]]>
-  </closerDashboard.getOfficeLeadAllocationRank>
+  </closerDashboard.getRoundRobinLeadAllocationRank>
 
   <closerDashboard.getAllCloserOffices>
     <![CDATA[
