@@ -44,8 +44,8 @@ BEGIN
         (with round_robin_users as (
             select up.user_id, pcz.distribution_time_frame_days
             from flow.project p
-                     inner join flow.postal_code pc on pc.postal_code = p.postal_code
-                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
+                     inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                      inner join flow.user_position up on up.id = pczu.user_position_id and up.primary_flag is true
             where p.id = p_project_id),
@@ -53,7 +53,7 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_num
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                         closer_appointment_start >= now() - interval '21 days'
+                                                         closer_appointment_start >= now() - interval '42 days'
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -66,11 +66,11 @@ BEGIN
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               first_cash_payment_paid_date, utility_bill_verified_date,
                                               proof_of_homeowners_insurance_obtained_date)
-                                         between now() - interval '21 days' and now()
+                                         between now() - interval '42 days' and now()
                              else
                                  greatest(final_design_signed_date, financial_agreement_signed_date,
                                           proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     between now() - interval '21 days' and now()
+                                     between now() - interval '42 days' and now()
                                                              end
                      AND ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
                           left join flow.project p on p.id = pd.project_id
@@ -80,7 +80,7 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_den
                  from round_robin_users rru
                     left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                        closer_appointment_start >= now() - interval '21 days'
+                                                        closer_appointment_start >= now() - interval '42 days'
                      and pd.source not in (523,524,530)
                           left  join flow.project p on p.id = pd.project_id
                  group by rru.user_id),
@@ -90,7 +90,7 @@ BEGIN
                       left join brs.project_details pd on rru.user_id = pd.closer_user_id and
                                                           greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
                                                                    utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >=
-                                                          now() - interval '21 days'
+                                                          now() - interval '42 days'
                      and pd.source in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -111,7 +111,7 @@ BEGIN
                  select rru.user_id, count(pd2.id) as appointment_count
                  from round_robin_users rru
                       left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 and  closer_appointment_start between now() - interval '21 days' and now() + interval '100 days'
+                 and  closer_appointment_start between now() - interval '42 days' and now() + interval '100 days'
                  group by rru.user_id),
              appointment_count_with_interval as (
                  select rru.user_id, count(pd2.id) as appointment_count_with_interval
@@ -156,7 +156,7 @@ BEGIN
                                                        self_gen +
                                                        ((appointment_count + avail) / 3)
                                           else
-                                          lead_gen_num / lead_gen_den::numeric * 1000 + self_gen +
+                                          lead_gen_num / lead_gen_den::numeric * 10000 + self_gen +
                                           ((appointment_count + avail) / 3)  end                       as score,
                                           case
                                               when sum(appointment_count_with_interval) over () = 0 then
@@ -178,8 +178,8 @@ BEGIN
                                                    coalesce(ta.avail, 0)                             as avail,
                                                    coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval
                                             from flow.project p
-                                                     inner join flow.postal_code pc on pc.postal_code = p.postal_code
-                                                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
+                                                     inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+                                                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                                                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pc.archived is false
                                                      inner join flow.user_position up2 on up2.id = pczu.user_position_id and up2.primary_flag is true
                                                      left join lead_gen_num lgn on lgn.user_id = up2.user_id
