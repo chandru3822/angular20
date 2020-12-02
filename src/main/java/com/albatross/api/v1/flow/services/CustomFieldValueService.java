@@ -89,6 +89,7 @@ public class CustomFieldValueService {
       }
       return getCustomFieldGroupsAndValues(objectType, sourceId);
     } catch (Exception e) {
+      log.error("CFV: error saving value");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
     }
   }
