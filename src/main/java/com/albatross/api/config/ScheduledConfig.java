@@ -92,7 +92,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     // last day of every month
 //    @Scheduled(cron = "0 0 0 L * ?")
-    @Scheduled(cron = "0 1 27 * *", zone = "America/Denver")
+    @Scheduled(cron = "0 0 2 27 * *", zone = "America/Denver")
     public void processFutureRecurringEvents() {
         if(processFutureAppointments) {
             log.info("*** CRON: start populating recurring events ***");
