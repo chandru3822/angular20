@@ -86,14 +86,16 @@ public class RicochetWebhookService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("leadOwnerEmail", leadOwnerEmail);
 
-        return sqlCache.queryForObject("ricochetWebhook.getUserIdByLeadOwnerEmail", params, Long.class);
+        Optional<Long> userId = sqlCache.queryForObjectOptional("ricochetWebhook.getUserIdByLeadOwnerEmail", params, Long.class);
+        return userId.orElse(2371412L);
     }
 
     private Long getUserPositionIdByUserId(Long leadOwnerUserId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("leadOwnerUserId", leadOwnerUserId);
-
-        return sqlCache.queryForObject("ricochetWebhook.getUserPositionIdByUserId", params, Long.class);
+    
+        Optional<Long> userPositionId = sqlCache.queryForObjectOptional("ricochetWebhook.getUserPositionIdByUserId", params, Long.class);
+        return userPositionId.orElse(9016L);
     }
 
     private Optional<String> getStateAbbreviationByStateName(String stateName) {

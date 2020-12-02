@@ -59,7 +59,7 @@ BEGIN
                                                                                                       inner join flow.custom_field cf on cf.list_of_value_id = lov.id
                                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                                  and cf.company_id = v_company_id
-                                                                                                 and cf.field_name = 'Panel Brand'
+                                                                                                 and cf.field_name = 'Panel Brand' and cf.archived is false
                                                                                              where upper(substring(plh.panel,1,position(' ' in plh.panel)-1)) = upper(lov2.name)),
                              (select cfga.id
                               from flow.custom_field cf
@@ -97,7 +97,7 @@ BEGIN
                                                                                        inner join flow.custom_field cf on cf.list_of_value_id = lov.id
                                                                                        inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                   and cf.company_id = v_company_id
-                                                                                  and cf.field_name = 'Inverter Brand'
+                                                                                  and cf.field_name = 'Inverter Brand' and cf.archived is false
                                                                               where upper(inverter_custom_getting) = upper(lov2.name)),
                             (select cfga.id
                              from flow.custom_field cf
@@ -135,7 +135,7 @@ BEGIN
                                                                                        inner join flow.custom_field cf on cf.list_of_value_id = lov.id
                                                                                        inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                   and cf.company_id = v_company_id
-                                                                                  and cf.field_name = 'Loan Term'
+                                                                                  and cf.field_name = 'Loan Term' and cf.archived is false
                                                                               where plh.loan_term::integer = lov2.name::integer),
                             (select cfga.id
                              from flow.custom_field cf
@@ -177,7 +177,7 @@ BEGIN
                                                                                       inner join flow.custom_field cf on cf.list_of_value_id = lov.id
                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                  and cf.company_id = v_company_id
-                                                                                 and cf.field_name = 'Product'
+                                                                                 and cf.field_name = 'Product' and cf.archived is false
                                                                              where lov2.name::text = case when v_loan_type = 'Mosiac' and bp_plus_promotion = 'Yes' then 'BluePower Plus PrePaid'
                                                                                                           when bp_plus_promotion = 'Yes' then 'BluePower Plus' else 'BluePower' end),
                             (select cfga.id
@@ -192,7 +192,7 @@ BEGIN
                                                                                       inner join flow.custom_field cf on cf.list_of_value_id = lov.id
                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                  and cf.company_id = v_company_id
-                                                                                 and cf.field_name = 'Primary Financier'
+                                                                                 and cf.field_name = 'Primary Financier' and cf.archived is false
                                                                              where lov2.name::text = case when v_loan_type = 'Mosiac' then 'Mosaic' else v_loan_type end),
                             (select cfga.id
                              from flow.custom_field cf
@@ -206,7 +206,7 @@ BEGIN
                                                                                       inner join flow.custom_field cf on cf.list_of_value_id = lov.id
                                                                                       inner join flow.list_of_value lov2 on lov2.parent_id = lov.id
                                                                                  and cf.company_id = v_company_id
-                                                                                 and cf.field_name = 'Secondary Financier'
+                                                                                 and cf.field_name = 'Secondary Financier' and cf.archived is false
                                                                              where lov2.name::text = case when plh.optional_down_payment::numeric >  0 then 'Cash' else null end),
                             (select cfga.id
                              from flow.custom_field cf
