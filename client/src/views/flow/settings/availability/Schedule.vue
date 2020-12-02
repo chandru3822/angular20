@@ -421,23 +421,35 @@
         // }
         else {
           //check that no end times are before start times
-          let timeOverlap = false
+          let timeOverlap, invalidStarts, invalidEnds = false
           s.resourceScheduleAvailability.forEach(rsa => {
-            //this is janky because if they set a time from 5pm - 11pm MST that is 11pm - 5am UTC so the end time is before the start time, i think this fixes that
-            // i transform each selected local time into today's date, even if it would be a different date in utc. then compare, but never save the values that way
-            if( moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment(rsa.startTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()
-                  >= moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment(rsa.endTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()) {
+            if(rsa.startTime == null && rsa.endTime != null) {
+              //this ensures that no daily schedules have an end time w/o a start time
+              invalidStarts = true
+            } else if(rsa.endTime == null && rsa.startTime != null) {
+              //this ensures that no daily schedules have a start time w/o an end time
+              invalidEnds = true
+            } else if( moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment.utc(rsa.startTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()
+                  >= moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment.utc(rsa.endTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()) {
+              //this is janky because if they set a time from 5pm - 11pm MST that is 11pm - 5am UTC so the end time is before the start time, i think this fixes that
+              // i transform each selected local time into today's date, even if it would be a different date in utc. then compare, but never save the values that way
               timeOverlap = true
             }
             // if(rsa.startTime >= rsa.endTime) {
             //   timeOverlap = true
             // }
           })
-          if(timeOverlap) {
+          
+          if(invalidStarts) {
+            this.saveError = true
+            this.saveErrorMsg = '* All work days with an end time must also have a start time'
+          } else if(invalidEnds) {
+            this.saveError = true
+            this.saveErrorMsg = '* All work days with a start time must also have an end time'
+          } else if(timeOverlap) {
             this.saveError = true
             this.saveErrorMsg = '* End times must be after start times'
           } else {
-
             //check that no other schedules overlap this one
             let scheduleOverlap = false
             let unEndingScheduleBeforeOthers = false
