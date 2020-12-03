@@ -267,6 +267,23 @@ export default {
     async saveContact() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+        if (this.contact.phone.length > 0 && (!this.contact.phone.match(phoneRegex) || this.contact.phone.length > 20)) {
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Phone field with a valid phone number')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.fieldsSaving = false;
+          return;
+        }
+
+        if (this.contact.mobile.length > 0 && (!this.contact.mobile.match(phoneRegex) || this.contact.mobile.length > 20)) {
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Mobile field with a valid phone number')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.fieldsSaving = false;
+          return;
+        }
+
       // save contact
         const {data} = await postRequest(`/contact`, this.contact)
         this.contact.projects = data.projects
