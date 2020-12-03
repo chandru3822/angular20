@@ -168,6 +168,21 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.contact.customFieldGroups = this.customFieldGroups
       try {
+        let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+        if (this.contact.phone.length > 0 && (!this.contact.phone.match(phoneRegex) || this.contact.phone.length > 20)) {
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Phone field with a valid phone number')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          return;
+        }
+
+        if (this.contact.mobile.length > 0 && (!this.contact.mobile.match(phoneRegex) || this.contact.mobile.length > 20)) {
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Contact: Please reformat the Mobile field with a valid phone number')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          return;
+        }
+
         this.contact.companyId = this.companyId
         const {data} = await postRequest(`/contact`, this.contact)
         if(data && data.id) {
