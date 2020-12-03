@@ -233,6 +233,8 @@
         if(this.orgId != null) {
           // reset the schedule when new org selected
           this.appointments = []
+          this.addNew = false
+          this.newAppt = {}
           this.getAppointments()
         }
       },
@@ -240,6 +242,8 @@
         if(this.userId != null) {
           // reset the appointments when new user selected
           this.appointments = []
+          this.addNew = false
+          this.newAppt = {}
           this.getAppointments()
         }
       }
@@ -281,16 +285,16 @@
     },
     created() {
       this.getAppointments()
-      if(VUE_APP_ENV === 'local') {
-        //randa test stuff
-        this.addNew = true
-        this.newAppt = {
-          description: 'hello world',
-          startTime: '2020-10-28T19:00:00.000Z',
-          endTime: '2020-10-28T21:00:00.000Z',
-          repeat: true
-        }
-      }
+      // if(VUE_APP_ENV === 'local') {
+      //   //randa test stuff
+      //   this.addNew = true
+      //   this.newAppt = {
+      //     description: 'hello world',
+      //     startTime: '2020-10-28T19:00:00.000Z',
+      //     endTime: '2020-10-28T21:00:00.000Z',
+      //     repeat: true
+      //   }
+      // }
     },
     methods: {
       async getAppointments() {
