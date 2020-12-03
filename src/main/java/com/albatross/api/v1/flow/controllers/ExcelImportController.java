@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -242,10 +243,9 @@ public class ExcelImportController {
         .status(HttpStatus.CREATED)
         .body(designLogId.get());
     } else {
+      log.info("EXCEL_IMPORT: Received Invalid Project ID: {}", design.getProjectId());
       //if no project found within BR corporate hierarchy return 404
-      return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body("Project ID Not Found");
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project ID Not Found.", new Exception());
     }
   }
   
