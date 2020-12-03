@@ -123,7 +123,7 @@ public class ProjectProcessStepService {
     return attachmentService.findById(attachmentId);
   }
 
-  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
+  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers) {
     User user = securityService.getCurrentUser();
     ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
 
@@ -147,7 +147,7 @@ public class ProjectProcessStepService {
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
     //check for un-run automatic actions if the new status type is active
-    if(processStepStatusTypeId == 1) {
+    if(runAutoTriggers && processStepStatusTypeId == 1) {
       performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
     }
   }
@@ -364,7 +364,7 @@ public class ProjectProcessStepService {
 
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), false);
     }
 
     performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());

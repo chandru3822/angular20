@@ -83,7 +83,7 @@ BEGIN
                                    from flow.project p
                                             inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                                             inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-                                            inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pc.archived is false
+                                            inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                                             inner join flow.user_position up on up.id = pczu.user_position_id and primary_flag is true
                                             inner join flow.resource_schedule rs on rs.user_id = up.user_id
                                             inner join flow.resource_schedule_availability rsa
