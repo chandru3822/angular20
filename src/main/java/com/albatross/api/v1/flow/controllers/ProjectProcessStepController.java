@@ -51,7 +51,7 @@ public class ProjectProcessStepController {
       ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
 
       if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
-          return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s}", false, null != action && action.getAlreadyTriggered()), HttpStatus.OK);
+          return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s, \"triggerAutomatically\": %s}", false, null != action && action.getAlreadyTriggered(), null != action && action.getTriggerAutomatically()), HttpStatus.OK);
       }
 
       List<Long> requirementIds = action.getProcessStepLogicList().stream()
@@ -60,7 +60,7 @@ public class ProjectProcessStepController {
           .collect(Collectors.toList());
       List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
       ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, requirements);
-      return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s}", actionResult.getCanPerform(), actionResult.getAlreadyTriggered()), HttpStatus.OK);
+      return new ResponseEntity<>(String.format("{\"canPerform\": %s, \"alreadyTriggered\": %s, \"triggerAutomatically\": %s}", actionResult.getCanPerform(), actionResult.getAlreadyTriggered(), actionResult.getTriggerAutomatically()), HttpStatus.OK);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }

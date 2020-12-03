@@ -7,9 +7,8 @@
     @click="completeAction"
   >
   {{ label }}
-    <span v-if="actionResult.alreadyTriggered">
-      <v-icon>check</v-icon>
-    </span>
+    <v-icon v-if="actionResult.alreadyTriggered" class="ml-1" size="20">check</v-icon>
+    <v-icon v-if="actionResult.triggerAutomatically">mdi-alpha-a</v-icon>
 </v-btn>
 </template>
 
