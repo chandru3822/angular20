@@ -100,6 +100,15 @@ public class ProjectService {
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
+  //i tried to genericize this but it is still pretty specific to only brs.
+  public Boolean projectExistsInHierarchy(Long projectId, Long parentCompanyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("parentCompanyId", parentCompanyId);
+    Optional<Project> proj = sqlCache.get("project.existsInHierarchy", params, Project.class);
+    return proj.isPresent();
+  }
+  
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
