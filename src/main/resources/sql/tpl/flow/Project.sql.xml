@@ -17,6 +17,15 @@
     where pps.id = :projectProcessStepId
   ]]></project.getProjectIdByProjectProcessStepId>
 
+  <project.existsInHierarchy><![CDATA[
+    select p.id
+    from flow.project p
+      inner join flow.company_process cp on cp.id = p.company_process_id
+      inner join flow.company c on c.id = cp.company_id
+    where p.id = :projectId
+      and c.id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+  ]]></project.existsInHierarchy>
+
 
   <project.getCompanyId><![CDATA[
     select cp.company_id
