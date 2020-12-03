@@ -103,7 +103,7 @@ public class InstallAgreementRepository {
             loanPalService.POST(uri, null);
           }
         } catch (JSONException ex){
-          log.error("IARQ: JSON object not found", ex);
+          log.error("IARQ: JSON object not found", ex.getMessage());
         }
       }
     }
