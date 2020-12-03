@@ -19,8 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
@@ -179,22 +177,15 @@ public class ExcelImportController {
     log.info("EXCEL_IMPORT: Attempting Excel Design Log");
 
     Assert.notNull(design, "Design Required");
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    Optional<String> username = Optional.ofNullable(auth.getPrincipal().toString());
-    User user = username.map(security::getUser)
-      .orElseThrow(() -> new IllegalArgumentException("Unknown user passed in: " + username.get()));
+    User user = security.getCurrentUser();
+//    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//    Optional<String> username = Optional.ofNullable(auth.getPrincipal().toString());
+//    User user = username.map(security::getUser)
+//      .orElseThrow(() -> new IllegalArgumentException("Unknown user passed in: " + username.get()));
 
     Assert.hasText(design.getSource(), "Source is required; must have text");
     String source = String.format("%s – %s – %s", user.getEmail(), design.getSource(), req.getRemoteAddr());
     design.setSource(source);
-
-    Map<String, Object> json = design.getDesign();
-    log.info("EXCEL_IMPORT: Design Log JSON: {}", json.toString());
-    Integer designId = null, projectId = null;
-    if( json != null ){
-      designId = (Integer) json.get("Design ID");
-      projectId = (Integer) json.get("Project ID");
-    }
 
     Map<String, Object> bomJson = design.getBom();
     Iterator it = bomJson.entrySet().iterator();
@@ -210,8 +201,8 @@ public class ExcelImportController {
     params.put("design", design.getDesign());
     params.put("source", design.getSource());
     params.putIfAbsent("designDate", new Date());
-    params.putIfAbsent("designId", designId);
-    params.putIfAbsent("projectId", projectId);
+    params.putIfAbsent("designId", design.getDesignId());
+    params.putIfAbsent("projectId", design.getProjectId());
     params.putIfAbsent("bom", bomJson);
       Optional<DesignResponse> created = cache.get("excel.import.design.insert", params,
           (rs, rowNum) -> {
