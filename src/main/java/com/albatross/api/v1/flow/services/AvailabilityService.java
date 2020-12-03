@@ -178,13 +178,13 @@ public class AvailabilityService {
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
 
-    Long result;
+    Optional<Long> result;
     if(orgId != null) {
-      result = sqlCache.queryForObject("availability.getOrgAppointmentLength", params, Long.class);
+      result = sqlCache.queryForObjectOptional("availability.getOrgAppointmentLength", params, Long.class);
     } else {
-      result = sqlCache.queryForObject("availability.getUserAppointmentLength", params, Long.class);
+      result = sqlCache.queryForObjectOptional("availability.getUserAppointmentLength", params, Long.class);
     }
-    return result;
+    return result.orElse(null);
   }
 
   @Data
