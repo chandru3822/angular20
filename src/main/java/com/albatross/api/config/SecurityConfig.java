@@ -4,12 +4,9 @@ import com.albatross.api.security.LoginSuccessHandler;
 import com.albatross.api.security.jwt.JwtAuthenticationProvider;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,7 +28,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
  * !Describe Purpose!
  */
 @Configuration
-@Order(SecurityProperties.BASIC_AUTH_ORDER)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Autowired
@@ -69,8 +65,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .cors()
         .and()
         .authorizeRequests()
-//        .antMatchers(ExcelEndpointSecurityConfig.EXCEL_URL_PATH).permitAll()
-        .antMatchers("/api/v1/excel/**").permitAll()
         .antMatchers("/auth/login").permitAll()
         .antMatchers("/actuator/**").permitAll()
         .antMatchers("/api/v1/flow/user/forgotPassword/**").permitAll()
@@ -93,14 +87,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .addFilterAt(sessionFilter(), AbstractPreAuthenticatedProcessingFilter.class)
         .addFilterBefore(authFailureFilter(), RequestHeaderAuthenticationFilter.class)
         .authenticationProvider(jwtAuth);
-  }
-  
-  @Override
-  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.userDetailsService(userDetailsService())
-      .passwordEncoder(passwordEncoder())
-      .and()
-      .authenticationProvider(jwtAuth);
   }
 
   @SneakyThrows
