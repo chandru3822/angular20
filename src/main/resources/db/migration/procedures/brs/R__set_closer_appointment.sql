@@ -29,8 +29,8 @@ BEGIN
     if array_length(p_users, 1) < 2 then
         select p_users[1]
         into v_user_id;
-        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available)
-        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true);
+        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available,created_date)
+        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true,now());
     else
 
      --   select p_users[1]
@@ -39,7 +39,7 @@ BEGIN
                                                       distance_from_actual_to_target, appointment_start_date,
                                                       total_lead_allocation, actual_lead_allocation, score,
                                                       lead_gen_num, lead_gen_den, self_gen, total_avail,
-                                                      appointment_count_with_interval, appointment_count
+                                                      appointment_count_with_interval, appointment_count,created_date
                                                       )
         (with round_robin_users as (
             select up.user_id, pcz.distribution_time_frame_days
@@ -128,7 +128,7 @@ BEGIN
                foo3.distance_from_actual_to_target,p_appointment_start_time,
                foo3.total_lead_allocation,foo3.acutal_lead_allocation,foo3.score,
                foo3.lead_gen_num,foo3.lead_gen_den,foo3.self_gen,foo3.avail,
-               foo3.appointment_count_with_interval,foo3.appointment_count_with_interval
+               foo3.appointment_count_with_interval,foo3.appointment_count,now()
         from (
                  select foo2.user_id, acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target,
                         foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
@@ -140,7 +140,10 @@ BEGIN
                         foo2.appointment_count
                  from (
                           select foo1.user_id,
-                                 round(score / sum(score) over (), 2) as total_lead_allocation,
+                                 case when sum(score) over () = 0 then
+                                     0
+                                     else
+                                 round(score / sum(score) over (), 2) end as total_lead_allocation,
                                  round(acutal_lead_allocation, 2)     as acutal_lead_allocation,
                                  foo1.score,
                                  foo1.lead_gen_num,
@@ -180,7 +183,7 @@ BEGIN
                                             from flow.project p
                                                      inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                                                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-                                                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pc.archived is false
+                                                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                                                      inner join flow.user_position up2 on up2.id = pczu.user_position_id and up2.primary_flag is true
                                                      left join lead_gen_num lgn on lgn.user_id = up2.user_id
                                                      left join lead_gen_den lgd on lgd.user_id = up2.user_id
