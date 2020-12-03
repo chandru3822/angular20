@@ -62,11 +62,16 @@
       text
       :ripple="false"
       :to="`/project/${projectId}/details`">Back to Project</v-btn>
+<!--    {{usingUniqueView}}-->
   </v-col>
 
   <v-col cols="12" class="py-0 process-step-header" >
     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
-      <v-toolbar-title class="px-5 process-step-name">{{ processStep.processStepName }}
+      <v-toolbar-title class="px-5 process-step-name">
+        {{ processStep.processStepName }}
+        <v-icon v-if="processStep.processStepStatusTypeId === 1"
+                size="20" color="green">mdi-circle-slice-8</v-icon>
+
       <v-dialog
         v-model="processStep.changeActiveConfirm"
         width="500">
@@ -117,7 +122,7 @@
           color="primaryCustom"
           class="white--text"
           :disabled="fieldsSaving"
-          @click="[fieldsSaving = true, updateFieldGroups()]"
+          @click="[fieldsSaving = true, checkFields()]"
         >Save Process Step Fields</v-btn>
       </div>
     </v-toolbar>
@@ -147,7 +152,7 @@
             <v-btn
               v-if="cfg.uniqueBehaviorTypeId === 1 && closerApptOverride && !anyGroupNonUnique()"
               text
-              @click="updateFieldGroups"
+              @click="checkFields"
             >Save Process Fields</v-btn>
             <v-spacer></v-spacer>
             <v-btn text @click="closerApptOverride = !closerApptOverride"
@@ -349,7 +354,9 @@ export default {
       displayChangeOwner: false,
       availableOwners: [],
       availableProcessStepStatuses: [],
-      searchLoading: false
+      searchLoading: false,
+      usingUniqueView: false,
+      uniqueCfgId: null,
     }
   },
   async created () {
@@ -473,6 +480,39 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async checkFields() {
+      if(this.usingUniqueView && this.uniqueCfgId) {
+        //if this is the schedule closer appt process step - i die inside a little more every time
+        //if they ask us to do this for all scheduling groups we could just change to if cfg.eventTypeId != null
+        //get the cfg that is the unique one
+        let uniqueCfg = this.customFieldGroups.find(cfg => cfg.id === this.uniqueCfgId)
+        let startField = uniqueCfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 1)
+        let endField = uniqueCfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 2)
+        let resourceField = uniqueCfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 3)
+    
+        let startTime = startField?.timestampValue
+        let endTime = endField?.timestampValue
+        let resource = resourceField?.intValue
+        if((startTime && !endTime) || (!startTime && endTime) || (resource && (!startTime && !endTime))) {
+          this.snackbar = getSnackbar('ERROR', 'Start time and end time are required')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+        } else if(startTime && endTime && moment(endTime).isBefore(startTime)) {
+          this.snackbar = getSnackbar('ERROR', 'End time cannot be before start time')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+        } else if (startTime && endTime && !resource) {
+          //resource required if times are saving
+          this.snackbar = getSnackbar('ERROR', 'Resource is required')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.fieldsSaving = false
+        } else {
+          await this.updateFieldGroups()
+        }
+      }else {
+        await this.updateFieldGroups()
       }
     },
     async updateFieldGroups() {
@@ -616,6 +656,8 @@ export default {
       if(cfg.uniqueBehaviorTypeId !== 1 || !this.userCanEdit) {
         return false
       } else {
+        this.usingUniqueView = true
+        this.uniqueCfgId = cfg.id
         let alreadyHasTime, alreadyHasResource = false
         //we should only hit this for a schedule closer appt group.
         // and it should always have 3 fields (start, end, resource)
@@ -628,6 +670,7 @@ export default {
             alreadyHasTime = true
           }
         })
+
         return !alreadyHasTime && !alreadyHasResource
       }
     }
