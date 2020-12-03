@@ -61,5 +61,5 @@ jobs:
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
                     task-definition: ${{ steps.app-task-def.outputs.task-definition }}
-                    service: grafana-service
+                    service: grafana-fargate-service
                     cluster: grafana-fargate-cluster
