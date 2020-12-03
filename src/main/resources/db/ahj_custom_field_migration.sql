@@ -746,7 +746,7 @@ from (
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Homeowner Required to be On-Site'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.homeowner_required_on_site
      ) as v
 where id = cfv_id;
@@ -782,7 +782,7 @@ from (
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Fall Protection for Inspector Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.fall_protection_required
      ) as v
 where id = cfv_id;
@@ -818,7 +818,7 @@ from (
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Call For Time Window'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.call_for_time_window
      ) as v
 where id = cfv_id;
@@ -856,7 +856,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_handy_information_type hit on hit.id = a.handy_information_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Information to have Handy'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -892,7 +892,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_inspection_capacity_type hit on hit.id = a.inspection_capacity_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Inspection Capacity per Day'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -928,7 +928,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_placard_required_type hit on hit.id = a.placard_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Placard Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -964,7 +964,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_plans_required_type hit on hit.id = a.plans_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Plans Required On-Site'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1000,7 +1000,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_pto_followup_type hit on hit.id = a.followup_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Followup Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1036,7 +1036,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_reinspection_fee_type hit on hit.id = a.reinspection_fee_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Re-inspection Fee Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1072,7 +1072,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_representative_required_onsite_type hit on hit.id = a.representative_required_onsite_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Representative Required On-Site'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1108,7 +1108,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_results_documentation_type hit on hit.id = a.results_documentation_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Results Documentation'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1144,7 +1144,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_rough_inspection_required_type hit on hit.id = a.rough_inspection_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Mid-Point / Rough Inspection Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1180,7 +1180,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_scheduling_lead_time_type hit on hit.id = a.scheduling_lead_time_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Customer Scheduling Lead Time (Days)'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1217,7 +1217,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.custom_dropdown_value cdv on cdv.id = a.ahj_max_advanced_scheduling_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Maximum Advanced Scheduling (Days)'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = cdv.title
      ) as v
 where id = cfv_id;
@@ -1253,7 +1253,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_scheduling_method_type hit on hit.id = a.scheduling_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Primary Scheduling Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1289,7 +1289,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_signature_requested_at_type hit on hit.id = a.signature_requested_at_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Signature Requested At'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1326,7 +1326,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_interconnection_application_signature_type hit on hit.id = a.interconnection_application_signature_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Interconnection Application Signature'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1364,7 +1364,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_site_access_type hit on hit.id = a.site_access_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Site Access Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1400,7 +1400,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_soladeck_access_type hit on hit.id = a.soladeck_access_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'SolaDeck Access Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1436,7 +1436,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_special_documents_type hit on hit.id = a.special_documents_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Special Documents Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1472,7 +1472,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_special_equipment_type hit on hit.id = a.special_equipment_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Special Equipment Needed'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1508,7 +1508,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_utility_inspection_submission_type hit on hit.id = a.inspection_submission_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Inspection Submission Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1544,7 +1544,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_utility_method_type hit on hit.id = a.utility_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Utility Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1580,7 +1580,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_utility_submission_type hit on hit.id = a.submission_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submission Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1616,7 +1616,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_when_to_create_application_type hit on hit.id = a.when_to_create_application_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'When to Create Application'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1757,9 +1757,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.submission_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.submission_payment_type_id --submission payment type id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1770,9 +1770,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_payment_type_id -- revision payment
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1783,9 +1783,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_payment_type_id -- as built payment
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1796,9 +1796,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.follow_up_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.follow_up_payment_type_id --follow up payment
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1809,9 +1809,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_payment_type_id -- delivery payment type
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1822,9 +1822,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.submittal_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.submittal_type_id -- submittal type
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submittal Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1835,9 +1835,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_submittal_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_submittal_type_id  -- revision sub
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submittal Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1848,9 +1848,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_submittal_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_submittal_type_id -- as buil sub
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submittal Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1861,9 +1861,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_pickup_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_pickup_type_id -- delivery pickup
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Pickup Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1988,7 +1988,7 @@ from (
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.hoa_approval_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'HOA Approval Required for Submission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2001,7 +2001,7 @@ from (
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.nem_approval_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'NEM Approval Required for Submission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2014,7 +2014,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.rebate_program_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Rebate Program'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2027,7 +2027,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.signature_required_prior_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Signature Req''d Prior to Submission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2040,7 +2040,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.customer_signature_resubmission_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Customer Signature Required for Resubmission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2053,7 +2053,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.interconnection_fee_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Interconnection Fee'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2066,7 +2066,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.utility_inspection_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Utility Inspection Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
