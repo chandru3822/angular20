@@ -165,7 +165,7 @@ public class AvailabilityService {
       params.put("id", rsa.getId());
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.updateHours", params);
-    } else {
+    } else if (null != rsa.getStartTime() && null != rsa.getEndTime()){
       sqlCache.update("availability.insertHours", params);
     }
   }
@@ -178,13 +178,13 @@ public class AvailabilityService {
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
 
-    Long result;
+    Optional<Long> result;
     if(orgId != null) {
-      result = sqlCache.queryForObject("availability.getOrgAppointmentLength", params, Long.class);
+      result = sqlCache.queryForObjectOptional("availability.getOrgAppointmentLength", params, Long.class);
     } else {
-      result = sqlCache.queryForObject("availability.getUserAppointmentLength", params, Long.class);
+      result = sqlCache.queryForObjectOptional("availability.getUserAppointmentLength", params, Long.class);
     }
-    return result;
+    return result.orElse(null);
   }
 
   @Data
