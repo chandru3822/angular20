@@ -19,6 +19,10 @@ BEGIN
              inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 713
     where pps.project_id = p_project_id  and pps.main is true and pps.process_step_id = 8;
 
+    if v_total_cash_down_payment = 0 then
+      return false;
+    end if;
+
     return (v_first_cash_payment_amount / v_total_cash_down_payment) > .49;
 END
 $BODY$
