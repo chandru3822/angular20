@@ -294,6 +294,7 @@
                                   cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                   cfga.custom_field_id as "customFieldId",
                                   cfga.field_order as "fieldOrder",
+                                  cfga.schedule_field_type_id as "scheduleFieldTypeId",
                                   cf.list_of_value_id as "listOfValueId",
                                   cf.field_name as "fieldName",
                                   cf.readonly,
