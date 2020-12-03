@@ -116,7 +116,8 @@ public class CommunicationService {
           Map<String, Object> contextMap = new HashMap<>();
           contextMap.put("contact", contact);
           renderTemplate(templateContent, output, contextMap);
-          smsService.queueMessage(messageGroupId, contact.getId(), contact.getPhone(), output.toString(), mediaURLs, RecordType.PROJECT);
+          String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
+          smsService.queueMessage(messageGroupId, contact.getId(), phoneNumber, output.toString(), mediaURLs, RecordType.PROJECT);
       } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
       }
