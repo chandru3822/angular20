@@ -353,6 +353,8 @@
         if(this.orgId != null) {
           // reset the schedule when new org selected
           this.schedules = []
+          this.newSchedule = {}
+          this.addNew = false
           this.getSchedules()
         }
       },
@@ -360,6 +362,8 @@
         if(this.userId != null) {
           // reset the schedule when new user selected
           this.schedules = []
+          this.newSchedule = {}
+          this.addNew = false
           this.getSchedules()
         }
       }
