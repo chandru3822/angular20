@@ -93,7 +93,7 @@ public class RicochetWebhookService {
     private Long getUserPositionIdByUserId(Long leadOwnerUserId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("leadOwnerUserId", leadOwnerUserId);
-    
+
         Optional<Long> userPositionId = sqlCache.queryForObjectOptional("ricochetWebhook.getUserPositionIdByUserId", params, Long.class);
         return userPositionId.orElse(9016L);
     }
@@ -197,7 +197,8 @@ public class RicochetWebhookService {
         params.put("listOfValueId", listOfValueId);
         params.put("customFieldDropdownValue", customFieldDropdownValue);
 
-        return sqlCache.queryForObject("ricochetWebhook.checkIfCustomFieldDropdownValueExists", params, String.class);
+        Optional<String> customFieldDropdownValueId = sqlCache.queryForObjectOptional("ricochetWebhook.checkIfCustomFieldDropdownValueExists", params, String.class);
+        return customFieldDropdownValueId.orElse("null");
     }
 
     private void processCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
@@ -205,7 +206,7 @@ public class RicochetWebhookService {
         params.put("contactId", contactId);
         params.put("leadOwnerUserId", leadOwnerUserId);
 
-        // if "null" is returned for leadStatusId, then we don't want to save it, b/c that means it's not one of the 5 options available
+        // if "null" is returned for leadStatusId, then we don't want to save it, b/c that means it's not one of the existing options, and we don't save new values
         String leadStatusId = checkIfCustomFieldDropdownValueExists(696, lead.getStatus());
 
         // handles saving 'Lead Status' custom field
