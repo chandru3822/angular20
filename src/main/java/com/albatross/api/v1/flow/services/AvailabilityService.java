@@ -165,7 +165,7 @@ public class AvailabilityService {
       params.put("id", rsa.getId());
       params.put("modifiedById", user.getId());
       sqlCache.update("availability.updateHours", params);
-    } else {
+    } else if (null != rsa.getStartTime() && null != rsa.getEndTime()){
       sqlCache.update("availability.insertHours", params);
     }
   }
