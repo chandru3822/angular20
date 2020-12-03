@@ -276,6 +276,7 @@ public class SmartlistService {
 
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+      log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
       List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
       return new SmartlistResult(fields, results);
@@ -298,6 +299,7 @@ public class SmartlistService {
       }
 
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
+      log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
       return writeCsv(results, fields);
@@ -394,9 +396,6 @@ public class SmartlistService {
 
     query.append(";");
 
-    //@TODO: humes, logging queries for debugging/testing
-    log.info("SMARTLIST: Running smartlist ID: " + smartlist.getId());
-
     return query.toString();
   }
 
@@ -462,7 +461,7 @@ public class SmartlistService {
             final String uuid = joinTables.stream()
               .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
               .map(t -> {
-                if (Objects.equals(t.getReferenceTable(), "flow.user")) {
+                if (Objects.equals(t.getReferenceTable(), "flow.user") || Objects.equals(t.getReferenceTable(), "flow.process_step")) {
                   return t.getPpsTable();
                 } else {
                   return t.getReferenceTable();
@@ -471,7 +470,7 @@ public class SmartlistService {
               .findFirst()
               .orElse(null);
 
-            if (f.getReferenceTable().equals("flow.user")) {
+            if (f.getReferenceTable().equals("flow.user") || Objects.equals(f.getReferenceTable(), "flow.process_step")) {
               f.setValueReferenceTable(uuid);
             } else {
               f.setReferenceTable(uuid);
@@ -559,7 +558,9 @@ public class SmartlistService {
 
       final String fieldAlias = (f.getObjectTypeId() == 4) ? String.format("%s (%s)", f.getName(), f.getProcessStepId()) : f.getName();
 
-      if (f.getDataTypeId() == 1) {
+      if (f.getReferenceTable().equals("flow.process_step")) {
+        query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), fieldAlias));
+      } else if (f.getDataTypeId() == 1) {
         query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, fieldAlias));
       } else if(f.getDataTypeId() == 2) {
         query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, fieldAlias));
@@ -1008,9 +1009,6 @@ public class SmartlistService {
     }
 
     query.append(";");
-
-    //@TODO: humes, logging queries for debugging/testing
-    log.info("SMARTLIST: Running smartlist ID: " + smartlist.getId());
 
     return query.toString();
   }
