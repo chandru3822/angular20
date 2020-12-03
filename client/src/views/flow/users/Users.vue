@@ -119,7 +119,7 @@
                           placeholder="Select..."
                           height="35px"
                           class="user-filter-select"
-                          @input="getUsers()"
+                          @input="getUsers(false)"
                 >
                   <v-list-item
                       slot="prepend-item"
@@ -158,7 +158,7 @@
                           height="35px"
                           outlined
                           class="user-filter-select"
-                          @input="getUsers()"
+                          @input="getUsers(false)"
                 >
                   <template
                       slot="selection"
@@ -331,6 +331,7 @@
         dialog: false,
         snackbar: {},
         users: [],
+        allUsers: [],
         selectedLevel: null,
         masterOrgFilterList: [],
         orgFilters: [],
@@ -402,7 +403,7 @@
       },
       usersSelected () {
           if (this.selectAllUsers) {
-              return this.users.length;
+              return this.allUsers.length;
           }
           else {
               return this.users.filter(u => u.selected === true).length;
@@ -421,7 +422,7 @@
     watch: {
       options: {
         handler () {
-          this.getUsers()
+          this.getUsers(false)
         },
         deep: true,
       },
@@ -438,10 +439,10 @@
         this.$router.push({name: 'userDetails', params: {id}})
       },
       debounceGetUsers: debounce( function () {
-        this.getUsers()
+        this.getUsers(false)
       }, 500),
-      async getUsers () {
-        if(this.filters.statuses && this.filters.statuses.length > 0) {
+      async getUsers (selectAll) {
+        if (this.filters.statuses && this.filters.statuses.length > 0) {
           this.dataLoading = true
           const { sortBy, sortDesc, page, itemsPerPage } = this.options
           try {
@@ -457,10 +458,15 @@
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
               primaryFlag: this.primaryPositionsOnly
             }
-
-            const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
-            this.users = data.content
-            this.totalUsers = data.totalElements
+            if (selectAll) {
+                const {data} = await postRequest(`/user/search?page=${page-1}&size=9999`, params)
+                this.allUsers = data.content;
+            }
+            else {
+                const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
+                this.users = data.content
+                this.totalUsers = data.totalElements
+            }
             this.dataLoading = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -545,7 +551,7 @@
           const {data} = await getRequest(`/user/statuses`)
           this.statuses = data
           this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
-          this.getUsers()
+          await this.getUsers(false)
           // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -570,14 +576,18 @@
         this.$nextTick(() => {
           if (this.selectAll) {
             this.filters.statuses = []
-            this.getUsers()
+            this.getUsers(false)
           } else {
             this.filters.statuses = this.statuses.map(s => s.id)
-            this.getUsers()
+            this.getUsers(false)
           }
         })
       },
       toggleSelectAllUsers () {
+        if (this.selectAllUsers) {
+          this.getUsers(true);
+        }
+
         this.users.forEach(u => {
           u.selected = this.selectAllUsers
         })
@@ -625,7 +635,7 @@
 
         this.selectAllUsers = false
         //reload the users
-        this.getUsers()
+        this.getUsers(false)
       },
       itemChecked(level, item) {
         if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
@@ -638,7 +648,14 @@
       async sendMessage(sendEmail, sendText) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
-              let userIds = this.users.filter(u => u.selected === true).map(u => u.id);
+              let userIds;
+              if (this.selectAllUsers) {
+                userIds = this.allUsers.map(u => u.id);
+              }
+              else {
+                userIds = this.users.filter(u => u.selected === true).map(u => u.id);
+              }
+
               let params;
 
               if (sendEmail) {
