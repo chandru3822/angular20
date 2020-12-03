@@ -1,164 +1,164 @@
--- MIGRATION *********************************************
--- todo: this needs to happen in blueraven schema first. verify that no new groups were added since I wrote this:
-
--- alter table blueraven.custom_dropdown_field
---     add column custom_field_group_id integer;
+-- -- MIGRATION *********************************************
+-- -- todo: this needs to happen in blueraven schema first. verify that no new groups were added since I wrote this:
 --
-update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 1;
-update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 2;
-update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 3;
-update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 4;
-update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 5;
-update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 6;
-update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 7;
-update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 8;
-update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 9;
-update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 10;
-update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 11;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 12;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 13;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 14;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 15;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 16;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 17;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 18;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 19;
-update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 20;
-update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 21;
-update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 22;
-update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 23;
-update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 24;
-update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 25;
-update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 26;
-update blueraven.custom_dropdown_field set custom_field_group_id = 17 where id = 27;
-update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 28;
-update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 29;
-update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 30;
-update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 31;
-update blueraven.custom_dropdown_field set custom_field_group_id = 17 where id = 32;
--- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 33;  -- not needed because these are on the safety form that is not being migrated
--- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 34;  -- not needed because these are on the safety form that is not being migrated
--- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 35;  -- not needed because these are on the safety form that is not being migrated
-
-
--- create the data types
-insert into brs.data_type (data_type)
-select 'date' where not exists (select id from brs.data_type where data_type = 'date');
-insert into brs.data_type (data_type)
-select 'timestamp' where not exists (select id from brs.data_type where data_type = 'timestamp');
-insert into brs.data_type (data_type)
-select 'boolean' where not exists (select id from brs.data_type where data_type = 'boolean');
-insert into brs.data_type (data_type)
-select 'numeric' where not exists (select id from brs.data_type where data_type = 'numeric');
-insert into brs.data_type (data_type)
-select 'text' where not exists (select id from brs.data_type where data_type = 'text');
-insert into brs.data_type (data_type)
-select 'integer' where not exists (select id from brs.data_type where data_type = 'integer');
-insert into brs.data_type (data_type, has_list_values, allow_multiple)
-select 'dropdown', true, false where not exists (select id from brs.data_type where data_type = 'dropdown');
-insert into brs.data_type (data_type, has_list_values, allow_multiple)
-select 'integer array', true, true where not exists (select id from brs.data_type where data_type = 'integer array');
-
--- create the object types
-insert into brs.object_type(object_type, object_code)
-    (select cds.screen, cds.code from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_DESIGN'));
-insert into brs.object_type(object_type, object_code)
-    (select cds.screen, cds.code from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_UTILITY'));
-insert into brs.object_type(object_type, object_code)
-    (select cds.screen, cds.code from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_INSPECTION'));
-insert into brs.object_type(object_type, object_code)
-    (select 'AHJ Permit','AHJ_PERMIT' from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_PERMIT'));
-
--- create the custom_field_groups
--- ahj_permit (4)
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (1, 'Submission Details', 4, 1);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (2, 'Revision Submission Details', 4, 2);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (3, 'As-Built Submission Details', 4, 3);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (4, 'Follow-up / Approval Details', 4, 4);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (5, 'Delivery Details', 4, 5);
--- ahj_utility (2)
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (6, 'Rejections', 2, 1);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (7, 'Utility Rates', 2, 2);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (8, 'Customer Signatures', 2, 3);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (9, 'Design Utility Requirements', 2, 4);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (10, 'Submission Details', 2, 5);
--- this one is out of order because i forgot to add it and didn't want to go back and fix the id's i had already mapped
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (23, 'Approval Details', 2, 6);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (11, 'PTO Details', 2,7);
--- ahj_design (1)
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (12, 'Codes', 1, 1);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (13, 'Engineering', 1, 2);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (14, 'Design Requirements', 1, 3);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (15, 'Electrical Requirements', 1, 4);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (16, 'Structural Requirements', 1, 5);
--- ahj_inspection (3)
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (17, 'Scheduling with AHJ', 3, 1);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (18, 'Scheduling with BRS Technician', 3, 2);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (19, 'Scheduling with Customer', 3, 3);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (20, 'Obtaining Results', 3, 4);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (21, 'Re-inspections', 3, 5);
-insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (22, 'In-House MPUs', 3, 6);
-SELECT setval('brs.custom_field_group_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_field_group), 1), false);
-
-
--- migrate fields from blueraven.custom_dropdown_fields with null list of values
-insert into brs.custom_field(id, list_of_value_id, field_name, field_code, data_type_id, date_created, created_by_id, archived)
-    (select id, null, field, code, 7, now(), 99999999, archived from blueraven.custom_dropdown_field);
-SELECT setval('brs.custom_field_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_field), 1), false);
-
--- create parent list of value rows and
---temporarily set parent_id to the custom_field_id and the code field
-insert into brs.list_of_value (name, code, parent_id, show_other, display_order, date_created, created_by_id, archived)
-    (select field_name, 'delete_me_later', id, false, 1, now(), 99999999, archived from brs.custom_field);
-
--- update the custom_field list_of_value_id
-update brs.custom_field cf
-set list_of_value_id = (select lov.id from brs.list_of_value lov where parent_id = cf.id)
---just added where clause so it wouldn't warn me about updating the entire table
-where cf.id < 100;
-
--- migrate the dropdown options use parent id do find the right field
-insert into brs.list_of_value(name, code, parent_id, show_other, display_order, date_created, created_by_id, archived)
-    (select title, null, (select id from brs.list_of_value where parent_id = custom_dropdown_field_id), false, display_order, now(), 99999999, archived from blueraven.custom_dropdown_value);
-
--- remove the temporary parent_id and code
-update brs.list_of_value  set parent_id = null, code = null where code = 'delete_me_later';
-
--- add the parent_id constraint now - we didn't add it before so that we could use the parent_id column for something else during migration
-alter table brs.list_of_value drop constraint if exists brs_lov_parent_id_fk;
-alter table brs.list_of_value add CONSTRAINT brs_lov_parent_id_fk FOREIGN KEY (parent_id)
-    REFERENCES brs.list_of_value (id);
-
--- custom_dropdown_field - create custom_field_group_assignment
-insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
-    (select
-         cdf.custom_field_group_id,
-         cdf.id, 1, false, now(), 99999999
-     from blueraven.custom_dropdown_field cdf
-     where cdf.id not in (34,35,33));
+-- -- alter table blueraven.custom_dropdown_field
+-- --     add column custom_field_group_id integer;
+-- --
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 1;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 2;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 3;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 4;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 5;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 6;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 7;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 8;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 9;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 10;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 11;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 12;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 13;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 14;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 15;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 16;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 17;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 18;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 19;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 20;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 21;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 22;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 23;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 24;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 25;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 26;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 17 where id = 27;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 28;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 29;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 30;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 31;
+-- update blueraven.custom_dropdown_field set custom_field_group_id = 17 where id = 32;
+-- -- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 33;  -- not needed because these are on the safety form that is not being migrated
+-- -- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 34;  -- not needed because these are on the safety form that is not being migrated
+-- -- update blueraven.custom_dropdown_field set custom_field_group_id =  where id = 35;  -- not needed because these are on the safety form that is not being migrated
+--
+--
+-- -- create the data types
+-- insert into brs.data_type (data_type)
+-- select 'date' where not exists (select id from brs.data_type where data_type = 'date');
+-- insert into brs.data_type (data_type)
+-- select 'timestamp' where not exists (select id from brs.data_type where data_type = 'timestamp');
+-- insert into brs.data_type (data_type)
+-- select 'boolean' where not exists (select id from brs.data_type where data_type = 'boolean');
+-- insert into brs.data_type (data_type)
+-- select 'numeric' where not exists (select id from brs.data_type where data_type = 'numeric');
+-- insert into brs.data_type (data_type)
+-- select 'text' where not exists (select id from brs.data_type where data_type = 'text');
+-- insert into brs.data_type (data_type)
+-- select 'integer' where not exists (select id from brs.data_type where data_type = 'integer');
+-- insert into brs.data_type (data_type, has_list_values, allow_multiple)
+-- select 'dropdown', true, false where not exists (select id from brs.data_type where data_type = 'dropdown');
+-- insert into brs.data_type (data_type, has_list_values, allow_multiple)
+-- select 'integer array', true, true where not exists (select id from brs.data_type where data_type = 'integer array');
+--
+-- -- create the object types
+-- insert into brs.object_type(object_type, object_code)
+--     (select cds.screen, cds.code from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_DESIGN'));
+-- insert into brs.object_type(object_type, object_code)
+--     (select cds.screen, cds.code from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_UTILITY'));
+-- insert into brs.object_type(object_type, object_code)
+--     (select cds.screen, cds.code from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_INSPECTION'));
+-- insert into brs.object_type(object_type, object_code)
+--     (select 'AHJ Permit','AHJ_PERMIT' from blueraven.custom_dropdown_screen cds where not exists(select id from brs.object_type where object_code = 'AHJ_PERMIT'));
+--
+-- -- create the custom_field_groups
+-- -- ahj_permit (4)
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (1, 'Submission Details', 4, 1);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (2, 'Revision Submission Details', 4, 2);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (3, 'As-Built Submission Details', 4, 3);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (4, 'Follow-up / Approval Details', 4, 4);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (5, 'Delivery Details', 4, 5);
+-- -- ahj_utility (2)
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (6, 'Rejections', 2, 1);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (7, 'Utility Rates', 2, 2);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (8, 'Customer Signatures', 2, 3);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (9, 'Design Utility Requirements', 2, 4);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (10, 'Submission Details', 2, 5);
+-- -- this one is out of order because i forgot to add it and didn't want to go back and fix the id's i had already mapped
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (23, 'Approval Details', 2, 6);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (11, 'PTO Details', 2,7);
+-- -- ahj_design (1)
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (12, 'Codes', 1, 1);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (13, 'Engineering', 1, 2);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (14, 'Design Requirements', 1, 3);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (15, 'Electrical Requirements', 1, 4);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (16, 'Structural Requirements', 1, 5);
+-- -- ahj_inspection (3)
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (17, 'Scheduling with AHJ', 3, 1);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (18, 'Scheduling with BRS Technician', 3, 2);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (19, 'Scheduling with Customer', 3, 3);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (20, 'Obtaining Results', 3, 4);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (21, 'Re-inspections', 3, 5);
+-- insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+-- values (22, 'In-House MPUs', 3, 6);
+-- SELECT setval('brs.custom_field_group_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_field_group), 1), false);
+--
+--
+-- -- migrate fields from blueraven.custom_dropdown_fields with null list of values
+-- insert into brs.custom_field(id, list_of_value_id, field_name, field_code, data_type_id, date_created, created_by_id, archived)
+--     (select id, null, field, code, 7, now(), 99999999, archived from blueraven.custom_dropdown_field);
+-- SELECT setval('brs.custom_field_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_field), 1), false);
+--
+-- -- create parent list of value rows and
+-- --temporarily set parent_id to the custom_field_id and the code field
+-- insert into brs.list_of_value (name, code, parent_id, show_other, display_order, date_created, created_by_id, archived)
+--     (select field_name, 'delete_me_later', id, false, 1, now(), 99999999, archived from brs.custom_field);
+--
+-- -- update the custom_field list_of_value_id
+-- update brs.custom_field cf
+-- set list_of_value_id = (select lov.id from brs.list_of_value lov where parent_id = cf.id)
+-- --just added where clause so it wouldn't warn me about updating the entire table
+-- where cf.id < 100;
+--
+-- -- migrate the dropdown options use parent id do find the right field
+-- insert into brs.list_of_value(name, code, parent_id, show_other, display_order, date_created, created_by_id, archived)
+--     (select title, null, (select id from brs.list_of_value where parent_id = custom_dropdown_field_id), false, display_order, now(), 99999999, archived from blueraven.custom_dropdown_value);
+--
+-- -- remove the temporary parent_id and code
+-- update brs.list_of_value  set parent_id = null, code = null where code = 'delete_me_later';
+--
+-- -- add the parent_id constraint now - we didn't add it before so that we could use the parent_id column for something else during migration
+-- alter table brs.list_of_value drop constraint if exists brs_lov_parent_id_fk;
+-- alter table brs.list_of_value add CONSTRAINT brs_lov_parent_id_fk FOREIGN KEY (parent_id)
+--     REFERENCES brs.list_of_value (id);
+--
+-- -- custom_dropdown_field - create custom_field_group_assignment
+-- insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
+--     (select
+--          cdf.custom_field_group_id,
+--          cdf.id, 1, false, now(), 99999999
+--      from blueraven.custom_dropdown_field cdf
+--      where cdf.id not in (34,35,33));
 
 
 -- these are the inserts for the custom_dropdown_value columns
@@ -746,7 +746,7 @@ from (
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Homeowner Required to be On-Site'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.homeowner_required_on_site
      ) as v
 where id = cfv_id;
@@ -782,7 +782,7 @@ from (
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Fall Protection for Inspector Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.fall_protection_required
      ) as v
 where id = cfv_id;
@@ -818,7 +818,7 @@ from (
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Call For Time Window'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.call_for_time_window
      ) as v
 where id = cfv_id;
@@ -856,7 +856,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_handy_information_type hit on hit.id = a.handy_information_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Information to have Handy'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -892,7 +892,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_inspection_capacity_type hit on hit.id = a.inspection_capacity_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Inspection Capacity per Day'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -928,7 +928,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_placard_required_type hit on hit.id = a.placard_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Placard Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -964,7 +964,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_plans_required_type hit on hit.id = a.plans_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Plans Required On-Site'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1000,7 +1000,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_pto_followup_type hit on hit.id = a.followup_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Followup Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1036,7 +1036,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_reinspection_fee_type hit on hit.id = a.reinspection_fee_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Re-inspection Fee Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1072,7 +1072,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_representative_required_onsite_type hit on hit.id = a.representative_required_onsite_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Representative Required On-Site'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1108,7 +1108,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_results_documentation_type hit on hit.id = a.results_documentation_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Results Documentation'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1144,7 +1144,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_rough_inspection_required_type hit on hit.id = a.rough_inspection_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Mid-Point / Rough Inspection Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1180,7 +1180,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_scheduling_lead_time_type hit on hit.id = a.scheduling_lead_time_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Customer Scheduling Lead Time (Days)'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1217,7 +1217,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.custom_dropdown_value cdv on cdv.id = a.ahj_max_advanced_scheduling_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'AHJ Maximum Advanced Scheduling (Days)'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = cdv.title
      ) as v
 where id = cfv_id;
@@ -1253,7 +1253,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_scheduling_method_type hit on hit.id = a.scheduling_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Primary Scheduling Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1289,7 +1289,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_signature_requested_at_type hit on hit.id = a.signature_requested_at_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Signature Requested At'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1326,7 +1326,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_interconnection_application_signature_type hit on hit.id = a.interconnection_application_signature_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Interconnection Application Signature'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1364,7 +1364,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_site_access_type hit on hit.id = a.site_access_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Site Access Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1400,7 +1400,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_soladeck_access_type hit on hit.id = a.soladeck_access_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'SolaDeck Access Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1436,7 +1436,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_special_documents_type hit on hit.id = a.special_documents_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Special Documents Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1472,7 +1472,7 @@ from (
                   inner join blueraven.ahj_inspection a on a.id = cfv.source_id
                   inner join blueraven.ahj_special_equipment_type hit on hit.id = a.special_equipment_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Special Equipment Needed'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1508,7 +1508,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_utility_inspection_submission_type hit on hit.id = a.inspection_submission_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Inspection Submission Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1544,7 +1544,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_utility_method_type hit on hit.id = a.utility_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Utility Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1580,7 +1580,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_utility_submission_type hit on hit.id = a.submission_method_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submission Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1616,7 +1616,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_when_to_create_application_type hit on hit.id = a.when_to_create_application_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'When to Create Application'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1757,9 +1757,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.submission_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.submission_payment_type_id --submission payment type id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1770,9 +1770,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_payment_type_id -- revision payment
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1783,9 +1783,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_payment_type_id -- as built payment
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1796,9 +1796,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.follow_up_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.follow_up_payment_type_id --follow up payment
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1809,9 +1809,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_payment_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_payment_type_id -- delivery payment type
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Payment Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1822,9 +1822,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.submittal_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.submittal_type_id -- submittal type
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submittal Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1835,9 +1835,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_submittal_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.revision_submittal_type_id  -- revision sub
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submittal Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1848,9 +1848,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_submittal_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.as_built_submittal_type_id -- as buil sub
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Submittal Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1861,9 +1861,9 @@ from (
                 cfv.id as cfv_id
          from brs.custom_field_value cfv
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
-                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_pickup_type_id
+                  inner join blueraven.ahj_submit_type hit on hit.id = a.delivery_pickup_type_id -- delivery pickup
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Pickup Method'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -1988,7 +1988,7 @@ from (
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.hoa_approval_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'HOA Approval Required for Submission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2001,7 +2001,7 @@ from (
                   inner join blueraven.ahj_permit a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.nem_approval_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'NEM Approval Required for Submission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2014,7 +2014,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.rebate_program_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Rebate Program'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2027,7 +2027,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.signature_required_prior_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Signature Req''d Prior to Submission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2040,7 +2040,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.customer_signature_resubmission_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Customer Signature Required for Resubmission'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2053,7 +2053,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.interconnection_fee_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Interconnection Fee'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
@@ -2066,7 +2066,7 @@ from (
                   inner join blueraven.ahj_utility a on a.id = cfv.source_id
                   inner join blueraven.ahj_simple_list_type hit on hit.id = a.utility_inspection_required_type_id
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
-                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id and cf.field_name = 'Utility Inspection Required'
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
      ) as v
 where id = cfv_id;
