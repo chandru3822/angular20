@@ -297,8 +297,6 @@ BEGIN
                             AS overrides_paid_to_date
                  FROM flow.project p
                           inner join brs.project_details pd on pd.project_id = p.id
-                          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-                          inner join flow.project_status_type pps2  on pps2.id = cpst.project_status_type_id and pps2.id = 1
                           inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 175 and pps.process_step_complete_date is not null and main is true
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.closer_user_id

@@ -51,11 +51,5 @@ public class PropertiesConfiguration {
 
     @Value("${twilio.customersMessageServiceSID:}")
     String twilioCustomersMessageServiceSID;
-    
-    @Value("${excel.user}")
-    String excelUser;
-    
-    @Value("${excel.password}")
-    String excelPassword;
 
 }

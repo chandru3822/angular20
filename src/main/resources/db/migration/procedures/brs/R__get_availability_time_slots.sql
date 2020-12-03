@@ -17,8 +17,8 @@ BEGIN
         with user_ids as (
             select up.user_id,up.id
             from flow.project p
-                     inner join flow.postal_code pc on pc.postal_code = p.postal_code
-                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
+                     inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                      inner join flow.user_position up on up.id = pczu.user_position_id and primary_flag is true
                      inner join flow.position p1 on p1.id = up.position_id and p1.schedulable is true
@@ -42,9 +42,10 @@ BEGIN
         from flow.resource_appointment ra
                  inner join flow.user_position up on up.user_id = ra.user_id and up.primary_flag is true
                  inner join flow.postal_code_zone_user pczu on pczu.user_position_id  = up.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                 inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
-                 inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id
+                 inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id and pcz.archived is false
+                 inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id and pc.archived is false
                  inner join flow.project p on p.postal_code = pc.postal_code
+                 inner join user_ids ui2 on ui2.user_id = ra.user_id
         where p.id = p_project_id
           and start_time >= p_start_time
           and end_time <= p_end_time
@@ -80,8 +81,8 @@ BEGIN
                                           uc.default_appointment_length,
                                           (rsa.end_time - (default_appointment_length || ' minutes')::interval) closer_end_time
                                    from flow.project p
-                                            inner join flow.postal_code pc on pc.postal_code = p.postal_code
-                                            inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
+                                            inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+                                            inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                                             inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pc.archived is false
                                             inner join flow.user_position up on up.id = pczu.user_position_id and primary_flag is true
                                             inner join flow.resource_schedule rs on rs.user_id = up.user_id
