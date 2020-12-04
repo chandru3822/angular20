@@ -408,73 +408,73 @@
             and pd.company_id != 3
     ]]></dash.getSiteSurveysVerifiedActualPartnerDrilldown>
 
-    <dash.getFinalDesignsQadActualTotal><![CDATA[
+    <dash.getFinalDesignsCreatedActualTotal><![CDATA[
         with companies as (
             select array_agg(id) as ids
             from flow.company_hierarchy_filter_down(:parentCompanyId::int)
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.final_design_qa_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
                 end
-    ]]></dash.getFinalDesignsQadActualTotal>
+    ]]></dash.getFinalDesignsCreatedActualTotal>
 
-    <dash.getFinalDesignsQadActualTotalDrilldown><![CDATA[
+    <dash.getFinalDesignsCreatedActualTotalDrilldown><![CDATA[
         with companies as (
             select array_agg(id) as ids
             from flow.company_hierarchy_filter_down(:parentCompanyId::int)
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
-               pd.final_design_qa_date::DATE finalDesignQADate
+               pd.final_design_created_timestamp::DATE final_design_created_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-        where pd.final_design_qa_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
                 end
-    ]]></dash.getFinalDesignsQadActualTotalDrilldown>
+    ]]></dash.getFinalDesignsCreatedActualTotalDrilldown>
 
-    <dash.getFinalDesignsQadActualBrs><![CDATA[
+    <dash.getFinalDesignsCreatedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_qa_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
-    ]]></dash.getFinalDesignsQadActualBrs>
+    ]]></dash.getFinalDesignsCreatedActualBrs>
 
-    <dash.getFinalDesignsQadActualBrsDrilldown><![CDATA[
+    <dash.getFinalDesignsCreatedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
-               pd.final_design_qa_date::DATE finalDesignQADate
+               pd.final_design_created_timestamp::DATE final_design_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-        where pd.final_design_qa_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
-    ]]></dash.getFinalDesignsQadActualBrsDrilldown>
+    ]]></dash.getFinalDesignsCreatedActualBrsDrilldown>
 
-    <dash.getFinalDesignsQadActualPartner><![CDATA[
+    <dash.getFinalDesignsCreatedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_qa_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
-    ]]></dash.getFinalDesignsQadActualPartner>
+    ]]></dash.getFinalDesignsCreatedActualPartner>
 
-    <dash.getFinalDesignsQadActualPartnerDrilldown><![CDATA[
+    <dash.getFinalDesignsCreatedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
-               pd.final_design_qa_date::DATE finalDesignQADate
+               pd.final_design_created_timestamp::DATE final_design_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-        where pd.final_design_qa_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
-    ]]></dash.getFinalDesignsQadActualPartnerDrilldown>
+    ]]></dash.getFinalDesignsCreatedActualPartnerDrilldown>
 
     <dash.getFinalDesignsSentActualTotal><![CDATA[
         with companies as (
@@ -755,7 +755,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.permit_pack_submittal_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -769,11 +769,11 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
-               pd.permit_pack_submittal_verified_date::DATE
+               pd.permit_pack_submittal_start_time::DATE permit_submitted_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-        where pd.permit_pack_submittal_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -783,36 +783,36 @@
     <dash.getPermitsSubmittedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_pack_submittal_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsSubmittedActualBrs>
 
     <dash.getPermitsSubmittedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
-               pd.permit_pack_submittal_verified_date::DATE
+               pd.permit_pack_submittal_start_time::DATE permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-        where pd.permit_pack_submittal_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsSubmittedActualBrsDrilldown>
 
     <dash.getPermitsSubmittedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_pack_submittal_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsSubmittedActualPartner>
 
     <dash.getPermitsSubmittedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
-               pd.permit_pack_submittal_verified_date::DATE
+               pd.permit_pack_submittal_start_time::DATE permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
-        where pd.permit_pack_submittal_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsSubmittedActualPartnerDrilldown>
 
