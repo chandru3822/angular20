@@ -137,8 +137,8 @@
 
   <availability.updateAppointment><![CDATA[
     update flow.resource_appointment
-    set start_time = to_char(:startTime::time, 'HH24:MI')::time,
-        end_time = to_char(:endTime::time, 'HH24:MI')::time,
+    set start_time = :startTime::timestamp,
+        end_time = :endTime::timestamp,
         modified_by_id = :modifiedById,
         date_modified = now(),
         all_day = :allDay,
@@ -151,7 +151,7 @@
 
   <availability.insertAppointment><![CDATA[
     insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type)
-    values (:companyId, :userId, :orgId, to_char(:startTime::time, 'HH24:MI')::time, to_char(:endTime::time, 'HH24:MI')::time, :createdById, :allDay, :description, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType)
+    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType)
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
