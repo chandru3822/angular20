@@ -29,8 +29,10 @@ BEGIN
     if array_length(p_users, 1) < 2 then
         select p_users[1]
         into v_user_id;
-        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available,created_date,available_users)
-        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true,now(),p_users);
+        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
+                                                     distance_from_actual_to_target, appointment_start_date,is_only_user_available,
+                                                     created_date,available_users,created_by_id)
+        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true,now(),p_users,p_current_user_id);
     else
 
      --   select p_users[1]
@@ -40,7 +42,7 @@ BEGIN
                                                       total_lead_allocation, actual_lead_allocation, score,
                                                       lead_gen_num, lead_gen_den, self_gen, total_avail,
                                                       appointment_count_with_interval, appointment_count,created_date,
-                                                      available_users
+                                                      available_users,created_by_id
                                                       )
         (with round_robin_users as (
             select up.user_id, pcz.distribution_time_frame_days
@@ -129,7 +131,7 @@ BEGIN
                foo3.distance_from_actual_to_target,p_appointment_start_time,
                foo3.total_lead_allocation,foo3.acutal_lead_allocation,foo3.score,
                foo3.lead_gen_num,foo3.lead_gen_den,foo3.self_gen,foo3.avail,
-               foo3.appointment_count_with_interval,foo3.appointment_count,now(),p_users
+               foo3.appointment_count_with_interval,foo3.appointment_count,now(),p_users,p_current_user_id
         from (
                  select foo2.user_id, acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target,
                         foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
@@ -158,10 +160,9 @@ BEGIN
                                    select foo.user_id,
                                           case when lead_gen_den is null or lead_gen_den = 0 then
                                                        self_gen +
-                                                       ((appointment_count + avail) / 3)
+                                                       ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)
                                           else
-                                          lead_gen_num / lead_gen_den::numeric * 10000 + self_gen +
-                                          ((appointment_count + avail) / 3)  end                       as score,
+                                            ((lead_gen_num / lead_gen_den) * 10000) + self_gen + avail + ((lead_gen_num + self_gen) * 15)  end                       as score,
                                           case
                                               when sum(appointment_count_with_interval) over () = 0 then
                                                   0

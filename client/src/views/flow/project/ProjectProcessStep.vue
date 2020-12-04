@@ -509,13 +509,13 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.fieldsSaving = false
         } else {
-          await this.updateFieldGroups()
+          await this.updateFieldGroups(true, resource)
         }
       }else {
         await this.updateFieldGroups()
       }
     },
-    async updateFieldGroups() {
+    async updateFieldGroups(cameFromUnique, resourceId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       // this.processStep.customFieldGroups = this.customFieldGroups
       try {
@@ -524,6 +524,16 @@ export default {
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
+        //if override - schedule closer appt - log to the audit table
+        if(cameFromUnique && resourceId) {
+          console.log('AUDIT saving', resourceId)
+          let params = {
+            projectId: this.projectId,
+            projectProcessStepId: this.projectProcessStepId,
+            userPositionId: resourceId
+          }
+          await postRequest(`/availability/auditOverride`, params)
+        }
         //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it shouldn't matter if it always gets updated. hows this for the longest comment ever?
         this.closerApptSaved = true
         this.$root.$emit('projectProcessStep:checkAction')
