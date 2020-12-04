@@ -21,7 +21,7 @@ BEGIN
         inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
       where ust.user_status_type = 'Active'
         and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
-        and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
+        and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
         and u.id not in (2354810, 2390159) --Trizon and Central Solar
         and upv.primary_flag is true
         and upv.position_level = 0
