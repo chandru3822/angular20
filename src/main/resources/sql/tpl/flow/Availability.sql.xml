@@ -266,6 +266,11 @@
   <availability.setCloserAppointment><![CDATA[
     select * from flow.set_closer_appointment(:projectId::int, :userId::int, :projectProcessStepId::int, :appointmentTime::timestamp, :users::int[]);
   ]]></availability.setCloserAppointment>
+  
+  <availability.saveOverrideInfoToAudit><![CDATA[
+    insert into brs.set_closer_appointment_audit(project_id, user_position_id, project_process_step_id, created_date, created_by_id, override)
+    values(:projectId, :userPositionId, :projectProcessStepId, now(), :createdById, true)
+  ]]></availability.saveOverrideInfoToAudit>
 
   <availability.getDistinctRecurringEvents><![CDATA[
     with recurring as (
