@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Commiss
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResidualService {
@@ -207,6 +209,7 @@ public class ResidualService {
             }
 
         } catch (SQLException e) {
+            log.error("COMMISSION: residual sql exception {}", e.getMessage());
             e.printStackTrace();
         }
 

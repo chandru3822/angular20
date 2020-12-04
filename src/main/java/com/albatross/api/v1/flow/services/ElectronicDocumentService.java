@@ -78,6 +78,7 @@ public class ElectronicDocumentService {
           try {
               pandaDocs = pandaDocService.findTemplatesByName(queryStr.get());
           } catch (Exception e) {
+              log.error("ELECTRONIC: find templates error {}", e.getMessage());
               e.printStackTrace();
           }
       }
@@ -88,6 +89,7 @@ public class ElectronicDocumentService {
               try {
                   return pandaDocService.findTemplatesByName(stateQueryStr.get()).toString();
               } catch (Exception e) {
+                  log.error("ELECTRONIC: find by name error {}", e.getMessage());
                   e.printStackTrace();
               }
           }
