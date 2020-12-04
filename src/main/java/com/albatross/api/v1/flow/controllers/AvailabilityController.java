@@ -59,6 +59,11 @@ public class AvailabilityController {
   public void saveResourceAppointmentLength(@RequestBody AvailabilityService.AppointmentLength al) {
     availabilityService.saveResourceAppointmentLength(al);
   }
+  
+  @PostMapping(value = "/auditOverride", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveOverrideInfoToAudit(@RequestBody AvailabilityService.OverrideAudit audit) {
+    availabilityService.saveOverrideInfoToAudit(audit);
+  }
 
   @GetMapping(value = "/appointments", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Page<ResourceAppointment>> getResourceAppointments(@RequestParam(required = false) Long userId,

@@ -208,6 +208,24 @@ public class AvailabilityService {
     }
 
   }
+  
+  @Data
+  public static class OverrideAudit {
+    private Long userPositionId, projectId, projectProcessStepId;
+  }
+  
+  public void saveOverrideInfoToAudit(OverrideAudit audit) {
+    User user = securityService.getCurrentUser();
+    
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("createdById", user.getId());
+    params.put("projectId", audit.getProjectId());
+    params.put("projectProcessStepId", audit.getProjectProcessStepId());
+    params.put("userPositionId", audit.getUserPositionId());
+    
+    sqlCache.update("availability.saveOverrideInfoToAudit", params);
+    
+  }
 
 //  appointments
   public Page<ResourceAppointment> getResourceAppointments(Long userId, Long orgId, Pageable pageable) {
