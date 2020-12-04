@@ -137,7 +137,7 @@
                   {{ item.siteSurveyVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[7].show" class="text-left">
-                  {{ item.finalDesignQADate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.finalDesignCreatedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[8].show" class="text-left">
                   {{ item.finalDesignSentToHomeownerDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -152,7 +152,7 @@
                   {{ item.permitPackCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[12].show" class="text-left">
-                  {{ item.permitPackSubmittalVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.permitSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[13].show" class="text-left">
                   {{ item.permitApprovedDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -257,12 +257,12 @@
           {text: 'Appointment Outcome', value: 'appointmentOutcome', show: false}, // 4
           {text: 'Installation Agreement Signed Date', value: 'installationAgreementSignedDate', show: false}, // 5
           {text: 'Site Survey Verified Date', value: 'siteSurveyVerifiedDate', show: false}, // 6
-          {text: 'Final Design QA Date', value: 'finalDesignQADate', show: false}, // 7
+          {text: 'Final Design Created Date', value: 'finalDesignCreatedDate', show: false}, // 7
           {text: 'Final Design Sent to Homeowner Date', value: 'finalDesignSentToHomeownerDate', show: false}, // 8
           {text: 'Final Design Approved Date', value: 'finalDesignApprovedDate', show: false}, // 9
           {text: 'Plan Set Created Date', value: 'planSetCreatedDate', show: false}, // 10
           {text: 'Permit Pack Complete Date', value: 'permitPackCompleteDate', show: false}, // 11
-          {text: 'Permit Pack Submittal Verified Date', value: 'permitPackSubmittalVerifiedDate', show: false}, // 12
+          {text: 'Permit Submitted Date', value: 'permitSubmittedDate', show: false}, // 12
           {text: 'Permit Approved Date', value: 'permitApprovedDate', show: false}, // 13
           {text: 'Installation Scheduled Date', value: 'installationScheduledDate', show: false}, // 14
           {text: 'Installation Date', value: 'installationDate', show: false}, // 15
@@ -455,8 +455,8 @@
           case 'Site Surveys Verified':
             this.drilldownHeaders[6].show = true // Site Survey Verified Date
             break
-          case 'Final Designs QA\'d':
-            this.drilldownHeaders[7].show = true // Final Design QA Date
+          case 'Final Designs Created':
+            this.drilldownHeaders[7].show = true // Final Design Created Date
             break
           case 'Final Designs Sent':
             this.drilldownHeaders[8].show = true // Final Design Sent to Customer Date
@@ -471,7 +471,7 @@
             this.drilldownHeaders[11].show = true // Permit Pack Complete
             break
           case 'Permits Submitted':
-            this.drilldownHeaders[12].show = true // Permit Pack Submittal Verified
+            this.drilldownHeaders[12].show = true // Permit Submitted Date
             break
           case 'Permits Approved':
             this.drilldownHeaders[13].show = true // Permit Approved Date

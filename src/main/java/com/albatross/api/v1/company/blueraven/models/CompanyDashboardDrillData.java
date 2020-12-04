@@ -9,8 +9,8 @@ public class CompanyDashboardDrillData {
     private Long projectId;
     private String customerName, appointmentOutcome;
     private Date appointmentDate, installationAgreementSignedDate, siteSurveyVerifiedDate,
-                 finalDesignQADate, finalDesignSentToHomeownerDate, finalDesignSignedDate,
-                 planSetCreatedDate, permitPackCompleteDate, permitPackSubmittalVerifiedDate,
+                 finalDesignCreatedDate, finalDesignSentToHomeownerDate, finalDesignSignedDate,
+                 planSetCreatedDate, permitPackCompleteDate, permitSubmittedDate,
                  permitApprovedDate, installationScheduledDate, installationDate,
                  installationCloseoutDate, substantialCompletionDate, ahjInspectionScheduledDate,
                  ahjReinspectionScheduledDate, ahjInspectionDate, ahjReinspectionDate,
