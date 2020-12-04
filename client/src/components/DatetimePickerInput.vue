@@ -30,6 +30,7 @@
     v-model="date"
     :min="minDate"
     :max="maxDate"
+    @click:date="saveDate()"
   >
     <v-spacer></v-spacer>
     <v-btn text color="primaryCustom" @click="cancel()">Cancel</v-btn>
@@ -39,6 +40,7 @@
   <v-time-picker
     v-model="localTime"
     v-if="showTime"
+    :allowed-minutes="allowedMinutes"
     :ampm-in-title="true"
   >
     <v-spacer></v-spacer>
@@ -70,6 +72,8 @@ export default {
     dense: String,
     outlined: String,
     customClass: String,
+    //if this is empty it shows all minutes
+    allowedMinutes: Function,
     showAppendIcon: Boolean,
     changeCallback: Function,
     readonly: {

@@ -40,7 +40,7 @@ export default {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/actionResult/${this.actionId}`)
         //verifying that a user has edit permissions to process steps to be able to click a button, might have to add an Actions permission eventually
         this.actionResult = data
-        this.proceed = data.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
+        this.proceed = !data.alreadyTriggered && !data.triggerAutomatically && data.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
       } catch (e) {
         logError(e)
       } finally {

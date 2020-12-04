@@ -64,12 +64,12 @@ public class AuroraProxy {
     checkArgument(isNotBlank(designId), "designId cannot be blank");
 
     AuroraRequest req = createGetDesignSummaryRequest(designId);
-
+    log.info("AURORA: the summary request {}", req.toString());
     try (CloseableHttpResponse resp = httpClient.execute(req.toHttpRequest())) {
       int statusCode = resp.getStatusLine().getStatusCode();
       checkArgument(statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
-
       InputStream content = resp.getEntity().getContent();
+      log.info("AURORA: starting build design summary... {}", content);
       return new DesignSummary(content);
     } catch (Exception e) {
       String msg = "AURORA: Failed to get design summary for design " + designId;
@@ -82,17 +82,21 @@ public class AuroraProxy {
     String uri = useTemplate("/v2/tenants/${tenant_id}/projects",
       "tenant_id", tenantId);
     AuroraRequest req =  new AuroraRequest(HttpMethod.GET, uri, "page="+pageNumber+"&per_page=250\n");
+    log.info("AURORA: the tenants request {}", req.toString());
     try (CloseableHttpResponse resp = httpClient.execute(req.toHttpRequestWithParams("?page="+pageNumber+"&per_page=250"))) {
       int statusCode = resp.getStatusLine().getStatusCode();
       checkArgument(statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
+      log.info("AURORA: starting project str builder...");
       InputStream content = resp.getEntity().getContent();
       BufferedReader bR = new BufferedReader(  new InputStreamReader(content));
       String line = "";
       StringBuilder responseStrBuilder = new StringBuilder();
       while((line =  bR.readLine()) != null){
+        log.info("AURORA: read tenant line - this might go too crazy: {}", line);
         responseStrBuilder.append(line);
       }
       content.close();
+      log.info("AURORA: closing project str builder...");
       return responseStrBuilder.toString();
     } catch (Exception e) {
       String msg = "AURORA: Failed to get tenants projects";
@@ -109,17 +113,21 @@ public class AuroraProxy {
     String uri = useTemplate("/v2/tenants/${tenant_id}/projects/${project_id}/designs",
       "tenant_id", tenantId, "project_id",projectId);
     AuroraRequest req =  new AuroraRequest(HttpMethod.GET, uri, null);
+    log.info("AURORA: the projects request {}", req.toString());
     try (CloseableHttpResponse resp = httpClient.execute(req.toHttpRequest())) {
       int statusCode = resp.getStatusLine().getStatusCode();
       checkArgument(statusCode == HttpStatus.SC_OK, "Received unexpected response code " + statusCode);
+      log.info("AURORA: starting project str builder...");
       InputStream content = resp.getEntity().getContent();
       BufferedReader bR = new BufferedReader(  new InputStreamReader(content));
       String line = "";
       StringBuilder responseStrBuilder = new StringBuilder();
       while((line =  bR.readLine()) != null){
+        log.info("AURORA: read project line - this might go too crazy: {}", line);
         responseStrBuilder.append(line);
       }
       content.close();
+      log.info("AURORA: closing project str builder...");
       return responseStrBuilder.toString();
     } catch (Exception e) {
       String msg = "AURORA: Failed to get tenants projects";
@@ -244,7 +252,9 @@ public class AuroraProxy {
 
     DesignSummary(InputStream in) throws IOException {
       this.fields = om.readTree(in);
-
+  
+      log.info("AURORA: fields. {}", this.fields.toString());
+      
       JsonNode arrays = getField(fields, "design", "arrays")
         .orElseThrow(() -> new IllegalArgumentException("design missing required field 'arrays'"));
       Map<Integer, List<SolarArray>> m = StreamSupport.stream(arrays.spliterator(), false)
