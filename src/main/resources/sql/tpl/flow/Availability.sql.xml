@@ -114,8 +114,8 @@
 
   <availability.updateHours><![CDATA[
     update flow.resource_schedule_availability
-     set start_time = :startTime::time,
-         end_time = :endTime::time,
+     set start_time = to_char(:startTime::time, 'HH24:MI')::time,
+         end_time = to_char(:endTime::time, 'HH24:MI')::time,
          modified_by_id = :modifiedById,
          date_modified = now()
     where id = :id
@@ -131,14 +131,14 @@
 
   <availability.insertHours><![CDATA[
     insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, created_by_id)
-    values (:resourceScheduleId, :startTime::time, :endTime::time, :dayOfWeekId, :createdById)
+    values (:resourceScheduleId, to_char(:startTime::time, 'HH24:MI')::time, to_char(:endTime::time, 'HH24:MI')::time, :dayOfWeekId, :createdById)
   ]]></availability.insertHours>
 
 
   <availability.updateAppointment><![CDATA[
     update flow.resource_appointment
-    set start_time = :startTime::timestamp,
-        end_time = :endTime::timestamp,
+    set start_time = to_char(:startTime::time, 'HH24:MI')::time,
+        end_time = to_char(:endTime::time, 'HH24:MI')::time,
         modified_by_id = :modifiedById,
         date_modified = now(),
         all_day = :allDay,
@@ -151,7 +151,7 @@
 
   <availability.insertAppointment><![CDATA[
     insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type)
-    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType)
+    values (:companyId, :userId, :orgId, to_char(:startTime::time, 'HH24:MI')::time, to_char(:endTime::time, 'HH24:MI')::time, :createdById, :allDay, :description, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType)
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
