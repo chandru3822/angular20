@@ -332,7 +332,7 @@ public class AttachmentService {
         String url = s3.getUrl(currentUser.getAwsBucket(), key).toExternalForm();
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("filename", file.getOriginalFilename());
+        params.put("filename", cleanFilename(file.getOriginalFilename()));
         params.put("contentType", file.getContentType());
         params.put("key", key);
         params.put("size", file.getSize());
@@ -341,11 +341,17 @@ public class AttachmentService {
         params.put("companyId", currentUser.getCompanyId());
 
         Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
-
         //add to join
         addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
 
         return findById(attachmentId);
+    }
+
+    private String cleanFilename(String filename){
+      if (filename == null){
+        return null;
+      }
+      return filename.replace(",", "");
     }
 
     public void addToJoinTable(Long attachmentId, Long sourceId, Long attachmentTypeId, boolean deleteFirst) {
