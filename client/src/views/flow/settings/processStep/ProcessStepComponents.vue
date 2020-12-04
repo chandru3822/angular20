@@ -22,26 +22,30 @@
         </v-row>
         <v-divider></v-divider>
         <v-row>
-          <v-col cols="12"  class="pt-0">
+          <v-col cols="12" class="pt-0">
             <v-toolbar flat>
               <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn text @click="getWorkQueueTypesForStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewWorkQueueType">add</v-icon>
-                  {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type'}}
+                  {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <div class="pl-5">
               <v-autocomplete v-if="addNewWorkQueueType"
-                        v-model="newWorkQueueType.workQueueTypeId"
-                        :items="workQueueTypes"
-                        label="Select Work Queue Type"
-                        item-text="workQueueType"
-                        item-value="id"
-                        @input="assignNewWorkQueueType"
-              ></v-autocomplete>
+                              v-model="newWorkQueueType.workQueueTypeId"
+                              :items="workQueueTypes"
+                              label="Select Work Queue Type"
+                              item-value="id"
+                              @input="assignNewWorkQueueType"
+              >
+                <template slot="item" slot-scope="data">
+                  <!-- HTML that describe how select should render items when the select is open -->
+                  {{ data.item.workQueueCategory }} - {{ data.item.workQueueType }}
+                </template>
+              </v-autocomplete>
               <v-card flat v-if="processStep.workQueueTypes && processStep.workQueueTypes.length > 0">
                 <v-data-table
                   :headers="headers"
@@ -56,13 +60,14 @@
                   <template #no-data>
                     No available work queue types
                   </template>
-
+                  
                   <template #no-results>
                     No available work queue types
                   </template>
-
+                  
                   <template #expanded-item="{ headers, item }">
-                    <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': processStep.workQueueTypes.indexOf(item) % 2}">
+                    <td :colspan="headers.length" class="pa-4"
+                        :class="{'shaded-row': processStep.workQueueTypes.indexOf(item) % 2}">
                       <v-select
                         v-model="item.selectedOptions"
                         :items="projectStatusTypes"
@@ -75,15 +80,16 @@
                         item-text="projectStatusType"
                         return-object
                       ></v-select>
-                      <v-btn dark class="white--text mt-3" v-if="userCanEdit" color="primaryCustom" @click="saveProjectStatusesToWorkQueueType(item)">
+                      <v-btn dark class="white--text mt-3" v-if="userCanEdit" color="primaryCustom"
+                             @click="saveProjectStatusesToWorkQueueType(item)">
                         Save
                       </v-btn>
                     </td>
                   </template>
-
+                  
                   <template #item="{ item, index }">
                     <tr class="clickable" :class="{'shaded-row': index % 2}">
-                      <td class="text-left">{{item.workQueueType}}</td>
+                      <td class="text-left">{{ item.workQueueCategory }} - {{ item.workQueueType }}</td>
                       <td class="text-right">
                         <v-btn small text @click="[expanded = [item], getProjectStatusTypes(item)]"
                                v-if="!expanded.includes(item)">
@@ -93,9 +99,9 @@
                                v-else>cancel
                         </v-btn>
                         <v-dialog
-                            v-if="userCanEdit"
-                            v-model="item.deleteConfirm"
-                            width="500">
+                          v-if="userCanEdit"
+                          v-model="item.deleteConfirm"
+                          width="500">
                           <template v-slot:activator="{ on }">
                             <v-btn text v-on="on">
                               <v-icon>delete</v-icon>
@@ -108,13 +114,13 @@
                             >
                               Confirm
                             </v-card-title>
-
+                            
                             <v-card-text>
                               Are you sure you want to delete <strong>{{ item.workQueueType }}</strong>?
                             </v-card-text>
-
+                            
                             <v-divider></v-divider>
-
+                            
                             <v-card-actions>
                               <v-spacer></v-spacer>
                               <v-btn
@@ -134,65 +140,65 @@
                     </tr>
                   </template>
                 </v-data-table>
-<!--                <v-list v-for="(a, index) in filterBy(processStep.workQueueTypes, false, 'archived')"-->
-<!--                        :key="index">-->
-<!--                  <v-list-item :class="{'shaded-row': index % 2}">-->
-<!--                    <v-list-item-content>-->
-<!--                      {{a.workQueueType}}-->
-<!--                    </v-list-item-content>-->
-<!--                    <v-dialog-->
-<!--                      v-model="a.deleteConfirm"-->
-<!--                      width="500">-->
-<!--                      <template v-slot:activator="{ on }">-->
-<!--                        <v-list-item-action class="clickable" v-on="on">-->
-<!--                          <v-icon>delete</v-icon>-->
-<!--                        </v-list-item-action>-->
-<!--                      </template>-->
-<!--                      <v-card>-->
-<!--                        <v-card-title-->
-<!--                          class="headline grey lighten-2"-->
-<!--                          primary-title-->
-<!--                        >-->
-<!--                          Confirm-->
-<!--                        </v-card-title>-->
-
-<!--                        <v-card-text>-->
-<!--                          Are you sure you want to delete this Work Queue Type: <strong>{{ a.workQueueType }}</strong>?-->
-<!--                        </v-card-text>-->
-
-<!--                        <v-divider></v-divider>-->
-
-<!--                        <v-card-actions>-->
-<!--                          <v-spacer></v-spacer>-->
-<!--                          <v-btn-->
-<!--                            @click="a.deleteConfirm = false">-->
-<!--                            No-->
-<!--                          </v-btn>-->
-<!--                          <v-btn-->
-<!--                            color="primaryCustom"-->
-<!--                            text-->
-<!--                            @click="[a.archived = true, deleteWorkQueueTypeFromStep(a.id)]">-->
-<!--                            Yes-->
-<!--                          </v-btn>-->
-<!--                        </v-card-actions>-->
-<!--                      </v-card>-->
-<!--                    </v-dialog>-->
-<!--                  </v-list-item>-->
-<!--                </v-list>-->
+                <!--                <v-list v-for="(a, index) in filterBy(processStep.workQueueTypes, false, 'archived')"-->
+                <!--                        :key="index">-->
+                <!--                  <v-list-item :class="{'shaded-row': index % 2}">-->
+                <!--                    <v-list-item-content>-->
+                <!--                      {{a.workQueueType}}-->
+                <!--                    </v-list-item-content>-->
+                <!--                    <v-dialog-->
+                <!--                      v-model="a.deleteConfirm"-->
+                <!--                      width="500">-->
+                <!--                      <template v-slot:activator="{ on }">-->
+                <!--                        <v-list-item-action class="clickable" v-on="on">-->
+                <!--                          <v-icon>delete</v-icon>-->
+                <!--                        </v-list-item-action>-->
+                <!--                      </template>-->
+                <!--                      <v-card>-->
+                <!--                        <v-card-title-->
+                <!--                          class="headline grey lighten-2"-->
+                <!--                          primary-title-->
+                <!--                        >-->
+                <!--                          Confirm-->
+                <!--                        </v-card-title>-->
+                
+                <!--                        <v-card-text>-->
+                <!--                          Are you sure you want to delete this Work Queue Type: <strong>{{ a.workQueueType }}</strong>?-->
+                <!--                        </v-card-text>-->
+                
+                <!--                        <v-divider></v-divider>-->
+                
+                <!--                        <v-card-actions>-->
+                <!--                          <v-spacer></v-spacer>-->
+                <!--                          <v-btn-->
+                <!--                            @click="a.deleteConfirm = false">-->
+                <!--                            No-->
+                <!--                          </v-btn>-->
+                <!--                          <v-btn-->
+                <!--                            color="primaryCustom"-->
+                <!--                            text-->
+                <!--                            @click="[a.archived = true, deleteWorkQueueTypeFromStep(a.id)]">-->
+                <!--                            Yes-->
+                <!--                          </v-btn>-->
+                <!--                        </v-card-actions>-->
+                <!--                      </v-card>-->
+                <!--                    </v-dialog>-->
+                <!--                  </v-list-item>-->
+                <!--                </v-list>-->
               </v-card>
             </div>
           </v-col>
         </v-row>
         <v-divider></v-divider>
         <v-row>
-          <v-col cols="12"  class="pt-0">
+          <v-col cols="12" class="pt-0">
             <v-toolbar flat>
               <v-toolbar-title class="app-title">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn text @click="getLinksForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewLink">add</v-icon>
-                  {{ addNewLink ? 'Cancel' : 'Add Link'}}
+                  {{ addNewLink ? 'Cancel' : 'Add Link' }}
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
@@ -218,12 +224,12 @@
                         <v-icon>drag_handle</v-icon>
                       </v-list-item-action>
                       <v-list-item-content>
-                        {{a.link}} | {{ a.url }}
+                        {{ a.link }} | {{ a.url }}
                       </v-list-item-content>
                       <v-dialog
-                          v-if="userCanEdit"
-                          v-model="a.deleteConfirm"
-                          width="500">
+                        v-if="userCanEdit"
+                        v-model="a.deleteConfirm"
+                        width="500">
                         <template v-slot:activator="{ on }">
                           <v-list-item-action class="clickable" v-on="on">
                             <v-icon>delete</v-icon>
@@ -231,28 +237,28 @@
                         </template>
                         <v-card>
                           <v-card-title
-                              class="headline grey lighten-2"
-                              primary-title
+                            class="headline grey lighten-2"
+                            primary-title
                           >
                             Confirm
                           </v-card-title>
-
+                          
                           <v-card-text>
                             Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
                           </v-card-text>
-
+                          
                           <v-divider></v-divider>
-
+                          
                           <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn
-                                @click="a.deleteConfirm = false">
+                              @click="a.deleteConfirm = false">
                               No
                             </v-btn>
                             <v-btn
-                                color="primaryCustom"
-                                text
-                                @click="[a.archived = true, deleteLinkFromStep(a.id)]">
+                              color="primaryCustom"
+                              text
+                              @click="[a.archived = true, deleteLinkFromStep(a.id)]">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -274,18 +280,18 @@
               <v-toolbar-items>
                 <v-btn text @click="getAttachmentTypesForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewType">add</v-icon>
-                  {{ addNewType ? 'Cancel' : 'Add Type'}}
+                  {{ addNewType ? 'Cancel' : 'Add Type' }}
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <div class="pl-5">
               <v-autocomplete v-if="addNewType"
-                        v-model="newType.attachmentTypeId"
-                        :items="availableAttachmentTypes"
-                        label="Select Attachment Type"
-                        item-text="attachmentType"
-                        item-value="id"
-                        @input="assignNewType"
+                              v-model="newType.attachmentTypeId"
+                              :items="availableAttachmentTypes"
+                              label="Select Attachment Type"
+                              item-text="attachmentType"
+                              item-value="id"
+                              @input="assignNewType"
               ></v-autocomplete>
               <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
                 <draggable v-model="processStep.attachmentTypes" group="attachmentTypes"
@@ -293,18 +299,18 @@
                            id="attachment-draggable"
                            @change="saveAttachmentTypeOrder(processStep.attachmentTypes)"
                            @start="drag=true" @end="drag=false">
-                  <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"  :key="index">
+                  <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')" :key="index">
                     <v-list-item class="grab" dense :class="{'shaded-row': index % 2}">
                       <v-list-item-action>
                         <v-icon>drag_handle</v-icon>
                       </v-list-item-action>
                       <v-list-item-content>
-                        {{a.attachmentType}}
+                        {{ a.attachmentType }}
                       </v-list-item-content>
                       <v-dialog
-                          v-if="userCanEdit"
-                          v-model="a.deleteConfirm"
-                          width="500">
+                        v-if="userCanEdit"
+                        v-model="a.deleteConfirm"
+                        width="500">
                         <template v-slot:activator="{ on }">
                           <v-list-item-action class="clickable" v-on="on">
                             <v-icon>delete</v-icon>
@@ -312,28 +318,30 @@
                         </template>
                         <v-card>
                           <v-card-title
-                              class="headline grey lighten-2"
-                              primary-title
+                            class="headline grey lighten-2"
+                            primary-title
                           >
                             Confirm
                           </v-card-title>
-
+                          
                           <v-card-text>
-                            Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
+                            Are you sure you want to delete this attachment type: <strong>{{
+                              a.attachmentType
+                            }}</strong>?
                           </v-card-text>
-
+                          
                           <v-divider></v-divider>
-
+                          
                           <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn
-                                @click="a.deleteConfirm = false">
+                              @click="a.deleteConfirm = false">
                               No
                             </v-btn>
                             <v-btn
-                                color="primaryCustom"
-                                text
-                                @click="[a.archived = true, deleteTypeFromStep(a.id)]">
+                              color="primaryCustom"
+                              text
+                              @click="[a.archived = true, deleteTypeFromStep(a.id)]">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -347,381 +355,380 @@
           </v-col>
         </v-row>
       </v-col>
-
+    
     </v-row>
   </v-container>
 </template>
 
 <script>
-  import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import draggable from 'vuedraggable'
-  import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
+import draggable from 'vuedraggable'
+import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
-  export default {
-    name: 'ProcessStepComponents',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ProcessStepCustomFieldGroups,
-      draggable,
-    },
-    data () {
-      return {
-        snackbar: {},
-        expanded: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        projectStatusTypes: [],
-        headers: [
-          {text: 'Work Queue Types', value: 'workQueueType', show: true},
-          {text: '', value: 'icons', show: false, width: '100px'},
-        ],
-        addNewCustomFieldGroup: false,
-        changesMade: false,
-        addNewType: false,
-        newType: {},
-        addNewLink: false,
-        newLink: {},
-        availableLinks: [],
-        processStepId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId,
-        processStep: {},
-        availableAttachmentTypes: [],
-        workQueueTypes: [],
-        newWorkQueueType: {},
-        addNewWorkQueueType: false,
-        checkedIds: [],
-        selectedOptions: [],
-        breadcrumbs: [
-          {
-            text: 'Back',
-            disabled: false,
-            exact: true,
-            to: `/settings/processSteps`
-          },
-        ]
-      }
-    },
-    computed: {
-    },
-    async created () {
-      await this.getProcessStepDetails()
-    },
-    methods: {
-      async getProjectStatusTypes (item) {
-        item.selectedOptions = []
-        if(this.projectStatusTypes?.length === 0) {
+export default {
+  name: 'ProcessStepComponents',
+  mixins: [Vue2Filters.mixin],
+  components: {
+    ProcessStepCustomFieldGroups,
+    draggable,
+  },
+  data() {
+    return {
+      snackbar: {},
+      expanded: [],
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+      projectStatusTypes: [],
+      headers: [
+        {text: 'Work Queue Types', value: 'workQueueType', show: true},
+        {text: '', value: 'icons', show: false, width: '100px'},
+      ],
+      addNewCustomFieldGroup: false,
+      changesMade: false,
+      addNewType: false,
+      newType: {},
+      addNewLink: false,
+      newLink: {},
+      availableLinks: [],
+      processStepId: this.$route.params.id,
+      companyId: this.$store.state.user.details.companyId,
+      processStep: {},
+      availableAttachmentTypes: [],
+      workQueueTypes: [],
+      newWorkQueueType: {},
+      addNewWorkQueueType: false,
+      checkedIds: [],
+      selectedOptions: [],
+      breadcrumbs: [
+        {
+          text: 'Back',
+          disabled: false,
+          exact: true,
+          to: `/settings/processSteps`
+        },
+      ]
+    }
+  },
+  computed: {},
+  async created() {
+    await this.getProcessStepDetails()
+  },
+  methods: {
+    async getProjectStatusTypes(item) {
+      item.selectedOptions = []
+      if (this.projectStatusTypes?.length === 0) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await getRequest(`/project/status`)
-            this.projectStatusTypes = data
-            // this makes the multi-select work
-            this.projectStatusTypes.forEach(d => {
-              let match = item.projectStatuses?.find(pst => pst.companyProjectStatusTypeId === d.id)
-              if(match) {
-                item.selectedOptions.push(d)
-              }
-            })
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        } else {
+          const {data} = await getRequest(`/project/status`)
+          this.projectStatusTypes = data
+          // this makes the multi-select work
           this.projectStatusTypes.forEach(d => {
-            let match = item.projectStatuses.find(pst => pst.companyProjectStatusTypeId === d.id)
-            if(match) {
+            let match = item.projectStatuses?.find(pst => pst.companyProjectStatusTypeId === d.id)
+            if (match) {
               item.selectedOptions.push(d)
             }
           })
-        }
-
-      },
-      async getProcessStepDetails () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest(`/processStep/${this.processStepId}`)
-          this.processStep = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async saveProcessStep () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await putRequest(`/processStep`, this.processStep)
-          this.changesMade = false
-          this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getAttachmentTypesForProcessStep () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewType = !this.addNewType
-          if(this.addNewType){
-            const { data } = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
-            this.availableAttachmentTypes = data
+      } else {
+        this.projectStatusTypes.forEach(d => {
+          let match = item.projectStatuses.find(pst => pst.companyProjectStatusTypeId === d.id)
+          if (match) {
+            item.selectedOptions.push(d)
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async assignNewType () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-        this.newType.processStepId = this.$route.params.id
-          const { data } = await postRequest(`/attachmentType/processStepType`, this.newType)
-          this.processStep.attachmentTypes.push(data)
-          // reset fields
-          this.addNewType = false
-          this.newType = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteTypeFromStep (id) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewType = false
-          await deleteRequest(`/attachmentType/processStepType/${id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getLinksForProcessStep () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewLink = !this.addNewLink
-          if(this.addNewLink){
-            const { data } = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
-            this.availableLinks = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async assignNewLink () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newLink.processStepId = this.$route.params.id
-          const { data } = await postRequest(`/links/processStep`, this.newLink)
-          this.processStep.links.push(data)
-          // reset fields
-          this.addNewLink = false
-          this.newLink = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Link Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteLinkFromStep (id) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewLink = false
-          await deleteRequest(`/links/processStep/${id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getWorkQueueTypesForStep() {
-        try {
-          this.addNewWorkQueueType = !this.addNewWorkQueueType
-          if(this.addNewWorkQueueType) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`)
-            this.workQueueTypes = data
-          }
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async assignNewWorkQueueType () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newWorkQueueType.processStepId = this.$route.params.id
-          const { data } = await postRequest(`/workQueueType/processStep`, this.newWorkQueueType)
-          this.processStep.workQueueTypes.push(data)
-          // reset fields
-          this.addNewWorkQueueType = false
-          this.newWorkQueueType = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveProjectStatusesToWorkQueueType(item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          //check each projectStatusTypes, if not exists in selectedOptions then it got archived
-          item.projectStatuses?.forEach(s => {
-            let match = item.selectedOptions.find(o => o.id === s.projectStatusTypeId)
-            if (!match) {
-              s.archived = true
-            }
-          })
-
-          //check each selectedOptions, if not exists in item.projectStatuses already then it needs to be added
-          item.selectedOptions?.forEach(o => {
-            let match = item.projectStatuses.find(pst => pst.projectStatusTypeId === o.id)
-            if (!match) {
-              let object = {
-                id: null,
-                companyProjectStatusTypeId: o.id,
-                processStepWorkQueueTypeId: item.id,
-                archived: false
-              }
-              item.projectStatuses.push(object)
-            }
-          })
-
-          const {data} = await putRequest(`/workQueueType/saveProjectStatusTypesToWorkQueueType`, item)
-          item.projectStatuses = data
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'Project Status Types Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Project Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteWorkQueueTypeFromStep (item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewWorkQueueType = false
-          await deleteRequest(`/workQueueType/processStep/${item.id}`)
-          item.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterWorkQueueTypes() {
-        return this.processStep?.workQueueTypes.filter(u => {
-          return !u.archived
         })
-      },
-      async saveAttachmentTypeOrder (attachmentTypes) {
+      }
+      
+    },
+    async getProcessStepDetails() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-          // pull those needing to be saved out of list
-          let typesToSave = []
-          attachmentTypes.forEach((f, idx) => {
-            let order = idx + 1
-            if(f.displayOrder !== order){
-              f.displayOrder = order
-              typesToSave.push(f)
-            }
-          })
-          // save them here
-          if(typesToSave.length > 0) {
-            await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data} = await getRequest(`/processStep/${this.processStepId}`)
+        this.processStep = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveProcessStep() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/processStep`, this.processStep)
+        this.changesMade = false
+        this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getAttachmentTypesForProcessStep() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewType = !this.addNewType
+        if (this.addNewType) {
+          const {data} = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
+          this.availableAttachmentTypes = data
         }
-      },
-      async saveLinkOrder (links) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-          // pull those needing to be saved out of list
-          let linksToSave = []
-          links.forEach((f, idx) => {
-            let order = idx + 1
-            if(f.displayOrder !== order){
-              f.displayOrder = order
-              linksToSave.push(f)
-            }
-          })
-          // save them here
-          if(linksToSave.length > 0) {
-            await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Links Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Links')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignNewType() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newType.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/attachmentType/processStepType`, this.newType)
+        this.processStep.attachmentTypes.push(data)
+        // reset fields
+        this.addNewType = false
+        this.newType = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteTypeFromStep(id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewType = false
+        await deleteRequest(`/attachmentType/processStepType/${id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getLinksForProcessStep() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewLink = !this.addNewLink
+        if (this.addNewLink) {
+          const {data} = await getRequest(`/links/processStep/${this.$route.params.id}/available`)
+          this.availableLinks = data
         }
-      },
-    }
-
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignNewLink() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newLink.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/links/processStep`, this.newLink)
+        this.processStep.links.push(data)
+        // reset fields
+        this.addNewLink = false
+        this.newLink = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Link Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteLinkFromStep(id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewLink = false
+        await deleteRequest(`/links/processStep/${id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getWorkQueueTypesForStep() {
+      try {
+        this.addNewWorkQueueType = !this.addNewWorkQueueType
+        if (this.addNewWorkQueueType) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data} = await getRequest(`/workQueueType/processStep/${this.$route.params.id}`)
+          this.workQueueTypes = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignNewWorkQueueType() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newWorkQueueType.processStepId = this.$route.params.id
+        const {data} = await postRequest(`/workQueueType/processStep`, this.newWorkQueueType)
+        this.processStep.workQueueTypes.push(data)
+        // reset fields
+        this.addNewWorkQueueType = false
+        this.newWorkQueueType = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Type')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveProjectStatusesToWorkQueueType(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //check each projectStatusTypes, if not exists in selectedOptions then it got archived
+        item.projectStatuses?.forEach(s => {
+          let match = item.selectedOptions.find(o => o.id === s.projectStatusTypeId)
+          if (!match) {
+            s.archived = true
+          }
+        })
+        
+        //check each selectedOptions, if not exists in item.projectStatuses already then it needs to be added
+        item.selectedOptions?.forEach(o => {
+          let match = item.projectStatuses.find(pst => pst.projectStatusTypeId === o.id)
+          if (!match) {
+            let object = {
+              id: null,
+              companyProjectStatusTypeId: o.id,
+              processStepWorkQueueTypeId: item.id,
+              archived: false
+            }
+            item.projectStatuses.push(object)
+          }
+        })
+        
+        const {data} = await putRequest(`/workQueueType/saveProjectStatusTypesToWorkQueueType`, item)
+        item.projectStatuses = data
+        this.expanded = []
+        this.snackbar = getSnackbar('SUCCESS', 'Project Status Types Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Project Status Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteWorkQueueTypeFromStep(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewWorkQueueType = false
+        await deleteRequest(`/workQueueType/processStep/${item.id}`)
+        item.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    filterWorkQueueTypes() {
+      return this.processStep?.workQueueTypes.filter(u => {
+        return !u.archived
+      })
+    },
+    async saveAttachmentTypeOrder(attachmentTypes) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let typesToSave = []
+        attachmentTypes.forEach((f, idx) => {
+          let order = idx + 1
+          if (f.displayOrder !== order) {
+            f.displayOrder = order
+            typesToSave.push(f)
+          }
+        })
+        // save them here
+        if (typesToSave.length > 0) {
+          await putRequest(`/attachmentType/updateOrderInProcessStep`, typesToSave)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Types Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Attachment Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveLinkOrder(links) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let linksToSave = []
+        links.forEach((f, idx) => {
+          let order = idx + 1
+          if (f.displayOrder !== order) {
+            f.displayOrder = order
+            linksToSave.push(f)
+          }
+        })
+        // save them here
+        if (linksToSave.length > 0) {
+          await putRequest(`/links/updateOrderInProcessStep`, linksToSave)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Links Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Links')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
+  
+}
 </script>
 
 <style scoped lang="scss">
@@ -729,6 +736,7 @@
   background-color: var(--v-rowShadeCustom-base) !important;
   border-radius: 5px;
 }
+
 #attachment-draggable .v-list, #link-draggable .v-list {
   padding-top: 0;
   padding-bottom: 0;

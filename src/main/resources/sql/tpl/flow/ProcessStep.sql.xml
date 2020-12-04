@@ -38,7 +38,7 @@
     order by ps.process_step_name
 
   ]]></processStep.getAllForCompany>
-
+  
   <processStep.get><![CDATA[
       select ps.id,
              ps.process_step_name,
@@ -165,6 +165,7 @@
                                      pswqt.work_queue_type_id as "workQueueTypeId",
                                      pswqt.process_step_id as "processStepId",
                                      wqt.work_queue_type as "workQueueType",
+                                     wqc.work_queue_category as "workQueueCategory",
                                      pswqt.archived,
                                     coalesce((
                                       SELECT array_to_json(array_agg(row_to_json(projectStatuses)))
@@ -178,13 +179,14 @@
                                            ) projectStatuses), '[]') AS "projectStatuses"
                               FROM flow.process_step_work_queue_type pswqt
                                 inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+                                inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
                               WHERE pswqt.process_step_id = ps.id AND pswqt.archived is not true
                               order by wqt.work_queue_type
                               ) workQueueTypes), '[]') AS "workQueueTypes"
       from flow.process_step ps
       where ps.id = :id
   ]]></processStep.get>
-
+  
   <processStep.delete><![CDATA[
       update flow.process_step
       set archived = true,
@@ -192,7 +194,7 @@
           date_modified = now()
       where id = :processStepId
   ]]></processStep.delete>
-
+  
   <processStep.update><![CDATA[
       update flow.process_step
       set modified_by_id = :modifiedById,
@@ -201,12 +203,12 @@
           non_admin_add = :nonAdminAdd
       where id = :id;
   ]]></processStep.update>
-
+  
   <processStep.insert><![CDATA[
       insert into flow.process_step (company_id, process_step_name, created_by_id, non_admin_add)
         values (:companyId, :name, :createdById, :nonAdminAdd)
   ]]></processStep.insert>
-
+  
   <processStep.getParentObjects><![CDATA[
     select *
     from flow.process_step
@@ -214,7 +216,7 @@
       and archived is not true
     order by process_step_name
   ]]></processStep.getParentObjects>
-
+  
   <processStep.getParentObjectsIncludingTypes><![CDATA[
     select ps.id,
        ps.process_step_name as name,
@@ -233,8 +235,8 @@
       and cot.archived is not true
     order by name
   ]]></processStep.getParentObjectsIncludingTypes>
-
-<processStep.getProcessStepProcessByCompanyId><![CDATA[
+  
+  <processStep.getProcessStepProcessByCompanyId><![CDATA[
   select
     ps.id,
     ps.company_id,
@@ -250,8 +252,8 @@
     and psp.archived is not true
   order by ps.process_step_name;
 ]]></processStep.getProcessStepProcessByCompanyId>
-
-<processStep.getOwners><![CDATA[
+  
+  <processStep.getOwners><![CDATA[
 select * from flow.get_process_step_available_owners(:id::int, :companyId::int, :inParentCompany)
 ]]></processStep.getOwners>
 </sql>
