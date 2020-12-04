@@ -48,6 +48,7 @@ public class LocationUtils {
 
       @Override
       public void onFailure(Call<GeocodingResponse> call, Throwable throwable) {
+        log.error("GEO: failure {}", throwable.getMessage());
         throwable.printStackTrace();
       }
     });
@@ -75,6 +76,7 @@ public class LocationUtils {
         }
 
         @Override public void onFailure(Call<FeatureCollection> call, Throwable throwable) {
+          log.error("GEO: tileset failure {}", throwable.getMessage());
           throwable.printStackTrace();
         }
     });

@@ -247,6 +247,7 @@ public class InstallAgreementRepository {
               b.addParameter("refnum", s(pd.getProjectId()));
               return b.build().toString().replaceAll("\\+", "%20");
           } catch (URISyntaxException e) {
+              log.error("IARQ: uri error {}", e.getMessage());
               e.printStackTrace();
           }
       }

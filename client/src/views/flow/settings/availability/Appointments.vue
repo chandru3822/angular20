@@ -269,7 +269,6 @@
           'items-per-page-options': [25, 50, 100, 1000],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
-        totalAppointments: 0,
         dataLoading: true,
         dateFormat: 'MMMM DD, YYYY',
         timestampType: 'timestamp',
@@ -282,6 +281,11 @@
           { text: '', value: 'icons', show: true}
         ],
       }
+    },
+    computed: {
+      totalAppointments() {
+        return this.appointments.filter(a => { return !a.archived}).length;
+      },
     },
     created() {
       this.getAppointments()
@@ -310,7 +314,6 @@
                 size: itemsPerPage
               }})
             this.appointments = data.content
-            this.totalAppointments = data.totalElements
             this.dataLoading = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -350,8 +353,8 @@
               //else if new appointment - push into appointments
               this.appointments.push(data)
               this.appointments = orderBy(this.appointments, [s => s.startDate])
-              this.$store.commit(AppMutations.SET_LOADING, false)
             }
+            this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
