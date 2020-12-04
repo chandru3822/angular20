@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew && $store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')" @click="setNew" class="mb-3">
+        <v-btn v-if="!addNew && userCanAdd" @click="setNew" class="mb-3">
           Add Schedule
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
@@ -75,7 +75,7 @@
                 <td class="text-left px-0" width="150px">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small v-on="on" @click="copyTimes(newSchedule, item, index, 'down')">
+                      <v-btn text small v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'down')">
                         <v-icon>mdi-arrow-collapse-down</v-icon>
                       </v-btn>
                     </template>
@@ -85,7 +85,7 @@
                   </v-btn>
                   <v-tooltip top v-if="index !== 0">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small v-on="on" @click="copyTimes(newSchedule, item, index, 'up')">
+                      <v-btn text small v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'up')">
                         <v-icon>mdi-arrow-collapse-up</v-icon>
                       </v-btn>
                     </template>
@@ -140,8 +140,8 @@
                 <DatetimePickerInput
                   v-model="schedule.startDate"
                   :timezone="timezone"
-                  :readonly="!userCanEdit"
-                  :disabled="!userCanEdit"
+                  :readonly="!userCanAdd"
+                  :disabled="!userCanAdd"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
@@ -150,8 +150,8 @@
                 <DatetimePickerInput
                   v-model="schedule.endDate"
                   :timezone="timezone"
-                  :readonly="!userCanEdit"
-                  :disabled="!userCanEdit"
+                  :readonly="!userCanAdd"
+                  :disabled="!userCanAdd"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
@@ -267,12 +267,13 @@
               <td class="text-left">
                 <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                        v-if="!expanded.includes(item)">
-                  <v-icon>edit</v-icon>
+                  <v-icon v-if="userCanEdit">edit</v-icon>
+                  <v-icon v-else>mdi-chevron-down</v-icon>
                 </v-btn>
                 <v-btn small text @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')">
+                <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="userCanDelete">
                   <template #activator="{ on }">
                     <v-btn v-on="on" small text>
                       <v-icon>delete</v-icon>
@@ -327,7 +328,9 @@
       return {
         snackbar: {},
         addNew: false,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
+        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'),
         selectedIndex: null,
         newSchedule: {},
         headers: [
