@@ -211,6 +211,7 @@
                           :disabled="!userCanEdit"
                           type="time"
                           format="h:mm a"
+                          :allowed-minutes="allowedMinutesStep"
                           input-format="HH:mm:ss"
                           label="End Time"
                         />
