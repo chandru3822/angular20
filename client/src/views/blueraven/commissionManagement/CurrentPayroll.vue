@@ -91,7 +91,10 @@
           </v-col>
           <v-col cols="12" sm="6">
             <v-card class="pa-3">
+              <label>Approved for Pay Only:</label>
+              <input type="checkbox" class="ml-2" v-model="accountingSearch.showSelectedOnly">
               <v-text-field text
+                            class="mt-3"
                             label="Project ID"
                             v-model="accountingSearch.projectId"></v-text-field>
               <v-autocomplete v-model="accountingSearch.customerId"
@@ -576,14 +579,21 @@
             params.selectedProjectIds = this.currentPayroll.selectedProjectIds
           }
           const {data} = await postRequest(`/commissionManagement/accountReview/search`, params, 'blueraven')
+          this.accountingData = []
           data.forEach(d => {
             d.selected = !!this.currentPayroll.selectedProjectIds?.includes(d.project_id)
+            if(this.accountingSearch?.showSelectedOnly && d.selected) {
+              this.accountingData.push(d)
+            }
           })
+          if(!this.accountingSearch?.showSelectedOnly) {
+            this.accountingData = data
+          }
           if(this.currentPayroll?.selectedProjectIds?.length === data.length) {
             this.selectAll = true
           }
-          this.accountingData = data
-          this.totalPay = sumBy(this.accountingData, 'current_pay')
+          
+          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
 
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

@@ -537,6 +537,7 @@ export default {
         }
         //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it shouldn't matter if it always gets updated. hows this for the longest comment ever?
         this.closerApptSaved = true
+        console.log('we shouldnt hit this')
         this.$root.$emit('projectProcessStep:checkAction')
       } catch (e) {
         logError(e)
@@ -652,6 +653,7 @@ export default {
           this.closerAppointmentDetails = data
           this.closerApptSaved = true
         }
+        console.log('blah blah')
         this.$root.$emit('projectProcessStep:checkAction')
       } catch (e) {
         logError(e)
