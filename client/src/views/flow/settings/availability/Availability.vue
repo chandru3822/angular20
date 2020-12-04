@@ -1,49 +1,51 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col cols="12">
-        <v-toolbar flat>
+    <v-row  class="pt-0">
+      <v-col cols="12"  class="pt-0">
+        <v-toolbar flat dense>
           <v-toolbar-title>
             Availability
           </v-toolbar-title>
         </v-toolbar>
-        <v-autocomplete v-if="viewAll"
-                  v-model="orgId"
-                  :items="orgs"
-                  label="Select an Organization..."
-                  item-text="orgName"
-                  item-value="id"
-                  autocomplete="off"
-                  @input="[userId = null, getApptLength()]">
-        </v-autocomplete>
-        <v-autocomplete v-model="userId"
-                  :items="users"
-                  :readonly="!viewAll"
-                  :disabled="!viewAll"
-                  label="Select a User..."
-                  item-text="fullName"
-                  item-value="id"
-                  autocomplete="off"
-                  @input="[orgId = null, getApptLength()]">
-        </v-autocomplete>
-        <div class="mb-4" v-if="userId || orgId">
-          <label>Default Appointment Length (minutes)</label>
-          <v-text-field
-            class="d-inline-block ml-3 shrink"
-            style="width:100px;"
-            type="number"
-            filled
-            dense
-            hide-details
-            :readonly="!userIsAdmin"
-            :disabled="!userIsAdmin"
-            placeholder="--"
-            @input="valueChanged = true"
-            v-model="defaultAppointmentLength"
-          ></v-text-field>
-          <v-btn class="d-inline-block" v-if="userIsAdmin && valueChanged" small text @click="saveApptLength()">
-            <v-icon>save</v-icon>
-          </v-btn>
+        <div class="px-4">
+          <v-autocomplete v-if="viewAll"
+                    v-model="orgId"
+                    :items="orgs"
+                    label="Select an Organization..."
+                    item-text="orgName"
+                    item-value="id"
+                    autocomplete="off"
+                    @input="[userId = null, getApptLength()]">
+          </v-autocomplete>
+          <v-autocomplete v-model="userId"
+                    :items="users"
+                    :readonly="!viewAll"
+                    :disabled="!viewAll"
+                    label="Select a User..."
+                    item-text="fullName"
+                    item-value="id"
+                    autocomplete="off"
+                    @input="[orgId = null, getApptLength()]">
+          </v-autocomplete>
+          <div class="mb-4" v-if="userId || orgId">
+            <label>Default Appointment Length (minutes)</label>
+            <v-text-field
+              class="d-inline-block ml-3 shrink"
+              style="width:100px;"
+              type="number"
+              filled
+              dense
+              hide-details
+              :readonly="!userIsAdmin"
+              :disabled="!userIsAdmin"
+              placeholder="--"
+              @input="valueChanged = true"
+              v-model="defaultAppointmentLength"
+            ></v-text-field>
+            <v-btn class="d-inline-block" v-if="userIsAdmin && valueChanged" small text @click="saveApptLength()">
+              <v-icon>save</v-icon>
+            </v-btn>
+          </div>
         </div>
         <v-divider class="mb-2"></v-divider>
         <v-card class="mt-3 elevation-4" v-if="userId || orgId">
