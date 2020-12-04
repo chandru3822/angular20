@@ -651,7 +651,7 @@
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
                     <v-toolbar-title class="app-title">
-                      Child Processes
+                      Child Process Steps
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>

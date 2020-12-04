@@ -10,8 +10,8 @@ import java.util.List;
 
 @Data
 public class ProcessStepWorkQueueType {
-    private Long id, processStepId, workQueueTypeId;
-    private String workQueueType;
+    private Long id, processStepId, workQueueTypeId, workQueueCategoryId;
+    private String workQueueType, workQueueCategory;
     private Boolean archived;
     private List<WorkQueueTypeProjectStatus> projectStatuses;
 }
