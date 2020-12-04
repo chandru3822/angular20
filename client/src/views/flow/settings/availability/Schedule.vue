@@ -195,6 +195,7 @@
                           :disabled="!userCanEdit"
                           type="time"
                           format="h:mm a"
+                          :allowed-minutes="allowedMinutesStep"
                           input-format="HH:mm:ss"
                           label="Start Time"
                         />
@@ -333,6 +334,7 @@
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'),
         selectedIndex: null,
         newSchedule: {},
+        allowedMinutesStep: m => m % 30 === 0,
         headers: [
           { text: 'Schedules', value: 'schedule', show: true},
           { text: '', value: 'icons', show: true}
