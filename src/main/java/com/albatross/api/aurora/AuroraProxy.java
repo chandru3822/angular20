@@ -211,6 +211,7 @@ public class AuroraProxy {
      */
     private String toSignatureString(String params) {
       log.info("AURORA: sending request to: " + httpMethod + endpoint);
+      log.info("AURORA: request params: " + params);
       return useTemplate("${httpMethod}\n${endpoint}\nAuroraKey=${apiKey}\nTimestamp=${timestamp}\n"
           +((params != null) ? (params): ""),
         "httpMethod", httpMethod.name(),
