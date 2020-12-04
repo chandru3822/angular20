@@ -353,8 +353,8 @@
               //else if new appointment - push into appointments
               this.appointments.push(data)
               this.appointments = orderBy(this.appointments, [s => s.startDate])
-              this.$store.commit(AppMutations.SET_LOADING, false)
             }
+            this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.$store.commit(AppMutations.SET_LOADING, false)
