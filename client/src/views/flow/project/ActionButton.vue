@@ -35,6 +35,7 @@ export default {
   },
   methods: {
     getActionResult: async function() {
+      console.log('truth truth')
       try {
         this.isResultLoading = true
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/actionResult/${this.actionId}`)
@@ -67,7 +68,10 @@ export default {
     this.getActionResult()
   },
   mounted () {
-    this.$root.$on('projectProcessStep:checkAction', this.getActionResult)
+    this.$root.$once('projectProcessStep:checkAction', this.getActionResult)
+  },
+  beforeDestroy() {
+    this.$root.$off('projectProcessStep:checkAction');
   }
 }
 </script>
