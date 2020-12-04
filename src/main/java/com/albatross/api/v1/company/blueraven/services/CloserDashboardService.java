@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.Org;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import java.util.Map;
 /**
  * Created by Joseph Canto on 2020-04-30.
  */
+@Slf4j
 @Service
 public class CloserDashboardService {
   @Value("${aws.storageBucket}")
@@ -187,6 +189,7 @@ public class CloserDashboardService {
 
         closerTableScoresArray.put(closerTableScoresJson);
       } catch (Exception e) {
+        log.error("CLOSER DASH: exception {}", e.getMessage());
         e.printStackTrace();
       }
     }

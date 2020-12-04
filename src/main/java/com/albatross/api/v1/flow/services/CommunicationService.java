@@ -81,8 +81,8 @@ public class CommunicationService {
       // log.info("RENDERED EMAIL: to:{} subject:{}\n{}", email, subject, baos.toString());
       mailService.sendMessage(email, subject, baos.toString(), null, sentByEmail);
     } catch (Exception e) {
-      e.printStackTrace();
       log.error("EMAIL: ERROR: Error sending email to address={}", email, e);
+      e.printStackTrace();
     }
   }
 

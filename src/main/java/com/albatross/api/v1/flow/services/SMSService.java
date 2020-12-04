@@ -123,6 +123,7 @@ public class SMSService {
                 Array varchar = connection.createArrayOf("varchar", mediaUrls);
                 source.addValue("mediaUrls", varchar);
             } catch (SQLException e) {
+                log.error("TWILIO_WEBHOOK_ERROR: media url problems");
                 e.printStackTrace();
             }
         }
@@ -154,6 +155,7 @@ public class SMSService {
                         try {
                             return new URI(s);
                         } catch (URISyntaxException e) {
+                            log.error("TWILIO_WEBHOOK_ERROR: media urls failed");
                             e.printStackTrace();
                         }
                         return null;
@@ -201,8 +203,8 @@ public class SMSService {
                 params.put("created", null);
 
                 jdbcTemplate.update(queueUpdate, params);
-
-                e.printStackTrace();
+                log.info("TWILIO: ERROR: {}",  e.toString());
+               
             }
         }
     }

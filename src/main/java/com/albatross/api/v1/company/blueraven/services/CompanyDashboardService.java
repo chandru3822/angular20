@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.CompanyDashboardDrillData;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +15,20 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 @Service
+@Slf4j
 public class CompanyDashboardService {
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
@@ -194,6 +202,7 @@ public class CompanyDashboardService {
                     plannedValuesMap.put("finalCompletionsBrs", plannedValuesMap.get("finalCompletionsBrs") + row.getFinalCompletionsBrs() *currentWeight);
                     plannedValuesMap.put("finalCompletionsPartner", plannedValuesMap.get("finalCompletionsPartner") + row.getFinalCompletionsPartner() *currentWeight);
                 } catch (Exception e) {
+                    log.error("COMPANY DASH: error {}", e.getMessage());
                     e.printStackTrace();
                     continue;
                 }
