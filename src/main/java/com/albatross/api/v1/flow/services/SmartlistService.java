@@ -274,9 +274,9 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
+      log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
-      log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
       List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
       return new SmartlistResult(fields, results);
@@ -298,8 +298,8 @@ public class SmartlistService {
         fields.forEach(f -> f.setName((f.getObjectTypeId() == 4) ? String.format("%s (%s)", f.getName(), f.getProcessStepId()) : f.getName()));
       }
 
-      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
       return writeCsv(results, fields);
