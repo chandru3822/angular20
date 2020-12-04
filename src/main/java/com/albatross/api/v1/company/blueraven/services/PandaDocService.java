@@ -505,7 +505,7 @@ public class PandaDocService {
           try {
             sendDocument(projectId, documentId, tokens);
           } catch (Exception ex) {
-            log.error("PANDADOC: failed to send document: {}", ex);
+            log.error("PANDADOC: failed to send document: {}", ex.getMessage());
             ex.printStackTrace();
           }
         }
@@ -587,7 +587,7 @@ public class PandaDocService {
         tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
         tokens.put("Deal.Total System Price", result.get("custom_fields.Total System Price"));
     } catch (EmptyResultDataAccessException e) {
-        log.warn("PANDADOC Error getting proposal log values: {}", e);
+        log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
         e.printStackTrace();
     }
 
@@ -671,7 +671,7 @@ public class PandaDocService {
         tokens.put("Date", today);
 
     } catch (EmptyResultDataAccessException e) {
-        log.warn("PANDADOC Error getting proposal log values: {}", e);
+        log.warn("PANDADOC Error getting proposal log values: {}", e.getMessage());
         e.printStackTrace();
     }
 

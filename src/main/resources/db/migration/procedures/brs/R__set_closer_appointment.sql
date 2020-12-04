@@ -29,8 +29,8 @@ BEGIN
     if array_length(p_users, 1) < 2 then
         select p_users[1]
         into v_user_id;
-        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available,created_date)
-        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true,now());
+        insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id, distance_from_actual_to_target, appointment_start_date,is_only_user_available,created_date,available_users)
+        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true,now(),p_users);
     else
 
      --   select p_users[1]
@@ -39,7 +39,8 @@ BEGIN
                                                       distance_from_actual_to_target, appointment_start_date,
                                                       total_lead_allocation, actual_lead_allocation, score,
                                                       lead_gen_num, lead_gen_den, self_gen, total_avail,
-                                                      appointment_count_with_interval, appointment_count,created_date
+                                                      appointment_count_with_interval, appointment_count,created_date,
+                                                      available_users
                                                       )
         (with round_robin_users as (
             select up.user_id, pcz.distribution_time_frame_days
@@ -53,7 +54,7 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_num
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                         closer_appointment_start >= now() - interval '42 days'
+                                                         closer_appointment_start >= now() - interval '90 days'
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -66,11 +67,11 @@ BEGIN
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               first_cash_payment_paid_date, utility_bill_verified_date,
                                               proof_of_homeowners_insurance_obtained_date)
-                                         between now() - interval '42 days' and now()
+                                         between now() - interval '90 days' and now()
                              else
                                  greatest(final_design_signed_date, financial_agreement_signed_date,
                                           proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     between now() - interval '42 days' and now()
+                                     between now() - interval '90 days' and now()
                                                              end
                      AND ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
                           left join flow.project p on p.id = pd.project_id
@@ -80,7 +81,7 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_den
                  from round_robin_users rru
                     left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                        closer_appointment_start >= now() - interval '42 days'
+                                                        closer_appointment_start >= now() - interval '90 days'
                      and pd.source not in (523,524,530)
                           left  join flow.project p on p.id = pd.project_id
                  group by rru.user_id),
@@ -90,7 +91,7 @@ BEGIN
                       left join brs.project_details pd on rru.user_id = pd.closer_user_id and
                                                           greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
                                                                    utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >=
-                                                          now() - interval '42 days'
+                                                          now() - interval '90 days'
                      and pd.source in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -111,7 +112,7 @@ BEGIN
                  select rru.user_id, count(pd2.id) as appointment_count
                  from round_robin_users rru
                       left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 and  closer_appointment_start between now() - interval '42 days' and now() + interval '100 days'
+                 and  closer_appointment_start between now() - interval '90 days' and now() + interval '100 days'
                  group by rru.user_id),
              appointment_count_with_interval as (
                  select rru.user_id, count(pd2.id) as appointment_count_with_interval
@@ -128,7 +129,7 @@ BEGIN
                foo3.distance_from_actual_to_target,p_appointment_start_time,
                foo3.total_lead_allocation,foo3.acutal_lead_allocation,foo3.score,
                foo3.lead_gen_num,foo3.lead_gen_den,foo3.self_gen,foo3.avail,
-               foo3.appointment_count_with_interval,foo3.appointment_count,now()
+               foo3.appointment_count_with_interval,foo3.appointment_count,now(),p_users
         from (
                  select foo2.user_id, acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target,
                         foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
@@ -199,7 +200,6 @@ BEGIN
                                    group by foo.user_id, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
                                             foo.appointment_count,
                                             foo.avail, foo.appointment_count_with_interval) as foo1) as foo2
-                 where foo2.user_id = any (p_users)
                  group by foo2.user_id, foo2.acutal_lead_allocation, foo2.total_lead_allocation,
                           foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
                           foo2.lead_gen_num,
@@ -213,6 +213,7 @@ BEGIN
         into v_user_id
         from brs.set_closer_appointment_audit scau
         where project_process_step_id = p_project_process_step_id
+        and scau.user_id = any(p_users)
         order by distance_from_actual_to_target
         limit 1;
     end if;

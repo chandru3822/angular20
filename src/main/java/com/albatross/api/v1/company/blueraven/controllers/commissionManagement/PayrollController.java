@@ -112,6 +112,7 @@ public class PayrollController {
             String summary = payrollService.getAccountSummaryForCurrentPayroll();
             return ResponseEntity.ok(summary);
         } catch (Exception e) {
+            log.error("COMMISSION: payroll account summary error {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -123,6 +124,7 @@ public class PayrollController {
             String summary = payrollService.getAccountSummaryByPayrollId(payrollId);
             return ResponseEntity.ok(summary);
         } catch (Exception e) {
+            log.error("COMMISSION: payroll summary by payroll id error {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
