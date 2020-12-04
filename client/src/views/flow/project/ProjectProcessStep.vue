@@ -229,6 +229,7 @@
             <v-text-field color="primaryCustom"
                           v-model="closerAppointmentDetails.userFullName"
                           readonly
+                          disabled
                           label="Closer"></v-text-field>
           </div>
         </v-card-text>

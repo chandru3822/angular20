@@ -293,20 +293,20 @@ public class CompanyDashboardService {
         }
         dashValues.put(siteSurveysVerifiedValues);
 
-        // Final Designs QA'd
-        JSONObject finalDesignsQadValues = new JSONObject();
-        finalDesignsQadValues.put(MILESTONE, "Final Designs QA'd");
-        finalDesignsQadValues.put(ACTUAL_TOTAL, getValueFromSqlKey("dash.getFinalDesignsQadActualTotal", params));
+        // Final Designs Created
+        JSONObject finalDesignsCreatedValues = new JSONObject();
+        finalDesignsCreatedValues.put(MILESTONE, "Final Designs Created");
+        finalDesignsCreatedValues.put(ACTUAL_TOTAL, getValueFromSqlKey("dash.getFinalDesignsCreatedActualTotal", params));
 
         if (isParent) {
-            finalDesignsQadValues.put(ACTUAL_BRS, getValueFromSqlKey("dash.getFinalDesignsQadActualBrs", params));
-            finalDesignsQadValues.put(ACTUAL_PARTNER, getValueFromSqlKey("dash.getFinalDesignsQadActualPartner", params));
-            finalDesignsQadValues.put(PLANNED_TOTAL, "-");
-            finalDesignsQadValues.put(PLANNED_BRS, "-");
-            finalDesignsQadValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(finalDesignsQadValues);
+            finalDesignsCreatedValues.put(ACTUAL_BRS, getValueFromSqlKey("dash.getFinalDesignsCreatedActualBrs", params));
+            finalDesignsCreatedValues.put(ACTUAL_PARTNER, getValueFromSqlKey("dash.getFinalDesignsCreatedActualPartner", params));
+            finalDesignsCreatedValues.put(PLANNED_TOTAL, "-");
+            finalDesignsCreatedValues.put(PLANNED_BRS, "-");
+            finalDesignsCreatedValues.put(PLANNED_PARTNER, "-");
+            addDifferenceValues(finalDesignsCreatedValues);
         }
-        dashValues.put(finalDesignsQadValues);
+        dashValues.put(finalDesignsCreatedValues);
 
         // Final Designs Sent
         JSONObject finalDesignsSentValues = new JSONObject();
@@ -598,15 +598,15 @@ public class CompanyDashboardService {
                 sql = "dash.getSiteSurveysVerifiedActualPartnerDrilldown";
             }
         }
-        else if (milestone.equals("Final Designs QA'd")) {
+        else if (milestone.equals("Final Designs Created")) {
             if (column.equals(TOTAL)) {
-                sql = "dash.getFinalDesignsQadActualTotalDrilldown";
+                sql = "dash.getFinalDesignsCreatedActualTotalDrilldown";
             }
             else if (column.equals(BRS)) {
-                sql = "dash.getFinalDesignsQadActualBrsDrilldown";
+                sql = "dash.getFinalDesignsCreatedActualBrsDrilldown";
             }
             else if (column.equals(PARTNER)) {
-                sql = "dash.getFinalDesignsQadActualPartnerDrilldown";
+                sql = "dash.getFinalDesignsCreatedActualPartnerDrilldown";
             }
         }
         else if (milestone.equals("Final Designs Sent")) {
@@ -795,8 +795,8 @@ public class CompanyDashboardService {
             put("bookingsPartner", 0.0);
             put("siteSurveysVerifiedBrs", 0.0);
             put("siteSurveysVerifiedPartner", 0.0);
-            put("finalDesignsQadBrs", 0.0);
-            put("finalDesignsQadPartner", 0.0);
+            put("finalDesignsCreatedBrs", 0.0);
+            put("finalDesignsCreatedPartner", 0.0);
             put("finalDesignsSentBrs", 0.0);
             put("finalDesignsSentPartner", 0.0);
             put("finalDesignsApprovedBrs", 0.0);
