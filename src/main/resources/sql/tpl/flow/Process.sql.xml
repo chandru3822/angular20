@@ -1,16 +1,17 @@
 <sql>
   <process.getAllForCompany>
     <![CDATA[
-             select process.id,
+             select cp.id,
+                    cp.process_id,
                     process.process_name,
-                    company_process.company_id,
+                    cp.company_id,
                     process.created_by_id,
-                    company_process.archived,
+                    cp.archived,
                     process.parent_company_id
-             from flow.company_process
-             inner join flow.process on process.id = company_process.process_id
+             from flow.company_process cp
+             inner join flow.process on process.id = cp.process_id
              where company_id = :companyId
-              and company_process.archived is not true
+              and cp.archived is not true
              order by process.process_name;
     ]]>
   </process.getAllForCompany>
@@ -26,7 +27,7 @@
                   SELECT array_to_json(array_agg(row_to_json(processSteps)))
                   FROM (
                        select psp.id,
-                              psp.process_id as "processId",
+                              psp.company_process_id as "companyProcessId",
                               psp.process_step_id as "processStepId",
                               ps.company_id as "companyId",
                               psp.initial_step as "initialStep",
@@ -55,7 +56,7 @@
                        from flow.process_step_process psp
                             inner join flow.process_step ps on ps.id = psp.process_step_id
                             left join flow.company_process_step_status_type cpsst on cpsst.id = psp.company_process_step_status_type_id
-                       where psp.process_id = p.id and psp.archived is not true
+                       where psp.company_process_id = cp.id and psp.archived is not true
                        order by ps.process_step_name) processSteps), '[]') AS "processStepProcesses"
       from flow.company_process cp
           inner join flow.process p on p.id = cp.process_id
@@ -120,7 +121,7 @@
               select process_step_id
               from flow.process_step_process psp
               where psp.process_step_id = ps.id
-                and psp.process_id = :processId
+                and psp.company_process_id = :companyProcessId
                 and archived is not true
           )
       order by ps.process_step_name
@@ -135,14 +136,14 @@
       where ps.archived is not true
         and ps.company_id = :companyId
         and ps.non_admin_add is true
-        and psp.process_id = :processId
+        and psp.company_process_id = :companyProcessId
       order by ps.process_step_name
     ]]>
   </process.nonAdminProcessStepsForProcess>
   <process.insertProcessStepProcess>
     <![CDATA[
-      insert into flow.process_step_process (process_id, process_step_id, created_by_id, date_created)
-      values (:processId, :processStepId, :createdById, now())
+      insert into flow.process_step_process (company_process_id, process_step_id, created_by_id, date_created)
+      values (:companyProcessId, :processStepId, :createdById, now())
     ]]>
   </process.insertProcessStepProcess>
 
@@ -160,7 +161,7 @@
   <process.getInitialProcessStepProcesses>
     <![CDATA[
       select psp.id,
-             psp.process_id as "processId",
+             psp.company_process_id as "companyProcessId",
              psp.process_step_id as "processStepId",
              ps.company_id as "companyId",
              psp.initial_step as "initialStep",
@@ -175,7 +176,7 @@
       from flow.process_step_process psp
                inner join flow.process_step ps on ps.id = psp.process_step_id
                left join flow.company_process_step_status_type cpsst on cpsst.id = psp.company_process_step_status_type_id
-      where psp.process_id = :processId
+      where psp.company_process_id = :companyProcessId
         and psp.archived is not true
         and psp.initial_step is true
       order by ps.process_step_name
@@ -203,7 +204,7 @@
   <process.getOneProcessStepProcess>
     <![CDATA[
       select psp.id,
-       psp.process_id as "processId",
+       psp.company_process_id as "companyProcessId",
        psp.process_step_id as "processStepId",
        ps.company_id as "companyId",
        psp.date_created as "dateCreated",
