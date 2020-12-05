@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.flow.model.Process;
+import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.model.ProcessStepProcess;
 import com.albatross.api.v1.flow.model.User;
@@ -28,13 +28,13 @@ public class ProcessController {
     private final ProcessService processService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Process>> getProcessesForCompany(@RequestParam(required = false) Long contactId) {
+    public ResponseEntity<List<CompanyProcess>> getProcessesForCompany(@RequestParam(required = false) Long contactId) {
         return new ResponseEntity<>(processService.getProcessesForCompany(contactId), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Process> getProcess(@PathVariable Long processId,
-                                              @RequestParam(required = false) Long projectId) {
+    public ResponseEntity<CompanyProcess> getProcess(@PathVariable Long processId,
+                                                     @RequestParam(required = false) Long projectId) {
       User user = securityService.getCurrentUser();
       return processService.getProcess(user.getCompanyId(), processId, projectId)
         .map(ResponseEntity::ok)
@@ -48,13 +48,13 @@ public class ProcessController {
     }
 
     @PutMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateProcess(@RequestBody Process process) {
+    public ResponseEntity<?> updateProcess(@RequestBody CompanyProcess process) {
         processService.updateProcess(process);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<Process> insertProcess(@RequestBody Process process) {
+    public Optional<CompanyProcess> insertProcess(@RequestBody CompanyProcess process) {
         return processService.insertProcess(process);
     }
 
@@ -65,32 +65,32 @@ public class ProcessController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(value = "/{processId}/availableProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ProcessStep> availableProcessStepsForProcess(@PathVariable Long processId) {
-        return processService.availableProcessSteps(processId);
+    @GetMapping(value = "/{companyProcessId}/availableProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ProcessStep> availableProcessStepsForProcess(@PathVariable Long companyProcessId) {
+        return processService.availableProcessSteps(companyProcessId);
     }
 
-  @GetMapping(value = "/{processId}/nonAdminProcessStepsForProcess", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStep> nonAdminProcessStepsForProcess(@PathVariable Long processId,
+  @GetMapping(value = "/{companyProcessId}/nonAdminProcessStepsForProcess", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStep> nonAdminProcessStepsForProcess(@PathVariable Long companyProcessId,
                                                           @RequestParam(required = false) Long projectId) {
-    return processService.nonAdminProcessStepsForProcess(processId, projectId);
+    return processService.nonAdminProcessStepsForProcess(companyProcessId, projectId);
   }
 
-    @PostMapping(value = "/{processId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<ProcessStepProcess> insertProcessStepProcess(@PathVariable Long processId, @RequestBody ProcessStepProcess processStepProcess) {
-        return processService.insertProcessStepProcess(processId, processStepProcess);
+    @PostMapping(value = "/{companyProcessId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Optional<ProcessStepProcess> insertProcessStepProcess(@PathVariable Long companyProcessId, @RequestBody ProcessStepProcess processStepProcess) {
+        return processService.insertProcessStepProcess(companyProcessId, processStepProcess);
     }
 
-    @PutMapping(value = "/{processId}/processStepProcesses", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<Process>  updateProcessStepProcesses(@PathVariable Long processId,
-                                           @RequestBody List<ProcessStepProcess> processStepProcesses) {
-        return processService.updateProcessStepProcesses(processId, processStepProcesses);
+    @PutMapping(value = "/{companyProcessId}/processStepProcesses", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Optional<CompanyProcess>  updateProcessStepProcesses(@PathVariable Long companyProcessId,
+                                                                @RequestBody List<ProcessStepProcess> processStepProcesses) {
+        return processService.updateProcessStepProcesses(companyProcessId, processStepProcesses);
     }
 
-    @PutMapping(value = "/{processId}/processStepProcess", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<ProcessStepProcess> updateProcessStepProcess(@PathVariable Long processId,
+    @PutMapping(value = "/{companyProcessId}/processStepProcess", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Optional<ProcessStepProcess> updateProcessStepProcess(@PathVariable Long companyProcessId,
                                          @RequestBody ProcessStepProcess processStepProcess) {
-        return processService.updateProcessStepProcess(processId, processStepProcess);
+        return processService.updateProcessStepProcess(companyProcessId, processStepProcess);
     }
 
 //    @PutMapping(value = "/{processId}/initialProcessStepProcess", produces = MediaType.APPLICATION_JSON_VALUE)

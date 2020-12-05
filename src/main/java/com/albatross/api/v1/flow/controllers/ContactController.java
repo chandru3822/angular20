@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.Process;
+import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +80,7 @@ public class ContactController {
 
     @PutMapping(value = "/{contactId}/convert", produces = MediaType.APPLICATION_JSON_VALUE)
     public Project convertToContact(@PathVariable Long contactId,
-                                  @RequestBody Process process) {
+                                  @RequestBody CompanyProcess process) {
         // need to return the project so the frontend can navigate to /project/{id}
         return contactService.convertToContact(contactId, process);
     }

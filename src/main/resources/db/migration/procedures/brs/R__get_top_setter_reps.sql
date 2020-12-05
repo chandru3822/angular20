@@ -8,24 +8,19 @@ BEGIN
 
   RETURN QUERY
     with top_reps as (
-      select u.id as user_id,
+      select pd.setter_user_id as user_id,
              concat(u.first_name, ' ', u.last_name) AS name,
              count(1) pitches,
              rank() over (order by count(1) desc) as rank
       from flow.project p
         inner join brs.project_details pd on pd.project_id = p.id
         inner join flow.contact c on c.id = p.contact_id
-        inner join flow.user_positions_vw upv on (upv.user_position_id = c.owner_user_position_id and upv.position_id = 4)
-        inner join flow.user u on u.id = upv.user_id
-        inner join flow.company_user_status cus on cus.user_id = u.id
-        inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
-      where ust.user_status_type = 'Active'
-        and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
-        and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
-        and u.id not in (2354810, 2390159) --Trizon and Central Solar
-        and upv.primary_flag is true
-        and upv.position_level = 0
-      group by u.id, name
+        inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+        inner join flow.user u on u.id = pd.setter_user_id
+      where pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
+        and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+        and pd.setter_user_id not in (2354810, 2390159) --Trizon and Central Solar
+      group by pd.setter_user_id, name
     )
     select array_to_json(array_agg(row_to_json(sub_rows)))
     from (

@@ -187,6 +187,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.getId());
     params.put("id", childProcessId);
+    
     sqlCache.update("processStepAction.deleteActionChildStep", params);
   }
 

@@ -36,12 +36,13 @@ BEGIN
                            pd.closer_appointment_outcome_name as appointment_outcome,
                            p.date_created::date,
                            s.abbreviation as state,
-                           upv.org_name as office
+                           o.org_name as office
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
-                        left join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                        left join flow.user su on su.id = upv.user_id
+                        inner join flow.user su on su.id = pd.setter_user_id
+                        inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                        inner join flow.org o on o.id = up.org_id
                         left join flow.user cu on cu.id = pd.closer_user_id
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
@@ -49,7 +50,6 @@ BEGIN
                     where pd.source = 525 --Setter Gen
                         and pd.closer_appointment_start is not null
                         and p.date_created::date between p_start_date and p_end_date
-                        and upv.position_level = 0
                 ) as me
                 order by setter_name, project_id
             ) as funnel_rows;
@@ -69,12 +69,13 @@ BEGIN
                        pd.closer_appointment_outcome_name as appointment_outcome,
                        p.date_created::date,
                        s.abbreviation as state,
-                       upv.org_name as office
+                       o.org_name as office
                 from brs.project_details pd
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
-                    left join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                    left join flow.user su on su.id = upv.user_id
+                    inner join flow.user su on su.id = pd.setter_user_id
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                    inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
@@ -83,7 +84,6 @@ BEGIN
                     and pd.closer_appointment_start is not null
                     and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
                     and p.date_created::date between p_start_date and p_end_date
-                    and upv.position_level = 0
                 order by setter_name, appointment_date
             ) as funnel_rows;
 
@@ -103,12 +103,13 @@ BEGIN
                        pd.closer_appointment_outcome_name as appointment_outcome,
                        p.date_created::date,
                        s.abbreviation as state,
-                       upv.org_name as office
+                       o.org_name as office
                 from brs.project_details pd
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
-                    left join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                    left join flow.user su on su.id = upv.user_id
+                    inner join flow.user su on su.id = pd.setter_user_id
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                    inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
@@ -117,7 +118,6 @@ BEGIN
                     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     and pd.closer_appointment_start is not null
                     and p.date_created::date between p_start_date and p_end_date
-                    and upv.position_level = 0
                 order by setter_name, appointment_date
             ) as funnel_rows;
         end case;
@@ -150,12 +150,13 @@ BEGIN
                            pd.closer_appointment_outcome_name as appointment_outcome,
                            p.date_created::date,
                            s.abbreviation as state,
-                           upv.org_name as office
+                           o.org_name as office
                     from brs.project_details pd
                         inner join flow.project p on p.id = pd.project_id
                         inner join flow.contact c on c.id = p.contact_id
-                        left join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                        left join flow.user su on su.id = upv.user_id
+                        inner join flow.user su on su.id = pd.setter_user_id
+                        inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                        inner join flow.org o on o.id = up.org_id
                         left join flow.user cu on cu.id = pd.closer_user_id
                         left outer join flow.company_state cs on cs.id = p.company_state_id
                         left outer join flow.state s on s.id = cs.state_id
@@ -163,10 +164,8 @@ BEGIN
                     where pd.source = 525 --Setter Gen
                         and pd.closer_appointment_start is not null
                         and p.date_created::date between p_start_date and p_end_date
-                        and upv.position_level = 0
-                        and su.id is not null
-                        and su.id = any(p_user_ids)
-                        and su.id = any(brs.limit_by_org_for_setters(Array[su.id]::integer[],p_org_ids,p.date_created::date))
+                        and pd.setter_user_id = any(p_user_ids)
+                        and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))
                 ) as me
                 order by setter_name, project_id
             ) as funnel_rows;
@@ -186,12 +185,13 @@ BEGIN
                        pd.closer_appointment_outcome_name as appointment_outcome,
                        p.date_created::date,
                        s.abbreviation as state,
-                       upv.org_name as office
+                       o.org_name as office
                 from brs.project_details pd
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
-                    left join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                    left join flow.user su on su.id = upv.user_id
+                    inner join flow.user su on su.id = pd.setter_user_id
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                    inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
@@ -200,10 +200,8 @@ BEGIN
                     and p.date_created::date between p_start_date and p_end_date
                     and pd.closer_appointment_start is not null
                     and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
-                    and upv.position_level = 0
-                    and su.id is not null
-                    and su.id = any(p_user_ids)
-                    and su.id = any(brs.limit_by_org_for_setters(Array[su.id]::integer[],p_org_ids,p.date_created::date))
+                    and pd.setter_user_id = any(p_user_ids)
+                    and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))
                 order by setter_name, appointment_date
             ) as funnel_rows;
 
@@ -222,12 +220,13 @@ BEGIN
                        pd.closer_appointment_outcome_name as appointment_outcome,
                        p.date_created::date,
                        s.abbreviation as state,
-                       upv.org_name as office
+                       o.org_name as office
                 from brs.project_details pd
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
-                    left join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                    left join flow.user su on su.id = upv.user_id
+                    inner join flow.user su on su.id = pd.setter_user_id
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                    inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
@@ -236,10 +235,8 @@ BEGIN
                     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     and pd.closer_appointment_start is not null
                     and p.date_created::date between p_start_date and p_end_date
-                    and upv.position_level = 0
-                    and su.id is not null
-                    and su.id = any(p_user_ids)
-                    and su.id = any(brs.limit_by_org_for_setters(Array[su.id]::integer[],p_org_ids,p.date_created::date))
+                    and pd.setter_user_id = any(p_user_ids)
+                    and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))
                 order by setter_name, appointment_date
             ) as funnel_rows;
 

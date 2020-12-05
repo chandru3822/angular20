@@ -858,6 +858,7 @@
       showFunnel: false,
       performanceDataLoaded: false,
       rankingTablesLoaded: false,
+      funnelDataLoaded: false,
       dashboardWasLoaded: false,
       funnelWasLoaded: false,
       currentQuarter: moment().quarter(),
@@ -1025,7 +1026,7 @@
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
       '$store.state.app.loading': function () {
-        if (!this.performanceDataLoaded || !this.rankingTablesLoaded) {
+        if ((this.showDashboard && !this.performanceDataLoaded || !this.rankingTablesLoaded) || (this.showFunnel && !this.funnelDataLoaded)) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
       },
@@ -1277,7 +1278,7 @@
           const params = {
             quarter,
             isSetterMgr: this.isSetterMgr,
-            setterMgrOfficeId: this.setterMgrOfficeId
+            setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
           }
           const {data} = await getRequestWithParams('/setterDashboard/pitchesDrilldown', {params}, 'blueraven')
           this.milestoneDrilldownData = cloneDeep(data)
@@ -1613,10 +1614,14 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getSetterDistricts(this.currentUserId).then(res => {
-          this.districtData = res
+          if (res?.length > 0) {
+            this.districtData = res
+          }
 
           if (preSelectLists) {
             this.districtModel = cloneDeep(this.districtData)
+          } else {
+            this.funnelDataLoaded = true
           }
 
           if (this.districtModel.length > 0) {
@@ -1807,11 +1812,13 @@
       },
 
       async pipelineLoad (targetInstallations, start, end, useRepDataInstead) {
+        this.funnelDataLoaded = false
         let reps = []
         let orgs = []
 
         if ((this.repModel.length === 0 && !useRepDataInstead) || (useRepDataInstead && this.repData.length === 0)) {
           this.funnelStats = []
+          this.funnelDataLoaded = true
           return
         }
 
@@ -1883,12 +1890,14 @@
             })
 
             this.funnelStats = data
+            this.funnelDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           })
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving pipeline data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.funnelDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -2119,6 +2128,10 @@
           if (this.selectAllReps) {
             this.repModel = []
             this.funnelStats = []
+          } else if (!this.selectAllReps && (this.isSetter || this.isSetterMgr || this.isSetterRegional)) {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            this.repModel = cloneDeep(this.repData)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
           } else {
             this.$store.commit(AppMutations.SET_LOADING, true)
             this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, true)

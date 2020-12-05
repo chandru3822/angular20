@@ -38,21 +38,18 @@ BEGIN
                 from flow.project p
                     inner join brs.project_details pd on pd.project_id = p.id
                     inner join flow.contact c on c.id = p.contact_id
-                    inner join flow.user_positions_vw upv on (upv.user_position_id = c.owner_user_position_id and upv.position_id = 4)
-                    inner join flow.user u on u.id = upv.user_id
-                    inner join flow.org o on (o.id = upv.org_id and o.active_flag is true)
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                    inner join flow.user u on u.id = pd.setter_user_id
+                    inner join flow.org o on (o.id = up.org_id and o.active_flag is true)
                     left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
                 where pd.source in (525, 526) --(Setter Gen, Retargeted)
-                    and case when upv.end_date is not null
-                        then p.date_created::date between upv.start_date and upv.end_date
-                        else p.date_created::date >= upv.start_date
+                    and case when up.end_date is not null
+                        then p.date_created::date between up.start_date and up.end_date
+                        else p.date_created::date >= up.start_date
                         end
-                    and upv.primary_flag is true
-                    and upv.position_level = 0
-                    and upv.position_id = 4
                     and pd.closer_appointment_start between p_start_date and p_end_date
-                    and pd.closer_appointment_outcome in (2,1139,1140)
-                    and o.id != 171
+                    and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                    and o.id != 171 --Setter Call Center
                 group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')
             ) as ranks
         ) as office_to_beat

@@ -23,31 +23,23 @@ BEGIN
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
-                 inner join flow.user u on u.id = upv.user_id
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and pd.closer_appointment_start between p_start_date and p_end_date
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
-                 and u.id is not null
-                 and u.id not in (2354810, 2390159)
-                 and u.id = p_user_id
-                 and upv.primary_flag is true
-                 and upv.position_level = 0
+                 and pd.setter_user_id not in (2354810, 2390159)
+                 and pd.setter_user_id = p_user_id
             ) as total_appointments,
             (select count(1)::bigint
              from flow.project p
                  inner join brs.project_details pd on pd.project_id = p.id
                  inner join flow.contact c on c.id = p.contact_id
-                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
-                 inner join flow.user u on u.id = upv.user_id
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and pd.closer_appointment_start between p_start_date and p_end_date
-                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed)
-                 and u.id is not null
-                 and u.id not in (2354810, 2390159)
-                 and u.id = p_user_id
-                 and upv.primary_flag is true
-                 and upv.position_level = 0
+                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                 and pd.setter_user_id not in (2354810, 2390159)
+                 and pd.setter_user_id = p_user_id
             ) as total_pitches
         ) rpt
     ) as sub_rows;
