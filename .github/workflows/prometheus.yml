@@ -62,5 +62,5 @@ jobs:
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
                     task-definition: ${{ steps.app-task-def.outputs.task-definition }}
-                    service: prometheus-fargate-service
-                    cluster: prometheus-fargate-cluster
+                    service: prometheus-service
+                    cluster: prometheus-cluster
