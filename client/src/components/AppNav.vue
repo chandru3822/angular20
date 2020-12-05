@@ -72,7 +72,11 @@
         </v-app-bar>
       </v-col>
     </v-row>
-    
+    <div id="context-label"
+         @click="goToPath('/home')"
+         v-if="companies.length > 1 && selectedCompany.companyName" class="rounded-tr-xl">
+      {{selectedCompany.companyName}}
+    </div>
   </div>
 </template>
 
@@ -229,6 +233,17 @@ export default {
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
   border: none !important;
+}
+
+#context-label {
+  opacity: .85;
+  position: absolute;
+  left: 0;
+  color: #fff;
+  bottom: 0;
+  padding: 5px 15px 5px 10px;
+  z-index: 1000;
+  background-color: var(--v-primaryCustom-base);
 }
 
 @media (min-width: 769px) {
