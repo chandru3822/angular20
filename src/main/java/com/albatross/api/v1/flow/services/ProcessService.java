@@ -5,7 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.StatusType;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.Process;
+import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -32,7 +32,7 @@ public class ProcessService {
 
     private final SecurityService securityService;
 
-    public List<Process> getProcessesForCompany(Long contactId) {
+    public List<CompanyProcess> getProcessesForCompany(Long contactId) {
       User user = securityService.getCurrentUser();
       Long companyId = user.getCompanyId();
 
@@ -43,19 +43,19 @@ public class ProcessService {
             companyId = sqlCache.queryForObject("contact.getCompanyId", params, Long.class);
         }
 
-      return sqlCache.query("process.getAllForCompany", ImmutableMap.of("companyId", companyId), Process.class);
+      return sqlCache.query("process.getAllForCompany", ImmutableMap.of("companyId", companyId), CompanyProcess.class);
     }
 
-    public Optional<Process> getProcess(Long companyId, Long processId, Long projectId) {
+    public Optional<CompanyProcess> getProcess(Long companyId, Long processId, Long projectId) {
         if(null != projectId) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("projectId", projectId);
             companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
         }
-        Optional<Process> result = sqlCache.get("process.get",
+        Optional<CompanyProcess> result = sqlCache.get("process.get",
           ImmutableMap.of("companyId", companyId,
                           "processId", processId),
-          new ProcessMapper<>(Process.class, om));
+          new ProcessMapper<>(CompanyProcess.class, om));
         return result;
     }
 
@@ -71,7 +71,7 @@ public class ProcessService {
             ImmutableMap.of("processId", processId));
     }
 
-    public void updateProcess(Process process) {
+    public void updateProcess(CompanyProcess process) {
         User currentUser = securityService.getCurrentUser();
 
         sqlCache.update("process.update",
@@ -81,7 +81,7 @@ public class ProcessService {
                     "modifiedById", currentUser.getId()));
     }
 
-    public Optional<Process> insertProcess(Process process) {
+    public Optional<CompanyProcess> insertProcess(CompanyProcess process) {
         User user = securityService.getCurrentUser();
         // insert the row into process, this will likely change as we allow processes to be shared between companies
         // parentCompanyId will be used for sharing processes later on
@@ -110,16 +110,16 @@ public class ProcessService {
                 "modifiedById", currentUser.getId()));
     }
 
-    public List<ProcessStep> availableProcessSteps(Long processId) {
+    public List<ProcessStep> availableProcessSteps(Long companyProcessId) {
       User user = securityService.getCurrentUser();
       List<ProcessStep> results = sqlCache.query("process.availableProcessSteps",
-            ImmutableMap.of("processId", processId,
+            ImmutableMap.of("companyProcessId", companyProcessId,
                             "companyId", user.getCompanyId()), ProcessStep.class);
 
         return results;
     }
 
-    public List<ProcessStep> nonAdminProcessStepsForProcess(Long processId, Long projectId) {
+    public List<ProcessStep> nonAdminProcessStepsForProcess(Long companyProcessId, Long projectId) {
         Long companyId;
         if(null != projectId) {
             HashMap<String, Object> params = new HashMap<>();
@@ -130,7 +130,7 @@ public class ProcessService {
             companyId = user.getCompanyId();
         }
         List<ProcessStep> results = sqlCache.query("process.nonAdminProcessStepsForProcess",
-          ImmutableMap.of("processId", processId,
+          ImmutableMap.of("companyProcessId", companyProcessId,
             "companyId", companyId), ProcessStep.class);
 
         return results;
@@ -143,10 +143,10 @@ public class ProcessService {
         return result;
     }
 
-    public Optional<ProcessStepProcess> insertProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
+    public Optional<ProcessStepProcess> insertProcessStepProcess(Long companyProcessId, ProcessStepProcess processStepProcess) {
         User currentUser = securityService.getCurrentUser();
         HashMap<String, Object> params = new HashMap<>();
-        params.put("processId", processId);
+        params.put("companyProcessId", companyProcessId);
         params.put("createdById", currentUser.getId());
         params.put("processStepId", processStepProcess.getProcessStepId());
 
@@ -163,22 +163,22 @@ public class ProcessService {
         return getOneProcessStepProcess(id);
     }
 
-    public Optional<Process> updateProcessStepProcesses(Long processId, List<ProcessStepProcess> processStepProcesses) {
+    public Optional<CompanyProcess> updateProcessStepProcesses(Long companyProcessId, List<ProcessStepProcess> processStepProcesses) {
 
         User user = securityService.getCurrentUser();
 
         for(ProcessStepProcess psp : processStepProcesses){
-            updateProcessStepProcess(processId, psp);
+            updateProcessStepProcess(companyProcessId, psp);
         }
 
-        return getProcess(user.getCompanyId(), processId, null);
+        return getProcess(user.getCompanyId(), companyProcessId, null);
     }
 
-    public Optional<ProcessStepProcess> updateProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
+    public Optional<ProcessStepProcess> updateProcessStepProcess(Long companyProcessId, ProcessStepProcess processStepProcess) {
         User currentUser = securityService.getCurrentUser();
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("processId", processId);
+        params.put("companyProcessId", companyProcessId);
         params.put("modifiedById", currentUser.getId());
         params.put("initialStep", processStepProcess.isInitialStep());
         params.put("displayOrder", processStepProcess.getDisplayOrder());
@@ -207,9 +207,9 @@ public class ProcessService {
         return getOneProcessStepProcess(processStepProcess.getId());
     }
 
-    public List<ProcessStepProcess> getInitialProcessStepProcesses(Long processId) {
+    public List<ProcessStepProcess> getInitialProcessStepProcesses(Long companyProcessId) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("processId", processId);
+        params.put("companyProcessId", companyProcessId);
 
         List<ProcessStepProcess> results = sqlCache.query("process.getInitialProcessStepProcesses", params, ProcessStepProcess.class);
 

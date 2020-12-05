@@ -9,8 +9,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Data
 @NoArgsConstructor
-public class Process {
-    private Long id, companyId, createdById, modifiedById, parentCompanyId;
+public class CompanyProcess {
+    private Long id, companyId, createdById, modifiedById, parentCompanyId, processId;
     private String processName;
     private Boolean archived;
     private List<ProcessStepProcess> processStepProcesses;
