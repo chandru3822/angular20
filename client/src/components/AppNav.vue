@@ -72,6 +72,7 @@
         </v-app-bar>
       </v-col>
     </v-row>
+    
   </div>
 </template>
 
