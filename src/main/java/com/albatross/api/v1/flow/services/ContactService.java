@@ -5,7 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ContactType;
-import com.albatross.api.v1.flow.model.Process;
+import com.albatross.api.v1.flow.model.CompanyProcess;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -192,7 +192,7 @@ public class ContactService {
     return sqlCache.query("contact.getOwners", Map.of("companyId", user.getCompanyId(), "inParentCompany", inParentCompany), Owner.class);
   }
   
-  public Project convertToContact(Long contactId, Process process) {
+  public Project convertToContact(Long contactId, CompanyProcess process) {
     User currentUser = securityService.getCurrentUser();
     
     //save contact_type_id
