@@ -102,14 +102,17 @@ export default {
           : moment().startOf('hour').format('HH:mm')
       },
       set: function (date) {
-        this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
-        // this date will be used in case the time selected pushes the utc date to the next day
-        this.utcDate = moment(this.date + ' ' + date).utc().format('yyyy-MM-DD')
-        return date
+        return this.setFunction(date)
       }
     }
   },
   methods: {
+    setFunction(date) {
+      this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
+      // this date will be used in case the time selected pushes the utc date to the next day
+      this.utcDate = moment(this.date + ' ' + date).utc().format('yyyy-MM-DD')
+      return date
+    },
     changeHandler () {
       //@humes hopefully this doesn't break anything. if no changeCallback is passed in it shouldn't do anything
       if(this.changeCallback) {
@@ -117,11 +120,15 @@ export default {
       }
     },
     saveDate () {
+      
       if (this.type === 'date') {
         DateTime.local()
         this.$emit('input', DateTime.fromFormat(this.date, 'yyyy-MM-dd').toISODate())
         this.menu = false
       } else {
+        //the localDate setter was doing exactly what was needed to the date but we need to convert this.time to the "this.timezone"
+        //value before sending everything to the setFunction because this is what the date picker does
+        this.setFunction(moment.utc(this.time, 'HH:mm').tz(this.timezone).format('HH:mm'))
         this.showDate = false
         this.showTime = true
       }
@@ -129,8 +136,14 @@ export default {
     },
     saveTime () {
       if (this.type === 'timestamp') {
-        const date = this.utcDate ? DateTime.fromFormat(this.utcDate, 'yyyy-MM-dd', {zone: 'utc'})
-          : DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
+        // if(!this.utcDate) {
+        //   let test = moment
+        //   let dateTime = DateTime
+        //   this.utcDate = moment(this.date + ' ' + this.time).format('yyyy-MM-DD')
+        // }
+        const date = DateTime.fromFormat(this.utcDate, 'yyyy-MM-dd', {zone: 'utc'})
+        // const date = this.utcDate ? DateTime.fromFormat(this.utcDate, 'yyyy-MM-dd', {zone: 'utc'})
+          // : DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
         let time = DateTime.fromISO(this.time, {zone: 'utc'})
 
         const datetime = time.set({
@@ -160,10 +173,11 @@ export default {
       //   value = value.setZone(this.timezone)
       // }
 
-      const now = DateTime.local().setZone('utc')
+      const now = DateTime.local()
       this.dateToUse = (value.isValid) ? value : now
       this.date = this.dateToUse.toFormat('yyyy-MM-dd')
       this.time = this.dateToUse.startOf('hour').toFormat('HH:mm')
+      this.setFunction(this.time)
 
       if (['timestamp', 'date'].includes(this.type)) {
         this.showDate = true
