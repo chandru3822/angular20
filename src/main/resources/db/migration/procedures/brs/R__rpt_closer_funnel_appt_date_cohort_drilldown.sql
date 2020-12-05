@@ -549,7 +549,7 @@ BEGIN
                         left outer join flow.state s on s.id = cs.state_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                        pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -579,7 +579,7 @@ BEGIN
                         left outer join flow.state s on s.id = cs.state_id
                     where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                        pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                         pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
@@ -1670,7 +1670,7 @@ BEGIN
                         pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                        pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;
 
@@ -1703,7 +1703,7 @@ BEGIN
                         pd.closer_user_id = any(brs.limit_by_org_for_closers(Array[pd.closer_user_id], p_org_ids, p.date_created :: DATE)) and
                         (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date and
                         (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                        pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                        pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                         pd.appointment_check_in is not null
                     order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
                 ) as funnel_rows;

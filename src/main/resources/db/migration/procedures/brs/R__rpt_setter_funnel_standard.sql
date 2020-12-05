@@ -15,54 +15,61 @@ BEGIN
 				    (select count(1)
 				     from brs.project_details pd
 				         inner join flow.project p on p.id = pd.project_id
+				         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
 				     where pd.source = 525 --Setter Gen
-                 and pd.closer_appointment_outcome != 4 --Cancelled
+                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
 				         and p.date_created::date = (now() at time zone 'US/Mountain')::date) as today_day_count,
 				    (select count(1)
 				     from brs.project_details pd
 				         inner join flow.project p on p.id = pd.project_id
+				         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
 				     where pd.source = 525 --Setter Gen
-                 and pd.closer_appointment_outcome != 4 --Cancelled
+                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
 				         and p.date_created::date = (now() at time zone 'US/Mountain')::date - 1) as yesterday_day_count,
 				    (select count(1)
 				     from brs.project_details pd
 				         inner join flow.project p on p.id = pd.project_id
+				         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
 				     where pd.source = 525 --Setter Gen
-                 and pd.closer_appointment_outcome != 4 --Cancelled
+                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
 				         and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 7
 				         and p.date_created::date <= (now() at time zone 'US/Mountain')::date) as seven_day_count,
 				    (select count(1)
 				     from brs.project_details pd
 				         inner join flow.project p on p.id = pd.project_id
+				         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
 				     where pd.source = 525 --Setter Gen
-                 and pd.closer_appointment_outcome != 4 --Cancelled
+                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
 				         and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 14
 				         and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 7) as prev_seven_day_count,
 				    (select count(1)
 				     from brs.project_details pd
 				         inner join flow.project p on p.id = pd.project_id
+				         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
 				     where pd.source = 525 --Setter Gen
-                 and pd.closer_appointment_outcome != 4 --Cancelled
+                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
 				         and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 30
 				         and p.date_created::date <= (now() at time zone 'US/Mountain')::date) as thirty_day_count,
 				    (select count(1)
 				     from brs.project_details pd
 				         inner join flow.project p on p.id = pd.project_id
+				         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
 				     where p.date_created::date >= (now() at time zone 'US/Mountain')::date - 60
 				         and pd.source = 525 --Setter Gen
-                 and pd.closer_appointment_outcome != 4 --Cancelled
+                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
 				         and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 30) as prev_thirty_day_count,
 				    (select count(1)
 				     from brs.project_details pd
 				         inner join flow.project p on p.id = pd.project_id
+				         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
 				     where pd.source = 525 --Setter Gen
-                 and pd.closer_appointment_outcome != 4 --Cancelled
+                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
 				         and p.date_created::date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
 				    from brs.setter_funnel
@@ -74,18 +81,21 @@ BEGIN
             select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
   				       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
   				       and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date) as today_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
   				       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
   				       and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date - 1) as yesterday_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
   				       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
@@ -93,6 +103,7 @@ BEGIN
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date) as seven_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
   				       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
@@ -100,6 +111,7 @@ BEGIN
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 7) as prev_seven_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
   				       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
@@ -107,6 +119,7 @@ BEGIN
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date) as thirty_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
   				       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
@@ -114,6 +127,7 @@ BEGIN
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 30) as prev_thirty_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
   				       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                  and pd.closer_appointment_start is not null
@@ -127,40 +141,47 @@ BEGIN
             select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
   				       and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date) as today_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
   				       and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date - 1) as yesterday_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
   				       and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 7
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date) as seven_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
   				       and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 14
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 7) as prev_seven_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
   				       and pd.closer_appointment_start::date >= ((now() at time zone 'US/Mountain')::date) - 30
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date) as thirty_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
   				       and pd.closer_appointment_start::date >= ((now() at time zone 'US/Mountain')::date) - 60
   				       and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 30) as prev_thirty_day_count,
   				  (select count(1)
   				   from brs.project_details pd
+                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
   				   where pd.source = 525 --Setter Gen
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
   				       and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
@@ -206,105 +227,77 @@ BEGIN
                            (select count(1)
                             from brs.project_details pd
   				                      inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
-                                and pd.closer_appointment_outcome != 4 --Cancelled
+                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and p.date_created::date = (now() at time zone 'US/Mountain')::date
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as today_day_count,
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as today_day_count,
                            (select count(1)
                             from brs.project_details pd
   				                      inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
-                                and pd.closer_appointment_outcome != 4 --Cancelled
+                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and p.date_created::date = (now() at time zone 'US/Mountain')::date - 1
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as yesterday_day_count,
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as yesterday_day_count,
                            (select count(1)
                             from brs.project_details pd
   				                      inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
-                                and pd.closer_appointment_outcome != 4 --Cancelled
+                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and p.date_created::date >= ((now() at time zone 'US/Mountain')::date) - 7
                                 and p.date_created::date <= (now() at time zone 'US/Mountain')::date
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as seven_day_count,
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as seven_day_count,
                            (select count(1)
                             from brs.project_details pd
   				                      inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
-                                and pd.closer_appointment_outcome != 4 --Cancelled
+                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and p.date_created::date >= ((now() at time zone 'US/Mountain')::date) - 14
                                 and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 7
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as prev_seven_day_count,
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as prev_seven_day_count,
                            (select count(1)
                             from brs.project_details pd
   				                      inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
-                                and pd.closer_appointment_outcome != 4 --Cancelled
+                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and p.date_created::date >= ((now() at time zone 'US/Mountain')::date) - 30
                                 and p.date_created::date <= (now() at time zone 'US/Mountain')::date
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as thirty_day_count,
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as thirty_day_count,
                            (select count(1)
                             from brs.project_details pd
   				                      inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
-                                and pd.closer_appointment_outcome != 4 --Cancelled
+                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and p.date_created::date >= ((now() at time zone 'US/Mountain')::date) - 60
                                 and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 30
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as prev_thirty_day_count,
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as prev_thirty_day_count,
                            (select count(1)
                             from brs.project_details pd
   				                      inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
-                                and pd.closer_appointment_outcome != 4 --Cancelled
+                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and p.date_created::date between p_custom_start_date and p_custom_end_date
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as custom_date_range_count
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as custom_date_range_count
                     from brs.setter_funnel
                     where id = 3
                 ),
@@ -313,107 +306,79 @@ BEGIN
 		            setter_funnel_1 as (
                     select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
     			                 (select count(1)
-    			                  from brs.project_details pd
-				                        inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+                            from brs.project_details pd
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
     			                  where pd.source = 525 --Setter Gen
     			                      and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
     			                      and pd.closer_appointment_start is not null
     			                      and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date
-                                and u.id is not null
-    			                      and u.id = any(p_user_ids)
-    			                      and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-    			                      and upv.position_level = 0) as today_day_count,
+    			                      and pd.setter_user_id = any(p_user_ids)
+    			                      and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as today_day_count,
                            (select count(1)
                             from brs.project_details pd
-                                inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
                                 and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                 and pd.closer_appointment_start is not null
                                 and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date - 1
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as yesterday_day_count,
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as yesterday_day_count,
                             (select count(1)
                              from brs.project_details pd
-                                 inner join flow.project p on p.id = pd.project_id
-                                 inner join flow.contact c on c.id = p.contact_id
-                                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                 inner join flow.user u on u.id = upv.user_id
+  				                       inner join flow.project p on p.id = pd.project_id
+                                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                              where pd.source = 525 --Setter Gen
                                  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                  and pd.closer_appointment_start is not null
                                  and pd.closer_appointment_start::date >= ((now() at time zone 'US/Mountain')::date ) - 7
                                  and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
-                                 and u.id is not null
-                                 and u.id = any(p_user_ids)
-                                 and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                 and upv.position_level = 0) as seven_day_count,
+                                 and pd.setter_user_id = any(p_user_ids)
+                                 and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as seven_day_count,
                             (select count(1)
                              from brs.project_details pd
-                                 inner join flow.project p on p.id = pd.project_id
-                                 inner join flow.contact c on c.id = p.contact_id
-                                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                 inner join flow.user u on u.id = upv.user_id
+  				                       inner join flow.project p on p.id = pd.project_id
+                                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                              where pd.source = 525 --Setter Gen
                                  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                  and pd.closer_appointment_start is not null
                                  and pd.closer_appointment_start::date >= ((now() at time zone 'US/Mountain')::date ) - 14
                                  and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 7
-                                 and u.id is not null
-                                 and u.id = any(p_user_ids)
-                                 and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                 and upv.position_level = 0) as prev_seven_day_count,
+                                 and pd.setter_user_id = any(p_user_ids)
+                                 and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as prev_seven_day_count,
                             (select count(1)
                              from brs.project_details pd
-                                 inner join flow.project p on p.id = pd.project_id
-                                 inner join flow.contact c on c.id = p.contact_id
-                                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                 inner join flow.user u on u.id = upv.user_id
+  				                       inner join flow.project p on p.id = pd.project_id
+                                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                              where pd.source = 525 --Setter Gen
                                  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                  and pd.closer_appointment_start is not null
                                  and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 30
                                  and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
-                                 and u.id is not null
-                                 and u.id = any(p_user_ids)
-                                 and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                 and upv.position_level = 0) as thirty_day_count,
+                                 and pd.setter_user_id = any(p_user_ids)
+                                 and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as thirty_day_count,
                             (select count(1)
                              from brs.project_details pd
-                                 inner join flow.project p on p.id = pd.project_id
-                                 inner join flow.contact c on c.id = p.contact_id
-                                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                 inner join flow.user u on u.id = upv.user_id
+  				                       inner join flow.project p on p.id = pd.project_id
+                                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                              where pd.source = 525 --Setter Gen
                                  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                  and pd.closer_appointment_start is not null
                                  and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 60
                                  and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 30
-                                 and u.id is not null
-                                 and u.id = any(p_user_ids)
-                                 and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                 and upv.position_level = 0) as prev_thirty_day_count,
+                                 and pd.setter_user_id = any(p_user_ids)
+                                 and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as prev_thirty_day_count,
                             (select count(1)
                              from brs.project_details pd
-                                 inner join flow.project p on p.id = pd.project_id
-                                 inner join flow.contact c on c.id = p.contact_id
-                                 inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                 inner join flow.user u on u.id = upv.user_id
+  				                       inner join flow.project p on p.id = pd.project_id
+                                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                              where pd.source = 525 --Setter Gen
                                  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                                  and pd.closer_appointment_start is not null
                                  and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date
-                                 and u.id is not null
-                                 and u.id = any(p_user_ids)
-                                 and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                 and upv.position_level = 0) as custom_date_range_count
+                                 and pd.setter_user_id = any(p_user_ids)
+                                 and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as custom_date_range_count
                     from brs.setter_funnel
                     where id = 1
                 ),
@@ -423,99 +388,71 @@ BEGIN
                     select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
                            (select count(1)
                             from brs.project_details pd
-                                inner join flow.project p on p.id = pd.project_id
-                                inner join flow.contact c on c.id = p.contact_id
-                                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                                inner join flow.user u on u.id = upv.user_id
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                             where pd.source = 525 --Setter Gen
                                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                 and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date
-                                and u.id is not null
-                                and u.id = any(p_user_ids)
-                                and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                                and upv.position_level = 0) as today_day_count,
-                          (select count(1)
-                           from brs.project_details pd
-                               inner join flow.project p on p.id = pd.project_id
-                               inner join flow.contact c on c.id = p.contact_id
-                               inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                               inner join flow.user u on u.id = upv.user_id
-                           where pd.source = 525 --Setter Gen
-                               and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                               and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date - 1
-                               and u.id is not null
-                               and u.id = any(p_user_ids)
-                               and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                               and upv.position_level = 0) as yesterday_day_count,
-                          (select count(1)
-                           from brs.project_details pd
-                               inner join flow.project p on p.id = pd.project_id
-                               inner join flow.contact c on c.id = p.contact_id
-                               inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                               inner join flow.user u on u.id = upv.user_id
-                           where pd.source = 525 --Setter Gen
-                               and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                               and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 7
-                               and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
-                               and u.id is not null
-                               and u.id = any(p_user_ids)
-                               and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                               and upv.position_level = 0) as seven_day_count,
-                          (select count(1)
-                           from brs.project_details pd
-                               inner join flow.project p on p.id = pd.project_id
-                               inner join flow.contact c on c.id = p.contact_id
-                               inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                               inner join flow.user u on u.id = upv.user_id
-                           where pd.source = 525 --Setter Gen
-                               and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                               and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 14
-                               and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 7
-                               and u.id is not null
-                               and u.id = any(p_user_ids)
-                               and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                               and upv.position_level = 0) as prev_seven_day_count,
-                          (select count(1)
-                           from brs.project_details pd
-                               inner join flow.project p on p.id = pd.project_id
-                               inner join flow.contact c on c.id = p.contact_id
-                               inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                               inner join flow.user u on u.id = upv.user_id
-                           where pd.source = 525 --Setter Gen
-                               and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                               and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 30
-                               and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
-                               and u.id is not null
-                               and u.id = any(p_user_ids)
-                               and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                               and upv.position_level = 0) as thirty_day_count,
-                          (select count(1)
-                           from brs.project_details pd
-                               inner join flow.project p on p.id = pd.project_id
-                               inner join flow.contact c on c.id = p.contact_id
-                               inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                               inner join flow.user u on u.id = upv.user_id
-                           where pd.source = 525 --Setter Gen
-                               and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                               and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 60
-                               and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 30
-                               and u.id is not null
-                               and u.id = any(p_user_ids)
-                               and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                               and upv.position_level = 0) as prev_thirty_day_count,
-                          (select count(1)
-                           from brs.project_details pd
-                               inner join flow.project p on p.id = pd.project_id
-                               inner join flow.contact c on c.id = p.contact_id
-                               inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id and upv.primary_flag is true
-                               inner join flow.user u on u.id = upv.user_id
-                           where pd.source = 525 --Setter Gen
-                               and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                               and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date
-                               and u.id is not null
-                               and u.id = any(p_user_ids)
-                               and u.id = any(brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date))
-                               and upv.position_level = 0) as custom_date_range_count
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as today_day_count,
+                           (select count(1)
+                            from brs.project_details pd
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                            where pd.source = 525 --Setter Gen
+                                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date - 1
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as yesterday_day_count,
+                           (select count(1)
+                            from brs.project_details pd
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                            where pd.source = 525 --Setter Gen
+                                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 7
+                                and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as seven_day_count,
+                           (select count(1)
+                            from brs.project_details pd
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                            where pd.source = 525 --Setter Gen
+                                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 14
+                                and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 7
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as prev_seven_day_count,
+                           (select count(1)
+                            from brs.project_details pd
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                            where pd.source = 525 --Setter Gen
+                                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 30
+                                and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as thirty_day_count,
+                           (select count(1)
+                            from brs.project_details pd
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                            where pd.source = 525 --Setter Gen
+                                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                and pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - 60
+                                and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date - 30
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as prev_thirty_day_count,
+                           (select count(1)
+                            from brs.project_details pd
+  				                      inner join flow.project p on p.id = pd.project_id
+                                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+                            where pd.source = 525 --Setter Gen
+                                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date
+                                and pd.setter_user_id = any(p_user_ids)
+                                and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))) as custom_date_range_count
                 from brs.setter_funnel
                 where id = 2
             )

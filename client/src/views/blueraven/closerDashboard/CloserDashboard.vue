@@ -2289,7 +2289,9 @@
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getCloserDistricts(this.currentUserId, false).then(res => {
-          this.districtData = res
+          if (res?.length > 0) {
+            this.districtData = res
+          }
 
           if (preSelectLists) {
             this.districtModel = cloneDeep(this.districtData)
