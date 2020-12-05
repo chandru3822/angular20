@@ -537,7 +537,7 @@ BEGIN
                             from brs.project_details pd
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
@@ -545,7 +545,7 @@ BEGIN
                             from brs.project_details pd
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                            ) as today_count,
 
                            (select count(1)
@@ -553,7 +553,7 @@ BEGIN
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
@@ -562,14 +562,14 @@ BEGIN
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                            ) as week_to_date_count,
 
                            (select count(1)
                             from brs.project_details pd
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
@@ -577,7 +577,7 @@ BEGIN
                             from brs.project_details pd
                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                            ) as custom_date_range_count
 
                     from brs.funnel
@@ -1784,7 +1784,7 @@ BEGIN
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                 pd.appointment_check_in is not null
                            ) as checked_in_today_count,
 
@@ -1796,7 +1796,7 @@ BEGIN
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE = (now() AT TIME ZONE 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                            ) as today_count,
 
                            (select count(1)
@@ -1808,7 +1808,7 @@ BEGIN
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                 pd.appointment_check_in is not null
                            ) as checked_in_week_to_date_count,
 
@@ -1821,7 +1821,7 @@ BEGIN
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE <= (now() at time zone 'US/Mountain') :: DATE and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                            ) as week_to_date_count,
 
                            (select count(1)
@@ -1832,7 +1832,7 @@ BEGIN
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) and --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                 pd.appointment_check_in is not null
                            ) as checked_in_custom_date_range_count,
 
@@ -1844,7 +1844,7 @@ BEGIN
                                 pd.closer_user_id is not null and
                                 (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date and
                                 (pd.closer_appointment_start - interval '6 hours') < (now() AT TIME ZONE 'US/Mountain') and
-                                pd.closer_appointment_outcome in (2,1139,1140) --Pitched
+                                pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                            ) as custom_date_range_count
 
                     from brs.funnel

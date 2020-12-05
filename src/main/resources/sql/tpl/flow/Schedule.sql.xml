@@ -128,8 +128,9 @@
            'background' as rendering,
            case when ra.org_id is not null then 1 else 2 end as system_list_type_id
     from flow.resource_appointment ra
-    where ra.start_time >= :startTime::timestamp
-      and ra.end_time <= :endTime::timestamp
+    where (ra.start_time between :startTime::timestamp and :endTime::timestamp
+            or ra.end_time between :startTime::timestamp and :endTime::timestamp
+            or ra.start_time <= :startTime::timestamp and :endTime::timestamp <= ra.end_time)
       and ra.archived is not true
       and ( ra.org_id = any (array[ :orgIds ]::int[])
         OR ra.user_id = any (array[ :userIds ]::int[]) )

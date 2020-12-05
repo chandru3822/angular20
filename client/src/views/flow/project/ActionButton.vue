@@ -67,7 +67,10 @@ export default {
     this.getActionResult()
   },
   mounted () {
-    this.$root.$on('projectProcessStep:checkAction', this.getActionResult)
+    this.$root.$once('projectProcessStep:checkAction', this.getActionResult)
+  },
+  beforeDestroy() {
+    this.$root.$off('projectProcessStep:checkAction');
   }
 }
 </script>

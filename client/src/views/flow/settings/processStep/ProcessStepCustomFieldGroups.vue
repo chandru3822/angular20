@@ -12,7 +12,7 @@
           {{deleteText}}
           <v-list v-for="(item, index) in fieldsInUse" :key="index">
             <v-list-item-content>
-              {{ item.objectType }}
+              <div v-if="item.objectType">{{item.objectType}}</div>
               <div v-if="item.processStepName">{{item.processStepName}}</div>
               <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span></div>
             </v-list-item-content>

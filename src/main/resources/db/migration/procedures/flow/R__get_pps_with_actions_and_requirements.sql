@@ -226,7 +226,7 @@ FROM (
                         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                         inner join flow.project p on p.id = pps.project_id
                         inner join flow.company_process cp on cp.id = p.company_process_id
-                        inner join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.process_id = cp.process_id
+                        left join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.company_process_id = cp.id
          where pps.id = p_project_process_step_id
 ) as sub_rows;
 RETURN v_json;
