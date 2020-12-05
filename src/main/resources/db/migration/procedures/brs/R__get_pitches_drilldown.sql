@@ -34,15 +34,12 @@ BEGIN
             from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.contact c on c.id = p.contact_id
-                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
-                inner join flow.user u on u.id = upv.user_id
+                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.position_id = 4 and up.primary_flag is true)
             where pd.closer_appointment_start between v_start_date and v_end_date
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                and upv.primary_flag is true
-                and upv.position_level = 0
-                and case when p_is_setter_mgr is true then upv.org_id = p_setter_mgr_office_id
-                    else u.id = p_user_id
+                and case when p_is_setter_mgr is true then up.org_id = p_setter_mgr_office_id
+                    else pd.setter_user_id = p_user_id
                     end
         ) as sub_rows;
 
