@@ -44,7 +44,7 @@ jobs:
                 uses: aws-actions/amazon-ecs-render-task-definition@v1
                 with:
                     task-definition: .aws/stage-definition.json
-                    container-name: br-stage
+                    container-name: albatross-stage
                     image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
 
             -   name: Fill in the new image ID for Cron Fargate task definition
@@ -59,15 +59,15 @@ jobs:
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
                     task-definition: ${{ steps.app-task-def.outputs.task-definition }}
-                    service: br-stage-service
-                    cluster: br-stage-cluster
+                    service: albatross-stage-service
+                    cluster: albatross-stage-cluster
 
             -   name: Deploy Cron Fargate Task
                 uses: aws-actions/amazon-ecs-deploy-task-definition@v1
                 with:
                     task-definition: ${{ steps.cron-task-def.outputs.task-definition }}
                     service: albatross-stage-cron-service
-                    cluster: br-stage-cluster
+                    cluster: albatross-stage-cluster
 
     frontend-build:
       needs: build
