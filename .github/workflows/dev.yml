@@ -4,11 +4,11 @@
 name: Albatross Build
 
 #on: workflow_dispatch
-on:
-      push:
-          branches:
-              - "dev"
-
+#on:
+#      push:
+#          branches:
+#              - "dev"
+#
 
 jobs:
     build:
