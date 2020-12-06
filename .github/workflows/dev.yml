@@ -57,7 +57,7 @@ jobs:
                 id: build-image
                 env:
                     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-                    ECR_REPOSITORY: albatross-dev-repo
+                    ECR_REPOSITORY: albatross-repo
                     IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
                 run: |
                     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
