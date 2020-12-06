@@ -47,8 +47,8 @@ jobs:
                     IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
                 run: |
                     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f .aws/prometheus/Dockerfile .
-                    docker tag latest $ECR_REGISTRY/$ECR_REPOSITORY
                     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                    docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
                     echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
             -   name: Fill in the new image ID for App Fargate task definition
