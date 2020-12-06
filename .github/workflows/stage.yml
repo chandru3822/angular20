@@ -45,7 +45,7 @@ jobs:
                 with:
                     task-definition: .aws/stage-definition.json
                     container-name: br-stage
-                    image: ${{ steps.build-image.outputs.image }}
+                    image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-dev-repo:latest
 
             -   name: Fill in the new image ID for Cron Fargate task definition
                 id: cron-task-def
