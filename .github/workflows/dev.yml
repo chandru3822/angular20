@@ -3,11 +3,11 @@
 
 name: Albatross Build
 
-on: workflow_dispatch
-#on:
-#      push:
-#          branches:
-#              - "feat-cron"
+#on: workflow_dispatch
+on:
+      push:
+          branches:
+              - "dev"
 
 
 jobs:
@@ -60,8 +60,9 @@ jobs:
                     ECR_REPOSITORY: albatross-dev-repo
                     IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
                 run: |
-                    docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+                    docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
                     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                    docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
                     echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
             -   name: Fill in the new image ID for App Fargate task definition
