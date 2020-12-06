@@ -53,7 +53,6 @@ jobs:
                 with:
                     task-definition: .aws/cron-stage-definition.json
                     container-name: albatross-cron-stage-container
-                    #image: ${{ steps.build-image.outputs.image }}
                     image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
 
             -   name: Deploy App Fargate Task
