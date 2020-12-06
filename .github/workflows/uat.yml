@@ -44,7 +44,7 @@ jobs:
                 with:
                     task-definition: .aws/uat-definition.json
                     container-name: albatross-uat-container
-                    image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-epo:latest
+                    image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
 
             -   name: Fill in the new image ID for Cron Fargate task definition
                 id: cron-task-def
