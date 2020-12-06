@@ -44,7 +44,7 @@ jobs:
                 uses: aws-actions/amazon-ecs-render-task-definition@v1
                 with:
                     task-definition: .aws/stage-definition.json
-                    container-name: albatross-stage
+                    container-name: albatross-stage-container
                     image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
 
             -   name: Fill in the new image ID for Cron Fargate task definition
