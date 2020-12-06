@@ -1,8 +1,9 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-#If you need to build and deploy in prod, see the commented out section and be sure to update the .aws/prod-definition.json
-
+#*******
+#IF YOU NEED TO BUILD/DEPLOY DIRECTLY IN PROD, REMOVE TOP SECTION, AND UNCOMMENT LOWER SECTION. ALSO SEE .aws\prod-definition.json. In there, you would want to change the repo from generic albatross-repo to specific albatross-prod-repo.
+#*******
 
 name: Albatross Build
 
@@ -70,28 +71,6 @@ jobs:
                     task-definition: ${{ steps.cron-task-def.outputs.task-definition }}
                     service: albatross-prod-cron-service
                     cluster: albatross-prod-cluster
-#
-#            -   name: Fill in the new image ID in the Amazon ECS task definition
-#                id: task-def
-#                uses: aws-actions/amazon-ecs-render-task-definition@v1
-#                with:
-#                    task-definition: .aws/prod-definition.json
-#                    container-name: albatross-prod-container
-#                    image: ${{ steps.build-image.outputs.image }}
-#
-#            -   name: Deploy Amazon ECS task definition
-#                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-#                with:
-#                    task-definition: ${{ steps.task-def.outputs.task-definition }}
-#                    service: albatross-prod-service
-#                    cluster: albatross-prod-cluster
-#
-#            -   name: Deploy Amazon ECS task definition
-#                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-#                with:
-#                    task-definition: .aws/cron-prod-definition.json
-#                    service: albatross-cron-prod-service
-#                    cluster: albatross-cron-prod-cluster
 
 
     frontend-build:
