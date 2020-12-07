@@ -254,9 +254,7 @@ public class AuroraProxy {
 
     DesignSummary(InputStream in) throws IOException {
       this.fields = om.readTree(in);
-  
-      log.info("AURORA: fields. {}", this.fields.toString());
-      
+
       JsonNode arrays = getField(fields, "design", "arrays")
         .orElseThrow(() -> new IllegalArgumentException("design missing required field 'arrays'"));
       Map<Integer, List<SolarArray>> m = StreamSupport.stream(arrays.spliterator(), false)
