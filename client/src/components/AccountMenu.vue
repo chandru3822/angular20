@@ -1,6 +1,7 @@
 <template id="account-menu">
   <v-menu data-app left
           offset-y
+          :max-height="`calc(100vh - 20px)`"
           v-model="menuOpen"
           class="account-menu"
           :close-on-content-click="false">

@@ -46,6 +46,16 @@ public class FeatureService {
     List<Feature> results = sqlCache.query("feature.getCompanyTools", params, Feature.class);
     return results;
   }
+  
+  public List<FeatureAccessControl> getPositionAccessForUser(Long userId) {
+    User user = securityService.getCurrentUser();
+    //this function gets ALL position feature access for a user_id (excludes user_access)
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("companyId", user.getCompanyId());
+    List<FeatureAccessControl> results = sqlCache.query("feature.getPositionAccessForUser", params, FeatureAccessControl.class);
+    return results;
+  }
 
   public List<Feature> getHomePagesForCompany() {
     User user = securityService.getCurrentUser();
