@@ -334,7 +334,7 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         let errorMsg = 'Error Adding User'
-        if(e?.data?.message?.includes('Email already exists')) {
+        if(e?.message?.includes('Email already exists')) {
           errorMsg += ': Email Already in Use'
         }
         this.snackbar = getSnackbar('ERROR', errorMsg)
