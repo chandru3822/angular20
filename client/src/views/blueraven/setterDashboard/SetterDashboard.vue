@@ -2,7 +2,7 @@
   <v-container id="setter-dash-container">
     <v-row v-if="showDashboard" id="setter-dash-toolbar-container">
       <v-col cols="12" id="setter-dash-toolbar">
-        <v-app-bar class="elevation-1">
+        <v-app-bar class="elevation-1" fixed style="top: 48px">
           <v-toolbar-title>Setter Dashboard</v-toolbar-title>
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
@@ -2287,9 +2287,9 @@
   }
 
   #setter-dash-toolbar-container {
-    position: sticky;
-    top: 0;
-    z-index: 3;
+    //position: sticky;
+    //top: 0;
+    //z-index: 3;
 
     #setter-dash-toolbar {
       padding: 0;
