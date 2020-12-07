@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +40,8 @@ public class SmartlistService {
   private final SecurityService securityService;
 
   private final SqlCache sqlCache;
+
+  private final SqlCacheRO sqlCacheRO;
 
   private final ObjectMapper om;
 
@@ -277,7 +280,7 @@ public class SmartlistService {
       log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
       List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
-      List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
+      List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
       return new SmartlistResult(fields, results);
   }
@@ -300,7 +303,7 @@ public class SmartlistService {
 
       log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
       final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
-      final List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
+      final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
       return writeCsv(results, fields);
   }
