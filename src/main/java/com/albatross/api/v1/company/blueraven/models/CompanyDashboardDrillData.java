@@ -7,7 +7,7 @@ import java.util.Date;
 @Data
 public class CompanyDashboardDrillData {
     private Long projectId;
-    private String customerName, appointmentOutcome;
+    private String customerName, state, sourceName, appointmentOutcome;
     private Date appointmentDate, installationAgreementSignedDate, siteSurveyVerifiedDate,
                  finalDesignCreatedDate, finalDesignSentToHomeownerDate, finalDesignSignedDate,
                  planSetCreatedDate, permitPackCompleteDate, permitSubmittedDate,
