@@ -175,7 +175,7 @@
           <div v-if="!closerAppointmentDetails.userId" class="pb-3">
             <CustomValueInput
                 :readonly="!userCanEdit"
-                :callback="populateDirtyCfvs"
+                :callback="checkAvailabilityDate"
                 :field="availabilityDateField"
             />
             <div class="text-right" v-if="availabilityDateField.dateValue">
@@ -316,6 +316,7 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import moment from 'moment-timezone'
+import {DateTime} from 'luxon'
 
 export default {
   name: 'ProjectProcessStep',
@@ -683,6 +684,20 @@ export default {
         })
 
         return !alreadyHasTime && !alreadyHasResource
+      }
+    },
+    checkAvailabilityDate () {
+      if (this.availabilityDateField.dateValue !== null) {
+        // Limit user to selecting availability dates < 8 days out
+        const selectedDate = DateTime.fromISO(this.availabilityDateField.dateValue)
+        const cappedDate = DateTime.local().set({hour: 0, minute: 0, second: 0, millisecond: 0}).plus({days: 8})
+        if (selectedDate > cappedDate) {
+          this.availabilityDateField.dateValue = null
+          this.snackbar = getSnackbar('ERROR', 'You can only schedule appointments 7 days in advance')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } else {
+          this.populateDirtyCfvs(this.availabilityDateField)
+        }
       }
     }
   }

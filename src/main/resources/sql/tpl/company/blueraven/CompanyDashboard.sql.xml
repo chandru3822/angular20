@@ -62,10 +62,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.source is not null
@@ -88,10 +92,14 @@
     <dash.getAppointmentsCreatedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id = 3
@@ -111,10 +119,14 @@
     <dash.getAppointmentsCreatedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id != 3
@@ -142,10 +154,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -163,10 +179,14 @@
     <dash.getPlannedAppointmentsActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlannedAppointmentsActualBrsDrilldown>
@@ -181,10 +201,14 @@
     <dash.getPlannedAppointmentsActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlannedAppointmentsActualPartnerDrilldown>
@@ -212,11 +236,15 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date,
                pd.closer_appointment_outcome_name appointment_outcome
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -238,11 +266,15 @@
     <dash.getPitchedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date,
                pd.closer_appointment_outcome_name appointment_outcome
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.company_id = 3
             and pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
@@ -261,11 +293,15 @@
     <dash.getPitchedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.closer_appointment_start::DATE appointment_date,
                pd.closer_appointment_outcome_name appointment_outcome
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.company_id != 3
             and pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
@@ -293,10 +329,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_agreement_signed_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -314,10 +354,14 @@
     <dash.getBookingsActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_agreement_signed_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getBookingsActualBrsDrilldown>
@@ -332,10 +376,14 @@
     <dash.getBookingsActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_agreement_signed_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getBookingsActualPartnerDrilldown>
@@ -361,10 +409,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.site_survey_verified_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.site_survey_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -382,10 +434,14 @@
     <dash.getSiteSurveysVerifiedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.site_survey_verified_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.site_survey_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getSiteSurveysVerifiedActualBrsDrilldown>
@@ -400,10 +456,14 @@
     <dash.getSiteSurveysVerifiedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.site_survey_verified_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.site_survey_verified_date::DATE  BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getSiteSurveysVerifiedActualPartnerDrilldown>
@@ -429,10 +489,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_created_timestamp::DATE final_design_created_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -450,10 +514,14 @@
     <dash.getFinalDesignsCreatedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_created_timestamp::DATE final_design_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsCreatedActualBrsDrilldown>
@@ -468,10 +536,14 @@
     <dash.getFinalDesignsCreatedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_created_timestamp::DATE final_design_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsCreatedActualPartnerDrilldown>
@@ -497,10 +569,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_sent_to_homeowner_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_sent_to_homeowner_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -518,10 +594,14 @@
     <dash.getFinalDesignsSentActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_sent_to_homeowner_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_sent_to_homeowner_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsSentActualBrsDrilldown>
@@ -536,10 +616,14 @@
     <dash.getFinalDesignsSentActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_sent_to_homeowner_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_sent_to_homeowner_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsSentActualPartnerDrilldown>
@@ -565,10 +649,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_signed_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -586,10 +674,14 @@
     <dash.getFinalDesignsApprovedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_signed_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsApprovedActualBrsDrilldown>
@@ -604,10 +696,14 @@
     <dash.getFinalDesignsApprovedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_design_signed_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsApprovedActualPartnerDrilldown>
@@ -633,10 +729,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.plan_set_created_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -654,10 +754,14 @@
     <dash.getPlanSetsCreatedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.plan_set_created_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlanSetsCreatedActualBrsDrilldown>
@@ -672,10 +776,14 @@
     <dash.getPlanSetsCreatedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.plan_set_created_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlanSetsCreatedActualPartnerDrilldown>
@@ -701,10 +809,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_pack_complete::DATE permit_pack_complete_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -722,10 +834,14 @@
     <dash.getPermitPacksCreatedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_pack_complete::DATE permit_pack_complete_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitPacksCreatedActualBrsDrilldown>
@@ -740,10 +856,14 @@
     <dash.getPermitPacksCreatedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_pack_complete::DATE permit_pack_complete_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitPacksCreatedActualPartnerDrilldown>
@@ -769,10 +889,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_pack_submittal_start_time::DATE permit_submitted_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -790,10 +914,14 @@
     <dash.getPermitsSubmittedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_pack_submittal_start_time::DATE permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsSubmittedActualBrsDrilldown>
@@ -808,10 +936,14 @@
     <dash.getPermitsSubmittedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_pack_submittal_start_time::DATE permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsSubmittedActualPartnerDrilldown>
@@ -837,10 +969,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_approved_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -858,10 +994,14 @@
     <dash.getPermitsApprovedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_approved_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsApprovedActualBrsDrilldown>
@@ -876,10 +1016,14 @@
     <dash.getPermitsApprovedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.permit_approved_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsApprovedActualPartnerDrilldown>
@@ -905,10 +1049,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_scheduled::DATE installation_scheduled_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -926,10 +1074,14 @@
     <dash.getInstallationsScheduledActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_scheduled::DATE installation_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getInstallationsScheduledActualBrsDrilldown>
@@ -944,10 +1096,14 @@
     <dash.getInstallationsScheduledActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_scheduled::DATE installation_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getInstallationsScheduledActualPartnerDrilldown>
@@ -974,11 +1130,15 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_start_time::DATE installation_date,
                pd.installation_closeout_start_time::DATE installation_closeout_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
@@ -998,11 +1158,15 @@
     <dash.getPlannedInstallationsActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_start_time::DATE installation_date,
                pd.installation_closeout_start_time::DATE installation_closeout_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
@@ -1019,11 +1183,15 @@
     <dash.getPlannedInstallationsActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.installation_start_time::DATE installation_date,
                pd.installation_closeout_start_time::DATE installation_closeout_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
@@ -1050,10 +1218,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.substantial_completion_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -1071,10 +1243,14 @@
     <dash.getSubstantialCompletionsActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.substantial_completion_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getSubstantialCompletionsActualBrsDrilldown>
@@ -1089,10 +1265,14 @@
     <dash.getSubstantialCompletionsActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.substantial_completion_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getSubstantialCompletionsActualPartnerDrilldown>
@@ -1119,11 +1299,15 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_inspection_scheduled_date::DATE,
                pd.ahj_reinspection_scheduled_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
@@ -1143,11 +1327,15 @@
     <dash.getInspectionsScheduledActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_inspection_scheduled_date::DATE,
                pd.ahj_reinspection_scheduled_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
@@ -1164,11 +1352,15 @@
     <dash.getInspectionsScheduledActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_inspection_scheduled_date::DATE,
                pd.ahj_reinspection_scheduled_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
@@ -1196,11 +1388,15 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_inspection_start_time::DATE ahj_inspection_date,
                pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
@@ -1220,11 +1416,15 @@
     <dash.getPlannedInspectionsActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_inspection_start_time::DATE ahj_inspection_date,
                pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
@@ -1241,11 +1441,15 @@
     <dash.getPlannedInspectionsActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_inspection_start_time::DATE ahj_inspection_date,
                pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
@@ -1272,10 +1476,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_final_inspection_verified::DATE ahj_final_inspection_verified_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -1293,10 +1501,14 @@
     <dash.getInspectionsPassedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_final_inspection_verified::DATE ahj_final_inspection_verified_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getInspectionsPassedActualBrsDrilldown>
@@ -1311,10 +1523,14 @@
     <dash.getInspectionsPassedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.ahj_final_inspection_verified::DATE ahj_final_inspection_verified_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getInspectionsPassedActualPartnerDrilldown>
@@ -1341,11 +1557,15 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.verified_inspection_approval_received_by_utility_date::DATE,
                pd.ahj_inspection_approval_submitted_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
@@ -1365,11 +1585,15 @@
     <dash.getInspectionResultsSubmittedActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.verified_inspection_approval_received_by_utility_date::DATE,
                pd.ahj_inspection_approval_submitted_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
@@ -1386,11 +1610,15 @@
     <dash.getInspectionResultsSubmittedActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.verified_inspection_approval_received_by_utility_date::DATE,
                pd.ahj_inspection_approval_submitted_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where (pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
             pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
@@ -1417,10 +1645,14 @@
         )
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_completion_submitted_date::DATE
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_completion_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -1438,10 +1670,14 @@
     <dash.getFinalCompletionsActualBrsDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_completion_submitted_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_completion_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalCompletionsActualBrsDrilldown>
@@ -1456,10 +1692,14 @@
     <dash.getFinalCompletionsActualPartnerDrilldown><![CDATA[
         select concat(c.first_name, ' ', c.last_name) customer_name,
                pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
                pd.final_completion_submitted_date::DATE
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
         where pd.final_completion_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalCompletionsActualPartnerDrilldown>

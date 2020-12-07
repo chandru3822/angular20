@@ -19,6 +19,9 @@ public class PropertiesConfiguration {
     @Value("${spring.datasource.url}")
     String databaseURL;
 
+    @Value("${spring.datasource.readonly.url}")
+    String databaseReadonlyURL;
+
     @Value("${spring.datasource.username}")
     String databaseUsername;
 
