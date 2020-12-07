@@ -2287,9 +2287,9 @@
   }
 
   #setter-dash-toolbar-container {
-    //position: sticky;
-    //top: 0;
-    //z-index: 3;
+    position: sticky;
+    top: 0;
+    z-index: 3;
 
     #setter-dash-toolbar {
       padding: 0;
