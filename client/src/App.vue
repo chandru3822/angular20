@@ -28,6 +28,7 @@
     <AppNav v-if="$route.name !== 'login' && $route.name !== 'forgotPassword' && !hideHeader"/>
     <v-main>
       <v-container class="router-container">
+        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primaryCustom'" :size="100"></Spinner>
         <router-view class="router-view" />
       </v-container>
     </v-main>
@@ -40,12 +41,14 @@
   import {AppMutations} from '@/stores/AppStore'
   import AppNav from '@/components/AppNav.vue'
   import Snackbar from '@/components/Snackbar'
+  import Spinner from "@/components/Spinner";
 
   export default {
     name: 'App',
     components: {
       AppNav,
-      Snackbar
+      Snackbar,
+      Spinner,
     },
     data() {
       return {

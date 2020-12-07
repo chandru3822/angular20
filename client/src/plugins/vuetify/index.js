@@ -31,6 +31,7 @@ export default new Vuetify({
         brYellow: '#edd33e',
         brRed: '#d4443f',
         brBlue: '#2292cc',
+        activeBlue: '#0075FF',
         primaryButton: '#1F3C73',
         secondaryButton: '#878787',
         calendarBorder: '#f2f5f8',

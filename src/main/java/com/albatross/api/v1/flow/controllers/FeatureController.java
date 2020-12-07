@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CompanyFeature;
 import com.albatross.api.v1.flow.model.Feature;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.services.FeatureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,11 @@ public class FeatureController {
   @GetMapping(value = "/companyTools", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Feature> getCompanySpecificTools() {
       return featureService.getCompanySpecificTools();
+  }
+  
+  @GetMapping(value = "/access/allUserPositions", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<FeatureAccessControl> getPositionAccessForUser(@RequestParam Long userId) {
+      return featureService.getPositionAccessForUser(userId);
   }
 
   @GetMapping(value = "/homePages", produces = MediaType.APPLICATION_JSON_VALUE)
