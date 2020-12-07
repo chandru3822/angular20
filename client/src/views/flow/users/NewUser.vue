@@ -334,7 +334,9 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         let errorMsg = 'Error Adding User'
-        if(e?.data?.message?.includes('Email already exists')) {
+        console.log('randaLogger', e.message)
+        console.log('randaLogger', e?.message?.includes('Email already exists'))
+        if(e?.message?.includes('Email already in use')) {
           errorMsg += ': Email Already in Use'
         }
         this.snackbar = getSnackbar('ERROR', errorMsg)

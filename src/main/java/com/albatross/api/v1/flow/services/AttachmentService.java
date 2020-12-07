@@ -98,8 +98,8 @@ public class AttachmentService {
 
         List<Attachment> attachments = sqlCache.query("attachment.getAttachmentsBySourceIdAndType", params, Attachment.class);
         attachments.forEach(attachment -> {
-            setAttachmentUrl(currentUser.getAwsBucket(), attachment);
-            setAttachmentPresignedUrl(currentUser.getAwsBucket(), attachment);
+            setAttachmentUrl(storageBucket, attachment);
+            setAttachmentPresignedUrl(storageBucket, attachment);
         });
 
         return attachments;
