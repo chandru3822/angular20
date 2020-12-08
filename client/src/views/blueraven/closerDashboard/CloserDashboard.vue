@@ -584,19 +584,19 @@
 
         <!-- DROPDOWNS -->
         <div id="pipeline-header-right-side">
-          <v-select class="appts-to-fdc-pipeline-dropdown"
-                    v-model="districtModel"
-                    :items="districtData"
-                    item-text="org_name"
-                    item-value="org_id"
-                    label="District"
-                    no-data-text="No districts available"
-                    outlined
-                    multiple
-                    dense
-                    hide-details
-                    return-object
-                    @input="regionLoad(false)">
+          <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          v-model="districtModel"
+                          :items="districtData"
+                          item-text="org_name"
+                          item-value="org_id"
+                          label="District"
+                          no-data-text="No districts available"
+                          outlined
+                          multiple
+                          dense
+                          hide-details
+                          return-object
+                          @input="regionLoad(false)">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ districtModel.length }} Checked
@@ -624,21 +624,21 @@
                 </v-list-item-title>
               </v-list-item-content>
             </template>
-          </v-select>
+          </v-autocomplete>
 
-          <v-select class="appts-to-fdc-pipeline-dropdown"
-                    v-model="regionModel"
-                    :items="regionData"
-                    item-text="org_name"
-                    item-value="org_id"
-                    label="Region"
-                    no-data-text="No regions available"
-                    outlined
-                    multiple
-                    dense
-                    hide-details
-                    return-object
-                    @input="officeLoad(false)">
+          <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          v-model="regionModel"
+                          :items="regionData"
+                          item-text="org_name"
+                          item-value="org_id"
+                          label="Region"
+                          no-data-text="No regions available"
+                          outlined
+                          multiple
+                          dense
+                          hide-details
+                          return-object
+                          @input="officeLoad(false)">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ regionModel.length }} Checked
@@ -666,21 +666,21 @@
                 </v-list-item-title>
               </v-list-item-content>
             </template>
-          </v-select>
+          </v-autocomplete>
 
-          <v-select class="appts-to-fdc-pipeline-dropdown"
-                    v-model="officeModel"
-                    :items="officeData"
-                    item-text="org_name"
-                    item-value="org_id"
-                    label="Office"
-                    no-data-text="No offices available"
-                    outlined
-                    multiple
-                    dense
-                    hide-details
-                    return-object
-                    @input="repLoad(false)">
+          <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          v-model="officeModel"
+                          :items="officeData"
+                          item-text="org_name"
+                          item-value="org_id"
+                          label="Office"
+                          no-data-text="No offices available"
+                          outlined
+                          multiple
+                          dense
+                          hide-details
+                          return-object
+                          @input="repLoad(false)">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ officeModel.length }} Checked
@@ -708,22 +708,22 @@
                 </v-list-item-title>
               </v-list-item-content>
             </template>
-          </v-select>
+          </v-autocomplete>
 
-          <v-select class="appts-to-fdc-pipeline-dropdown"
-                    v-model="repModel"
-                    :items="repData"
-                    item-text="name"
-                    item-value="user_id"
-                    label="Rep"
-                    no-data-text="No reps available"
-                    outlined
-                    multiple
-                    dense
-                    hide-details
-                    return-object
-                    @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2, false)"
-                    :menu-props="{closeOnContentClick: true}">
+          <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          v-model="repModel"
+                          :items="repData"
+                          item-text="name"
+                          item-value="user_id"
+                          label="Rep"
+                          no-data-text="No reps available"
+                          outlined
+                          multiple
+                          dense
+                          hide-details
+                          return-object
+                          @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2, false)"
+                          :menu-props="{closeOnContentClick: true}">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ repModel.length }} Checked
@@ -751,7 +751,7 @@
                 </v-list-item-title>
               </v-list-item-content>
             </template>
-          </v-select>
+          </v-autocomplete>
 
           <v-btn v-if="!isCloser && !isCloserMgr" id="all-reps-btn" outlined @click="funnelAllReps">
             All Reps
