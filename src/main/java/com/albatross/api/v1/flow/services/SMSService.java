@@ -4,7 +4,7 @@ import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.JodaDateTimeEditor;
-import com.albatross.api.v1.flow.enums.RecordType;
+import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -105,7 +105,7 @@ public class SMSService {
         return results;
     }
 
-    public SMSQueueItem queueMessage(String messageGroup, Long userId, String toPhone, String message, List<URI> mediaURLs, RecordType recipientType) {
+    public SMSQueueItem queueMessage(String messageGroup, Long userId, String toPhone, String message, List<URI> mediaURLs, RecipientType recipientType) {
         String queueInsert = sqlCache.getByKey("sms.queue.insert");
 
         MapSqlParameterSource source = new MapSqlParameterSource();
@@ -167,7 +167,7 @@ public class SMSService {
                 String messageText = sms.getMessage();
                 // For Project messages with attachment(s), the attachment file name is stored as the message
                 // which we don't want to send
-                if (!uris.isEmpty() && sms.getRecipientType() == RecordType.PROJECT) {
+                if (!uris.isEmpty() && sms.getRecipientType() == RecipientType.PROJECT) {
                     messageText = "";
                 }
 
@@ -339,7 +339,7 @@ public class SMSService {
         }
     }
 
-    private Message sendMessage(RecordType recipientType, String phoneNumber, String messageText, List<URI> mediaURLs) {
+    private Message sendMessage(RecipientType recipientType, String phoneNumber, String messageText, List<URI> mediaURLs) {
         Twilio.init(properties.getTwilioAccountSID(), properties.getTwilioAuthToken());
 
         PhoneNumber toPhoneNumber = new PhoneNumber(phoneNumber);
@@ -361,19 +361,19 @@ public class SMSService {
         return creator.create();
     }
 
-    private String getMessageServiceSID(RecordType recipientType) {
-        return recipientType == RecordType.CUSTOMER ?
+    private String getMessageServiceSID(RecipientType recipientType) {
+        return recipientType == RecipientType.CUSTOMER ?
                 properties.getTwilioCustomersMessageServiceSID() :
                 properties.getTwilioMessageServiceSID();
     }
 
-    private RecordType getRecordTypeByMessagingServiceSID(String mssid) {
-        RecordType type = RecordType.NONE;
+    private RecipientType getRecordTypeByMessagingServiceSID(String mssid) {
+        RecipientType type = RecipientType.NONE;
 
         if (mssid.equals(properties.getTwilioCustomersMessageServiceSID())) {
-            type = RecordType.CUSTOMER;
+            type = RecipientType.CUSTOMER;
         } else if (mssid.equals(properties.getTwilioMessageServiceSID())) {
-            type = RecordType.USER;
+            type = RecipientType.USER;
         }
 
         return type;
@@ -382,7 +382,7 @@ public class SMSService {
     public void saveReply(TwilioMessageRequest sms) {
         log.info("TWILIO: saving Twilio SMS reply: {}", sms.getMessageSid());
 
-        RecordType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
+        RecipientType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
 
         sqlCache.update("sms.reply.save", sms.toHashMap());
     }
