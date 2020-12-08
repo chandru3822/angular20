@@ -14,10 +14,11 @@
         </v-btn>
       </v-col>
       <v-col cols="12" class="pt-0 pb-0">
-        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primaryCustom'" :size="100"></Spinner>
+        
         <v-app-bar dense id="header" :color="headerColor" tabs dark>
           <v-menu data-app left
                   offset-y
+                  :max-height="`calc(100vh - 20px)`"
                   v-model="menuOpen"
                   class="account-menu"
                   :close-on-content-click="false">
@@ -37,6 +38,7 @@
           </v-menu>
           <v-menu v-if="constants.IS_MOBILE" data-app left
                   offset-y
+                  :max-height="`calc(100vh - 20px)`"
                   v-model="tabMenuOpen"
                   class="account-menu"
                   :close-on-content-click="false">
@@ -85,7 +87,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {UserActions, UserMutations} from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import Spinner from '@/components/Spinner.vue'
+
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
 
@@ -97,7 +99,7 @@ export default {
   name: 'appNav',
   components: {
 
-    Spinner,
+    
     AccountMenu,
     CompanyTools,
   },
@@ -213,7 +215,6 @@ export default {
 </script>
 
 <style lang="scss">
-
 </style>
 
 <style scoped lang="scss">

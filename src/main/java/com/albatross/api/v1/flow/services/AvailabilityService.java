@@ -4,6 +4,7 @@ import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -58,6 +59,7 @@ public class AvailabilityService {
   private final CommunicationService communicationService;
   private final ProjectService projectService;
   private final ProjectProcessStepService projectProcessStepService;
+  private final CustomFieldValueService customFieldValueService;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -510,8 +512,9 @@ public class AvailabilityService {
 
               communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com");
             }
-
-            return ResponseEntity.ok(results.get(0));
+            //i need these back the same way we get them for normal cfgs on the frontend
+            List<CustomFieldGroup> cfgs = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROCESS_STEP.textValue(), request.getProjectProcessStepId());
+            return ResponseEntity.ok(cfgs);
           } else {
             //todo: handle other types of errors from function
             // Appointment no longer available. Please select another time.

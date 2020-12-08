@@ -39,6 +39,11 @@
             <td v-for="acl in item.accessControl">
               <input type="checkbox" :readonly="!userCanEdit"
                      :disabled="!userCanEdit" v-model="acl.enabled" @input="callback(companyFeatureList)">
+              
+              <v-icon class="ml-2 mb-1" small color="activeBlue"
+                      v-if="secondaryFeatureAccess.length > 0 && secondaryHasAccess(item, acl)">
+                mdi-alpha-p-box-outline
+              </v-icon>
             </td>
           </tr>
         </template>
@@ -59,7 +64,8 @@
     props: {
       companyFeatures: {type: Array},
       callback: Function,
-      userCanEdit: Boolean
+      userCanEdit: Boolean,
+      showSecondary: Boolean
     },
     watch: {
       'selectedRows': function (newVal, oldVal, blah) {
@@ -70,8 +76,10 @@
       return {
         snackbar: {},
         selectedRows: [],
+        userId: this.$route.params.id,
         companyFeatureList: cloneDeep(this.companyFeatures),
         features: [],
+        secondaryFeatureAccess: [],
         accessControlList: [],
         parentId: this.$store.state.user.details.parentCompanyId,
         headers: [
@@ -82,8 +90,33 @@
     },
     created () {
       this.getFeatures()
+      if(this.showSecondary) {
+        this.loadSecondary()
+      }
     },
     methods: {
+      async loadSecondary() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequestWithParams(`/feature/access/allUserPositions`, { params: {
+            userId: this.userId
+          }})
+          this.secondaryFeatureAccess = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      secondaryHasAccess (item, acl) {
+        let matchingAccessLevel = this.secondaryFeatureAccess.find(ac => { return ac.featureId === item.featureId && ac.accessCode === acl.accessCode })
+        if(matchingAccessLevel?.id) {
+          console.log('randaLogger', matchingAccessLevel)
+        }
+        return matchingAccessLevel?.enabled ?? false
+      },
       populateHeaders () {
         //todo. not my favorite
         if(this.companyFeatureList?.length > 0) {

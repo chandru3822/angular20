@@ -15,6 +15,7 @@
         </v-toolbar>
         <AccessControl v-if="userAccessLoaded"
                        :key="accessControlKey"
+                       :show-secondary="true"
                        :user-can-edit="userCanEdit"
                        :companyFeatures="userCompanyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
       </v-col>
