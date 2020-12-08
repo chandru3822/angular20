@@ -16,12 +16,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -48,12 +48,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -67,7 +67,7 @@ BEGIN
                     left outer join flow.state s on s.id = cs.state_id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
-                  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
+                    and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and pd.closer_appointment_start is not null
                     and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                 order by setter_name, appointment_date
@@ -81,12 +81,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -115,12 +115,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -149,12 +149,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -168,8 +168,8 @@ BEGIN
                     left outer join flow.state s on s.id = cs.state_id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
+                    and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and pd.closer_appointment_start is not null
-                  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                     and pd.setter_user_id = any(p_user_ids)
                     and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
@@ -184,12 +184,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
