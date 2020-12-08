@@ -377,18 +377,19 @@ export default {
               boolVal = true
             }
             //for the schedule closer appt, if the current user is in the list of available resources, auto assign them
-            if(cfv.scheduleFieldTypeId === 3 && null == cfv.intValue) {
-              //get the user's primary user_position_id
-              let primaryUserPosition = this.$store.state.user.details.userPositions.find(up => up.primaryFlag)
-              if(primaryUserPosition?.id) {
-                //if found, check if it exists in the list of values
-                let match = cfv.listOfValues.find(lv => lv.id === primaryUserPosition.id)
-                if(match?.id) {
-                  cfv.intValue = match.id
-                }
-                
-              }
-            }
+            // this isn't working because it doesn't make the field "dirty" so it doesn't save.  need to fix later
+            // if(cfv.scheduleFieldTypeId === 3 && null == cfv.intValue) {
+            //   //get the user's primary user_position_id
+            //   let primaryUserPosition = this.$store.state.user.details.userPositions.find(up => up.primaryFlag)
+            //   if(primaryUserPosition?.id) {
+            //     //if found, check if it exists in the list of values
+            //     let match = cfv.listOfValues.find(lv => lv.id === primaryUserPosition.id)
+            //     if(match?.id) {
+            //       cfv.intValue = match.id
+            //     }
+            //
+            //   }
+            // }
           })
           this.uniqueAlreadyHasValue = boolVal
         } else if(null != cfg.eventTypeId) {
