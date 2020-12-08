@@ -1,0 +1,89 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Albatross Build
+
+on: 
+  workflow_dispatch:
+    inputs:
+     lane:
+       description: "Enter lane to deploy"
+       required: true
+    
+#    push:
+#        branches:
+#            - "release"
+
+jobs:
+    build:
+        name: Package & Deploy
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            -   name: Cancel Previous Runs
+                uses: styfle/cancel-workflow-action@0.6.0
+                with:
+                    access_token: ${{ github.token }}
+
+
+            -   uses: actions/checkout@v2
+#
+            -   name: Configure AWS credentials
+                uses: aws-actions/configure-aws-credentials@v1
+                with:
+                    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                    aws-region: us-east-1
+
+            -   name: Login to Amazon ECR
+                id: login-ecr
+                uses: aws-actions/amazon-ecr-login@v1
+
+            -   name: set env
+                id: vars
+                run: |
+                    echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
+
+            -   name: Fill in the new image ID for App Fargate task definition
+                id: app-task-def
+                uses: aws-actions/amazon-ecs-render-task-definition@v1
+                with:
+                    task-definition: .aws/${{ github.event.inputs.lane}}-definition.json
+                    container-name: albatross-${{ github.event.inputs.lane}}-container
+                    image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
+
+            -   name: Fill in the new image ID for Cron Fargate task definition
+                id: cron-task-def
+                uses: aws-actions/amazon-ecs-render-task-definition@v1
+                with:
+                    task-definition: .aws/cron-${{ github.event.inputs.lane}}-definition.json
+                    container-name: albatross-cron-${{ github.event.inputs.lane}}-container
+                    image: 480699501737.dkr.ecr.us-east-1.amazonaws.com/albatross-repo:latest
+
+            -   name: Deploy App Fargate Task
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: ${{ steps.app-task-def.outputs.task-definition }}
+                    service: albatross-${{ github.event.inputs.lane}}-service
+                    cluster: albatross-${{ github.event.inputs.lane}}-cluster
+
+            -   name: Deploy Cron Fargate Task
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: ${{ steps.cron-task-def.outputs.task-definition }}
+                    service: albatross-${{ github.event.inputs.lane}}-cron-service
+                    cluster: albatross-${{ github.event.inputs.lane}}-cluster
+
+    frontend-build:
+      needs: build
+      runs-on: ubuntu-18.04
+      steps:
+      - uses: actions/checkout@v2
+
+    # Deploy the site with netlify-cli
+      - name: Deploy Site
+        env:
+          GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
+          NETLIFY_SITE_ID: ${{ secrets.${{ github.event.inputs.lane}}_NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
