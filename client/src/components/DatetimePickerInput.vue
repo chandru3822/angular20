@@ -94,6 +94,15 @@ export default {
   created() {
     this.init()
   },
+  watch: {
+    '$props.value': function () {
+      console.log('props', this.$props.value)
+      if(null == this.$props.value) {
+        //re-init if the field ever gets nulled out
+        this.init()
+      }
+    }
+  },
   computed: {
     localTime: {
       get: function() {
@@ -176,8 +185,21 @@ export default {
       const now = DateTime.local()
       this.dateToUse = (value.isValid) ? value : now
       this.date = this.dateToUse.toFormat('yyyy-MM-dd')
-      this.time = this.dateToUse.startOf('hour').toFormat('HH:mm')
-      this.setFunction(this.time)
+      if(this.$props.value == null) {
+        //if not previous value, set the time to the beginning of the current hour and do the setFunction thing that i dont even remember what it does now
+        this.time = this.dateToUse.startOf('hour').toFormat('HH:mm')
+        this.setFunction(this.time)
+      } else {
+        //if previous value, use that and dont do the setFunction thing
+        this.time = this.dateToUse.toFormat('HH:mm')
+      }
+      // console.log('timePost', this.time)
+      //
+      // console.log('val', this.$props.value)
+      // console.log('value', value)
+      // console.log('date to use', this.dateToUse)
+      // console.log('date', this.date)
+      // console.log('utcDate', this.utcDate)
 
       if (['timestamp', 'date'].includes(this.type)) {
         this.showDate = true
