@@ -94,6 +94,15 @@ export default {
   created() {
     this.init()
   },
+  watch: {
+    '$props.value': function () {
+      console.log('props', this.$props.value)
+      if(null == this.$props.value) {
+        //re-init if the field ever gets nulled out
+        this.init()
+      }
+    }
+  },
   computed: {
     localTime: {
       get: function() {
