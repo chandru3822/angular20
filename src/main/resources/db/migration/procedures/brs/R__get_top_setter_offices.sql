@@ -21,10 +21,10 @@ BEGIN
         inner join flow.org o on (o.id = up.org_id and o.active_flag is true)
         left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
       where case when up.end_date is not null
-              then p.date_created::date between up.start_date and up.end_date
-              else p.date_created::date >= up.start_date
+              then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
+              else ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
               end
-        and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
+        and (((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date) between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
         and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
         and o.id != 171 --Setter Call Center
       group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')

@@ -159,7 +159,7 @@
                 <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td class="text-left">{{ item.id ? item.id : '' }}</td>
                 <td class="text-left">{{ item.source ? item.source : '' }}</td>
-                <td class="text-left">{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td class="text-left">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td class="text-left">{{ item.appointment_outcome ? item.appointment_outcome : '' }}</td>
               </tr>
             </template>
@@ -779,13 +779,13 @@
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td>{{ item.project_id ? item.project_id : '' }}</td>
-                <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.owner_name ? item.owner_name : '' }}</td>
                 <td>{{ item.verified_setter_lead ? item.verified_setter_lead : '' }}</td>
                 <td :class="item.appointment_outcome_class">
                   {{ item.appointment_outcome ? item.appointment_outcome : '' }}
                 </td>
-                <td>{{ item.date_created_formatted ? item.date_created_formatted : '' }}</td>
+                <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.state ? item.state : '' }}</td>
                 <td>{{ item.office ? item.office : '' }}</td>
               </tr>
@@ -930,11 +930,11 @@
         { text: 'Employee ID', value: 'employee_id', show: true, width: 120 },
         { text: 'Name', value: 'customer_name', show: true, width: 90 },
         { text: 'Project ID', value: 'project_id', show: true, width: 95 },
-        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 150 },
+        { text: 'Appointment Date', value: 'appointment_date', show: true, width: 150 },
         { text: 'Closer', value: 'owner_name', show: true, width: 90 },
         { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
-        { text: 'Date Created', value: 'date_created_formatted', show: true, width: 115 },
+        { text: 'Date Created', value: 'date_created', show: true, width: 115 },
         { text: 'State', value: 'state', show: true, width: 80 },
         { text: 'Office', value: 'office', show: true, width: 90 }
       ],
@@ -1284,7 +1284,6 @@
           this.milestoneDrilldownData = cloneDeep(data)
 
           if (this.milestoneDrilldownData.length > 0) {
-            this.reformatDates()
             this.milestoneDrilldownData.forEach(row => {
               if (row.customer_name) {
                 row.customer_name = row.customer_name.toLowerCase()
@@ -1303,14 +1302,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-
-      reformatDates () {
-        this.milestoneDrilldownData.forEach(row => {
-          if (row.appointment_date) {
-            row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
-          }
-        })
       },
 
       closeMilestoneDialog () {
@@ -2143,7 +2134,6 @@
         let reps = []
         let orgs = []
         let start, end
-        let datesMatch = false
 
         reps = this.repModel.map(rep => rep.user_id)
         orgs = this.officeModel.map(org => org.org_id)
@@ -2168,7 +2158,6 @@
         }
 
         if (moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')) {
-          datesMatch = true
           this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
         } else {
           this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
@@ -2194,7 +2183,6 @@
               }
 
               this.markMissingDrilldownData()
-              this.reformatFunnelDrilldownDates()
 
               this.funnelDrilldownData.forEach(row => {
                 if (row.verified_setter_lead !== null && row.verified_setter_lead === true) {
@@ -2226,18 +2214,6 @@
           })
 
           return newLine
-        })
-      },
-
-      reformatFunnelDrilldownDates () {
-        this.funnelDrilldownData?.forEach(row => {
-          if (row.appointment_date) {
-            row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
-          }
-
-          if (row.date_created) {
-            row.date_created_formatted = moment(row.date_created).format('MMM D, YYYY')
-          }
         })
       },
 

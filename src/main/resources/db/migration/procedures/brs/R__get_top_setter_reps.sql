@@ -17,7 +17,7 @@ BEGIN
         inner join flow.contact c on c.id = p.contact_id
         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
         inner join flow.user u on u.id = pd.setter_user_id
-      where pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
+      where (((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date) between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
         and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
         and pd.setter_user_id not in (2354810, 2390159) --Trizon and Central Solar
       group by pd.setter_user_id, name
