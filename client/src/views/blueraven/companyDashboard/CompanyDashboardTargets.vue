@@ -29,7 +29,7 @@
                         dense>
             <template #item="{ item }" class="table-body">
               <tr>
-                <td class="fixed-col-1">{{ item.targetDateFormatted ? item.targetDateFormatted : '' }}</td>
+                <td class="fixed-col-1">{{ item.targetDate | formatDate('date', 'MM/DD/YYYY') }}</td>
                 <td class="fixed-col-2">
                   <div class="row-labels-container">
                     <span class="row-label">BRS</span>
@@ -65,7 +65,6 @@
 <script>
   import cloneDeep from 'lodash.clonedeep'
   import constants from '@/helpers/constants'
-  import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
@@ -105,7 +104,6 @@
 
           const {data} = await getRequest('/companyDashboard/targets', 'blueraven')
           this.targets = cloneDeep(data)
-          this.targets.forEach(target => target.targetDateFormatted = moment(target.targetDate).format('MM-DD-YYYY'))
 
           this.isLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

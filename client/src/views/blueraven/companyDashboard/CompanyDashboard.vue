@@ -127,7 +127,7 @@
                 <td class="text-left">{{ item.state ? item.state : '' }}</td>
                 <td class="text-left">{{ item.sourceName ? item.sourceName : '' }}</td>
                 <td v-if="drilldownHeaders[5].show" class="text-left">
-                  {{ item.appointmentDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.appointmentDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[6].show" class="text-left">
                   {{ item.appointmentOutcome ? item.appointmentOutcome : '' }}
@@ -139,10 +139,10 @@
                   {{ item.siteSurveyVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[9].show" class="text-left">
-                  {{ item.finalDesignCreatedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.finalDesignCreatedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[10].show" class="text-left">
-                  {{ item.finalDesignSentToHomeownerDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.finalDesignSentToHomeownerDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[11].show" class="text-left">
                   {{ item.finalDesignSignedDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -154,7 +154,7 @@
                   {{ item.permitPackCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[14].show" class="text-left">
-                  {{ item.permitSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.permitSubmittedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[15].show" class="text-left">
                   {{ item.permitApprovedDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -163,10 +163,10 @@
                   {{ item.installationScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[17].show" class="text-left">
-                  {{ item.installationDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.installationDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[18].show" class="text-left">
-                  {{ item.installationCloseoutDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.installationCloseoutDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[19].show" class="text-left">
                   {{ item.substantialCompletionDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -178,10 +178,10 @@
                   {{ item.ahjReinspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[22].show" class="text-left">
-                  {{ item.ahjInspectionDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.ahjInspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[23].show" class="text-left">
-                  {{ item.ahjReinspectionDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.ahjReinspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[24].show" class="text-left">
                   {{ item.ahjFinalInspectionVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
