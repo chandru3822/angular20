@@ -277,12 +277,12 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-      log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
-      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
-      List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
-      List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+    final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+    List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
-      return new SmartlistResult(fields, results);
+    return new SmartlistResult(fields, results);
   }
 
   public String getCsv(Long smartlistId) {
@@ -293,19 +293,33 @@ public class SmartlistService {
 
     final List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
 
-      if (fields.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
+    if (fields.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
+    }
+
+    if (!smartlist.isProjectDetails()) {
+      for (SmartlistFieldAssignment f: fields) {
+        // Truncate field name if it's longer than postgres' column/field limit of 63
+        if (f.getName().length() > 63) {
+          f.setName(f.getName().substring(0, 60) + "...");
+        }
+
+        if (f.getObjectTypeId() == 4) {
+          final String append = String.format(" (%s)", f.getProcessStepId());
+          if (f.getName().length() + append.length() > 63) {
+            f.setName(f.getName().substring(0, f.getName().length() - append.length() - 3) + append + "...");
+          } else {
+            f.setName(f.getName() + append);
+          }
+        }
       }
+    }
 
-      if (!smartlist.isProjectDetails()) {
-        fields.forEach(f -> f.setName((f.getObjectTypeId() == 4) ? String.format("%s (%s)", f.getName(), f.getProcessStepId()) : f.getName()));
-      }
+    log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
+    final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+    final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
-      log.info("SMARTLIST: Running smartlist ID: " + smartlistId);
-      final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist);
-      final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
-
-      return writeCsv(results, fields);
+    return writeCsv(results, fields);
   }
 
   public String buildProjectDetailsSql(Smartlist smartlist) {
@@ -402,13 +416,12 @@ public class SmartlistService {
     return query.toString();
   }
 
-  public String buildSql(Smartlist smartlist) {
+  public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
-    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlist.getId());
     List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
     List<SmartlistFieldAssignment> joinTables = new ArrayList<>();
@@ -559,23 +572,21 @@ public class SmartlistService {
         }
       }
 
-      final String fieldAlias = (f.getObjectTypeId() == 4) ? String.format("%s (%s)", f.getName(), f.getProcessStepId()) : f.getName();
-
       if (f.getReferenceTable().equals("flow.process_step")) {
-        query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), fieldAlias));
+        query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), f.getName()));
       } else if (f.getDataTypeId() == 1) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, fieldAlias));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
       } else if(f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, fieldAlias));
+        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 7) {
-          query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, fieldAlias));
+          query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
           final long systemListNumber = (f.getSystemListId() == 1 || f.getSystemListId() == 2) ? 1 : f.getSystemListId();
 
-          final String sql = String.format("  (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), fieldAlias);
+          final String sql = String.format("  (select name from \"%s\" where \"%s\".id = \"%s\".int_value) as \"%s\", ", "systemList_" + systemListNumber, "systemList_" + systemListNumber, f.getValueReferenceTable(), f.getName());
           query.append(sql);
       } else {
-        query.append(String.format("  %s as \"%s\", ", location, fieldAlias));
+        query.append(String.format("  %s as \"%s\", ", location, f.getName()));
       }
 
       if (f.getCustomFieldSqlKey() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
