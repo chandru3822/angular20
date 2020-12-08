@@ -207,7 +207,7 @@
               </div>
             </div>
           </v-card-text>
-          
+
         </div>
       </v-card>
     </v-col>
@@ -321,7 +321,8 @@ export default {
       uniqueCfgId: null,
       showRoundRobin: false,
       uniqueAlreadyHasValue: false,
-      psHasEventCfg: false
+      psHasEventCfg: false,
+      psRequiresResource: false,
     }
   },
   async created () {
@@ -369,6 +370,7 @@ export default {
         if(cfg.uniqueBehaviorTypeId === 1) {
           this.uniqueCfgId = cfg.id
           this.psHasEventCfg = true
+          this.psRequiresResource = true
           this.usingUniqueView = true
           let boolVal = false
           cfg.customFieldValues?.forEach(cfv => {
@@ -394,6 +396,7 @@ export default {
           this.uniqueAlreadyHasValue = boolVal
         } else if(null != cfg.eventTypeId) {
           this.psHasEventCfg = true
+          this.psRequiresResource = false
         }
       })
 
@@ -492,7 +495,7 @@ export default {
             let startField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 1)
             let endField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 2)
             let resourceField = cfg?.customFieldValues?.find(cfv => cfv.scheduleFieldTypeId === 3)
-  
+
             let startTime = startField?.timestampValue
             let endTime = endField?.timestampValue
             resource = resourceField?.intValue
@@ -506,7 +509,7 @@ export default {
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.fieldsSaving = false
               validSave = false
-            } else if (startTime && endTime && !resource) {
+            } else if (this.psRequiresResource && startTime && endTime && !resource) {
               //resource required if times are saving
               this.snackbar = getSnackbar('ERROR', 'Resource is required')
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -516,7 +519,7 @@ export default {
           }
         })
       }
-      
+
       if(validSave) {
         await this.updateFieldGroups(this.usingUniqueView && this.uniqueCfgId, resource)
       }
