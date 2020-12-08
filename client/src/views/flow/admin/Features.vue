@@ -83,6 +83,7 @@
           <template #item="{ item }">
             <tr  class="text-left" :class="{'shaded-row': companyFeatures.indexOf(item) % 2}">
               <td class="text-left">{{ item.featureName }}</td>
+              <td class="text-left">{{ item.featureCode }}</td>
               <td>
                 <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
@@ -165,6 +166,7 @@
         companyId: this.$store.state.user.details.companyId,
         headers: [
           { text: 'Feature', value: 'feature', show: true },
+          { text: 'Feature Code', value: 'featureCode', show: true },
           { text: null, value: 'icons', show: true, sortable: false }
         ],
         expanded: []

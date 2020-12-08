@@ -253,7 +253,7 @@
                 <v-card-actions>
                   <v-card-actions>
                     <v-btn color="primaryCustom"  @click="saveSchedule(schedule, false)" class="white--text"
-                           v-if="userCanEdit"
+                           v-if="userCanEdit || userCanAdd"
                            :disabled="!schedule.startDate">
                       Save
                     </v-btn>

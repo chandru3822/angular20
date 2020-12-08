@@ -258,7 +258,7 @@
                               :key="index" class="pa-0"  color="transparent">
                         <v-list-item :class="{grab: !item.eventTypeId}">
                           <v-list-item-action>
-                            <v-icon v-if="!item.eventTypeId && userCanEdit">drag_handle</v-icon>
+                            <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
                             <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
