@@ -2,7 +2,11 @@ CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline_drilldow
     RETURNS SETOF json
 LANGUAGE plpgsql
 AS $function$
+declare
+    v_company_id integer;
 BEGIN
+    --doing this so it is easier to change to allow parameterizing later if needed
+    select 3 into v_company_id;
     --BRS-provided appointments created
     case when p_funnel_id = 12 then
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
@@ -30,7 +34,8 @@ BEGIN
                     pd.closer_appointment_start is not null and
                     pd.source is not null and
                     pd.source = any(p_source_ids)
-                order by owner_name, p.date_created::date
+                and pd.company_id = v_company_id
+order by owner_name, p.date_created::date
             ) as funnel_rows;
 
     --Self-gen appointments created
@@ -60,7 +65,8 @@ BEGIN
                     pd.closer_appointment_start is not null and
                     pd.source is not null and
                     pd.source = any(p_source_ids)
-                order by owner_name, p.date_created::date
+                and pd.company_id = v_company_id
+order by owner_name, p.date_created::date
             ) as funnel_rows;
 
     --Total Appointments Created
@@ -89,7 +95,8 @@ BEGIN
                 where p.date_created::date between p_start_date and p_end_date and
                     pd.closer_appointment_start is not null and
                     pd.source is not null
-                order by owner_name, p.date_created::date
+                and pd.company_id = v_company_id
+order by owner_name, p.date_created::date
             ) as funnel_rows;
 
     end case;
