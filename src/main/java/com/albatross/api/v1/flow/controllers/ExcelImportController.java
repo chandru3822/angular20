@@ -141,9 +141,7 @@ public class ExcelImportController {
     log.info("EXCEL_IMPORT: Inserting For: PROP_ID: {} PROJECT_ID: {} SOURCE: {}", propId, projectId, proposal.getSource());
     //check if the project id exists
     if(null != projectId) {
-      log.info("EXCEL_IMPORT: project id long value is it null?: {}", projectId.longValue());
       Boolean projectExists = projectService.projectExists(projectId.longValue());
-      log.info("EXCEL_IMPORT: project found: {}", projectExists);
 
       if(projectExists) {
         Optional<ProposalResponse> created = cache.get("excel.import.insert", params,
