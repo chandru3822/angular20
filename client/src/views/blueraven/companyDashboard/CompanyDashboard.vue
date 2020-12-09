@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row style="max-width: 100%;">
     <v-col cols="12">
       <v-row id="company-dash-toolbar-container">
         <v-col cols="12" id="company-dash-toolbar">
@@ -100,10 +100,10 @@
         </v-col>
       </v-row>
     </v-col>
-    <v-dialog v-model="drilldownDialog" max-width="950">
+    <v-dialog v-model="drilldownDialog" :content-class="constants.IS_MOBILE ? 'drilldown-dialog' : ''">
       <v-card>
         <v-card-title class="mb-1">
-          <span id="drilldown-title">{{ drilldownTitle }}</span>
+          <span id="drilldown-title">hello: {{ drilldownTitle }}</span>
           <a class="close-modal-x pb-3" title="Close" @click="close">×</a>
         </v-card-title>
 
@@ -525,6 +525,7 @@
     },
     created () {
       this.isBrCorporateUser = this.$store.state.user.details.companyId === 2
+      console.log('constipation', constants)
 
       // populating headers here instead of in "data" b/c I can't seem to check the companyId there
       this.headers = [
@@ -551,7 +552,20 @@
   }
 </script>
 
+<style lang="scss">
+#drilldown-table .v-data-table__wrapper {
+  height: calc(100vh - 330px);
+  min-height: 300px;
+}
+.drilldown-dialog {
+  //this is changed if media width > 450
+  min-width: 100% !important;
+}
+
+</style>
+
 <style lang="scss" scoped>
+
   #company-dash-toolbar-container {
     #company-dash-toolbar {
       z-index: 2;
@@ -721,7 +735,7 @@
       font-weight: bolder;
     }
   }
-
+  
   #drilldown-table {
     th, td {
       font-family: "Roboto Condensed", sans-serif;
@@ -731,13 +745,6 @@
     .customer-name {
       text-transform: capitalize;
     }
-
-    ::v-deep {
-      .v-data-footer {
-        padding: 15px 0 25px 0;
-        width: 100%;
-      }
-    }
   }
 
   #drilldown-close-btn {
@@ -746,6 +753,9 @@
   }
 
   @media (min-width: 450px) {
+    .drilldown-dialog {
+      min-width: 379px;
+    }
     #company-dash-toolbar-container {
       #company-dash-toolbar {
         ::v-deep {
