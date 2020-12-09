@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
-import com.albatross.api.v1.flow.enums.RecordType;
+import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.EmailMessage;
 import com.albatross.api.v1.flow.model.User;
@@ -103,7 +103,7 @@ public class CommunicationService {
           contextMap.put("user", user);
           renderTemplate(templateContent, output, contextMap);
 
-          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecordType.USER);
+          smsService.queueMessage(messageGroupId, user.getId(), user.getPhoneNumber(), output.toString(), mediaURLs, RecipientType.USER);
         } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
         }
@@ -117,7 +117,7 @@ public class CommunicationService {
           contextMap.put("contact", contact);
           renderTemplate(templateContent, output, contextMap);
           String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
-          smsService.queueMessage(messageGroupId, contact.getId(), phoneNumber, output.toString(), mediaURLs, RecordType.PROJECT);
+          smsService.queueMessage(messageGroupId, contact.getId(), phoneNumber, output.toString(), mediaURLs, RecipientType.PROJECT);
       } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
       }

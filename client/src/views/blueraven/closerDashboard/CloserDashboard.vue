@@ -1001,7 +1001,10 @@
                 <td>{{ item.state ? item.state : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td>
-                  <a :href="'/project/' + item.project_id">{{ item.project_id ? item.project_id : '' }}</a>
+                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
+                    {{ item.project_id }}
+                  </router-link>
+                  <div v-else>{{ item.project_id ? item.project_id : '' }}</div>
                 </td>
                 <td :class="item.source_name_class">{{ item.source_name ? item.source_name : '' }}</td>
                 <td :class="item.system_size_class">{{ item.system_size ? item.system_size : '' }}</td>

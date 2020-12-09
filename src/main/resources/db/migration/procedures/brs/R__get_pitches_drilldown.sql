@@ -35,7 +35,7 @@ BEGIN
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.position_id = 4 and up.primary_flag is true)
-            where pd.closer_appointment_start between v_start_date and v_end_date
+            where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between v_start_date and v_end_date
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                 and case when p_is_setter_mgr is true then up.org_id = p_setter_mgr_office_id

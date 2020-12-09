@@ -36,10 +36,10 @@ BEGIN
                      inner join flow.org o2 on (o2.id = up2.org_id and o2.active_flag is true)
                  where pd2.source in (525, 526) --(Setter Gen, Retargeted)
                      and case when up2.end_date is not null
-                         then p2.date_created::date between up2.start_date and up2.end_date
-                         else p2.date_created::date >= up2.start_date
+                         then ((p2.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up2.start_date and up2.end_date
+                         else ((p2.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >= up2.start_date
                          end
-                     and pd2.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
+                     and ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
                      and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date))
                      and o2.id = o.id
                 ) as total_appointments,
@@ -53,10 +53,10 @@ BEGIN
                 left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
             where pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and case when up.end_date is not null
-                    then p.date_created::date between up.start_date and up.end_date
-                    else p.date_created::date >= up.start_date
+                    then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
+                    else ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
                     end
-                and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
+                and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                 and o.id != 171 --Setter Call Center
             group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')

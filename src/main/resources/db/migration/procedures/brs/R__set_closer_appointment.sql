@@ -148,7 +148,10 @@ BEGIN
                                      else
                                  round(score / sum(score) over (), 2) end as total_lead_allocation,
                                  round(acutal_lead_allocation, 2)     as acutal_lead_allocation,
-                                 foo1.score,
+                                 case when foo1.position_id =2 then
+                                     foo1.score * 1.5
+                                     else
+                                         foo1.score end as score,
                                  foo1.lead_gen_num,
                                  foo1.lead_gen_den,
                                  foo1.self_gen,
@@ -162,7 +165,7 @@ BEGIN
                                                        self_gen +
                                                        ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)
                                           else
-                                            ((lead_gen_num / lead_gen_den) * 10000) + self_gen + avail + ((lead_gen_num + self_gen) * 15)  end                       as score,
+                                            ((lead_gen_num / lead_gen_den) * 10000) + self_gen + avail + ((lead_gen_num + self_gen) * 15)  end  as score,
                                           case
                                               when sum(appointment_count_with_interval) over () = 0 then
                                                   0
@@ -173,7 +176,8 @@ BEGIN
                                           foo.self_gen,
                                           foo.avail,
                                           foo.appointment_count_with_interval,
-                                          foo.appointment_count
+                                          foo.appointment_count,
+                                          foo.position_id
                                    from (
                                             select up2.user_id,
                                                    coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
@@ -181,7 +185,8 @@ BEGIN
                                                    coalesce(sg.self_gen, 0)                          as self_gen,
                                                    ac.appointment_count,
                                                    coalesce(ta.avail, 0)                             as avail,
-                                                   coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval
+                                                   coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
+                                                   up2.position_id
                                             from flow.project p
                                                      inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                                                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
@@ -197,10 +202,12 @@ BEGIN
                                             group by up2.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                                      ac.appointment_count,
                                                      pcz.distribution_time_frame_days, ta.avail,
-                                                     acwi.appointment_count_with_interval) as foo
+                                                     acwi.appointment_count_with_interval,
+                                                     up2.position_id) as foo
                                    group by foo.user_id, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
                                             foo.appointment_count,
-                                            foo.avail, foo.appointment_count_with_interval) as foo1) as foo2
+                                            foo.avail, foo.appointment_count_with_interval,
+                                            foo.position_id) as foo1) as foo2
                  group by foo2.user_id, foo2.acutal_lead_allocation, foo2.total_lead_allocation,
                           foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
                           foo2.lead_gen_num,

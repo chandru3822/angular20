@@ -12,8 +12,9 @@ BEGIN
 
     SELECT array_agg(user_id)
     INTO v_setter_ids
-    FROM flow.user_positions_vw
+    FROM flow.user_position
     WHERE org_id = p_office_id
+        AND primary_flag IS TRUE
         AND position_id = 4;
 
     RETURN v_setter_ids;
