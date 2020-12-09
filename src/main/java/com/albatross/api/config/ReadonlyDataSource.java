@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -25,6 +26,11 @@ public class ReadonlyDataSource {
     config.setUsername(propConfig.databaseUsername);
     config.setPassword(propConfig.databasePassword);
     ds = new HikariDataSource(config);
+  }
+
+  @PreDestroy
+  public void destroy() {
+    ds.close();
   }
 
   public Connection getConnection() throws SQLException {
