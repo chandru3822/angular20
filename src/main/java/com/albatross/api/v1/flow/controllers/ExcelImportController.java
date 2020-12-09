@@ -143,7 +143,9 @@ public class ExcelImportController {
     //check if the project id exists
     Optional<Project> project = Optional.empty();
     if(null != projectId) {
+      log.info("EXCEL_IMPORT: project id long value is it null?: {}", projectId.longValue());
       project = projectService.getProject(projectId.longValue());
+      log.info("EXCEL_IMPORT: project found: {}", project.isPresent());
     }
 
     if(project.isPresent()) {
