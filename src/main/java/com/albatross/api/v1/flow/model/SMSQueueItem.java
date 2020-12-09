@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
-import com.albatross.api.v1.flow.enums.RecordType;
+import com.albatross.api.v1.flow.enums.RecipientType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.joda.time.DateTime;
@@ -22,7 +22,7 @@ public class SMSQueueItem {
         return String.format("%s %s", firstName, lastName);
     }
 
-    public RecordType getRecipientType() {
-        return RecordType.values()[recipient_type_id.intValue()];
+    public RecipientType getRecipientType() {
+        return RecipientType.values()[recipient_type_id.intValue()];
     }
 }

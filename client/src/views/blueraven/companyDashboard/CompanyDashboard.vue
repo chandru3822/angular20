@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row style="max-width: 100%;">
     <v-col cols="12">
       <v-row id="company-dash-toolbar-container">
         <v-col cols="12" id="company-dash-toolbar">
@@ -85,12 +85,21 @@
                     class="data-col-td clickable" @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
                 <td v-else-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) !== -1"
                     class="data-col-td">{{ item.actualPartner }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ item.plannedTotal }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedBrs }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedPartner }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="(item.differenceTotal >= 0 || item.differenceTotal === '-') ? 'pos_diff' : 'neg_diff'">{{ item.differenceTotal }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differenceBrs >= 0 || item.differenceBrs === '-') ? 'pos_diff' : 'neg_diff'">{{ item.differenceBrs }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differencePartner >= 0 || item.differencePartner === '-') ? 'pos_diff' : 'neg_diff'">{{ item.differencePartner }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ adjustForCertainRanges(item.plannedTotal) }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td">{{ adjustForCertainRanges(item.plannedBrs) }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td">{{ adjustForCertainRanges(item.plannedPartner) }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td total-col-td"
+                    :class="(adjustForCertainRanges(item.differenceTotal) >= 0 || adjustForCertainRanges(item.differenceTotal) === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ adjustForCertainRanges(item.differenceTotal) }}
+                </td>
+                <td v-if="isBrCorporateUser" class="data-col-td"
+                    :class="(adjustForCertainRanges(item.differenceBrs) >= 0 || adjustForCertainRanges(item.differenceBrs) === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ adjustForCertainRanges(item.differenceBrs) }}
+                </td>
+                <td v-if="isBrCorporateUser" class="data-col-td"
+                    :class="(adjustForCertainRanges(item.differencePartner) >= 0 || adjustForCertainRanges(item.differencePartner) === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ adjustForCertainRanges(item.differencePartner) }}
+                </td>
               </tr>
             </template>
             <template v-slot:footer>
@@ -100,7 +109,7 @@
         </v-col>
       </v-row>
     </v-col>
-    <v-dialog v-model="drilldownDialog" max-width="950">
+    <v-dialog v-model="drilldownDialog" :content-class="constants.IS_MOBILE ? 'drilldown-dialog' : ''">
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ drilldownTitle }}</span>
@@ -127,7 +136,7 @@
                 <td class="text-left">{{ item.state ? item.state : '' }}</td>
                 <td class="text-left">{{ item.sourceName ? item.sourceName : '' }}</td>
                 <td v-if="drilldownHeaders[5].show" class="text-left">
-                  {{ item.appointmentDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.appointmentDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[6].show" class="text-left">
                   {{ item.appointmentOutcome ? item.appointmentOutcome : '' }}
@@ -139,10 +148,10 @@
                   {{ item.siteSurveyVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[9].show" class="text-left">
-                  {{ item.finalDesignCreatedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.finalDesignCreatedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[10].show" class="text-left">
-                  {{ item.finalDesignSentToHomeownerDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.finalDesignSentToHomeownerDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[11].show" class="text-left">
                   {{ item.finalDesignSignedDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -154,7 +163,7 @@
                   {{ item.permitPackCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[14].show" class="text-left">
-                  {{ item.permitSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.permitSubmittedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[15].show" class="text-left">
                   {{ item.permitApprovedDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -163,10 +172,10 @@
                   {{ item.installationScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[17].show" class="text-left">
-                  {{ item.installationDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.installationDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[18].show" class="text-left">
-                  {{ item.installationCloseoutDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.installationCloseoutDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[19].show" class="text-left">
                   {{ item.substantialCompletionDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -178,10 +187,10 @@
                   {{ item.ahjReinspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[22].show" class="text-left">
-                  {{ item.ahjInspectionDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.ahjInspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[23].show" class="text-left">
-                  {{ item.ahjReinspectionDate | formatDate('date', 'MM/DD/YYYY') }}
+                  {{ item.ahjReinspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td v-if="drilldownHeaders[24].show" class="text-left">
                   {{ item.ahjFinalInspectionVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
@@ -240,6 +249,7 @@
         isBrCorporateUser: false,
         is7oaksAdmin: this.$store.getters.isFullAdmin,
         headers: [],
+        workingDays: 6,
         timezone: 'US/Mountain',
         selectedDateRange: 'Today',
         startDate: moment().format('YYYY-MM-DD'),
@@ -330,7 +340,17 @@
           }
         }
       },
-
+      adjustForCertainRanges(value) {
+        //not sure if this will cause a performance issue or not
+        if(['Today', 'Yesterday'].includes(this.selectedDateRange)) {
+          return isNaN(value) ? '-' : this.$filters.currency(value / this.workingDays, '', 1)
+        } else if (['Custom', 'This Month', 'This Year', 'All Time'].includes(this.selectedDateRange)) {
+          //doesn't make sense to calculate these values
+          return '-'
+        } else {
+          return value
+        }
+      },
       setDateRange () {
         switch (this.selectedDateRange) {
           case 'Yesterday':
@@ -551,7 +571,20 @@
   }
 </script>
 
+<style lang="scss">
+#drilldown-table .v-data-table__wrapper {
+  height: calc(100vh - 330px);
+  min-height: 300px;
+}
+.drilldown-dialog {
+  //this is changed if media width > 450
+  min-width: 100% !important;
+}
+
+</style>
+
 <style lang="scss" scoped>
+
   #company-dash-toolbar-container {
     #company-dash-toolbar {
       z-index: 2;
@@ -731,13 +764,6 @@
     .customer-name {
       text-transform: capitalize;
     }
-
-    ::v-deep {
-      .v-data-footer {
-        padding: 15px 0 25px 0;
-        width: 100%;
-      }
-    }
   }
 
   #drilldown-close-btn {
@@ -746,6 +772,9 @@
   }
 
   @media (min-width: 450px) {
+    .drilldown-dialog {
+      min-width: 379px;
+    }
     #company-dash-toolbar-container {
       #company-dash-toolbar {
         ::v-deep {

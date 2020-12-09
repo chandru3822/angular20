@@ -15,7 +15,7 @@
               from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
-              where pd.closer_appointment_start between (select q1_start from quarters) and (select q1_end from quarters)
+              where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q1_start from quarters) and (select q1_end from quarters)
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                 and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId
@@ -26,7 +26,7 @@
               from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
-              where pd.closer_appointment_start between (select q2_start from quarters) and (select q2_end from quarters)
+              where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q2_start from quarters) and (select q2_end from quarters)
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                 and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId
@@ -37,7 +37,7 @@
               from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
-              where pd.closer_appointment_start between (select q3_start from quarters) and (select q3_end from quarters)
+              where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q3_start from quarters) and (select q3_end from quarters)
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                 and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId
@@ -48,7 +48,7 @@
               from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
-              where pd.closer_appointment_start between (select q4_start from quarters) and (select q4_end from quarters)
+              where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between (select q4_start from quarters) and (select q4_end from quarters)
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                 and case when :isSetterMgr is true then up.org_id = :setterMgrOfficeId

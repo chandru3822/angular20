@@ -63,7 +63,7 @@ BEGIN
             FROM (
                      with contacts_ids as (
                          with positions as (
-                             select up.org_id as parent_org_id
+                             select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
                              where up.primary_flag is true
                                and user_id = p_userid
@@ -72,7 +72,12 @@ BEGIN
                                   select t.id
                                   from positions p
                                            join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
-                                                on true)
+                                                on true),
+                              all_positions as(
+                                  select array_agg(up4.id) as user_position_ids
+                                  from flow.user_position up4
+                                           inner join positions p4 on p4.user_id = up4.user_id
+                              )
                          select array_agg(contact_ids) as contact_ids
                          from (
                                   select distinct c.id as contact_ids
@@ -85,7 +90,15 @@ BEGIN
                                            inner join flow.user_position up2 on up2.org_id = o.id
                                            inner join flow.project p on p.user_position_id = up2.id
                                            inner join flow.contact c on c.id = p.contact_id
-                              ) as foo)
+                                  union
+                                  select  distinct c.id as contact_ids
+                                  from all_positions p5
+                                           inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids)
+                                           inner join flow.contact c on c.id = p3.contact_id
+                                  union
+                                  select  distinct c.id as contact_ids
+                                  from all_positions p5
+                                           inner join flow.contact c on c.owner_user_position_id = any(p5.user_position_ids)) as foo)
                      SELECT c.id,
                             c.first_name,
                             c.last_name,
@@ -125,8 +138,8 @@ BEGIN
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
                       AND NOT v_clean_name_search_term ~ '^([0-9]+)$'
-                      AND lower(translate(coalesce(c.first_name, ''), '*,.& ', '')) || ' ' ||
-                          lower(translate(coalesce(c.last_name, ''), '*,.& ', '')) like
+                      AND lower(translate(coalesce(c.first_name, ''), '*,.&', '')) || ' ' ||
+                          lower(translate(coalesce(c.last_name, ''), '*,.&', '')) like
                           '%' || v_clean_name_search_term || '%'
                     union
                     SELECT c.id, 2 as rank
@@ -163,7 +176,7 @@ BEGIN
                      ),
                      contacts_ids as (
                          with positions as (
-                             select up.org_id as parent_org_id
+                             select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
                              where up.primary_flag is true
                                and user_id = p_userid
@@ -172,7 +185,12 @@ BEGIN
                                   select t.id
                                   from positions p
                                            join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
-                                                on true)
+                                                on true),
+                              all_positions as(
+                                  select array_agg(up4.id) as user_position_ids
+                                  from flow.user_position up4
+                                           inner join positions p4 on p4.user_id = up4.user_id
+                              )
                          select array_agg(contact_ids) as contact_ids
                          from (
                                   select distinct c.id as contact_ids
@@ -185,7 +203,15 @@ BEGIN
                                            inner join flow.user_position up2 on up2.org_id = o.id
                                            inner join flow.project p on p.user_position_id = up2.id
                                            inner join flow.contact c on c.id = p.contact_id
-                              ) as foo)
+                                  union
+                                  select  distinct c.id as contact_ids
+                                  from all_positions p5
+                                           inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids)
+                                           inner join flow.contact c on c.id = p3.contact_id
+                                  union
+                                  select  distinct c.id as contact_ids
+                                  from all_positions p5
+                                           inner join flow.contact c on c.owner_user_position_id = any(p5.user_position_ids)) as foo)
                 select c.id,
                        c.first_name,
                        c.last_name,

@@ -4,7 +4,10 @@ CREATE OR REPLACE FUNCTION brs.rpt_setter_funnel_cohort_drilldown(p_start_date d
 AS $function$
 declare
     v_whole_company boolean;
+    v_company_id integer;
 BEGIN
+    --doing this so it is easier to change to allow parameterizing later if needed
+    select 3 into v_company_id;
     --If p_user_ids has a -1 that means get the funnel for the whole company
     select -1 = any(p_user_ids)  into v_whole_company;
     if v_whole_company then
@@ -29,12 +32,12 @@ BEGIN
                            employee_id.employee_id,
                            concat(c.first_name, ' ', c.last_name) as customer_name,
                            pd.project_id,
-                           pd.closer_appointment_start::date as appointment_date,
+                           pd.closer_appointment_start as appointment_date,
                            concat(cu.first_name, ' ', cu.last_name) as owner_name,
                            pd.verified_setter_lead,
                            pd.verified_usage,
                            pd.closer_appointment_outcome_name as appointment_outcome,
-                           p.date_created::date,
+                           p.date_created,
                            s.abbreviation as state,
                            o.org_name as office
                     from brs.project_details pd
@@ -48,8 +51,9 @@ BEGIN
                         left outer join flow.state s on s.id = cs.state_id
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     where pd.source = 525 --Setter Gen
+                      and pd.company_id = v_company_id
                         and pd.closer_appointment_start is not null
-                        and p.date_created::date between p_start_date and p_end_date
+                        and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                 ) as me
                 order by setter_name, project_id
             ) as funnel_rows;
@@ -62,12 +66,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       pd.closer_appointment_start::date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       p.date_created::date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -81,9 +85,11 @@ BEGIN
                     left outer join flow.state s on s.id = cs.state_id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
+                    and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and pd.closer_appointment_start is not null
-                    and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
-                    and p.date_created::date between p_start_date and p_end_date
+                    and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
+                    and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                  and pd.company_id = v_company_id
                 order by setter_name, appointment_date
             ) as funnel_rows;
 
@@ -96,12 +102,12 @@ BEGIN
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        c.id as customer_id,
                        pd.project_id,
-                       pd.closer_appointment_start::date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       p.date_created::date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -117,7 +123,8 @@ BEGIN
                 where pd.source = 525 --Setter Gen
                     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     and pd.closer_appointment_start is not null
-                    and p.date_created::date between p_start_date and p_end_date
+                    and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                  and pd.company_id = v_company_id
                 order by setter_name, appointment_date
             ) as funnel_rows;
         end case;
@@ -143,12 +150,12 @@ BEGIN
                            employee_id.employee_id,
                            concat(c.first_name, ' ', c.last_name) as customer_name,
                            pd.project_id,
-                           pd.closer_appointment_start::date as appointment_date,
+                           pd.closer_appointment_start as appointment_date,
                            concat(cu.first_name, ' ', cu.last_name) as owner_name,
                            pd.verified_setter_lead,
                            pd.verified_usage,
                            pd.closer_appointment_outcome_name as appointment_outcome,
-                           p.date_created::date,
+                           p.date_created,
                            s.abbreviation as state,
                            o.org_name as office
                     from brs.project_details pd
@@ -163,9 +170,10 @@ BEGIN
                         left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     where pd.source = 525 --Setter Gen
                         and pd.closer_appointment_start is not null
-                        and p.date_created::date between p_start_date and p_end_date
+                        and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                         and pd.setter_user_id = any(p_user_ids)
-                        and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))
+                      and pd.company_id = v_company_id
+                        and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                 ) as me
                 order by setter_name, project_id
             ) as funnel_rows;
@@ -178,12 +186,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       pd.closer_appointment_start::date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       p.date_created::date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -197,11 +205,13 @@ BEGIN
                     left outer join flow.state s on s.id = cs.state_id
                     left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
-                    and p.date_created::date between p_start_date and p_end_date
+                    and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                    and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and pd.closer_appointment_start is not null
-                    and pd.closer_appointment_start::date <= (now() at time zone 'US/Mountain')::date
+                    and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                     and pd.setter_user_id = any(p_user_ids)
-                    and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))
+                  and pd.company_id = v_company_id
+                    and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                 order by setter_name, appointment_date
             ) as funnel_rows;
 
@@ -213,12 +223,12 @@ BEGIN
                        employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
-                       pd.closer_appointment_start::date as appointment_date,
+                       pd.closer_appointment_start as appointment_date,
                        concat(cu.first_name, ' ', cu.last_name) as owner_name,
                        pd.verified_setter_lead,
                        pd.verified_usage,
                        pd.closer_appointment_outcome_name as appointment_outcome,
-                       p.date_created::date,
+                       p.date_created,
                        s.abbreviation as state,
                        o.org_name as office
                 from brs.project_details pd
@@ -234,9 +244,10 @@ BEGIN
                 where pd.source = 525 --Setter Gen
                     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     and pd.closer_appointment_start is not null
-                    and p.date_created::date between p_start_date and p_end_date
+                    and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                     and pd.setter_user_id = any(p_user_ids)
-                    and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,p.date_created::date))
+                  and pd.company_id = v_company_id
+                    and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                 order by setter_name, appointment_date
             ) as funnel_rows;
 

@@ -35,7 +35,7 @@
     <dash.getPlannedValues><![CDATA[
         select *
         from brs.company_dashboard_targets
-        where target_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where target_date BETWEEN :startDate::DATE and :endDate::DATE
     ]]></dash.getPlannedValues>
 
     <dash.getAppointmentsCreatedActualTotal><![CDATA[
@@ -46,7 +46,7 @@
         select count(1)
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
-        where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.source is not null
             and case when :isParent
@@ -64,13 +64,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date
+               pd.closer_appointment_start appointment_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.source is not null
             and case when :isParent
@@ -83,7 +83,7 @@
         select count(1)
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
-        where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id = 3
             and pd.source is not null
@@ -94,13 +94,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date
+               pd.closer_appointment_start appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id = 3
             and pd.source is not null
@@ -110,7 +110,7 @@
         select count(1)
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
-        where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id != 3
             and pd.source is not null
@@ -121,13 +121,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date
+               pd.closer_appointment_start appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where p.date_created::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id != 3
             and pd.source is not null
@@ -140,7 +140,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -156,13 +156,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date
+               pd.closer_appointment_start appointment_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -172,7 +172,7 @@
     <dash.getPlannedAppointmentsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlannedAppointmentsActualBrs>
 
@@ -181,20 +181,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date
+               pd.closer_appointment_start appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlannedAppointmentsActualBrsDrilldown>
 
     <dash.getPlannedAppointmentsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlannedAppointmentsActualPartner>
 
@@ -203,13 +203,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date
+               pd.closer_appointment_start appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlannedAppointmentsActualPartnerDrilldown>
 
@@ -220,8 +220,8 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -238,15 +238,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date,
+               pd.closer_appointment_start appointment_date,
                pd.closer_appointment_outcome_name appointment_outcome
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
+        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -258,8 +258,8 @@
         select count(1)
         from brs.project_details pd
         where pd.company_id = 3
-            and pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualBrs>
 
@@ -268,7 +268,7 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date,
+               pd.closer_appointment_start appointment_date,
                pd.closer_appointment_outcome_name appointment_outcome
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
@@ -276,8 +276,8 @@
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
         where pd.company_id = 3
-            and pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualBrsDrilldown>
 
@@ -285,8 +285,8 @@
         select count(1)
         from brs.project_details pd
         where pd.company_id != 3
-            and pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualPartner>
 
@@ -295,7 +295,7 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start::DATE appointment_date,
+               pd.closer_appointment_start appointment_date,
                pd.closer_appointment_outcome_name appointment_outcome
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
@@ -303,8 +303,8 @@
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
         where pd.company_id != 3
-            and pd.closer_appointment_start::DATE between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_start::DATE < (now() AT TIME ZONE 'US/Mountain')
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualPartnerDrilldown>
 
@@ -315,7 +315,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_agreement_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -331,13 +331,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_agreement_signed_date::DATE
+               pd.installation_agreement_signed_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_agreement_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -347,7 +347,7 @@
     <dash.getBookingsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_agreement_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getBookingsActualBrs>
 
@@ -356,20 +356,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_agreement_signed_date::DATE
+               pd.installation_agreement_signed_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_agreement_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getBookingsActualBrsDrilldown>
 
     <dash.getBookingsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_agreement_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getBookingsActualPartner>
 
@@ -378,13 +378,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_agreement_signed_date::DATE
+               pd.installation_agreement_signed_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.installation_agreement_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_agreement_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getBookingsActualPartnerDrilldown>
 
@@ -395,7 +395,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.site_survey_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.site_survey_verified_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -411,13 +411,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.site_survey_verified_date::DATE
+               pd.site_survey_verified_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.site_survey_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.site_survey_verified_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -427,7 +427,7 @@
     <dash.getSiteSurveysVerifiedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.site_survey_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.site_survey_verified_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getSiteSurveysVerifiedActualBrs>
 
@@ -436,20 +436,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.site_survey_verified_date::DATE
+               pd.site_survey_verified_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.site_survey_verified_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.site_survey_verified_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getSiteSurveysVerifiedActualBrsDrilldown>
 
     <dash.getSiteSurveysVerifiedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.site_survey_verified_date::DATE  BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.site_survey_verified_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getSiteSurveysVerifiedActualPartner>
 
@@ -458,13 +458,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.site_survey_verified_date::DATE
+               pd.site_survey_verified_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.site_survey_verified_date::DATE  BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.site_survey_verified_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getSiteSurveysVerifiedActualPartnerDrilldown>
 
@@ -475,7 +475,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -491,13 +491,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_created_timestamp::DATE final_design_created_date
+               pd.final_design_created_timestamp final_design_created_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -507,7 +507,7 @@
     <dash.getFinalDesignsCreatedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsCreatedActualBrs>
 
@@ -516,20 +516,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_created_timestamp::DATE final_design_created_date
+               pd.final_design_created_timestamp final_design_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsCreatedActualBrsDrilldown>
 
     <dash.getFinalDesignsCreatedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsCreatedActualPartner>
 
@@ -538,13 +538,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_created_timestamp::DATE final_design_created_date
+               pd.final_design_created_timestamp final_design_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_created_timestamp::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsCreatedActualPartnerDrilldown>
 
@@ -555,7 +555,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.final_design_sent_to_homeowner_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -571,13 +571,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_sent_to_homeowner_date::DATE
+               pd.final_design_sent_to_homeowner_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_sent_to_homeowner_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -587,7 +587,7 @@
     <dash.getFinalDesignsSentActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_sent_to_homeowner_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsSentActualBrs>
 
@@ -596,20 +596,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_sent_to_homeowner_date::DATE
+               pd.final_design_sent_to_homeowner_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_sent_to_homeowner_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsSentActualBrsDrilldown>
 
     <dash.getFinalDesignsSentActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_sent_to_homeowner_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsSentActualPartner>
 
@@ -618,13 +618,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_sent_to_homeowner_date::DATE
+               pd.final_design_sent_to_homeowner_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_sent_to_homeowner_date BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsSentActualPartnerDrilldown>
 
@@ -635,7 +635,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -651,13 +651,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_signed_date::DATE
+               pd.final_design_signed_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -667,7 +667,7 @@
     <dash.getFinalDesignsApprovedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsApprovedActualBrs>
 
@@ -676,20 +676,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_signed_date::DATE
+               pd.final_design_signed_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalDesignsApprovedActualBrsDrilldown>
 
     <dash.getFinalDesignsApprovedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsApprovedActualPartner>
 
@@ -698,13 +698,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_design_signed_date::DATE
+               pd.final_design_signed_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_design_signed_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_design_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsApprovedActualPartnerDrilldown>
 
@@ -715,7 +715,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.plan_set_created_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -731,13 +731,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.plan_set_created_date::DATE
+               pd.plan_set_created_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.plan_set_created_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -747,7 +747,7 @@
     <dash.getPlanSetsCreatedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.plan_set_created_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlanSetsCreatedActualBrs>
 
@@ -756,20 +756,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.plan_set_created_date::DATE
+               pd.plan_set_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.plan_set_created_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlanSetsCreatedActualBrsDrilldown>
 
     <dash.getPlanSetsCreatedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.plan_set_created_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlanSetsCreatedActualPartner>
 
@@ -778,13 +778,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.plan_set_created_date::DATE
+               pd.plan_set_created_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.plan_set_created_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.plan_set_created_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlanSetsCreatedActualPartnerDrilldown>
 
@@ -795,7 +795,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_complete BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -811,13 +811,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_complete::DATE permit_pack_complete_date
+               pd.permit_pack_complete permit_pack_complete_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_complete BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -827,7 +827,7 @@
     <dash.getPermitPacksCreatedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_complete BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitPacksCreatedActualBrs>
 
@@ -836,20 +836,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_complete::DATE permit_pack_complete_date
+               pd.permit_pack_complete permit_pack_complete_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_complete BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitPacksCreatedActualBrsDrilldown>
 
     <dash.getPermitPacksCreatedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_complete BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitPacksCreatedActualPartner>
 
@@ -858,13 +858,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_complete::DATE permit_pack_complete_date
+               pd.permit_pack_complete permit_pack_complete_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_pack_complete::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_pack_complete BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitPacksCreatedActualPartnerDrilldown>
 
@@ -875,7 +875,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -891,13 +891,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_submittal_start_time::DATE permit_submitted_date
+               pd.permit_pack_submittal_start_time permit_submitted_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -907,7 +907,7 @@
     <dash.getPermitsSubmittedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsSubmittedActualBrs>
 
@@ -916,20 +916,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_submittal_start_time::DATE permit_submitted_date
+               pd.permit_pack_submittal_start_time permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsSubmittedActualBrsDrilldown>
 
     <dash.getPermitsSubmittedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsSubmittedActualPartner>
 
@@ -938,13 +938,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_submittal_start_time::DATE permit_submitted_date
+               pd.permit_pack_submittal_start_time permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_pack_submittal_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsSubmittedActualPartnerDrilldown>
 
@@ -955,7 +955,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_approved_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -971,13 +971,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_approved_date::DATE
+               pd.permit_approved_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_approved_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -987,7 +987,7 @@
     <dash.getPermitsApprovedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_approved_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsApprovedActualBrs>
 
@@ -996,20 +996,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_approved_date::DATE
+               pd.permit_approved_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_approved_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsApprovedActualBrsDrilldown>
 
     <dash.getPermitsApprovedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_approved_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsApprovedActualPartner>
 
@@ -1018,13 +1018,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_approved_date::DATE
+               pd.permit_approved_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.permit_approved_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.permit_approved_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsApprovedActualPartnerDrilldown>
 
@@ -1035,7 +1035,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_scheduled BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1051,13 +1051,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_scheduled::DATE installation_scheduled_date
+               pd.installation_scheduled installation_scheduled_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_scheduled BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1067,7 +1067,7 @@
     <dash.getInstallationsScheduledActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_scheduled BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getInstallationsScheduledActualBrs>
 
@@ -1076,20 +1076,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_scheduled::DATE installation_scheduled_date
+               pd.installation_scheduled installation_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_scheduled BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getInstallationsScheduledActualBrsDrilldown>
 
     <dash.getInstallationsScheduledActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_scheduled BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getInstallationsScheduledActualPartner>
 
@@ -1098,13 +1098,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_scheduled::DATE installation_scheduled_date
+               pd.installation_scheduled installation_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.installation_scheduled::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.installation_scheduled BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getInstallationsScheduledActualPartnerDrilldown>
 
@@ -1115,8 +1115,8 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.installation_closeout_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1132,15 +1132,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_start_time::DATE installation_date,
-               pd.installation_closeout_start_time::DATE installation_closeout_date
+               pd.installation_start_time installation_date,
+               pd.installation_closeout_start_time installation_closeout_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.installation_closeout_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1150,8 +1150,8 @@
     <dash.getPlannedInstallationsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.installation_closeout_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getPlannedInstallationsActualBrs>
 
@@ -1160,23 +1160,23 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_start_time::DATE installation_date,
-               pd.installation_closeout_start_time::DATE installation_closeout_date
+               pd.installation_start_time installation_date,
+               pd.installation_closeout_start_time installation_closeout_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.installation_closeout_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getPlannedInstallationsActualBrsDrilldown>
 
     <dash.getPlannedInstallationsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.installation_closeout_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getPlannedInstallationsActualPartner>
 
@@ -1185,15 +1185,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.installation_start_time::DATE installation_date,
-               pd.installation_closeout_start_time::DATE installation_closeout_date
+               pd.installation_start_time installation_date,
+               pd.installation_closeout_start_time installation_closeout_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.installation_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.installation_closeout_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.installation_closeout_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getPlannedInstallationsActualPartnerDrilldown>
 
@@ -1204,7 +1204,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.substantial_completion_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1220,13 +1220,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.substantial_completion_date::DATE
+               pd.substantial_completion_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.substantial_completion_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1236,7 +1236,7 @@
     <dash.getSubstantialCompletionsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.substantial_completion_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getSubstantialCompletionsActualBrs>
 
@@ -1245,20 +1245,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.substantial_completion_date::DATE
+               pd.substantial_completion_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.substantial_completion_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getSubstantialCompletionsActualBrsDrilldown>
 
     <dash.getSubstantialCompletionsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.substantial_completion_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getSubstantialCompletionsActualPartner>
 
@@ -1267,13 +1267,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.substantial_completion_date::DATE
+               pd.substantial_completion_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.substantial_completion_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.substantial_completion_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getSubstantialCompletionsActualPartnerDrilldown>
 
@@ -1284,8 +1284,8 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1301,15 +1301,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_inspection_scheduled_date::DATE,
-               pd.ahj_reinspection_scheduled_date::DATE
+               pd.ahj_inspection_scheduled_date,
+               pd.ahj_reinspection_scheduled_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1319,8 +1319,8 @@
     <dash.getInspectionsScheduledActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getInspectionsScheduledActualBrs>
 
@@ -1329,23 +1329,23 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_inspection_scheduled_date::DATE,
-               pd.ahj_reinspection_scheduled_date::DATE
+               pd.ahj_inspection_scheduled_date,
+               pd.ahj_reinspection_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getInspectionsScheduledActualBrsDrilldown>
 
     <dash.getInspectionsScheduledActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getInspectionsScheduledActualPartner>
 
@@ -1354,15 +1354,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_inspection_scheduled_date::DATE,
-               pd.ahj_reinspection_scheduled_date::DATE
+               pd.ahj_inspection_scheduled_date,
+               pd.ahj_reinspection_scheduled_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.ahj_inspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_scheduled_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.ahj_inspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_reinspection_scheduled_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getInspectionsScheduledActualPartnerDrilldown>
 
@@ -1373,8 +1373,8 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1390,15 +1390,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_inspection_start_time::DATE ahj_inspection_date,
-               pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
+               pd.ahj_inspection_start_time ahj_inspection_date,
+               pd.ahj_reinspection_start_time ahj_reinspection_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1408,8 +1408,8 @@
     <dash.getPlannedInspectionsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getPlannedInspectionsActualBrs>
 
@@ -1418,23 +1418,23 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_inspection_start_time::DATE ahj_inspection_date,
-               pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
+               pd.ahj_inspection_start_time ahj_inspection_date,
+               pd.ahj_reinspection_start_time ahj_reinspection_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getPlannedInspectionsActualBrsDrilldown>
 
     <dash.getPlannedInspectionsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getPlannedInspectionsActualPartner>
 
@@ -1443,15 +1443,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_inspection_start_time::DATE ahj_inspection_date,
-               pd.ahj_reinspection_start_time::DATE ahj_reinspection_date
+               pd.ahj_inspection_start_time ahj_inspection_date,
+               pd.ahj_reinspection_start_time ahj_reinspection_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.ahj_inspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_reinspection_start_time::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE or
+            ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getPlannedInspectionsActualPartnerDrilldown>
 
@@ -1462,7 +1462,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.ahj_final_inspection_verified BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1478,13 +1478,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_final_inspection_verified::DATE ahj_final_inspection_verified_date
+               pd.ahj_final_inspection_verified ahj_final_inspection_verified_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.ahj_final_inspection_verified BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1494,7 +1494,7 @@
     <dash.getInspectionsPassedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.ahj_final_inspection_verified BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getInspectionsPassedActualBrs>
 
@@ -1503,20 +1503,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_final_inspection_verified::DATE ahj_final_inspection_verified_date
+               pd.ahj_final_inspection_verified ahj_final_inspection_verified_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.ahj_final_inspection_verified BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getInspectionsPassedActualBrsDrilldown>
 
     <dash.getInspectionsPassedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.ahj_final_inspection_verified BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getInspectionsPassedActualPartner>
 
@@ -1525,13 +1525,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.ahj_final_inspection_verified::DATE ahj_final_inspection_verified_date
+               pd.ahj_final_inspection_verified ahj_final_inspection_verified_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.ahj_final_inspection_verified::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.ahj_final_inspection_verified BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getInspectionsPassedActualPartnerDrilldown>
 
@@ -1542,8 +1542,8 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.verified_inspection_approval_received_by_utility_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_inspection_approval_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1559,15 +1559,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.verified_inspection_approval_received_by_utility_date::DATE,
-               pd.ahj_inspection_approval_submitted_date::DATE
+               pd.verified_inspection_approval_received_by_utility_date,
+               pd.ahj_inspection_approval_submitted_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.verified_inspection_approval_received_by_utility_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_inspection_approval_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1577,8 +1577,8 @@
     <dash.getInspectionResultsSubmittedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.verified_inspection_approval_received_by_utility_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_inspection_approval_submitted_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getInspectionResultsSubmittedActualBrs>
 
@@ -1587,23 +1587,23 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.verified_inspection_approval_received_by_utility_date::DATE,
-               pd.ahj_inspection_approval_submitted_date::DATE
+               pd.verified_inspection_approval_received_by_utility_date,
+               pd.ahj_inspection_approval_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.verified_inspection_approval_received_by_utility_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_inspection_approval_submitted_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id = 3
     ]]></dash.getInspectionResultsSubmittedActualBrsDrilldown>
 
     <dash.getInspectionResultsSubmittedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where (pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.verified_inspection_approval_received_by_utility_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_inspection_approval_submitted_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getInspectionResultsSubmittedActualPartner>
 
@@ -1612,15 +1612,15 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.verified_inspection_approval_received_by_utility_date::DATE,
-               pd.ahj_inspection_approval_submitted_date::DATE
+               pd.verified_inspection_approval_received_by_utility_date,
+               pd.ahj_inspection_approval_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where (pd.verified_inspection_approval_received_by_utility_date::DATE BETWEEN :startDate::DATE and :endDate::DATE or
-            pd.ahj_inspection_approval_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE)
+        where (pd.verified_inspection_approval_received_by_utility_date BETWEEN :startDate::DATE and :endDate::DATE or
+            pd.ahj_inspection_approval_submitted_date BETWEEN :startDate::DATE and :endDate::DATE)
             and pd.company_id != 3
     ]]></dash.getInspectionResultsSubmittedActualPartnerDrilldown>
 
@@ -1631,7 +1631,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where pd.final_completion_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_completion_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1647,13 +1647,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_completion_submitted_date::DATE
+               pd.final_completion_submitted_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_completion_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_completion_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -1663,7 +1663,7 @@
     <dash.getFinalCompletionsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_completion_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_completion_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalCompletionsActualBrs>
 
@@ -1672,20 +1672,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_completion_submitted_date::DATE
+               pd.final_completion_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where pd.final_completion_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_completion_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getFinalCompletionsActualBrsDrilldown>
 
     <dash.getFinalCompletionsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where pd.final_completion_submitted_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
+        where pd.final_completion_submitted_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalCompletionsActualPartner>
 
@@ -1694,7 +1694,7 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.final_completion_submitted_date::DATE
+               pd.final_completion_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
