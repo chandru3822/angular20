@@ -40,7 +40,7 @@
 
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-
+import {AppMutations} from "@/stores/AppStore"
 
 export default {
   name: 'Messaging',
@@ -97,41 +97,43 @@ export default {
       },
       async onMessageWasSent (message) {
           // called when the user sends a message
-          this.messageList = [ ...this.messageList, message ]
-          this.newMessagesCount = this.isChatOpen ? this.newMessagesCount : this.newMessagesCount + 1
-
           let params;
           try {
-              if (message.type == 'file') {
-                  let mediaUrls = []
-                  let formData = new FormData()
-                  formData.append('file', message.data.file)
-                  formData.append('attachmentTypeId', 3)
+            if (message.type == 'file') {
+                let mediaUrls = []
+                let formData = new FormData()
+                formData.append('file', message.data.file)
+                formData.append('attachmentTypeId', 3)
 
-                  const resp = await postRequest(`/project/${this.projectId}/attachment`, formData)
-                  const {status} = resp
+                const resp = await postRequest(`/project/${this.projectId}/attachment`, formData)
+                const {status} = resp
 
-                  if (status === 200) {
-                      mediaUrls.push(resp.data.url)
-                  }
+                if (status === 200) {
+                    mediaUrls.push(resp.data.url)
+                }
 
-                  params = {
-                      userIDs: [this.contactId],
-                      message: message.data.file.name,
-                      mediaURLs: mediaUrls
-                  }
-              }
-              else {
-                  params = {
-                      userIDs: [this.contactId],
-                      message: message.data.text
-                  }
-              }
+                params = {
+                    userIDs: [this.contactId],
+                    message: message.data.file.name,
+                    mediaURLs: mediaUrls
+                }
+            }
+            else {
+                params = {
+                    userIDs: [this.contactId],
+                    message: message.data.text
+                }
+            }
 
-              await postRequest(`/communication/sendTextsForProject`, params)
+            await postRequest(`/communication/sendTextsForProject`, params)
+
+            //dont add to the ui unless the message goes thru successfully
+            this.messageList = [ ...this.messageList, message ]
+            this.newMessagesCount = this.isChatOpen ? this.newMessagesCount : this.newMessagesCount + 1
           } catch (e) {
-              console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error sending message')
+            console.error('*** ERROR ***', e)
+            let message = e?.message ? 'Error Sending Message: ' + e.message : 'Error Sending Message'
+            this.snackbar = getSnackbar('ERROR', message)
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           }
       },

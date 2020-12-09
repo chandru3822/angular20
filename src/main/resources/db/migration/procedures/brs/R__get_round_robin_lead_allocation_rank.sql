@@ -24,8 +24,10 @@ BEGIN
              lead_gen_num as (
                  select rru.user_id, count(pd.id) as lead_gen_num
                  from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              closer_appointment_start >= now() - interval '42 days'
+                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
+                     left join flow.project p on p.id = pd.project_id
+                     left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -38,29 +40,31 @@ BEGIN
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               first_cash_payment_paid_date, utility_bill_verified_date,
                                               proof_of_homeowners_insurance_obtained_date)
-                                         >= now() - interval '42 days'
+                                         >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
                              else
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     >= now() - interval '42 days'
+                                     >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
                                                                   end
-                     AND ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project p on p.id = pd.project_id
-                          left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                     and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() AT TIME ZONE 'US/Mountain') :: date))
+                     and pd.company_id = 3
                  group by rru.user_id),
              lead_gen_den as (
                  select rru.user_id, count(pd.id) as lead_gen_den
                  from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              closer_appointment_start >= now() - interval '42 days'
+                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
+                     left join flow.project p on p.id = pd.project_id
+                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
                      and pd.source not in (523,524,530)
-                          left  join flow.project p on p.id = pd.project_id
+                     and pd.company_id = 3
                  group by rru.user_id),
              lead_gen_num_fdc as (
                  select rru.user_id, count(pd.id) as lead_gen_num
                  from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              closer_appointment_start >= now() - (p_time_interval ||'day')::interval
+                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
+                     left join flow.project p on p.id = pd.project_id
+                     left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -73,31 +77,32 @@ BEGIN
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               first_cash_payment_paid_date, utility_bill_verified_date,
                                               proof_of_homeowners_insurance_obtained_date)
-                                         >= now() - (p_time_interval ||'day')::interval
+                                         >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
                              else
                                  greatest(final_design_signed_date, financial_agreement_signed_date,
                                           proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     >= now() - (p_time_interval ||'day')::interval
+                                     >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
                                                                   end
-                     AND ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project p on p.id = pd.project_id
-                          left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                     and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > ((now() AT TIME ZONE 'US/Mountain') :: date)))
+                     and pd.company_id = 3
                  group by rru.user_id),
              lead_gen_den_fdc as (
                  select rru.user_id, count(pd.id) as lead_gen_den
                  from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              closer_appointment_start >= now() - (p_time_interval ||'day')::interval
+                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
+                     left join flow.project p on p.id = pd.project_id
+                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
                      and pd.source not in (523,524,530)
-                          left  join flow.project p on p.id = pd.project_id
+                     and pd.company_id = 3
                  group by rru.user_id),
              self_gen as (
                  select rru.user_id, count(pd.id) * 2 as self_gen
                  from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
-                                                                       utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >=
-                                                              now() - (p_time_interval ||'day')::interval
+                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
+                     left join flow.project p on p.id = pd.project_id
+                     left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                 where greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
+                                utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
                      and pd.source in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -110,26 +115,27 @@ BEGIN
                              else
                                      1 = 1
                                                                   end
-                     AND ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project p on p.id = pd.project_id
-                          left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                     and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > ((now() AT TIME ZONE 'US/Mountain') :: date)))
+                     and pd.company_id = 3
                  group by rru.user_id),
              appointment_count as (
                  select rru.user_id, count(pd2.id) as appointment_count
                  from round_robin_users rru
-                          left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                     and  closer_appointment_start between now() - (p_time_interval ||'day')::interval and now() + interval '100 days'
+                     left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
+                 where ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval) and ((now() AT TIME ZONE 'US/Mountain') :: date + interval '100 days')
+                     and pd2.company_id = 3
                  group by rru.user_id),
              appointment_count_with_interval as (
                  select rru.user_id, count(pd2.id) as appointment_count_with_interval
                  from round_robin_users rru
-                          left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                     and closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now() + interval '100 days'
+                     left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
+                 where ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between (((now() AT TIME ZONE 'US/Mountain') :: date) - (rru.distribution_time_frame_days || 'days')::interval) and ((now() AT TIME ZONE 'US/Mountain') :: date + interval '100 days')
+                     and pd2.company_id = 3
                  group by rru.user_id),
              total_avail as (
                  select coalesce(ca.appointment_count,0) as avail, rru.user_id
                  from round_robin_users rru
-                          left join brs.cached_appointment ca  on rru.user_id = ca.user_id
+                     left join brs.cached_appointment ca on rru.user_id = ca.user_id
              )
 
 
