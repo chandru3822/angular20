@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.PropertiesConfiguration;
 import com.albatross.api.convert.JsonCollectionDeserializer;
-import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.JodaDateTimeEditor;
+import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -112,7 +112,7 @@ public class SMSService {
         source.addValue("messageGroup", messageGroup);
         source.addValue("userId", userId);
         source.addValue("message", message);
-        source.addValue("toPhone", safeCleanPhoneNumber(toPhone));
+        source.addValue("toPhone", toPhone);
         source.addValue("mediaUrls", null);
         source.addValue("recipientTypeId", recipientType.ordinal());
 
@@ -133,8 +133,7 @@ public class SMSService {
                 source,
                 new SMSQueueMapper<>(SMSQueueItem.class, om)
         );
-
-        return items.get(0);
+       return items.get(0);
     }
 
     @Transactional
@@ -204,7 +203,7 @@ public class SMSService {
 
                 jdbcTemplate.update(queueUpdate, params);
                 log.info("TWILIO: ERROR: {}",  e.toString());
-               
+
             }
         }
     }
@@ -397,16 +396,9 @@ public class SMSService {
         return cleanPhoneNumber(input, "US");
     }
 
-    public String safeCleanPhoneNumber(String input) {
+    public String safeCleanPhoneNumber(String input) throws NumberParseException{
         String output;
-
-        try {
-            output = cleanPhoneNumber(input);
-        } catch (NumberParseException ex) {
-            log.warn("TWILIO: invalid phone number: {}", input);
-            output = input;
-        }
-
+        output = cleanPhoneNumber(input);
         return output;
     }
 
