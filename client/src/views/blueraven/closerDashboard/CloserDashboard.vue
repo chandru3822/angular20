@@ -156,23 +156,23 @@
             <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td class="text-left"><a :href="'/project/' + item.id">{{ item.id ? item.id : '' }}</a></td>
-                <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
-                <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
+                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
+                <td class="text-left"><a :href="'/project/' + item.id">{{ item.id || '' }}</a></td>
+                <td class="text-left">{{ item.source_name || '' }}</td>
+                <td class="text-left">{{ item.system_size || '' }}</td>
                 <td class="text-left">
-                  {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
+                  {{ item.final_design_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td class="text-left">
-                  {{ item.financial_agreement_signed_date_formatted ? item.financial_agreement_signed_date_formatted : '' }}
+                  {{ item.financial_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td class="text-left">
-                  {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
+                  {{ item.utility_bill_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td class="text-left">
-                  {{ item.first_cash_payment_paid_date_formatted ? item.first_cash_payment_paid_date_formatted : '' }}
+                  {{ item.first_cash_payment_paid_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
-                <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
+                <td class="text-left">{{ item.financier || '' }}</td>
               </tr>
             </template>
 
@@ -992,76 +992,76 @@
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
-                  :style="{'text-decoration': item.cancelled_date_formatted ? 'line-through' : ''}">
+                  :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 <td style="text-align: center">
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
                 </td>
-                <td>{{ item.owner_name ? item.owner_name : '' }}</td>
-                <td>{{ item.employee_id ? item.employee_id : '' }}</td>
-                <td>{{ item.state ? item.state : '' }}</td>
-                <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td>{{ item.owner_name || '' }}</td>
+                <td>{{ item.employee_id || '' }}</td>
+                <td>{{ item.state || '' }}</td>
+                <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
                   <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
                     {{ item.project_id }}
                   </router-link>
-                  <div v-else>{{ item.project_id ? item.project_id : '' }}</div>
+                  <div v-else>{{ item.project_id || '' }}</div>
                 </td>
-                <td :class="item.source_name_class">{{ item.source_name ? item.source_name : '' }}</td>
-                <td :class="item.system_size_class">{{ item.system_size ? item.system_size : '' }}</td>
-                <td :class="item.financier_class">{{ item.financier ? item.financier : '' }}</td>
-                <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
-                <td>{{ item.cancelled_date_formatted ? item.cancelled_date_formatted : '' }}</td>
+                <td :class="item.source_name_class">{{ item.source_name || '' }}</td>
+                <td :class="item.system_size_class">{{ item.system_size || '' }}</td>
+                <td :class="item.financier_class">{{ item.financier || '' }}</td>
+                <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+                <td>{{ item.cancelled_date | formatDate('date', 'MM/DD/YYYY') }}</td>
                 <td v-if="funnelDrilldownHeaders[11].show">
-                  {{ item.date_created_formatted ? item.date_created_formatted : '' }}
+                  {{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[12].show">
-                  {{ item.appointment_outcome ? item.appointment_outcome : '' }}
+                  {{ item.appointment_outcome || '' }}
                 </td>
                 <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[13].show">
-                  {{ item.credit_decision_date_formatted ? item.credit_decision_date_formatted : '' }}
+                  {{ item.credit_decision_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[14].show">
-                  {{ item.credit_check ? item.credit_check : '' }}
+                  {{ item.credit_check || '' }}
                 </td>
                 <td :class="item.installation_agreement_signed_date_class"
                     v-if="funnelDrilldownHeaders[15].show">
-                  {{ item.installation_agreement_signed_date_formatted ? item.installation_agreement_signed_date_formatted : '' }}
+                  {{ item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.site_survey_verified_date_class"
                     v-if="funnelDrilldownHeaders[16].show">
-                  {{ item.site_survey_verified_date_formatted ? item.site_survey_verified_date_formatted : '' }}
+                  {{ item.site_survey_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.site_survey_completed_date_class"
                     v-if="funnelDrilldownHeaders[17].show">
-                  {{ item.site_survey_completed_date_formatted ? item.site_survey_completed_date_formatted : '' }}
+                  {{ item.site_survey_completed_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.final_design_sent_to_homeowner_date_class"
                     v-if="funnelDrilldownHeaders[18].show">
-                  {{ item.final_design_sent_to_homeowner_date_formatted ? item.final_design_sent_to_homeowner_date_formatted : '' }}
+                  {{ item.final_design_sent_to_homeowner_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.final_design_signed_date_class"
                     v-if="funnelDrilldownHeaders[19].show">
-                  {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
+                  {{ item.final_design_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
                     v-if="funnelDrilldownHeaders[20].show">
-                  {{ item.proof_of_homeowners_insurance_obtained_date_formatted ? item.proof_of_homeowners_insurance_obtained_date_formatted : '' }}
+                  {{ item.proof_of_homeowners_insurance_obtained_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.utility_bill_verified_date_class"
                     v-if="funnelDrilldownHeaders[21].show">
-                  {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
+                  {{ item.utility_bill_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.financial_agreement_signed_date_class"
                     v-if="funnelDrilldownHeaders[22].show">
-                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
+                  {{ item.financial_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.cash_down_payment_class"
                     v-if="funnelDrilldownHeaders[23].show">
-                  {{ item.cash_down_payment_date_formatted ? item.cash_down_payment_date_formatted : '' }}
+                  {{ item.cash_down_payment | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.substantial_completion_date_class"
                     v-if="funnelDrilldownHeaders[24].show">
-                  {{ item.substantial_completion_date_formatted ? item.substantial_completion_date_formatted : '' }}
+                  {{ item.substantial_completion_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
               </tr>
             </template>
@@ -1652,7 +1652,6 @@
           this.drilldownData = cloneDeep(data)
 
           if (this.drilldownData.length > 0) {
-            this.reformatMilestoneDrilldownDates()
             this.drilldownData.forEach(row => {
               if (row.customer_name) {
                 row.customer_name = row.customer_name.toLowerCase()
@@ -1671,26 +1670,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-
-      reformatMilestoneDrilldownDates () {
-        this.drilldownData.forEach(row => {
-          if (row.final_design_signed_date) {
-            row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
-          }
-
-          if (row.financial_agreement_signed_date) {
-            row.financial_agreement_signed_date_formatted = moment(row.financial_agreement_signed_date).format('MMM D, YYYY')
-          }
-
-          if (row.utility_bill_verified_date) {
-            row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
-          }
-
-          if (row.first_cash_payment_paid_date) {
-            row.first_cash_payment_paid_date_formatted = moment(row.first_cash_payment_paid_date).format('MMM D, YYYY')
-          }
-        })
       },
 
       closeMilestoneDialog () {
@@ -2645,7 +2624,6 @@
               }
 
               this.markMissingDrilldownData()
-              this.reformatFunnelDrilldownDates()
             }
 
             this.funnelDrilldownDialog = true
@@ -2682,66 +2660,6 @@
             }
           })
           return newLine
-        })
-      },
-
-      reformatFunnelDrilldownDates () {
-        this.funnelDrilldownData.forEach(row => {
-          if (row.appointment_date) {
-            row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
-          }
-
-          if (row.cancelled_date) {
-            row.cancelled_date_formatted = moment(row.cancelled_date).format('MMM D, YYYY')
-          }
-
-          if (row.date_created) {
-            row.date_created_formatted = moment(row.date_created).format('MMM D, YYYY')
-          }
-
-          if (row.credit_decision_date) {
-            row.credit_decision_date_formatted = moment(row.credit_decision_date).format('MMM D, YYYY')
-          }
-
-          if (row.installation_agreement_signed_date) {
-            row.installation_agreement_signed_date_formatted = moment(row.installation_agreement_signed_date).format('MMM D, YYYY')
-          }
-
-          if (row.site_survey_verified_date) {
-            row.site_survey_verified_date_formatted = moment(row.site_survey_verified_date).format('MMM D, YYYY')
-          }
-
-          if (row.site_survey_completed_date) {
-            row.site_survey_completed_date_formatted = moment(row.site_survey_completed_date).format('MMM D, YYYY')
-          }
-
-          if (row.final_design_sent_to_homeowner_date) {
-            row.final_design_sent_to_homeowner_date_formatted = moment(row.final_design_sent_to_homeowner_date).format('MMM D, YYYY')
-          }
-
-          if (row.final_design_signed_date) {
-            row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
-          }
-
-          if (row.proof_of_homeowners_insurance_obtained_date) {
-            row.proof_of_homeowners_insurance_obtained_date_formatted = moment(row.proof_of_homeowners_insurance_obtained_date).format('MMM D, YYYY')
-          }
-
-          if (row.utility_bill_verified_date) {
-            row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
-          }
-
-          if (row.financial_agreement_signed_date) {
-            row.agreement_signed_date_formatted = moment(row.financial_agreement_signed_date).format('MMM D, YYYY')
-          }
-
-          if (row.cash_down_payment) {
-            row.cash_down_payment_date_formatted = moment(row.cash_down_payment).format('MMM D, YYYY')
-          }
-
-          if (row.substantial_completion_date) {
-            row.substantial_completion_date_formatted = moment(row.substantial_completion_date).format('MMM D, YYYY')
-          }
         })
       },
 
