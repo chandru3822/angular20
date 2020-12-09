@@ -9,7 +9,7 @@ $BODY$
 declare
 	v_start_date date;
 	v_end_date date;
-    v_year integer;
+  v_year integer;
 BEGIN
 	select extract('year' from now())::integer
 	into v_year;
@@ -20,11 +20,11 @@ BEGIN
 	when p_quarter = 2 then
 		v_start_date := (v_year || '-04-01')::date;
 		v_end_date := (v_year || '-06-30')::date;
-    when p_quarter = 3 then
-        v_start_date := (v_year || '-07-01')::date;
+  when p_quarter = 3 then
+    v_start_date := (v_year || '-07-01')::date;
 		v_end_date := (v_year || '-09-30')::date;
-    else
-        v_start_date := (v_year || '-10-01')::date;
+  else
+    v_start_date := (v_year || '-10-01')::date;
 		v_end_date := (v_year || '-12-31')::date;
 	end case;
 
@@ -71,6 +71,7 @@ BEGIN
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > v_end_date))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = p_user_id
+                and pd.company_id = 3
             group by customer_name, p.id, pd.source_name, owner_name, pd.system_size, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.utility_bill_verified_date, pd.first_cash_payment_paid_date, financier
             order by customer_name
         ) as sub_rows;
