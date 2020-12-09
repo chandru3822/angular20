@@ -103,7 +103,7 @@
     <v-dialog v-model="drilldownDialog" :content-class="constants.IS_MOBILE ? 'drilldown-dialog' : ''">
       <v-card>
         <v-card-title class="mb-1">
-          <span id="drilldown-title">hello: {{ drilldownTitle }}</span>
+          <span id="drilldown-title">{{ drilldownTitle }}</span>
           <a class="close-modal-x pb-3" title="Close" @click="close">×</a>
         </v-card-title>
 
