@@ -231,6 +231,7 @@
                            and up2.primary_flag IS TRUE
                            AND up2.end_date IS NULL
                            AND up2.archived IS NOT TRUE
+                           and up2.position_id in (1,2,3,133)
                            AND ust.has_access is true),false) AS "is_active_closer",
             (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
              FROM (SELECT op2.name AS "receivingPlan", op2.description AS "receivingDescription", op2.id AS "receivingPlanId"

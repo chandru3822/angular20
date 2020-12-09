@@ -30,7 +30,6 @@ BEGIN
         select ui.user_id,ui.id, ppscfv.timestamp_value as start_time, ppscfv2.timestamp_value as end_time
         from flow.project p
                  inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 1
-            and pps.main is true
                  inner join flow.project_process_step_custom_field_value ppscfv
                             on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = 5
                  inner join flow.project_process_step_custom_field_value ppscfv2
