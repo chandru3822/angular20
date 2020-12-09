@@ -26,6 +26,12 @@
       and c.id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
   ]]></project.existsInHierarchy>
 
+  <project.exists><![CDATA[
+    select p.id
+    from flow.project p
+    where p.id = :projectId
+  ]]></project.exists>
+
 
   <project.getCompanyId><![CDATA[
     select cp.company_id

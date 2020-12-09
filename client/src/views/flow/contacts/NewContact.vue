@@ -51,6 +51,8 @@
                             v-model="contact.email"></v-text-field>
               <v-text-field text
                             label="Zip Code"
+                            counter
+                            maxlength="10"
                             v-model="contact.postalCode"></v-text-field>
               <v-select v-model="contact.companyCountryId"
                         :items="countries"
