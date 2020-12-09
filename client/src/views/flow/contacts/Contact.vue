@@ -138,6 +138,8 @@
                             placeholder=" "
                             @change="addressChanged = true"
                             :readonly="!userCanEdit"
+                            counter
+                            maxlength="10"
                             v-model="contact.postalCode"></v-text-field>
             </v-form>
             <v-text-field text
