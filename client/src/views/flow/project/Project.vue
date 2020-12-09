@@ -30,6 +30,8 @@
                   ></v-text-field>
                   <v-text-field
                     v-model="project.postalCode"
+                    counter
+                    maxlength="10"
                     label="Postal Code"
                   ></v-text-field>
                   <v-select v-model="project.companyStateId"

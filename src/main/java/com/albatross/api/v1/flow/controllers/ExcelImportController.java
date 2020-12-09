@@ -4,7 +4,6 @@ import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.Params;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -141,44 +140,46 @@ public class ExcelImportController {
 
     log.info("EXCEL_IMPORT: Inserting For: PROP_ID: {} PROJECT_ID: {} SOURCE: {}", propId, projectId, proposal.getSource());
     //check if the project id exists
-    Optional<Project> project = Optional.empty();
     if(null != projectId) {
       log.info("EXCEL_IMPORT: project id long value is it null?: {}", projectId.longValue());
-      project = projectService.getProject(projectId.longValue());
-      log.info("EXCEL_IMPORT: project found: {}", project.isPresent());
-    }
+      Boolean projectExists = projectService.projectExists(projectId.longValue());
+      log.info("EXCEL_IMPORT: project found: {}", projectExists);
 
-    if(project.isPresent()) {
-      Optional<ProposalResponse> created = cache.get("excel.import.insert", params,
-        (rs, rowNum) -> {
-          try {
-            ProposalResponse pr = new ProposalResponse();
-            pr.setId(rs.getLong("id"));
-            pr.setSource(rs.getString("source"));
-            pr.setProjectId(rs.getInt("project_id"));
-            pr.setProposalDate(rs.getDate("proposal_date"));
-            pr.setProposalId(rs.getInt("proposal_nbr"));
-            pr.setProposal(om.readValue(rs.getString("proposal"),
-              new TypeReference<Map<String, Object>>() {
-              }));
-            return pr;
-          } catch (IOException e) {
-            throw new SQLException(e);
-          }
-        });
-      if (!created.isPresent()) {
-        throw new IllegalStateException("Did not get back a created proposal_log");
+      if(projectExists) {
+        Optional<ProposalResponse> created = cache.get("excel.import.insert", params,
+          (rs, rowNum) -> {
+            try {
+              ProposalResponse pr = new ProposalResponse();
+              pr.setId(rs.getLong("id"));
+              pr.setSource(rs.getString("source"));
+              pr.setProjectId(rs.getInt("project_id"));
+              pr.setProposalDate(rs.getDate("proposal_date"));
+              pr.setProposalId(rs.getInt("proposal_nbr"));
+              pr.setProposal(om.readValue(rs.getString("proposal"),
+                new TypeReference<Map<String, Object>>() {
+                }));
+              return pr;
+            } catch (IOException e) {
+              throw new SQLException(e);
+            }
+          });
+
+        if (!created.isPresent()) {
+          throw new IllegalStateException("Did not get back a created proposal_log");
+        }
+        log.info("EXCEL_IMPORT: Created Excel Proposal Log ID={}", created.get().getId());
+
+        return ResponseEntity
+          .status(HttpStatus.CREATED)
+          .body(created.get());
+      } else {
+        log.error("EXCEL_IMPORT: ERROR: Attempted Proposal Log Insert with invalid Project ID: {} for Proposal: {}", projectId, propId);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Project Found with ID: " + projectId, new Exception());
       }
-      log.info("EXCEL_IMPORT: Created Excel Proposal Log ID={}", created.get().getId());
-
-      return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(created.get());
     } else {
-      log.error("EXCEL_IMPORT: ERROR: Attempted Proposal Log Insert with invalid Project ID: {} for Proposal: {}", projectId, propId);
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Project Found with ID: " + projectId, new Exception());
+      log.error("EXCEL_IMPORT: ERROR: No project id included in request");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No project id included in request", new Exception());
     }
-
 
   }
 
