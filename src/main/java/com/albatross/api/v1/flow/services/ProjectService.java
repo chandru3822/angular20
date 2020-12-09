@@ -108,7 +108,15 @@ public class ProjectService {
     Optional<Project> proj = sqlCache.get("project.existsInHierarchy", params, Project.class);
     return proj.isPresent();
   }
-  
+
+  //i tried to genericize this but it is still pretty specific to only brs.
+  public Boolean projectExists(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    Optional<Project> proj = sqlCache.get("project.exists", params, Project.class);
+    return proj.isPresent();
+  }
+
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
