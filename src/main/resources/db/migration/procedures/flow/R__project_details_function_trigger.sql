@@ -2,18 +2,19 @@ CREATE OR REPLACE FUNCTION flow.project_details()
     RETURNS TRIGGER AS
 $$
 declare
-    v_company_id             integer;
-    v_contact_email          character varying(255);
-    v_contact_mobile_phone   character varying(50);
-    v_contact_phone          character varying(50);
-    v_state_id               integer;
-    v_state_abbrev           character varying(2);
-    v_contact_name           character varying(150);
-    v_owner_user_position_id integer;
-    v_owner_user_id          integer;
-    v_user_id                integer;
-    v_closer_name            varchar;
+    v_company_id                 integer;
+    v_contact_email              character varying(255);
+    v_contact_mobile_phone       character varying(50);
+    v_contact_phone              character varying(50);
+    v_state_id                   integer;
+    v_state_abbrev               character varying(2);
+    v_contact_name               character varying(150);
+    v_owner_user_position_id     integer;
+    v_owner_user_id              integer;
+    v_user_id                    integer;
+    v_closer_name                varchar;
     v_pd_closer_user_position_id integer;
+    v_project_creator            varchar;
 BEGIN
     select company_id
     into v_company_id
@@ -21,14 +22,19 @@ BEGIN
     where process_id = new.company_process_id
     limit 1;
 
+    select u3.first_name || ' ' || u3.last_name
+    into v_project_creator
+    from flow."user" u3
+    where u3.id = new.created_by_id;
+
     if new.user_position_id is not null then
-        select u.id,first_name||' '||last_name
+        select u.id, first_name || ' ' || last_name
         into v_user_id,v_closer_name
         from flow.user_position up
-        inner join flow.user u on u.id = up.user_id
+                 inner join flow.user u on u.id = up.user_id
         where up.id = new.user_position_id;
     else
-        select pd.closer_user_id,pd.closer_name,pd.closer_user_position_id
+        select pd.closer_user_id, pd.closer_name, pd.closer_user_position_id
         into v_user_id,v_closer_name,v_pd_closer_user_position_id
         from brs.project_details pd
         where pd.project_id = new.id;
@@ -51,10 +57,14 @@ BEGIN
                                         contact_phone, contact_mobile_phone,
                                         project_street1, project_city, project_postal_code,
                                         project_time_zone, project_state_id, project_state_abbreviation, contact_name,
-                                        setter_user_position_id, setter_user_id,closer_user_id,closer_user_position_id,closer_name)
+                                        setter_user_position_id, setter_user_id, closer_user_id,
+                                        closer_user_position_id, closer_name,
+                                        project_creator,contact_id)
         values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
                 new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
-                v_owner_user_position_id, v_owner_user_id,v_user_id,coalesce(new.user_position_id,v_pd_closer_user_position_id),v_closer_name);
+                v_owner_user_position_id, v_owner_user_id, v_user_id,
+                coalesce(new.user_position_id, v_pd_closer_user_position_id), v_closer_name,
+                v_project_creator,new.contact_id);
     elsif (TG_OP = 'UPDATE') THEN
         update brs.project_details
         set contact_email              = v_contact_email,
@@ -70,8 +80,10 @@ BEGIN
             setter_user_position_id    = v_owner_user_position_id,
             setter_user_id             = v_owner_user_id,
             closer_name                = v_closer_name,
-            closer_user_position_id    = coalesce(new.user_position_id,v_pd_closer_user_position_id),
-            closer_user_id             = v_user_id
+            closer_user_position_id    = coalesce(new.user_position_id, v_pd_closer_user_position_id),
+            closer_user_id             = v_user_id,
+            project_creator            = v_project_creator,
+            contact_id                 = new.contact_id
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
@@ -177,11 +189,19 @@ BEGIN
                           v_record.second_field_to_update = 'closer_name' then
                         case when new.int_value is null then select 'null' into v_value;
                             else
-                                select quote_literal(first_name ||' '||last_name)
+                                select quote_literal(first_name || ' ' || last_name)
                                 into v_value
                                 from flow.user u
-                                inner join flow.user_position up on up.user_id = u.id
+                                         inner join flow.user_position up on up.user_id = u.id
                                 where up.id = new.int_value;
+                            end case;
+                    elsif v_record.field_to_update = 'installation_resource' then
+                        case when new.int_value is null then select 'null' into v_value;
+                            else
+                                select quote_literal(org_name)
+                                into v_value
+                                from flow.org o
+                                where o.id = new.int_value;
                             end case;
                     elsif v_record.list_of_value_id is not null then
                         case when new.int_value is null then select 'null' into v_value;
@@ -394,7 +414,7 @@ BEGIN
     if old.main is false and new.main is true or v_found > 0 then
         v_sql = 'update brs.project_details set ';
         for v_record in
-            select  pdc.field_to_update, pdc.second_field_to_update
+            select pdc.field_to_update, pdc.second_field_to_update
             from flow.custom_field_group_assignment cfga
                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
@@ -408,17 +428,18 @@ BEGIN
             loop
                 v_count = v_count + 1;
                 if v_record.second_field_to_update is not null then
-                    if position(v_record.second_field_to_update in v_sql) < 1 then
-                        v_sql = v_sql || v_record.second_field_to_update || ' = null ,';
+                    if not v_record.second_field_to_update = any(string_to_array(v_sql,' '))   then
+                        v_sql = v_sql || v_record.second_field_to_update || ' = null , ';
                     end if;
                 end if;
-                if position(v_record.field_to_update in v_sql) < 1 then
-                    v_sql = v_sql || v_record.field_to_update || ' = null,';
+                if not v_record.field_to_update = any(string_to_array(v_sql,' '))  then
+                    v_sql = v_sql || v_record.field_to_update || ' = null , ';
                 end if;
             end loop;
-        v_sql = trim(trailing ',' from v_sql);
+        v_sql = trim(trailing ' ,' from v_sql);
         v_sql = v_sql || ' where project_id = ' || new.project_id || ';';
         if v_count > 0 then
+            raise notice 'v_sql%',v_sql;
             execute v_sql;
         end if;
     end if;
