@@ -137,6 +137,7 @@
                   inner join flow.feature f on f.id = cf.feature_id
                   inner join flow.access_control ac on ac.id = uac.access_control_id
          where user_id = :userId
+           and cf.archived is not true
            and enabled is true
            and cf.company_id = :companyId
      )
@@ -158,6 +159,7 @@
     WHERE pac.enabled is true
     and up.archived is not true
       and up.start_date <= now()
+      and cf.archived is not true
       and (up.end_date is null or up.end_date >= now())
       and cf.company_id = :companyId
   ]]></feature.getAccessForUser>
