@@ -1,20 +1,22 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CommunicationService;
 import com.albatross.api.v1.flow.services.ContactService;
+import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.UserService;
-
 import com.google.common.collect.Maps;
+import com.google.i18n.phonenumbers.NumberParseException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.activation.FileDataSource;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +38,9 @@ public class CommunicationController {
     private CommunicationService communicationService;
 
     @Autowired
+    private SMSService smsService;
+
+    @Autowired
     private ContactService contactService;
 
     @Autowired
@@ -50,12 +55,20 @@ public class CommunicationController {
     public HashMap<String, Object> sendTextsForProject(@RequestBody SendTextsRequest sendTexts) {
         String groupId = UUID.randomUUID().toString();
         Long contactId = sendTexts.getUserIDs().get(0);
-        communicationService.queueTextMessagesForProject(groupId, contactService.getContact(contactId),
-            sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs());
+        Contact contact = contactService.getContact(contactId);
+        String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
+        try {
+          String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+          communicationService.queueTextMessagesForProject(groupId, contact, safePhone,
+              sendTexts.getMessage() == null ? "" : sendTexts.getMessage(), sendTexts.getMediaURLs());
 
-        return new HashMap<String, Object>() {{
-            put("messageGroup", groupId);
-        }};
+          return new HashMap<String, Object>() {{
+              put("messageGroup", groupId);
+          }};
+        } catch (NumberParseException ex) {
+          log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+        }
     }
 
     @PostMapping(value = "/sendTexts")
