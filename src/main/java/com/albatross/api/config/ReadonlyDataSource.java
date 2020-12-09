@@ -25,6 +25,7 @@ public class ReadonlyDataSource {
     config.setJdbcUrl(propConfig.databaseReadonlyURL);
     config.setUsername(propConfig.databaseUsername);
     config.setPassword(propConfig.databasePassword);
+    config.setPoolName("HikariPool-RO");
     ds = new HikariDataSource(config);
   }
 
