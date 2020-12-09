@@ -4,7 +4,11 @@ CREATE OR REPLACE FUNCTION brs.rpt_setter_funnel_standard_drilldown(p_start_date
 AS $function$
 declare
     v_whole_company boolean;
+    v_company_id integer;
 BEGIN
+    --doing this so it is easier to change to allow parameterizing later if needed
+    select 3 into v_company_id;
+
     --If p_user_ids has a -1 that means get the funnel for the whole company
     select -1 = any(p_user_ids)  into v_whole_company;
     if v_whole_company then
@@ -37,6 +41,7 @@ BEGIN
                 where pd.source = 525 --Setter Gen
                     and pd.closer_appointment_start is not null
                     and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                  and pd.company_id = v_company_id
                 order by setter_name, project_id
             ) as funnel_rows;
 
@@ -70,6 +75,7 @@ BEGIN
                     and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and pd.closer_appointment_start is not null
                     and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                  and pd.company_id = v_company_id
                 order by setter_name, appointment_date
             ) as funnel_rows;
 
@@ -103,6 +109,7 @@ BEGIN
                     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     and pd.closer_appointment_start is not null
                     and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                  and pd.company_id = v_company_id
                 order by setter_name, appointment_date
             ) as funnel_rows;
         end case;
@@ -137,6 +144,7 @@ BEGIN
                     and pd.closer_appointment_start is not null
                     and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                     and pd.setter_user_id = any(p_user_ids)
+                  and pd.company_id = v_company_id
                     and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                 order by setter_name, project_id
             ) as funnel_rows;
@@ -172,6 +180,7 @@ BEGIN
                     and pd.closer_appointment_start is not null
                     and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                     and pd.setter_user_id = any(p_user_ids)
+                  and pd.company_id = v_company_id
                     and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                 order by setter_name, appointment_date
             ) as funnel_rows;
@@ -207,6 +216,7 @@ BEGIN
                     and pd.closer_appointment_start is not null
                     and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                     and pd.setter_user_id = any(p_user_ids)
+                  and pd.company_id = v_company_id
                     and pd.setter_user_id = any(brs.limit_by_org_for_setters(Array[pd.setter_user_id]::integer[],p_org_ids,((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                 order by setter_name, appointment_date
             ) as funnel_rows;

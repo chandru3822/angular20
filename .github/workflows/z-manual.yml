@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Albatross Build
+name: Albatross Manual Build
 
 on: 
   workflow_dispatch:
@@ -74,16 +74,19 @@ jobs:
                     service: albatross-${{ github.event.inputs.lane}}-cron-service
                     cluster: albatross-${{ github.event.inputs.lane}}-cluster
 
-#    frontend-build:
-#      needs: build
-#      runs-on: ubuntu-18.04
-#      steps:
-#      - uses: actions/checkout@v2
-#
-#    # Deploy the site with netlify-cli
-#      - name: Deploy Site
-#        env:
-#          GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
-#          NETLIFY_SITE_ID: ${{ secrets.[github.event.inputs.lane]_NETLIFY_SITE_ID }}
-#          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-#        run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
+    frontend-build:
+      needs: build
+      runs-on: ubuntu-18.04
+      steps:
+      - uses: actions/checkout@v2
+
+    # Deploy the site with netlify-cli
+      - name: Deploy Site
+        env:
+          GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
+          #NETLIFY_SITE_ID: secrets.${{github.event.inputs.lane.upper}}_NETLIFY_SITE_ID
+          NETLIFY_SITE_ID: ${{ format('{0}{1}{2}', 'secrets.', github.event.inputs.lane.upper, '_NETLIFY_SITE_ID') }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          echo $NETLIFY_SITE_ID
+          netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA ref ${{ steps.vars.outputs.short_ref }}"
