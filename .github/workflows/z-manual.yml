@@ -85,7 +85,7 @@ jobs:
         env:
           GITHUB_SHA: ${{ steps.vars.outputs.github_short_sha }}
           #NETLIFY_SITE_ID: secrets.${{github.event.inputs.lane.upper}}_NETLIFY_SITE_ID
-          NETLIFY_SITE_ID: ${{ format('{0}{1}{2}', secrets., github.event.inputs.lane, _NETLIFY_SITE_ID) }}
+          NETLIFY_SITE_ID: ${{ format('{0}{1}{2}', 'secrets.', 'github.event.inputs.lane', '_NETLIFY_SITE_ID') }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
           echo $NETLIFY_SITE_ID
