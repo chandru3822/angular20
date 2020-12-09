@@ -778,7 +778,12 @@
                 <td>{{ item.setter_name ? item.setter_name : '' }}</td>
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td>{{ item.project_id ? item.project_id : '' }}</td>
+                <td>
+                  <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
+                    {{ item.project_id }}
+                  </router-link>
+                  <div v-else>{{ item.project_id ? item.project_id : '' }}</div>
+                </td>
                 <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.owner_name ? item.owner_name : '' }}</td>
                 <td>{{ item.verified_setter_lead ? item.verified_setter_lead : '' }}</td>

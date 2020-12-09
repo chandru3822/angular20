@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row style="max-width: 100%;">
     <v-col cols="12">
       <v-row id="targets-toolbar-container">
         <v-col cols="12" id="targets-toolbar">
