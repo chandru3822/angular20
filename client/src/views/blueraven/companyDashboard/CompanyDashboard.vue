@@ -85,12 +85,21 @@
                     class="data-col-td clickable" @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
                 <td v-else-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) !== -1"
                     class="data-col-td">{{ item.actualPartner }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ item.plannedTotal }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedBrs }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedPartner }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="(item.differenceTotal >= 0 || item.differenceTotal === '-') ? 'pos_diff' : 'neg_diff'">{{ item.differenceTotal }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differenceBrs >= 0 || item.differenceBrs === '-') ? 'pos_diff' : 'neg_diff'">{{ item.differenceBrs }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differencePartner >= 0 || item.differencePartner === '-') ? 'pos_diff' : 'neg_diff'">{{ item.differencePartner }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ adjustForCertainRanges(item.plannedTotal) }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td">{{ adjustForCertainRanges(item.plannedBrs) }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td">{{ adjustForCertainRanges(item.plannedPartner) }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td total-col-td"
+                    :class="(adjustForCertainRanges(item.differenceTotal) >= 0 || adjustForCertainRanges(item.differenceTotal) === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ adjustForCertainRanges(item.differenceTotal) }}
+                </td>
+                <td v-if="isBrCorporateUser" class="data-col-td"
+                    :class="(adjustForCertainRanges(item.differenceBrs) >= 0 || adjustForCertainRanges(item.differenceBrs) === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ adjustForCertainRanges(item.differenceBrs) }}
+                </td>
+                <td v-if="isBrCorporateUser" class="data-col-td"
+                    :class="(adjustForCertainRanges(item.differencePartner) >= 0 || adjustForCertainRanges(item.differencePartner) === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ adjustForCertainRanges(item.differencePartner) }}
+                </td>
               </tr>
             </template>
             <template v-slot:footer>
@@ -240,6 +249,7 @@
         isBrCorporateUser: false,
         is7oaksAdmin: this.$store.getters.isFullAdmin,
         headers: [],
+        workingDays: 6,
         timezone: 'US/Mountain',
         selectedDateRange: 'Today',
         startDate: moment().format('YYYY-MM-DD'),
@@ -330,7 +340,17 @@
           }
         }
       },
-
+      adjustForCertainRanges(value) {
+        //not sure if this will cause a performance issue or not
+        if(['Today', 'Yesterday'].includes(this.selectedDateRange)) {
+          return isNaN(value) ? '-' : this.$filters.currency(value / this.workingDays, '', 1)
+        } else if (['Custom', 'This Month', 'This Year', 'All Time'].includes(this.selectedDateRange)) {
+          //doesn't make sense to calculate these values
+          return '-'
+        } else {
+          return value
+        }
+      },
       setDateRange () {
         switch (this.selectedDateRange) {
           case 'Yesterday':
@@ -734,7 +754,7 @@
       font-weight: bolder;
     }
   }
-  
+
   #drilldown-table {
     th, td {
       font-family: "Roboto Condensed", sans-serif;
