@@ -111,13 +111,13 @@ public class CommunicationService {
   }
 
   @Async
-  public void queueTextMessagesForProject(String messageGroupId, Contact contact, String templateContent, List<URI> mediaURLs) {
+  public void queueTextMessagesForProject(String messageGroupId, Contact contact, String toPhone, String templateContent, List<URI> mediaURLs) {
       try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
           Map<String, Object> contextMap = new HashMap<>();
           contextMap.put("contact", contact);
           renderTemplate(templateContent, output, contextMap);
-          String phoneNumber = contact.getMobile() != null ? contact.getMobile() : contact.getPhone();
-          smsService.queueMessage(messageGroupId, contact.getId(), phoneNumber, output.toString(), mediaURLs, RecipientType.PROJECT);
+
+          smsService.queueMessage(messageGroupId, contact.getId(), toPhone, output.toString(), mediaURLs, RecipientType.PROJECT);
       } catch (Exception ex) {
           log.error("MESSAGING: Error queueing SMS ", ex);
       }

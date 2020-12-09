@@ -1,25 +1,25 @@
 <sql>
   <closerDashboard.getIronmanFdcCounts>
     <![CDATA[
-      WITH "quarters" AS (
-        select (extract('year' from now()) || '-01-01')::date as "q1_start",
-               (extract('year' from now()) || '-03-31')::date as "q1_end",
-               (extract('year' from now()) || '-04-01')::date as "q2_start",
-               (extract('year' from now()) || '-06-30')::date as "q2_end",
-               (extract('year' from now()) || '-07-01')::date as "q3_start",
-               (extract('year' from now()) || '-09-30')::date as "q3_end",
-               (extract('year' from now()) || '-10-01')::date as "q4_start",
-               (extract('year' from now()) || '-12-31')::date as "q4_end"
+      WITH quarters AS (
+        select (extract('year' from now()) || '-01-01')::date as q1_start,
+               (extract('year' from now()) || '-03-31')::date as q1_end,
+               (extract('year' from now()) || '-04-01')::date as q2_start,
+               (extract('year' from now()) || '-06-30')::date as q2_end,
+               (extract('year' from now()) || '-07-01')::date as q3_start,
+               (extract('year' from now()) || '-09-30')::date as q3_end,
+               (extract('year' from now()) || '-10-01')::date as q4_start,
+               (extract('year' from now()) || '-12-31')::date as q4_end
       )
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
-                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-01-01') and ('2020-01-31')
+                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (select q1_start from quarters) and (extract('year' from now()) || '-01-31')::date
                   and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                   then 1.5
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
                   and pd.source = 523 --Closer Gen
                   then 3
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
                   and pd.source in (524, 530) --(Referral, Events - Closer Gen)
                   then 2
                 else 1
@@ -39,6 +39,7 @@
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
+                and pd.company_id = 3
               group by pd.first_cash_payment_paid_date, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.source) t
              ) as "q1",
              (select count(1)
@@ -57,6 +58,7 @@
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
+                and pd.company_id = 3
              ) as "q2",
              (select count(1)
               from brs.project_details pd
@@ -79,6 +81,7 @@
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
+                and pd.company_id = 3
              ) as "q3",
              (select count(1)
               from brs.project_details pd
@@ -101,6 +104,7 @@
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
+                and pd.company_id = 3
              ) as "q4"
     ]]>
   </closerDashboard.getIronmanFdcCounts>
@@ -202,7 +206,7 @@
              o2.org_name as region,
              coalesce(lov.name, '--') as metroArea,
              count(
-               case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               case when ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() at time zone 'US/Mountain')::date - :timeInterval)
                  and pd.source not in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                  and pd.final_design_signed_date is not null
                  and pd.financial_agreement_signed_date is not null
@@ -220,13 +224,14 @@
                                 proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
                          >= (now() at time zone 'US/Mountain')::date - :timeInterval
                      end
-                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                  and p.company_project_status_type_id != 3
+                 and pd.company_id = 3
                then 1
                end
              ) as leadGenFdcPercentageNumerator,
              count(
-               case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               case when ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() at time zone 'US/Mountain')::date - :timeInterval)
                  and pd.source not in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                then 1
                end
@@ -245,8 +250,9 @@
                    then pd.first_cash_payment_paid_date is not null
                    else 1=1
                    end
-                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                  and p.company_project_status_type_id != 3
+                 and pd.company_id = 3
                then 1
                end
              ) as selfGenFdc,
@@ -262,8 +268,9 @@
                    then pd.first_cash_payment_paid_date is not null
                    else 1=1
                    end
-                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                  and p.company_project_status_type_id != 3
+                 and pd.company_id = 3
                then 1
                end
              ) as totalFdc
@@ -288,6 +295,7 @@
           AND o2.active_flag IS TRUE
         END
         AND ust.user_status_type = 'Active'
+        AND pd.company_id = 3
       GROUP BY u.id, officeName, region, metroArea, ust.user_status_type
     ]]>
   </closerDashboard.getCloserTableScores>
@@ -298,8 +306,9 @@
              lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
-      WHERE pd.source NOT IN (523, 530, 524) -- (Closer Gen, Events - Closer Gen, Referral)
+      WHERE pd.source NOT IN (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
         AND lov.parent_id = 520
+        AND pd.company_id = 3
       ORDER BY source_name
     ]]>
   </closerDashboard.getBrsProvidedSources>
@@ -310,8 +319,9 @@
              lov.name source_name
       FROM brs.project_details pd
         INNER JOIN flow.list_of_value lov ON lov.id = pd.source
-      WHERE pd.source IN (523, 530, 524) -- (Closer Gen, Events - Closer Gen, Referral)
+      WHERE pd.source IN (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
         AND lov.parent_id = 520
+        AND pd.company_id = 3
       ORDER BY source_name
     ]]>
   </closerDashboard.getSelfGenSources>
