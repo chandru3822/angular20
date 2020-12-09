@@ -525,7 +525,6 @@
     },
     created () {
       this.isBrCorporateUser = this.$store.state.user.details.companyId === 2
-      console.log('constipation', constants)
 
       // populating headers here instead of in "data" b/c I can't seem to check the companyId there
       this.headers = [
