@@ -17,7 +17,6 @@ BEGIN
             RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
-                       employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
                        pd.closer_appointment_start as appointment_date,
@@ -37,7 +36,6 @@ BEGIN
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
                     and pd.closer_appointment_start is not null
                     and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
@@ -50,7 +48,6 @@ BEGIN
             RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
-                       employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
                        pd.closer_appointment_start as appointment_date,
@@ -70,7 +67,6 @@ BEGIN
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
                     and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and pd.closer_appointment_start is not null
@@ -84,7 +80,6 @@ BEGIN
             RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
-                       employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
                        pd.closer_appointment_start as appointment_date,
@@ -104,7 +99,6 @@ BEGIN
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
                     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     and pd.closer_appointment_start is not null
@@ -119,7 +113,6 @@ BEGIN
             RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
-                       employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
                        pd.closer_appointment_start as appointment_date,
@@ -139,7 +132,6 @@ BEGIN
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
                     and pd.closer_appointment_start is not null
                     and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
@@ -154,7 +146,6 @@ BEGIN
             RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
-                       employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
                        pd.closer_appointment_start as appointment_date,
@@ -174,7 +165,6 @@ BEGIN
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
                     and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
                     and pd.closer_appointment_start is not null
@@ -190,7 +180,6 @@ BEGIN
             RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(su.first_name, ' ', su.last_name) as setter_name,
-                       employee_id.employee_id,
                        concat(c.first_name, ' ', c.last_name) as customer_name,
                        pd.project_id,
                        pd.closer_appointment_start as appointment_date,
@@ -210,7 +199,6 @@ BEGIN
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                 where pd.source = 525 --Setter Gen
                     and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                     and pd.closer_appointment_start is not null

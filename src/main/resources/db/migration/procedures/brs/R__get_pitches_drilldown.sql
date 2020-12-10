@@ -41,6 +41,7 @@ BEGIN
                 and case when p_is_setter_mgr is true then up.org_id = p_setter_mgr_office_id
                     else pd.setter_user_id = p_user_id
                     end
+                and pd.company_id = 3
         ) as sub_rows;
 
 END
