@@ -195,7 +195,9 @@ BEGIN
                                          inner join flow.user_position up on up.user_id = u.id
                                 where up.id = new.int_value;
                             end case;
-                    elsif v_record.field_to_update = 'installation_resource' then
+                    elsif v_record.field_to_update in ('installation_resource','permit_pack_submittal_resource',
+                                                      'in_house_mpu_permit_submittal_resource',
+                                                      'permit_pickup_resource') then
                         case when new.int_value is null then select 'null' into v_value;
                             else
                                 select quote_literal(org_name)
@@ -220,7 +222,12 @@ BEGIN
                     v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
                             v_value || $$
                             where project_id = $$ || v_project_id;
-                    execute v_sql;
+                    begin
+                        execute v_sql;
+                    exception when others then
+                        insert into flow.trigger_error(project_process_step_custom_value_id,error)
+                        values(new.id,SQLERRM);
+                    end;
                 end if;
             end if;
         end loop;
