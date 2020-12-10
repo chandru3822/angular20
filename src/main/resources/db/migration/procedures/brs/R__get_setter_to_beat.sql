@@ -43,6 +43,7 @@ BEGIN
                       and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                       and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                       and pd.setter_user_id not in (2354810, 2390159)
+                      and pd.company_id = 3
                   group by pd.setter_user_id, name
                   order by pitches desc, pd.setter_user_id
               ) as ranks

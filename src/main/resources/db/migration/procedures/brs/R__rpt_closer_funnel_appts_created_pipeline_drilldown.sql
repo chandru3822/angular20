@@ -12,7 +12,6 @@ BEGIN
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(u.first_name, ' ', u.last_name) owner_name,
-                       employee_id.employee_id,
                        s.abbreviation state,
                        concat(c.first_name, ' ', c.last_name) customer_name,
                        c.id contact_id,
@@ -27,15 +26,14 @@ BEGIN
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     left outer join flow.user u on pd.closer_user_id = u.id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                where p.date_created::date between p_start_date and p_end_date and
+                where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date and
                     pd.closer_appointment_start is not null and
                     pd.source is not null and
                     pd.source = any(p_source_ids)
                 and pd.company_id = v_company_id
-order by owner_name, p.date_created::date
+order by owner_name, p.date_created
             ) as funnel_rows;
 
     --Self-gen appointments created
@@ -43,7 +41,6 @@ order by owner_name, p.date_created::date
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(u.first_name, ' ', u.last_name) owner_name,
-                       employee_id.employee_id,
                        s.abbreviation state,
                        concat(c.first_name, ' ', c.last_name) customer_name,
                        c.id contact_id,
@@ -58,15 +55,14 @@ order by owner_name, p.date_created::date
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     left outer join flow.user u on pd.closer_user_id = u.id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                where p.date_created::date between p_start_date and p_end_date and
+                where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date and
                     pd.closer_appointment_start is not null and
                     pd.source is not null and
                     pd.source = any(p_source_ids)
                 and pd.company_id = v_company_id
-order by owner_name, p.date_created::date
+order by owner_name, p.date_created
             ) as funnel_rows;
 
     --Total Appointments Created
@@ -74,7 +70,6 @@ order by owner_name, p.date_created::date
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
             from (
                 select concat(u.first_name, ' ', u.last_name) owner_name,
-                       employee_id.employee_id,
                        s.abbreviation state,
                        concat(c.first_name, ' ', c.last_name) customer_name,
                        c.id contact_id,
@@ -89,14 +84,13 @@ order by owner_name, p.date_created::date
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     left outer join flow.user u on pd.closer_user_id = u.id
-                    left join lateral (select * from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id on true
                     left outer join flow.company_state cs on cs.id = p.company_state_id
                     left outer join flow.state s on s.id = cs.state_id
-                where p.date_created::date between p_start_date and p_end_date and
+                where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date and
                     pd.closer_appointment_start is not null and
                     pd.source is not null
                 and pd.company_id = v_company_id
-order by owner_name, p.date_created::date
+order by owner_name, p.date_created
             ) as funnel_rows;
 
     end case;

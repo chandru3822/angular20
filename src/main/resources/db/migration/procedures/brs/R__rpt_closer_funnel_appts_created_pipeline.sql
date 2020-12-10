@@ -22,7 +22,7 @@ BEGIN
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date = (now() at time zone 'US/Mountain')::date
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date
                                              and pd.closer_appointment_start is not null
                                              and pd.source is not null
                                              and pd.company_id = v_company_id
@@ -30,9 +30,9 @@ BEGIN
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date >=
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                  ((date_trunc('week', now() at time zone 'US/Mountain'))::date)
-                                             and p.date_created::date <= (now() at time zone 'US/Mountain')::date
+                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                                              and pd.closer_appointment_start is not null
                                              and pd.source is not null
                                              and pd.company_id = v_company_id
@@ -40,7 +40,7 @@ BEGIN
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date between p_custom_start_date and p_custom_end_date
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                              and pd.closer_appointment_start is not null
                                              and pd.source is not null
                                              and pd.company_id = v_company_id
@@ -56,7 +56,7 @@ BEGIN
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date = (now() at time zone 'US/Mountain')::date
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date
                                              and pd.closer_appointment_start is not null
                                              and pd.source is not null
                                              and pd.company_id = v_company_id
@@ -64,9 +64,9 @@ BEGIN
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date >=
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                  ((date_trunc('week', now() at time zone 'US/Mountain'))::date)
-                                             and p.date_created::date <= (now() at time zone 'US/Mountain')::date
+                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                                              and pd.closer_appointment_start is not null
                                              and pd.company_id = v_company_id
                                              and pd.source is not null
@@ -74,7 +74,7 @@ BEGIN
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date between p_custom_start_date and p_custom_end_date
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                              and pd.closer_appointment_start is not null
                                              and pd.source is not null
                                              and pd.company_id = v_company_id
@@ -90,23 +90,23 @@ BEGIN
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date = (now() at time zone 'US/Mountain')::date
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date
                                              and pd.closer_appointment_start is not null
                                              and pd.company_id = v_company_id
                                              and pd.source is not null) as today_count,
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date >=
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                  ((date_trunc('week', now() at time zone 'US/Mountain'))::date)
-                                             and p.date_created::date <= (now() at time zone 'US/Mountain')::date
+                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                                              and pd.closer_appointment_start is not null
                                              and pd.company_id = v_company_id
                                              and pd.source is not null) as week_to_date_count,
                                           (select count(1)
                                            from brs.project_details pd
                                                     inner join flow.project p on p.id = pd.project_id
-                                           where p.date_created::date between p_custom_start_date and p_custom_end_date
+                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                              and pd.closer_appointment_start is not null
                                              and pd.company_id = v_company_id
                                              and pd.source is not null) as custom_date_range_count

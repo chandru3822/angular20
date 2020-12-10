@@ -33,8 +33,8 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -42,9 +42,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as week_to_date_count,
@@ -53,7 +53,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -74,8 +74,8 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.closer_appointment_outcome = 4
                                                  and --(Cancelled)
-                                                       (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                       (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -85,9 +85,9 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.closer_appointment_outcome = 4
                                                  and --(Cancelled)
-                                                       (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as week_to_date_count,
@@ -98,7 +98,7 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.closer_appointment_outcome = 4
                                                  and --(Cancelled)
-                                                   (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -119,8 +119,8 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.closer_appointment_outcome in (59, 61)
                                                  and --(No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                       (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -130,9 +130,9 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.closer_appointment_outcome in (59, 61)
                                                  and --(No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as week_to_date_count,
@@ -143,7 +143,7 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.closer_appointment_outcome in (59, 61)
                                                  and --(No Go, Low TSRF)
-                                                   (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -165,8 +165,8 @@ BEGIN
                                                where (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                       (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -177,9 +177,9 @@ BEGIN
                                                where (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as week_to_date_count,
@@ -191,7 +191,7 @@ BEGIN
                                                where (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                   (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -217,9 +217,9 @@ BEGIN
                                                  and --Closer Appointment Details
                                                    pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ppscfv.timestamp_value < pd.closer_appointment_start
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -234,10 +234,10 @@ BEGIN
                                                  and --Closer Appointment Details
                                                    pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ppscfv.timestamp_value < pd.closer_appointment_start
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE >=
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE <=
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as week_to_date_count,
@@ -253,8 +253,8 @@ BEGIN
                                                  and --Closer Appointment Details
                                                    pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ppscfv.timestamp_value < pd.closer_appointment_start
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -271,10 +271,10 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56
                                                  and --Not Pitched: No Show
                                                    pd.appointment_check_in is not null
@@ -283,22 +283,22 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56
                                                  and --Not Pitched: No Show
                                                    pd.appointment_check_in is not null
@@ -307,21 +307,21 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56
                                                  and --Not Pitched: No Show
                                                    pd.appointment_check_in is not null
@@ -330,9 +330,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -350,10 +350,10 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3
                                                  and --Missed
                                                    pd.appointment_check_in is not null
@@ -362,22 +362,22 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3 --Missed
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3
                                                  and --Missed
                                                    pd.appointment_check_in is not null
@@ -386,21 +386,21 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3 --Missed
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3
                                                  and --Missed
                                                    pd.appointment_check_in is not null
@@ -409,9 +409,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3 --Missed
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -429,10 +429,10 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58
                                                  and --Not Pitched: Other
                                                    pd.appointment_check_in is not null
@@ -441,22 +441,22 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58
                                                  and --Not Pitched: Other
                                                    pd.appointment_check_in is not null
@@ -465,21 +465,21 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58
                                                  and --Not Pitched: Other
                                                    pd.appointment_check_in is not null
@@ -488,9 +488,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -508,10 +508,10 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57
                                                  and --Not Pitched: No Utility Bill
                                                    pd.appointment_check_in is not null
@@ -520,22 +520,22 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57
                                                  and --Not Pitched: No Utility Bill
                                                    pd.appointment_check_in is not null
@@ -544,21 +544,21 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57
                                                  and --Not Pitched: No Utility Bill
                                                    pd.appointment_check_in is not null
@@ -567,9 +567,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -587,78 +587,78 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -675,79 +675,79 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -764,10 +764,10 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140)
                                                  and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                    pd.appointment_check_in is not null
@@ -776,22 +776,22 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140)
                                                  and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                    pd.appointment_check_in is not null
@@ -800,21 +800,21 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140)
                                                  and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                    pd.appointment_check_in is not null
@@ -823,9 +823,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1108,7 +1108,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_sent_to_homeowner_date :: DATE =
+                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1117,7 +1117,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_sent_to_homeowner_date :: DATE =
+                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.company_id = v_company_id
@@ -1125,9 +1125,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_sent_to_homeowner_date :: DATE >=
+                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE <=
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1136,9 +1136,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_sent_to_homeowner_date :: DATE >=
+                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE <=
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.company_id = v_company_id
@@ -1146,7 +1146,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_sent_to_homeowner_date :: DATE between p_custom_start_date and p_custom_end_date
+                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
@@ -1154,7 +1154,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_sent_to_homeowner_date :: DATE between p_custom_start_date and p_custom_end_date
+                                               where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1549,10 +1549,10 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -1564,11 +1564,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as week_to_date_count,
@@ -1581,9 +1581,9 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -1606,10 +1606,10 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_appointment_outcome = 4 --Cancelled
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
@@ -1622,11 +1622,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_appointment_outcome = 4 --Cancelled
                                                  and pd.company_id = v_company_id
@@ -1640,9 +1640,9 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.closer_appointment_outcome = 4 --Cancelled
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
@@ -1666,10 +1666,10 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
@@ -1682,11 +1682,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
                                                  and pd.company_id = v_company_id
@@ -1700,9 +1700,9 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
@@ -1726,10 +1726,10 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
                                                  and pd.company_id = v_company_id
@@ -1743,11 +1743,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
@@ -1762,9 +1762,9 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
                                                  and pd.company_id = v_company_id
@@ -1792,15 +1792,15 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1
                                                  and --Closer Appointment Details
                                                    pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ppscfv.timestamp_value < pd.closer_appointment_start
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -1815,16 +1815,16 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1
                                                  and --Closer Appointment Details
                                                    pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ppscfv.timestamp_value < pd.closer_appointment_start
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE >=
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE <=
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               )            as week_to_date_count,
@@ -1840,14 +1840,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1
                                                  and --Closer Appointment Details
                                                    pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ppscfv.timestamp_value < pd.closer_appointment_start
-                                                 and (ppscfv.timestamp_value - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -1868,12 +1868,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56
                                                  and --Not Pitched: No Show
                                                    pd.appointment_check_in is not null
@@ -1886,12 +1886,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -1902,14 +1902,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56
                                                  and --Not Pitched: No Show
                                                    pd.appointment_check_in is not null
@@ -1922,14 +1922,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
@@ -1940,11 +1940,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56
                                                  and --Not Pitched: No Show
                                                    pd.appointment_check_in is not null
@@ -1957,11 +1957,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1983,12 +1983,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3
                                                  and --Missed
                                                    pd.appointment_check_in is not null
@@ -2001,12 +2001,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3 --Missed
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -2017,14 +2017,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3
                                                  and --Missed
                                                    pd.appointment_check_in is not null
@@ -2037,14 +2037,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3 --Missed
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
@@ -2055,11 +2055,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3
                                                  and --Missed
                                                    pd.appointment_check_in is not null
@@ -2072,11 +2072,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 3 --Missed
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -2098,12 +2098,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58
                                                  and --Not Pitched: Other
                                                    pd.appointment_check_in is not null
@@ -2116,12 +2116,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -2132,14 +2132,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58
                                                  and --Not Pitched: Other
                                                    pd.appointment_check_in is not null
@@ -2152,14 +2152,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
@@ -2170,11 +2170,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58
                                                  and --Not Pitched: Other
                                                    pd.appointment_check_in is not null
@@ -2187,11 +2187,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -2213,12 +2213,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57
                                                  and --Not Pitched: No Utility Bill
                                                    pd.appointment_check_in is not null
@@ -2231,12 +2231,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -2247,14 +2247,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57
                                                  and --Not Pitched: No Utility Bill
                                                    pd.appointment_check_in is not null
@@ -2267,14 +2267,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
@@ -2285,11 +2285,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57
                                                  and --Not Pitched: No Utility Bill
                                                    pd.appointment_check_in is not null
@@ -2302,11 +2302,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -2328,15 +2328,15 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2347,15 +2347,15 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2365,17 +2365,17 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2386,17 +2386,17 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2406,14 +2406,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2424,14 +2424,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome = 60)
                                                  and --Non-Dispositioned
-                                                       (pd.closer_appointment_start - interval '6 hours') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2452,15 +2452,15 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2471,15 +2471,15 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2490,17 +2490,17 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2511,17 +2511,17 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2531,14 +2531,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2549,14 +2549,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and (pd.closer_appointment_outcome is null or
                                                       pd.closer_appointment_outcome not in (4, 59, 61))
                                                  and --(Cancelled, No Go, Low TSRF)
-                                                       (pd.closer_appointment_start - interval '6 hours') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
+                                                       (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2577,12 +2577,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140)
                                                  and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                    pd.appointment_check_in is not null
@@ -2595,12 +2595,12 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -2611,14 +2611,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140)
                                                  and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                    pd.appointment_check_in is not null
@@ -2631,14 +2631,14 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE >=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE <=
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
@@ -2649,11 +2649,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140)
                                                  and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                    pd.appointment_check_in is not null
@@ -2666,11 +2666,11 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_start - interval '6 hours') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -2696,7 +2696,7 @@ BEGIN
                                                  and pd.credit_decision_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2711,7 +2711,7 @@ BEGIN
                                                  and pd.credit_decision_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2727,7 +2727,7 @@ BEGIN
                                                  and pd.credit_decision_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2744,7 +2744,7 @@ BEGIN
                                                  and pd.credit_decision_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2757,7 +2757,7 @@ BEGIN
                                                  and pd.credit_decision_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2771,7 +2771,7 @@ BEGIN
                                                  and pd.credit_decision_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2798,7 +2798,7 @@ BEGIN
                                                  and --Pass
                                                        pd.closer_user_id = any
                                                        (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, p.date_created :: DATE))
+                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2815,7 +2815,7 @@ BEGIN
                                                  and --Pass
                                                        pd.closer_user_id = any
                                                        (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, p.date_created :: DATE))
+                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2833,7 +2833,7 @@ BEGIN
                                                  and --Pass
                                                        pd.closer_user_id = any
                                                        (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, p.date_created :: DATE))
+                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2852,7 +2852,7 @@ BEGIN
                                                  and --Pass
                                                        pd.closer_user_id = any
                                                        (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, p.date_created :: DATE))
+                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2867,7 +2867,7 @@ BEGIN
                                                  and --Pass
                                                        pd.closer_user_id = any
                                                        (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, p.date_created :: DATE))
+                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2883,7 +2883,7 @@ BEGIN
                                                  and --Pass
                                                        pd.closer_user_id = any
                                                        (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, p.date_created :: DATE))
+                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2908,7 +2908,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2923,7 +2923,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -2939,7 +2939,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2956,7 +2956,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2969,7 +2969,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2983,7 +2983,7 @@ BEGIN
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -3008,7 +3008,7 @@ BEGIN
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -3023,7 +3023,7 @@ BEGIN
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -3039,7 +3039,7 @@ BEGIN
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -3056,7 +3056,7 @@ BEGIN
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -3069,7 +3069,7 @@ BEGIN
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -3083,7 +3083,7 @@ BEGIN
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -3103,12 +3103,12 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE =
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -3118,12 +3118,12 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE =
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -3132,14 +3132,14 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE >=
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE <=
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -3149,14 +3149,14 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE >=
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE <=
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -3165,11 +3165,11 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -3179,11 +3179,11 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_sent_to_homeowner_date :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -3208,7 +3208,7 @@ BEGIN
                                                  and pd.final_design_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -3223,7 +3223,7 @@ BEGIN
                                                  and pd.final_design_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -3239,7 +3239,7 @@ BEGIN
                                                  and pd.final_design_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -3256,7 +3256,7 @@ BEGIN
                                                  and pd.final_design_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -3269,7 +3269,7 @@ BEGIN
                                                  and pd.final_design_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -3283,7 +3283,7 @@ BEGIN
                                                  and pd.final_design_signed_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -3332,7 +3332,7 @@ BEGIN
                                                    end
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
@@ -3370,7 +3370,7 @@ BEGIN
                                                    end
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                               ) as today_count,
 
                                               (select count(1)
@@ -3422,7 +3422,7 @@ BEGIN
                                                    end
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
@@ -3475,7 +3475,7 @@ BEGIN
                                                    end
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                               ) as week_to_date_count,
 
                                               (select count(1)
@@ -3512,7 +3512,7 @@ BEGIN
                                                    end
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
@@ -3550,7 +3550,7 @@ BEGIN
                                                    end
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -3575,7 +3575,7 @@ BEGIN
                                                  and pd.substantial_completion_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
@@ -3590,7 +3590,7 @@ BEGIN
                                                  and pd.substantial_completion_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                               ) as today_count,
 
                                               (select count(1)
@@ -3606,7 +3606,7 @@ BEGIN
                                                  and pd.substantial_completion_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
@@ -3623,7 +3623,7 @@ BEGIN
                                                  and pd.substantial_completion_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                               ) as week_to_date_count,
 
                                               (select count(1)
@@ -3636,7 +3636,7 @@ BEGIN
                                                  and pd.substantial_completion_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
@@ -3650,7 +3650,7 @@ BEGIN
                                                  and pd.substantial_completion_date is not null
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   p.date_created :: DATE))
+                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                               ) as custom_date_range_count
 
                                        from brs.funnel

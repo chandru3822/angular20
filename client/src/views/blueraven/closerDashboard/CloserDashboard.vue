@@ -247,11 +247,11 @@
               <img v-else class="placeholder-img"
                    src="../../../assets/flow/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
-            <td class="left-text">{{ row.closerName }}</td>
-            <td class="center-text">{{ row.leadGenFdc }}%</td>
-            <td class="center-text">{{ row.selfGen }}</td>
-            <td class="center-text">{{ row.averageAvailability }}</td>
-            <td class="center-text">{{ row.score }}%</td>
+            <td class="left-text">{{ row.closerName || 0 }}</td>
+            <td class="center-text">{{ row.leadGenFdc || 0 }}%</td>
+            <td class="center-text">{{ row.selfGen || 0 }}</td>
+            <td class="center-text">{{ row.averageAvailability || 0 }}</td>
+            <td class="center-text">{{ row.score || 0 }}%</td>
           </tr>
         </table>
         <div v-if="!selectedRoundRobin" class="ranking-tables-no-data left-text">
@@ -297,17 +297,17 @@
 
           <tr v-for="(row, index) in officeFdcRankingData" :key="index"
               :class="{'highlight-user-row': row.userId === currentUserId}">
-            <td class="center-text">{{ row.rank }}</td>
+            <td class="center-text">{{ row.rank || '' }}</td>
             <td class="user-img-col">
               <img v-if="row.userImageUrl" class="ranking-table-img"
                    :src="row.userImageUrl" :alt="row.userImageAltText">
               <img v-else class="placeholder-img"
                    src="../../../assets/flow/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
-            <td class="left-text">{{ row.name }}</td>
-            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
-            <td class="center-text">{{ row.selfGenFdc }}</td>
-            <td class="center-text">{{ row.totalFdc }}</td>
+            <td class="left-text">{{ row.name || '' }}</td>
+            <td class="center-text">{{ row.leadGenFdcPercentage || 0 }}%</td>
+            <td class="center-text">{{ row.selfGenFdc || 0 }}</td>
+            <td class="center-text">{{ row.totalFdc || 0 }}</td>
           </tr>
         </table>
         <div v-if="!selectedCloserOffice" class="ranking-tables-no-data left-text">
@@ -353,12 +353,12 @@
           <tr v-for="(row, index) in officeRankingData" :key="index"
               :class="{'highlight-user-row': row.officeName === userOffice}">
             <td class="center-text">{{ row.rank }}</td>
-            <td class="left-text">{{ row.officeName }}</td>
-            <td class="left-text">{{ row.metroArea }}</td>
-            <td class="left-text">{{ row.region }}</td>
-            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
-            <td class="center-text">{{ row.selfGenFdc }}</td>
-            <td class="center-text">{{ row.totalFdc }}</td>
+            <td class="left-text">{{ row.officeName || '' }}</td>
+            <td class="left-text">{{ row.metroArea || '' }}</td>
+            <td class="left-text">{{ row.region || '' }}</td>
+            <td class="center-text">{{ row.leadGenFdcPercentage || 0 }}%</td>
+            <td class="center-text">{{ row.selfGenFdc || 0 }}</td>
+            <td class="center-text">{{ row.totalFdc || 0 }}</td>
           </tr>
         </table>
         <div v-else class="ranking-tables-no-data left-text">
@@ -399,12 +399,12 @@
               <img v-else class="placeholder-img"
                    src="../../../assets/flow/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
-            <td class="left-text">{{ row.name }}</td>
-            <td class="left-text">{{ row.officeName }}</td>
-            <td class="left-text">{{ row.metroArea }}</td>
-            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
-            <td class="center-text">{{ row.selfGenFdc }}</td>
-            <td class="center-text">{{ row.totalFdc }}</td>
+            <td class="left-text">{{ row.name || '' }}</td>
+            <td class="left-text">{{ row.officeName || '' }}</td>
+            <td class="left-text">{{ row.metroArea || '' }}</td>
+            <td class="center-text">{{ row.leadGenFdcPercentage || 0 }}%</td>
+            <td class="center-text">{{ row.selfGenFdc || 0 }}</td>
+            <td class="center-text">{{ row.totalFdc || 0 }}</td>
           </tr>
           <tr v-if="userRow && !searchText"
               class="highlight-user-row">
@@ -415,12 +415,12 @@
               <img v-else class="placeholder-img"
                    src="../../../assets/flow/user_img_placeholder.png" :alt="userRow.userImageAltText">
             </td>
-            <td class="left-text">{{ userRow.name }}</td>
-            <td class="left-text">{{ userRow.officeName }}</td>
-            <td class="left-text">{{ userRow.metroArea }}</td>
-            <td class="center-text">{{ userRow.leadGenFdcPercentage }}%</td>
-            <td class="center-text">{{ userRow.selfGenFdc }}</td>
-            <td class="center-text">{{ userRow.totalFdc }}</td>
+            <td class="left-text">{{ userRow.name || '' }}</td>
+            <td class="left-text">{{ userRow.officeName || '' }}</td>
+            <td class="left-text">{{ userRow.metroArea || '' }}</td>
+            <td class="center-text">{{ userRow.leadGenFdcPercentage || 0 }}%</td>
+            <td class="center-text">{{ userRow.selfGenFdc || 0 }}</td>
+            <td class="center-text">{{ userRow.totalFdc || 0 }}</td>
           </tr>
         </table>
         <div v-else class="ranking-tables-no-data left-text">
@@ -997,7 +997,6 @@
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
                 </td>
                 <td>{{ item.owner_name || '' }}</td>
-                <td>{{ item.employee_id || '' }}</td>
                 <td>{{ item.state || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
@@ -1011,63 +1010,62 @@
                 <td :class="item.financier_class">{{ item.financier || '' }}</td>
                 <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.cancelled_date | formatDate('date', 'MM/DD/YYYY') }}</td>
-                <td v-if="funnelDrilldownHeaders[11].show">
+                <td v-if="funnelDrilldownHeaders[10].show">
                   {{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
-                <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[12].show">
+                <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[11].show">
                   {{ item.appointment_outcome || '' }}
                 </td>
-                <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[13].show">
+                <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[12].show">
                   {{ item.credit_decision_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
-                <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[14].show">
+                <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[13].show">
                   {{ item.credit_check || '' }}
                 </td>
                 <td :class="item.installation_agreement_signed_date_class"
-                    v-if="funnelDrilldownHeaders[15].show">
+                    v-if="funnelDrilldownHeaders[14].show">
                   {{ item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.site_survey_verified_date_class"
-                    v-if="funnelDrilldownHeaders[16].show">
+                    v-if="funnelDrilldownHeaders[15].show">
                   {{ item.site_survey_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.site_survey_completed_date_class"
-                    v-if="funnelDrilldownHeaders[17].show">
+                    v-if="funnelDrilldownHeaders[16].show">
                   {{ item.site_survey_completed_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.final_design_sent_to_homeowner_date_class"
-                    v-if="funnelDrilldownHeaders[18].show">
+                    v-if="funnelDrilldownHeaders[17].show">
                   {{ item.final_design_sent_to_homeowner_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.final_design_signed_date_class"
-                    v-if="funnelDrilldownHeaders[19].show">
+                    v-if="funnelDrilldownHeaders[18].show">
                   {{ item.final_design_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
-                    v-if="funnelDrilldownHeaders[20].show">
+                    v-if="funnelDrilldownHeaders[19].show">
                   {{ item.proof_of_homeowners_insurance_obtained_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.utility_bill_verified_date_class"
-                    v-if="funnelDrilldownHeaders[21].show">
+                    v-if="funnelDrilldownHeaders[20].show">
                   {{ item.utility_bill_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.financial_agreement_signed_date_class"
-                    v-if="funnelDrilldownHeaders[22].show">
+                    v-if="funnelDrilldownHeaders[21].show">
                   {{ item.financial_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.cash_down_payment_class"
-                    v-if="funnelDrilldownHeaders[23].show">
+                    v-if="funnelDrilldownHeaders[22].show">
                   {{ item.cash_down_payment | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
                 <td :class="item.substantial_completion_date_class"
-                    v-if="funnelDrilldownHeaders[24].show">
+                    v-if="funnelDrilldownHeaders[23].show">
                   {{ item.substantial_completion_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
               </tr>
             </template>
             <template v-if="showTotalSystemSize" v-slot:body.append>
               <tr id="total-system-size-row">
-                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1154,6 +1152,7 @@
         showFunnels: false,
         rankingTablesLoaded: false,
         dashboardWasLoaded: false,
+        apptsCreatedPipelineLoaded: false,
         apptsToFdcPipelineLoaded: false,
         funnelsWereLoaded: false,
         currentQuarter: moment().quarter(),
@@ -1249,31 +1248,30 @@
         appts_to_fdc_pipeline_menu2: false,
         funnelDrilldownTitle: '',
         funnelDrilldownHeaders: [
-          { text: '', value: '', show: true, sortable: false, width: 25, optional: false },
-          { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false },
-          { text: 'Employee ID', value: 'employee_id', show: true, width: 115, optional: false },
-          { text: 'State', value: 'state', show: true, width: 75, optional: false },
-          { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false },
-          { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false },
-          { text: 'Source', value: 'source_name', show: true, width: 85, optional: false },
-          { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false },
-          { text: 'Financier', value: 'financier', show: true, width: 95, optional: false },
-          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145, optional: false },
-          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130, optional: false },
-          { text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true },
-          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true },
-          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160, optional: true },
-          { text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 235, optional: true },
-          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 160, optional: true },
-          { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155, optional: true },
-          { text: 'FD Sent to Homeowner Date', value: 'final_design_sent_to_homeowner_date_formatted', show: false, width: 200, optional: true },
-          { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 165, optional: true },
-          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200, optional: true },
-          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175, optional: true },
-          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195, optional: true },
-          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160, optional: true },
-          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175, optional: true }
+          { text: '', value: '', show: true, sortable: false, width: 25, optional: false }, // 0
+          { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false }, // 1
+          { text: 'State', value: 'state', show: true, width: 75, optional: false }, // 2
+          { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false }, // 3
+          { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false }, // 4
+          { text: 'Source', value: 'source_name', show: true, width: 85, optional: false }, // 5
+          { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false }, // 6
+          { text: 'Financier', value: 'financier', show: true, width: 95, optional: false }, // 7
+          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145, optional: false }, // 8
+          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130, optional: false }, // 9
+          { text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true }, // 10
+          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true }, // 11
+          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160, optional: true }, // 12
+          { text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true }, // 13
+          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 235, optional: true }, // 14
+          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 160, optional: true }, // 15
+          { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155, optional: true }, // 16
+          { text: 'FD Sent to Homeowner Date', value: 'final_design_sent_to_homeowner_date_formatted', show: false, width: 200, optional: true }, // 17
+          { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 165, optional: true }, // 18
+          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200, optional: true }, // 19
+          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175, optional: true }, // 20
+          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195, optional: true }, // 21
+          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160, optional: true }, // 22
+          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175, optional: true } // 23
         ],
         funnelDrilldownData: [],
         funnelDrilldownLoading: false,
@@ -1407,7 +1405,7 @@
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
       '$store.state.app.loading': function () {
-        if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsToFdcPipelineLoaded)) {
+        if ((this.showDashboard && !this.rankingTablesLoaded) || (this.showFunnels && !this.apptsCreatedPipelineLoaded && !this.apptsToFdcPipelineLoaded)) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
       },
@@ -1467,6 +1465,7 @@
       assignCloserRanks (rankingData, fieldName) {
         let currentRank = 1
         let tiedRowNums = []
+        rankingData.forEach(row => row[fieldName] = row[fieldName] ? row[fieldName] : 0)
         rankingData = orderBy(rankingData, fieldName, 'desc')
 
         // handles ties & assigns rank #'s
@@ -2115,6 +2114,7 @@
       },
 
       async apptsCreatedPipelineLoad (start, end) {
+        this.apptsCreatedPipelineLoaded = false
         let brsProvidedSources = []
         let selfGenSources = []
 
@@ -2145,15 +2145,18 @@
 
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             if (this.apptsToFdcPipelineData.length > 0) {
+              this.apptsCreatedPipelineLoaded = true
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           } else {
+            this.apptsCreatedPipelineLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments Created Pipeline data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.apptsCreatedPipelineLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -2541,7 +2544,7 @@
           case 12: // BRS-provided appointments created
           case 13: // Self-gen appointments created
           case 10: // Total Appointments Created
-            this.funnelDrilldownHeaders[11].show = true // date_created
+            this.funnelDrilldownHeaders[10].show = true // date_created
             break
 
           // Appointments to FDC Pipeline
@@ -2558,44 +2561,44 @@
           case 24: // Non-dispositioned appointments
           case 23: // Yet to occur
           case 11: // Pitched
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            this.funnelDrilldownHeaders[11].show = true // appointment_outcome
             break
           case 9: // Credits run
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            this.funnelDrilldownHeaders[13].show = true // credit_decision_date
+            this.funnelDrilldownHeaders[11].show = true // appointment_outcome
+            this.funnelDrilldownHeaders[12].show = true // credit_decision_date
             break
         case 3: // Credits passed
-            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
-            this.funnelDrilldownHeaders[13].show = true // credit_decision_date
-            this.funnelDrilldownHeaders[14].show = true // credit_check
+            this.funnelDrilldownHeaders[11].show = true // appointment_outcome
+            this.funnelDrilldownHeaders[12].show = true // credit_decision_date
+            this.funnelDrilldownHeaders[13].show = true // credit_check
             break
           case 4: // Bookings Complete
-            this.funnelDrilldownHeaders[15].show = true // installation_agreement_signed_date
-            this.funnelDrilldownHeaders[17].show = true // site_survey_completed_date
+            this.funnelDrilldownHeaders[14].show = true // installation_agreement_signed_date
+            this.funnelDrilldownHeaders[16].show = true // site_survey_completed_date
             break
           case 5: // Site Surveys Verified
-            this.funnelDrilldownHeaders[16].show = true // site_survey_verified_date
+            this.funnelDrilldownHeaders[15].show = true // site_survey_verified_date
             break
           case 6: // Final Designs sent to Homeowner
-            this.funnelDrilldownHeaders[18].show = true // final_design_sent_to_homeowner_date
-            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[17].show = true // final_design_sent_to_homeowner_date
+            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
             break
           case 7: // Final Designs Approved
-            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
-            this.funnelDrilldownHeaders[22].show = true // financial_agreement_signed_date
-            this.funnelDrilldownHeaders[20].show = true // proof_of_homeowners_insurance_obtained_date
-            this.funnelDrilldownHeaders[23].show = true // cash_down_payment
-            this.funnelDrilldownHeaders[21].show = true // utility_bill_verified_date
+            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[21].show = true // financial_agreement_signed_date
+            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[22].show = true // cash_down_payment
+            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
             break
           case 21: // Final Designs Completed
-            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
-            this.funnelDrilldownHeaders[22].show = true // financial_agreement_signed_date
-            this.funnelDrilldownHeaders[20].show = true // proof_of_homeowners_insurance_obtained_date
-            this.funnelDrilldownHeaders[23].show = true // cash_down_payment
-            this.funnelDrilldownHeaders[21].show = true // utility_bill_verified_date
+            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[21].show = true // financial_agreement_signed_date
+            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[22].show = true // cash_down_payment
+            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
             break
           case 8: // Installations Completed
-            this.funnelDrilldownHeaders[24].show = true // substantial_completion_date
+            this.funnelDrilldownHeaders[23].show = true // substantial_completion_date
             break
         }
 
