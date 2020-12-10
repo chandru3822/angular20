@@ -156,11 +156,11 @@
             <template v-if="milestoneDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td class="text-left">{{ item.id ? item.id : '' }}</td>
-                <td class="text-left">{{ item.source ? item.source : '' }}</td>
+                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
+                <td class="text-left">{{ item.id || '' }}</td>
+                <td class="text-left">{{ item.source || '' }}</td>
                 <td class="text-left">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                <td class="text-left">{{ item.appointment_outcome ? item.appointment_outcome : '' }}</td>
+                <td class="text-left">{{ item.appointment_outcome || '' }}</td>
               </tr>
             </template>
 
@@ -775,24 +775,23 @@
                 <td style="text-align: center">
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
                 </td>
-                <td>{{ item.setter_name ? item.setter_name : '' }}</td>
-                <td>{{ item.employee_id ? item.employee_id : '' }}</td>
-                <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td>{{ item.setter_name || '' }}</td>
+                <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
                   <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
                     {{ item.project_id }}
                   </router-link>
-                  <div v-else>{{ item.project_id ? item.project_id : '' }}</div>
+                  <div v-else>{{ item.project_id || '' }}</div>
                 </td>
                 <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                <td>{{ item.owner_name ? item.owner_name : '' }}</td>
-                <td>{{ item.verified_setter_lead ? item.verified_setter_lead : '' }}</td>
+                <td>{{ item.owner_name || '' }}</td>
+                <td>{{ item.verified_setter_lead || '' }}</td>
                 <td :class="item.appointment_outcome_class">
-                  {{ item.appointment_outcome ? item.appointment_outcome : '' }}
+                  {{ item.appointment_outcome || '' }}
                 </td>
                 <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                <td>{{ item.state ? item.state : '' }}</td>
-                <td>{{ item.office ? item.office : '' }}</td>
+                <td>{{ item.state || '' }}</td>
+                <td>{{ item.office || '' }}</td>
               </tr>
             </template>
 
@@ -932,7 +931,6 @@
       funnelDrilldownHeaders: [
         { text: '', value: '', show: true, sortable: false, width: 25 },
         { text: 'Setter', value: 'setter_name', show: true, width: 90 },
-        { text: 'Employee ID', value: 'employee_id', show: true, width: 120 },
         { text: 'Name', value: 'customer_name', show: true, width: 90 },
         { text: 'Project ID', value: 'project_id', show: true, width: 95 },
         { text: 'Appointment Date', value: 'appointment_date', show: true, width: 150 },

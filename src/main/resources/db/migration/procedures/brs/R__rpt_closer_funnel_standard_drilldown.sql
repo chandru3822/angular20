@@ -21,7 +21,6 @@ BEGIN
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                          select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                employee_id.employee_id,
                                 s.abbreviation                                             state,
                                 concat(c.first_name, ' ', c.last_name)                     customer_name,
                                 c.id                                                       contact_id,
@@ -29,20 +28,17 @@ BEGIN
                                 pd.source_name,
                                 pd.system_size,
                                 pd.primary_financier_name                                  financier,
-                                (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                pd.closer_appointment_start                                appointment_date,
                                 pd.cancelled_date
                          from brs.project_details pd
                                   inner join flow.project p on p.id = pd.project_id
                                   inner join flow.contact c on c.id = p.contact_id
                                   left outer join flow.user u on pd.closer_user_id = u.id
-                                  left join lateral (select *
-                                                     from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                            on true
                                   left outer join flow.company_state cs on cs.id = p.company_state_id
                                   left outer join flow.state s on s.id = cs.state_id
-                         where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                         where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                            and pd.company_id = v_company_id
-                         order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                         order by owner_name, pd.closer_appointment_start
                      ) as funnel_rows;
 
             --Cancelled in advance
@@ -51,7 +47,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -59,22 +54,19 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.closer_appointment_outcome = 4 --Cancelled
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Ineligible for solar
@@ -83,7 +75,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -91,22 +82,19 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Total Eligible Planned Appointments
@@ -115,7 +103,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -123,23 +110,20 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or
                                     pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Rescheduled
@@ -148,7 +132,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                        state,
                                     concat(c.first_name, ' ', c.last_name)                customer_name,
                                     c.id                                                  contact_id,
@@ -156,7 +139,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                             financier,
-                                    (ppscfv.timestamp_value - interval '6 hours') :: DATE appointment_date,
+                                    ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                    appointment_outcome
                              from flow.project_process_step pps
@@ -166,20 +149,17 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pps.process_step_id = 1
                                and --Closer Appointment Details
                                  pps.main is false
                                and ppscfv.custom_field_group_assignment_id = 5
-                               and ppscfv.timestamp_value < pd.closer_appointment_start
-                               and (ppscfv.timestamp_value - interval '6 hours') :: DATE between p_start_date and p_end_date
+                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
                                and pd.company_id = v_company_id
                                and pd.company_id = v_company_id
-                             order by owner_name, (ppscfv.timestamp_value - interval '6 hours') :: DATE
+                             order by owner_name, ppscfv.timestamp_value
                          ) as funnel_rows;
 
             --Homeowner no show
@@ -188,7 +168,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -196,24 +175,21 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Homeowner no show (checked-in)
@@ -222,7 +198,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -230,26 +205,23 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 56
                                and --Not Pitched: No Show
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Closer missed appointment
@@ -258,7 +230,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -266,24 +237,21 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 3 --Missed
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Closer missed appointment (checked-in)
@@ -292,7 +260,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -300,26 +267,23 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 3
                                and --Missed
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Turned away at the door
@@ -328,7 +292,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -336,24 +299,21 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Turned away at the door (checked-in)
@@ -362,7 +322,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -370,26 +329,23 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 58
                                and --Not Pitched: Other
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --No utility bill
@@ -398,7 +354,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -406,24 +361,21 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --No utility bill (checked-in)
@@ -432,7 +384,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -440,26 +391,23 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 57
                                and --Not Pitched: No Utility Bill
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Non-dispositioned appointments
@@ -468,7 +416,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -476,25 +423,22 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60)
                                and --Non-Dispositioned
-                                     (pd.closer_appointment_start - interval '6 hours') <
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Non-dispositioned appointments (checked-in)
@@ -503,7 +447,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -511,26 +454,23 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60)
                                and --Non-Dispositioned
-                                     (pd.closer_appointment_start - interval '6 hours') <
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Yet to occur
@@ -539,7 +479,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -547,26 +486,23 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or
                                     pd.closer_appointment_outcome not in (4, 59, 61))
                                and --(Cancelled, No Go, Low TSRF)
-                                     (pd.closer_appointment_start - interval '6 hours') >=
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Yet to occur (checked-in)
@@ -575,7 +511,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -583,27 +518,24 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or
                                     pd.closer_appointment_outcome not in (4, 59, 61))
                                and --(Cancelled, No Go, Low TSRF)
-                                     (pd.closer_appointment_start - interval '6 hours') >=
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Pitched
@@ -612,7 +544,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -620,24 +551,21 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Pitched (checked-in)
@@ -646,7 +574,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -654,26 +581,23 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                             where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome in (2, 1139, 1140)
                                and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Credits run
@@ -682,7 +606,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -690,7 +613,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date
@@ -698,9 +621,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -715,7 +635,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -723,7 +642,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date
@@ -731,9 +650,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -749,7 +665,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -757,7 +672,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date,
@@ -766,9 +681,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -784,7 +696,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -792,7 +703,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date,
@@ -801,9 +712,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -821,7 +729,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -829,7 +736,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.installation_agreement_signed_date,
                                     pd.site_survey_end_time                                    site_survey_completed_date
@@ -837,9 +744,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.installation_agreement_signed_date :: DATE between p_start_date and p_end_date
@@ -854,7 +758,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -862,7 +765,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.installation_agreement_signed_date,
                                     pd.site_survey_end_time                                    site_survey_completed_date
@@ -870,9 +773,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.installation_agreement_signed_date :: DATE between p_start_date and p_end_date
@@ -888,7 +788,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -896,22 +795,19 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.site_survey_verified_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.site_survey_verified_date :: DATE between p_start_date and p_end_date
                                and pd.site_survey_verified_date is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.site_survey_verified_date :: DATE
+                             order by owner_name, pd.site_survey_verified_date
                          ) as funnel_rows;
 
             --Site Surveys Verified (checked-in)
@@ -920,7 +816,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -928,23 +823,20 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.site_survey_verified_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.site_survey_verified_date :: DATE between p_start_date and p_end_date
                                and pd.site_survey_verified_date is not null
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.site_survey_verified_date :: DATE
+                             order by owner_name, pd.site_survey_verified_date
                          ) as funnel_rows;
 
             --Final Designs sent to Homeowner
@@ -953,7 +845,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -961,7 +852,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_sent_to_homeowner_date,
                                     pd.final_design_signed_date
@@ -969,12 +860,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where pd.final_design_sent_to_homeowner_date :: DATE between p_start_date and p_end_date
+                             where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_sent_to_homeowner_date is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_sent_to_homeowner_date
@@ -986,7 +874,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -994,7 +881,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_sent_to_homeowner_date,
                                     pd.final_design_signed_date
@@ -1002,12 +889,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where pd.final_design_sent_to_homeowner_date :: DATE between p_start_date and p_end_date
+                             where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_sent_to_homeowner_date is not null
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
@@ -1020,7 +904,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1028,7 +911,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -1039,9 +922,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_signed_date :: DATE between p_start_date and p_end_date
@@ -1056,7 +936,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1064,7 +943,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -1075,9 +954,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_signed_date :: DATE between p_start_date and p_end_date
@@ -1093,7 +969,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1101,7 +976,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -1112,9 +987,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_signed_date is not null
@@ -1153,7 +1025,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1161,7 +1032,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -1172,9 +1043,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_signed_date is not null
@@ -1214,7 +1082,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1222,16 +1089,13 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.substantial_completion_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.substantial_completion_date :: DATE between p_start_date and p_end_date
@@ -1250,7 +1114,6 @@ BEGIN
                 select array_to_json(array_agg(row_to_json(funnel_rows)))
                 from (
                          select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                employee_id.employee_id,
                                 s.abbreviation                                             state,
                                 concat(c.first_name, ' ', c.last_name)                     customer_name,
                                 c.id                                                       contact_id,
@@ -1258,25 +1121,22 @@ BEGIN
                                 pd.source_name,
                                 pd.system_size,
                                 pd.primary_financier_name                                  financier,
-                                (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                pd.closer_appointment_start                                appointment_date,
                                 pd.cancelled_date
                          from brs.project_details pd
                                   inner join flow.project p on p.id = pd.project_id
                                   inner join flow.contact c on c.id = p.contact_id
                                   left outer join flow.user u on pd.closer_user_id = u.id
-                                  left join lateral (select *
-                                                     from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                            on true
                                   left outer join flow.company_state cs on cs.id = p.company_state_id
                                   left outer join flow.state s on s.id = cs.state_id
                          where pd.closer_user_id = any (p_user_ids)
                            and pd.closer_user_id is not null
                            and pd.closer_user_id = any
                                (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                             p.date_created :: DATE))
-                           and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                             ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                           and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                            and pd.company_id = v_company_id
-                         order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                         order by owner_name, pd.closer_appointment_start
                      ) as funnel_rows;
 
             --Cancelled in advance
@@ -1285,7 +1145,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1293,27 +1152,24 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.closer_appointment_outcome = 4 --Cancelled
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Ineligible for solar
@@ -1322,7 +1178,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1330,27 +1185,24 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Total Eligible Planned Appointments
@@ -1359,7 +1211,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1367,28 +1218,25 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or
                                     pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Rescheduled
@@ -1397,7 +1245,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1405,7 +1252,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from flow.project_process_step pps
@@ -1415,24 +1262,21 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pps.process_step_id = 1
                                and --Closer Appointment Details
                                  pps.main is false
                                and ppscfv.custom_field_group_assignment_id = 5
-                               and ppscfv.timestamp_value < pd.closer_appointment_start
-                               and (ppscfv.timestamp_value - interval '6 hours') :: DATE between p_start_date and p_end_date
+                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Homeowner no show
@@ -1441,7 +1285,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1449,29 +1292,26 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Homeowner no show (checked-in)
@@ -1480,7 +1320,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1488,31 +1327,28 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 56
                                and --Not Pitched: No Show
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Closer missed appointment
@@ -1521,7 +1357,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1529,29 +1364,26 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 3 --Missed
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Closer missed appointment (checked-in)
@@ -1560,7 +1392,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1568,31 +1399,28 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 3
                                and --Missed
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Turned away at the door
@@ -1601,7 +1429,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1609,29 +1436,26 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Turned away at the door (checked-in)
@@ -1640,7 +1464,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1648,31 +1471,28 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 58
                                and --Not Pitched: Other
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --No utility bill
@@ -1681,7 +1501,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1689,29 +1508,26 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --No utility bill (checked-in)
@@ -1720,7 +1536,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1728,31 +1543,28 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome = 57
                                and --Not Pitched: No Utility Bill
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Non-dispositioned appointments
@@ -1761,7 +1573,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1769,30 +1580,27 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60)
                                and --Non-Dispositioned
-                                     (pd.closer_appointment_start - interval '6 hours') <
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Non-dispositioned appointments (checked-in)
@@ -1801,7 +1609,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1809,31 +1616,28 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome = 60)
                                and --Non-Dispositioned
-                                     (pd.closer_appointment_start - interval '6 hours') <
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Yet to occur
@@ -1842,7 +1646,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1850,31 +1653,28 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or
                                     pd.closer_appointment_outcome not in (4, 59, 61))
                                and --(Cancelled, No Go, Low TSRF)
-                                     (pd.closer_appointment_start - interval '6 hours') >=
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Yet to occur (checked-in)
@@ -1883,7 +1683,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1891,32 +1690,29 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (pd.closer_appointment_outcome is null or
                                     pd.closer_appointment_outcome not in (4, 59, 61))
                                and --(Cancelled, No Go, Low TSRF)
-                                     (pd.closer_appointment_start - interval '6 hours') >=
+                                     ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Pitched
@@ -1925,7 +1721,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1933,29 +1728,26 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Pitched (checked-in)
@@ -1964,7 +1756,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -1972,31 +1763,28 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
-                               and (pd.closer_appointment_start - interval '6 hours') :: DATE between p_start_date and p_end_date
-                               and (pd.closer_appointment_start - interval '6 hours') <
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
                                and pd.closer_appointment_outcome in (2, 1139, 1140)
                                and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, (pd.closer_appointment_start - interval '6 hours') :: DATE
+                             order by owner_name, pd.closer_appointment_start
                          ) as funnel_rows;
 
             --Credits run
@@ -2005,7 +1793,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2013,7 +1800,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date
@@ -2021,9 +1808,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2032,7 +1816,7 @@ BEGIN
                                and pd.credit_decision_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
                          ) as funnel_rows;
@@ -2043,7 +1827,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2051,7 +1834,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date
@@ -2059,9 +1842,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2070,7 +1850,7 @@ BEGIN
                                and pd.credit_decision_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
@@ -2082,7 +1862,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2090,7 +1869,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date,
@@ -2099,9 +1878,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2112,7 +1888,7 @@ BEGIN
                                and --Pass
                                      pd.closer_user_id = any
                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                   p.date_created :: DATE))
+                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
                          ) as funnel_rows;
@@ -2123,7 +1899,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2131,7 +1906,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome,
                                     pd.credit_decision_date,
@@ -2140,9 +1915,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2153,7 +1925,7 @@ BEGIN
                                and --Pass
                                      pd.closer_user_id = any
                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                   p.date_created :: DATE))
+                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
@@ -2165,7 +1937,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2173,7 +1944,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.installation_agreement_signed_date,
                                     pd.site_survey_end_time                                    site_survey_completed_date
@@ -2181,9 +1952,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2192,7 +1960,7 @@ BEGIN
                                and pd.installation_agreement_signed_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
                              order by owner_name, pd.installation_agreement_signed_date
                          ) as funnel_rows;
@@ -2203,7 +1971,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2211,7 +1978,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.installation_agreement_signed_date,
                                     pd.site_survey_end_time                                    site_survey_completed_date
@@ -2219,9 +1986,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2230,7 +1994,7 @@ BEGIN
                                and pd.installation_agreement_signed_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.installation_agreement_signed_date
@@ -2242,7 +2006,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2250,16 +2013,13 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.site_survey_verified_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2268,9 +2028,9 @@ BEGIN
                                and pd.site_survey_verified_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.site_survey_verified_date :: DATE
+                             order by owner_name, pd.site_survey_verified_date
                          ) as funnel_rows;
 
             --Site Surveys Verified (checked-in)
@@ -2279,7 +2039,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2287,16 +2046,13 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.site_survey_verified_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2305,10 +2061,10 @@ BEGIN
                                and pd.site_survey_verified_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.site_survey_verified_date :: DATE
+                             order by owner_name, pd.site_survey_verified_date
                          ) as funnel_rows;
 
             --Final Designs sent to Homeowner
@@ -2317,7 +2073,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2325,7 +2080,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_sent_to_homeowner_date,
                                     pd.final_design_signed_date
@@ -2333,18 +2088,15 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
-                               and pd.final_design_sent_to_homeowner_date :: DATE between p_start_date and p_end_date
+                               and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_sent_to_homeowner_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_sent_to_homeowner_date
                          ) as funnel_rows;
@@ -2355,7 +2107,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2363,7 +2114,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_sent_to_homeowner_date,
                                     pd.final_design_signed_date
@@ -2371,18 +2122,15 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
-                               and pd.final_design_sent_to_homeowner_date :: DATE between p_start_date and p_end_date
+                               and ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_sent_to_homeowner_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_sent_to_homeowner_date
@@ -2394,7 +2142,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2402,7 +2149,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -2413,9 +2160,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2424,7 +2168,7 @@ BEGIN
                                and pd.final_design_signed_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_signed_date
                          ) as funnel_rows;
@@ -2435,7 +2179,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2443,7 +2186,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -2454,9 +2197,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2465,7 +2205,7 @@ BEGIN
                                and pd.final_design_signed_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_signed_date
@@ -2477,7 +2217,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2485,7 +2224,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -2496,9 +2235,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2514,7 +2250,7 @@ BEGIN
                                  pd.utility_bill_verified_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and case
                                        when pd.primary_financier = 721 --Cash
                                            then pd.first_cash_payment_paid_date is not null and
@@ -2542,7 +2278,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2550,7 +2285,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.final_design_signed_date,
                                     pd.financial_agreement_signed_date,
@@ -2561,9 +2296,6 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2579,7 +2311,7 @@ BEGIN
                                  pd.utility_bill_verified_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and case
                                        when pd.primary_financier = 721 --Cash
                                            then pd.first_cash_payment_paid_date is not null and
@@ -2608,7 +2340,6 @@ BEGIN
                     select array_to_json(array_agg(row_to_json(funnel_rows)))
                     from (
                              select concat(u.first_name, ' ', u.last_name)                     owner_name,
-                                    employee_id.employee_id,
                                     s.abbreviation                                             state,
                                     concat(c.first_name, ' ', c.last_name)                     customer_name,
                                     c.id                                                       contact_id,
@@ -2616,16 +2347,13 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    (pd.closer_appointment_start - interval '6 hours') :: DATE appointment_date,
+                                    pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
                                     pd.substantial_completion_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left join lateral (select *
-                                                         from flow.get_value_for_custom_field(3, 454, p.id, 0, false) as employee_id) employee_id
-                                                on true
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
@@ -2634,7 +2362,7 @@ BEGIN
                                and pd.substantial_completion_date is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                 p.date_created :: DATE))
+                                                                 ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and pd.company_id = v_company_id
                              order by owner_name, pd.substantial_completion_date
                          ) as funnel_rows;

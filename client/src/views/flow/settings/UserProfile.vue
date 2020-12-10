@@ -106,9 +106,10 @@
                   :accept="acceptedFileTypes"
                   class="file-input clickable"
                   :disabled="savingUserImage"
-                  @change="uploadFile($event.target.files, attachmentTypeId, userId)"
+                  @change="uploadFile($event.target.files, attachmentTypeId, userId, 2097152)"
                   name="avatar"
               >
+              <br/><span>* Due to render times associated with this file it cannot exceed 2MB</span>
             </form>
           </div>
           <img class="user-profile-image" v-else-if="profileImage.presignedUrl" :src="profileImage.presignedUrl">
@@ -247,20 +248,28 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async uploadFile (files, attachmentTypeId, sourceId) {
+    async uploadFile (files, attachmentTypeId, sourceId, sizeLimit) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await this.$store.dispatch(Actions.FILE_UPLOAD, {
           file: files[0],
           attachmentTypeId,
+          sizeLimit,
           sourceId,
-          callback: async (img) => {
-            this.profileImage = img
-            this.$store.commit(UserMutations.SET_USER_IMAGE, img)
-            this.addImage = false
-            this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+          callback: async (img, error) => {
+            if(error?.error) {
+              this.snackbar = getSnackbar('ERROR', error.errorMsg)
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            } else {
+              this.profileImage = img
+              this.$store.commit(UserMutations.SET_USER_IMAGE, img)
+              this.addImage = false
+              this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
+
           }
         })
       } catch(e) {
