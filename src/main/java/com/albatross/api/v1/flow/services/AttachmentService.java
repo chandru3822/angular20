@@ -310,7 +310,7 @@ public class AttachmentService {
      */
     public Attachment create(MultipartFile file, Long sourceId, Long attachmentTypeId, Boolean deleteFirst) throws IOException {
         User currentUser = securityService.getCurrentUser();
-
+        log.info("EOF: maybe it is related to this endpoint??? file added by user: {}", currentUser.getId());
         if (file.isEmpty()) {
             throw new RuntimeException("File cannot be empty");
         }
