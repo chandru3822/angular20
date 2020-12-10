@@ -101,13 +101,15 @@
   <schedule.getAvailability><![CDATA[
     with dates as (
         select :startTime::date + d.date as date,
-               extract(dow from :startTime::date + d.date) + 1 as day_of_week_id
+               extract(dow from :startTime::date + d.date) as day_of_week_id
         from generate_series(0, 99) as d(date)
         where :startTime::date + d.date BETWEEN :startTime::date and :endTime::date - 1
     )
     select coalesce(rs.user_id, rs.org_id) as resource_id,
            (concat(d.date, ' ', rsa.start_time))::timestamp as "start",
-           (concat(d.date, ' ', rsa.end_time))::timestamp as "end",
+           case when (concat(d.date, ' ', rsa.start_time))::timestamp > (concat(d.date, ' ', rsa.end_time))::timestamp
+            then (concat(d.date + 1, ' ', rsa.end_time))::timestamp
+            else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
            rsa.day_of_week_id,
            false as all_day,
            null as title,
