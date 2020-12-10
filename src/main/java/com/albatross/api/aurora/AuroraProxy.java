@@ -316,29 +316,43 @@ public class AuroraProxy {
     public Optional<Integer> getWeightedAverageTSRF() {
       checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
       int weightedSum = 0, numPanels = 0;
+      boolean missingAnyArrayValue = false;
       for (SolarArray array : arrays) {
         Optional<Integer> tsrf = array.getTotalSolarResourceFraction(),
           panels = array.getPanelCount();
-        checkArgument(tsrf.isPresent(), "array is missing TSRF value");
-        checkArgument(panels.isPresent(), "array is missing panel count");
-        weightedSum += panels.get() * tsrf.get();
-        numPanels += panels.get();
+        if(tsrf.isEmpty() || panels.isEmpty()) {
+          missingAnyArrayValue = true;
+          //checkArgument(tsrf.isPresent(), "array is missing TSRF value");
+          //checkArgument(panels.isPresent(), "array is missing panel count");
+          log.error("AURORA: Missing TSRF Value");
+        } else {
+          weightedSum += panels.get() * tsrf.get();
+          numPanels += panels.get();
+        }
       }
-      return Optional.of(weightedSum / numPanels);
+      //per judson we should return 0 instead of guessing what the values of panels and total solar resource refraction access might be
+      return missingAnyArrayValue ? Optional.of(0) : Optional.of(weightedSum / numPanels);
     }
 
     public Optional<Integer> getWeightedAverageAnnualSolarAccess() {
       checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
       int weightedSum = 0, numPanels = 0;
+      boolean missingAnyArrayValue = false;
       for (SolarArray array : arrays) {
         Optional<Integer> annualSolarAccess = array.getAnnualSolarAccess(),
           panels = array.getPanelCount();
-        checkArgument(annualSolarAccess.isPresent(), "array is missing annual solar access value");
-        checkArgument(panels.isPresent(), "array is missing panel count");
-        weightedSum += panels.get() * annualSolarAccess.get();
-        numPanels += panels.get();
+        if(annualSolarAccess.isEmpty() || panels.isEmpty()) {
+          missingAnyArrayValue = true;
+          //checkArgument(annualSolarAccess.isPresent(), "array is missing annual solar access value");
+          //checkArgument(panels.isPresent(), "array is missing panel count");
+          log.error("AURORA: Missing Annual Solar Access Value");
+        } else {
+          weightedSum += panels.get() * annualSolarAccess.get();
+          numPanels += panels.get();
+        }
       }
-      return Optional.of(weightedSum / numPanels);
+      //per judson we should return 0 instead of guessing what the values of panels and annual solar access might be
+      return missingAnyArrayValue ? Optional.of(0) : Optional.of(weightedSum / numPanels);
     }
   }
 
