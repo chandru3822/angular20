@@ -6,13 +6,13 @@
                                                             :userId::int,
                                                             :limit::int, :offset::int)
   ]]></contact.searchDownline>
-  
+
   <contact.search><![CDATA[
     select *
     from flow.search_contacts(:query::character varying, :companyId::int,
                               :isParent::boolean,:limit::int, :offset::int)
   ]]></contact.search>
-  
+
   <contact.searchByOwner><![CDATA[
     select *
     from flow.search_contacts_by_user(:query::character varying, :companyId::int,
@@ -44,8 +44,14 @@
             FROM (
                      select
                          p.id,
-                         p.project_name as "projectName"
-                     from flow.project p
+                         p.project_name as "projectName",
+                        p.street1,
+                        p.city,
+                        s.abbreviation as "stateAbbreviation",
+                           p.date_created as "dateCreated"
+                            from flow.project p
+                        left join flow.company_state cs on cs.id = p.company_state_id
+                        left join flow.state s on s.id = cs.state_id
                      where p.contact_id = c.id
                  ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
