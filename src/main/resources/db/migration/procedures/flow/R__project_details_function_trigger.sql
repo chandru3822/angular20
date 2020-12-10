@@ -163,7 +163,13 @@ BEGIN
 
                 v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
-                execute v_sql;
+                begin
+                    execute v_sql;
+                exception when others then
+                    insert into flow.trigger_error(project_process_step_custom_value_id,error)
+                    values(new.id,SQLERRM);
+                end;
+
 
                 if v_record.second_field_to_update is not null then
                     if v_record.field_to_update in
