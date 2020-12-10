@@ -154,7 +154,7 @@ BEGIN
                     case when new.boolean_value is null then select 'null' into v_value; else select quote_literal(new.boolean_value) into v_value; end case;
                     v_value = v_value || '::boolean';
                 elsif v_record.data_type_id = 7 then
-                    case when new.int_array_value is null then select 'null' into v_value; else select quote_literal(string_agg(lov.name, ', '))
+                    case when new.int_array_value is null or new.int_array_value = '{}' then select 'null' into v_value; else select quote_literal(string_agg(lov.name, ', '))
                                                                                                 from flow.list_of_value lov
                                                                                                 where lov.id = any (new.int_array_value::integer[])
                                                                                                 into v_value; end case;
