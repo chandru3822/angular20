@@ -47,6 +47,7 @@
                          p.project_name as "projectName",
                         p.street1,
                         p.city,
+                        p.postal_code as "postalCode",
                         s.abbreviation as "stateAbbreviation",
                            p.date_created as "dateCreated"
                             from flow.project p
