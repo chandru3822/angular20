@@ -29,6 +29,7 @@ BEGIN
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
                  and pd.setter_user_id not in (2354810, 2390159)
                  and pd.setter_user_id = p_user_id
+                 and pd.company_id = 3
             ) as total_appointments,
             (select count(1)::bigint
              from flow.project p
@@ -40,6 +41,7 @@ BEGIN
                  and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                  and pd.setter_user_id not in (2354810, 2390159)
                  and pd.setter_user_id = p_user_id
+                 and pd.company_id = 3
             ) as total_pitches
         ) rpt
     ) as sub_rows;

@@ -27,7 +27,7 @@ BEGIN
         from (
             select
                 o.id as org_id,
-                concat(o.org_name, ' (', metro_area.metro_area, ')') as org,
+                concat(o.org_name, ' (', lov.name, ')') as org,
                 (select count(1)::bigint
                  from flow.project p2
                      inner join brs.project_details pd2 on pd2.project_id = p2.id
@@ -42,6 +42,7 @@ BEGIN
                      and ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
                      and ((pd2.cancelled_date is null) or (pd2.cancelled_date is not null and pd2.cancelled_date > (now() at time zone 'US/Mountain')::date))
                      and o2.id = o.id
+                     and pd2.company_id = 3
                 ) as total_appointments,
                 count(1)::bigint as pitches,
                 rank() over (order by count(1) desc) as rank
@@ -50,7 +51,8 @@ BEGIN
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
                 inner join flow.org o on (o.id = up.org_id and o.active_flag is true)
-                left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
+                left join flow.organization_custom_field_value ocfv on ocfv.org_id = o.id
+                left join flow.list_of_value lov on ocfv.int_value = lov.id
             where pd.source in (525, 526) --(Setter Gen, Retargeted)
                 and case when up.end_date is not null
                     then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
@@ -59,7 +61,8 @@ BEGIN
                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                 and o.id != 171 --Setter Call Center
-            group by o.id, concat(o.org_name, ' (', metro_area.metro_area, ')')
+                and pd.company_id = 3
+            group by o.id, concat(o.org_name, ' (', lov.name, ')')
             limit p_limit
         ) as t
         order by pitches desc, org_id

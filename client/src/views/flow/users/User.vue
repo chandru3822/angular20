@@ -34,9 +34,10 @@
                 type="file"
                 :accept="acceptedFileTypes"
                 class="file-input clickable"
-                @change="uploadUserImage($event.target.files, attachmentTypeId, userId)"
+                @change="uploadUserImage($event.target.files, attachmentTypeId, userId, 2097152)"
                 name="avatar"
               >
+              <br/><span>* Cannot exceed 2MB</span>
             </form>
           {{user.firstName}} {{user.lastName}}
           <v-spacer></v-spacer>
@@ -128,19 +129,26 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async uploadUserImage (files, attachmentTypeId, sourceId) {
+      async uploadUserImage (files, attachmentTypeId, sourceId, sizeLimit) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
             file: files[0],
             attachmentTypeId,
+            sizeLimit,
             sourceId,
-            callback: async (img) => {
-              this.userImage = img
-              this.changePhoto = false
-              this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
+            callback: async (img, error) => {
+              if(error?.error) {
+                this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              } else {
+                this.userImage = img
+                this.changePhoto = false
+                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              }
             }
           })
         } catch(e) {
