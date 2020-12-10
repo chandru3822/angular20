@@ -1,3 +1,5 @@
+<!-- When adding custom field sql queries, also create a genericized version for smartlists which selects every row in the table -->
+
 <sql>
   <customFieldSql.brs.ahjList><![CDATA[
     select a.id,
@@ -7,6 +9,13 @@
     order by a.name
   ]]></customFieldSql.brs.ahjList>
 
+  <customFieldSql.brs.ahjList.smartlist><![CDATA[
+    select a.id,
+       a.name
+    from brs.ahj a
+    where archived is not true
+  ]]></customFieldSql.brs.ahjList.smartlist>
+
   <customFieldSql.brs.utilityCompanyList><![CDATA[
     select a.id,
            a.name
@@ -14,6 +23,13 @@
     where archived is not true
     order by a.name
   ]]></customFieldSql.brs.utilityCompanyList>
+
+  <customFieldSql.brs.utilityCompanyList.smartlist><![CDATA[
+    select a.id,
+           a.name
+    from brs.ahj_utility a
+    where archived is not true
+  ]]></customFieldSql.brs.utilityCompanyList.smartlist>
 
   <customFieldSql.brs.proposalLogNumbers><![CDATA[
     select plh.id,
@@ -23,6 +39,12 @@
     order by plh.proposal_nbr
   ]]></customFieldSql.brs.proposalLogNumbers>
 
+  <customFieldSql.brs.proposalLogNumbers.smartlist><![CDATA[
+    select plh.id,
+           plh.proposal_nbr as name
+    from brs.proposal_log_history plh
+  ]]></customFieldSql.brs.proposalLogNumbers.smartlist>
+
   <customFieldSql.brs.designLogNumbers><![CDATA[
     select dlh.id,
            dlh.reference_nbr as name
@@ -31,4 +53,9 @@
     order by dlh.design_log_id
   ]]></customFieldSql.brs.designLogNumbers>
 
+  <customFieldSql.brs.designLogNumbers.smartlist><![CDATA[
+      select dlh.id,
+             dlh.reference_nbr as name
+      from brs.design_log_history dlh
+  ]]></customFieldSql.brs.designLogNumbers.smartlist>
 </sql>
