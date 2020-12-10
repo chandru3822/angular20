@@ -1,9 +1,11 @@
 <template>
   <v-container id="setter-dash-container">
     <v-row v-if="showDashboard" id="setter-dash-toolbar-container">
-      <v-col cols="12" id="setter-dash-toolbar">
-        <v-app-bar class="elevation-1" fixed style="top: 48px">
+      <v-col cols="12" id="setter-dash-toolbar" class="pt-0 pb-2">
+        <v-toolbar id="setter-dash-title-container" class="elevation-1">
           <v-toolbar-title>Setter Dashboard</v-toolbar-title>
+        </v-toolbar>
+        <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
               <v-btn text @click="loadRankingTables('MTD')">MTD</v-btn>
@@ -17,8 +19,7 @@
     </v-row>
 
     <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters
-           :class="{'dashboard-tab-max-width': showDashboard, 'funnel-tab-max-width': !showDashboard}"
-           :style="{'padding-top': showDashboard ? '60px' : ''}">
+           :class="{'dashboard-tab-max-width': showDashboard, 'funnel-tab-max-width': !showDashboard}">
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(1)">
           Dashboard
@@ -2260,44 +2261,44 @@
 
 <style lang="scss" scoped>
   #setter-dash-container {
-    padding: 0;
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
   }
 
   #setter-dash-toolbar-container {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-
     #setter-dash-toolbar {
-      padding: 0;
-
       header {
         background-color: #fff !important;
       }
 
-      .v-toolbar {
-        margin-top: -12px;
+      #setter-dash-title-container ::v-deep .v-toolbar__content {
+        width: 100%;
+
+        .v-toolbar__title {
+          font-size: 13px;
+        }
+      }
+
+      #date-range-btns-toolbar {
+        position: fixed;
+        bottom: 0;
+        z-index: 3;
+        height: 45px !important;
 
         ::v-deep .v-toolbar__content {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-end;
+          padding: 5px 12px;
+          height: 45px !important;
           width: 100%;
-
-          .v-toolbar__title {
-            font-size: 13px;
-          }
 
           .v-toolbar__items {
             display: flex;
-            flex-flow: column nowrap;
-            justify-content: center;
+            flex-flow: row nowrap;
+            justify-content: flex-end;
+            align-items: center;
+            padding-right: 0;
           }
-        }
-
-        .v-btn-toggle {
-          margin-right: -5px;
         }
 
         .v-btn-toggle .v-btn {
@@ -2352,6 +2353,7 @@
 
   #ironman-component {
     background: linear-gradient(to bottom, #000000 -50%, #464646 50%);
+    border-radius: 4px;
     width: 100%;
 
     #ironman-banner-mobile {
@@ -2576,7 +2578,7 @@
       flex-flow: row nowrap;
       position: relative;
       border: 0.02em solid black;
-      border-radius: 5px;
+      border-radius: 4px;
       height: 15px;
     }
 
@@ -2587,7 +2589,7 @@
       background: linear-gradient(to right, #164761, #2C8EC2);
       transition: width 1s ease-out;
       opacity: 0.9;
-      border-radius: 5px 0 0 5px;
+      border-radius: 4px 0 0 4px;
       width: 0;
       height: 14px;
     }
@@ -2599,13 +2601,13 @@
     }
 
     #first-segment {
-      border-radius: 5px 0 0 5px;
+      border-radius: 4px 0 0 4px;
       border: 0.03em solid black;
     }
 
     #eighth-segment {
       text-align: center;
-      border-radius: 0 5px 5px 0;
+      border-radius: 0 4px 4px 0;
       border: 0.03em solid black;
     }
 
@@ -2663,10 +2665,11 @@
       background-color: #fff;
       color: var(--v-primaryCustom-base);
       box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
       padding: 5px 10px;
       margin: 5px 0;
       width: 100%;
-      height: 110px;
+      height: 130px;
     }
 
     .personal-performance-box-title {
@@ -2687,16 +2690,17 @@
       background-color: #fff;
       color: var(--v-primaryCustom-base);
       box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
-      padding: 0 10px;
+      border-radius: 4px;
+      padding: 5px 10px;
       margin: 5px 0;
       width: 100%;
-      height: 110px;
+      height: 130px;
 
       #rank-box-left-side {
         display: flex;
         flex-flow: column nowrap;
         align-items: center;
-        padding-top: 3px;
+        padding-top: 5px;
         width: 49%;
       }
 
@@ -2775,14 +2779,20 @@
       flex-flow: column nowrap;
       align-items: center;
       width: 100%;
+    }
+
+    #setter-ranking-tables-left-col {
+      margin-top: 5px;
 
       .ranking-table {
         margin-bottom: 10px;
       }
     }
 
-    #setter-ranking-tables-left-col {
-      margin-top: 5px;
+    #setter-ranking-tables-right-col {
+      .ranking-table {
+        margin-bottom: 60px;
+      }
     }
   }
 
@@ -2797,6 +2807,7 @@
     font-family: "Roboto", sans-serif;
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
     margin-bottom: 15px;
     overflow-x: auto;
     width: 100%;
@@ -2899,6 +2910,7 @@
   #pipeline-container {
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
     width: 100%;
 
     .pipeline-header-container {
@@ -3024,7 +3036,10 @@
       position: relative;
 
       .funnel-table {
-        border-collapse: collapse;
+        border-spacing: 0;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        overflow: hidden;
         width: 100%;
 
         .blue-sub-row {
@@ -3283,17 +3298,35 @@
   }
 
   @media (min-width: 737px) {
-    #setter-dash-toolbar-container #setter-dash-toolbar .v-toolbar .v-toolbar__content {
-      .v-toolbar__title {
-        font-size: 18px;
-      }
+    #setter-dash-toolbar-container {
+      #setter-dash-toolbar {
+        #setter-dash-title-container {
+          margin: 0 auto;
+          max-width: calc(100% - 50px);
 
-      .v-btn-toggle {
-        margin-right: 0;
+          ::v-deep .v-toolbar__content {
+            .v-toolbar__title {
+              font-size: 18px;
+            }
+          }
+        }
 
-        .v-btn {
-          font-size: 12px;
-          height: 30px;
+        #date-range-btns-toolbar {
+          height: 60px !important;
+
+          ::v-deep .v-toolbar__content {
+            padding: 10px 12px;
+            height: 60px !important;
+          }
+
+          .v-btn-toggle {
+            margin-right: 0;
+
+            .v-btn {
+              font-size: 12px;
+              height: 30px;
+            }
+          }
         }
       }
     }
@@ -3313,7 +3346,6 @@
 
     #ironman-component {
       box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
       max-width: calc(100% - 50px);
       padding: 20px 0;
 
@@ -3447,7 +3479,7 @@
       .personal-performance-box {
         margin: 15px 0;
         width: 48%;
-        height: 130px;
+        height: 150px;
       }
 
       .personal-performance-box-title {
@@ -3465,10 +3497,10 @@
       #personal-performance-rank-box {
         margin: 15px 0;
         width: 48%;
-        height: 130px;
+        height: 150px;
 
         #rank-box-right-side {
-          padding-top: 2px;
+          padding-top: 5px;
 
           #rank-box-content {
             height: 95px;
@@ -3504,8 +3536,19 @@
       #setter-ranking-tables-left-col,
       #setter-ranking-tables-right-col {
         .ranking-table {
-          margin-bottom: 30px;
           font-size: 14px;
+        }
+      }
+
+      #setter-ranking-tables-left-col {
+        .ranking-table {
+          margin-bottom: 30px;
+        }
+      }
+
+      #setter-ranking-tables-right-col {
+        .ranking-table {
+          margin-bottom: 80px;
         }
       }
     }
@@ -3795,17 +3838,25 @@
   }
 
   @media (min-width: 1070px) {
-    #setter-dash-toolbar-container #setter-dash-toolbar .v-toolbar .v-toolbar__content {
-      .v-toolbar__title {
-        font-size: 20px;
-      }
+    #setter-dash-toolbar-container {
+      #setter-dash-toolbar {
+        #setter-dash-title-container {
+          ::v-deep .v-toolbar__content {
+            .v-toolbar__title {
+              font-size: 20px;
+            }
+          }
+        }
 
-      .v-btn-toggle {
-        margin-right: -2px;
+        #date-range-btns-toolbar {
+          .v-btn-toggle {
+            margin-right: 0;
 
-        .v-btn {
-          font-size: 13px;
-          height: 35px;
+            .v-btn {
+              font-size: 13px;
+              height: 35px;
+            }
+          }
         }
       }
     }
@@ -3847,7 +3898,7 @@
         margin: 10px 0;
         padding: 5px;
         width: calc(25% - 15px);
-        height: 140px;
+        height: 170px;
       }
 
       .personal-performance-box-title {
@@ -3866,7 +3917,7 @@
         margin: 10px 0;
         padding: 5px;
         width: calc(25% - 15px);
-        height: 140px;
+        height: 170px;
 
         #rank-box-left-side,
         #rank-box-right-side {
@@ -3902,6 +3953,7 @@
         max-width: calc((100% / 2) - 14px);
 
         .ranking-table {
+          margin-bottom: 130px;
           width: 100%;
           max-width: 100%;
         }
@@ -4118,6 +4170,14 @@
   }
 
   @media (min-width: 1135px) {
+    #setter-dash-toolbar-container {
+      #setter-dash-toolbar {
+        #setter-dash-title-container {
+          max-width: 1130px;
+        }
+      }
+    }
+
     .dashboard-tab-max-width {
       max-width: 1130px;
     }
@@ -4138,6 +4198,16 @@
 
     #personal-performance-boxes-container {
       max-width: 1130px;
+
+      #personal-performance-rank-box {
+        #rank-box-left-side {
+          padding-top: 23px;
+        }
+
+        #rank-box-right-side {
+          padding-top: 21px;
+        }
+      }
     }
 
     .ranking-tables-section-header {
