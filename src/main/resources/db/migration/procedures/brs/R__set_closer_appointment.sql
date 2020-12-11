@@ -114,13 +114,14 @@ BEGIN
                  select rru.user_id, count(pd2.id) as appointment_count
                  from round_robin_users rru
                       left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 and  closer_appointment_start between now() - interval '90 days' and now() + interval '100 days'
+                 and  closer_appointment_start between now() - interval '21 days' and now() + interval '100 days'
                  group by rru.user_id),
              appointment_count_with_interval as (
                  select rru.user_id, count(pd2.id) as appointment_count_with_interval
                  from round_robin_users rru
                  left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
                  and closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now() + interval '100 days'
+                 and pd2.source not in (523, 524, 530)
                  group by rru.user_id),
              total_avail as (
                  select coalesce(ca.appointment_count,0) as avail, rru.user_id
@@ -165,7 +166,7 @@ BEGIN
                                                        self_gen +
                                                        ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)
                                           else
-                                            ((lead_gen_num / lead_gen_den) * 10000) + self_gen + avail + ((lead_gen_num + self_gen) * 15)  end  as score,
+                                            ((lead_gen_num / lead_gen_den) * 10000) + self_gen + ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)  end  as score,
                                           case
                                               when sum(appointment_count_with_interval) over () = 0 then
                                                   0
