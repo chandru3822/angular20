@@ -65,8 +65,8 @@ public class JwtUtils {
         JwtClaims claims = getClaims(jwt);
 
         Instant now    = Instant.now(),
-                expiry = claims.getIssuedAt()
-                               .plus(Duration.ofDays(jwtExpireDuration));
+                expiry = claims.getExpiresAt();
+
         if (now.isAfter(expiry)) {
             Duration d = Duration.between(expiry, now);
             throw new JwtTokenExpiredException("Your token expired " + d.toMinutes()
