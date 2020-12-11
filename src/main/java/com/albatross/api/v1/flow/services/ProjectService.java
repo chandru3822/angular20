@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
@@ -147,7 +148,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", project.getId());
     params.put("street1", project.getStreet1());
-    params.put("projectName", project.getProjectName());
+    params.put("projectName", CleanString.replaceApostrophe(project.getProjectName()));
     params.put("city", project.getCity());
     params.put("companyStateId", project.getCompanyStateId());
     params.put("postalCode", project.getPostalCode());
@@ -183,7 +184,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId );
     params.put("createdById", user.getId() );
-    params.put("projectName", contact.getFullName() );
+    params.put("projectName", CleanString.replaceApostrophe(contact.getFullName()));
     params.put("processId", processId );
     params.put("street1", contact.getStreet1() );
     params.put("city", contact.getCity() );
