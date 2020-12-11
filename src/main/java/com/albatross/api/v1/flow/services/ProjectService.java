@@ -252,7 +252,7 @@ public class ProjectService {
     String url = s3.getUrl(currentUser.getAwsBucket(), key).toExternalForm();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", file.getOriginalFilename());
+    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
