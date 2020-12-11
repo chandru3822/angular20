@@ -229,7 +229,15 @@
     },
     methods: {
       async saveUser() {
-        if(this.user?.username?.length > 2) {
+        let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+        if (this.user?.username?.length > 2) {
+          if ((!this.user?.phoneNumber?.match(phoneRegex) || this.user?.phoneNumber?.length > 20)) {
+            this.snackbar = getSnackbar('ERROR', 'Error Saving User: Please enter a valid phone number')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.fieldsSaving = false
+            return;
+          }
+
           this.$store.commit(AppMutations.SET_LOADING, true)
           // this.user.customFieldGroups = this.customFieldGroups
 
@@ -253,6 +261,7 @@
           }
         } else {
           this.snackbar = getSnackbar('ERROR', 'Username must be at least 3 characters')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
 
       },

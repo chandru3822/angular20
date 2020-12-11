@@ -312,6 +312,13 @@ export default {
       return f.level === selectedPosition.level
     },
     async saveUser () {
+      let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+      if (!this.user?.phoneNumber?.match(phoneRegex) || this.user?.phoneNumber?.length > 20) {
+        this.snackbar = getSnackbar('ERROR', 'Error saving user: Please enter a valid phone number')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        return;
+      }
+
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.user.customFieldGroups = this.customFieldGroups
       this.user.username = this.user.email
