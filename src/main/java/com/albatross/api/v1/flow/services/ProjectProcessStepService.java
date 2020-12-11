@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
@@ -103,7 +104,7 @@ public class ProjectProcessStepService {
     String url = s3.getUrl(user.getAwsBucket(), key).toExternalForm();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("filename", file.getOriginalFilename());
+    params.put("filename", CleanString.cleanFilename(file.getOriginalFilename()));
     params.put("contentType", file.getContentType());
     params.put("key", key);
     params.put("size", file.getSize());
