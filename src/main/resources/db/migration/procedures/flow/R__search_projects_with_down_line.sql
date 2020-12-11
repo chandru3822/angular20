@@ -87,22 +87,27 @@ BEGIN
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                 inner join flow.project p on p.user_position_id = up2.id
+                         where p.archived is not true
                          union
                          select distinct p.id as project_ids
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                   inner join flow.contact c on c.owner_user_position_id = up2.id
                                   inner join flow.project p on p.contact_id = c.id
+                         where p.archived is not true
                          union
                          select  distinct p3.id as project_ids
                          from all_positions p5
                                   inner join flow.contact c on c.owner_user_position_id = any(p5.user_position_ids)
                                   inner join flow.project p3 on p3.contact_id = c.id
+                         where p3.archived is not true
 
                         union
                             select  distinct p3.id as project_ids
                              from all_positions p5
-                              inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids))as foo)
+                              inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids)
+                            where p3.archived is not true
+                             )as foo)
                      select p.id,
                             p.project_name,
                             p.contact_id,
@@ -135,6 +140,7 @@ BEGIN
                               left join flow.company_state cs on cs.id = p.company_state_id
                               left join flow.state s on s.id = cs.state_id
                      where cp.company_id = any (v_company_ids)
+                       and p.archived is not true
                      order by p.date_created desc
                      limit p_limit offset p_offset
                  ) as limited_projects;
@@ -163,6 +169,7 @@ BEGIN
                              FROM flow.project p
                                       inner join flow.contact c on c.id = p.contact_id
                              WHERE c.company_id = ANY (v_company_ids)
+                               and p.archived is not true
                                AND NOT v_clean_name_search_term ~ '^([0-9]+)$'
                                AND lower(translate(coalesce(p.project_name, ''), '*,.& ', '')) like
                                    '%' || v_clean_name_search_term || '%'
@@ -171,18 +178,21 @@ BEGIN
                              FROM flow.project p
                                       inner join flow.contact c on c.id = p.contact_id
                              WHERE c.company_id = ANY (v_company_ids)
+                               and p.archived is not true
                                AND p.id::text LIKE '%' || v_clean_id_search_term || '%'
                              union
                              SELECT p.id, 3 as rank
                              FROM flow.project p
                                       inner join flow.contact c on c.id = p.contact_id
                              WHERE c.company_id = ANY (v_company_ids)
+                               and p.archived is not true
                                AND lower(trim(c.email)) LIKE '%' || v_clean_email_search_term || '%'
                              union
                              SELECT p.id, 4 as rank
                              FROM flow.project p
                                       inner join flow.contact c on c.id = p.contact_id
                              WHERE c.company_id = ANY (v_company_ids)
+                                 and p.archived is not true
                                  and v_clean_phone_search_term ~ '^([0-9]+)$'
                                  and
                                    (trim(translate(c.phone, '()-+. ', '')) LIKE '%' || v_clean_phone_search_term || '%')
@@ -193,6 +203,7 @@ BEGIN
                              FROM flow.project p
                                       inner join flow.contact c on c.id = p.contact_id
                              WHERE c.company_id = ANY (v_company_ids)
+                               and p.archived is not true
                                AND lower(trim(translate(coalesce(p.street1, ''), '.,', ''))) || ' ' ||
                                    lower(trim(translate(coalesce(p.street2, ''), '.,', '')))
                                  like '%' || v_clean_address_search_term || '%'),
@@ -228,21 +239,26 @@ BEGIN
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                 inner join flow.project p on p.user_position_id = up2.id
+                         where p.archived is not true
                          union
                          select distinct p.id as project_ids
                          from org_ids o
                                   inner join flow.user_position up2 on up2.org_id = o.id
                                   inner join flow.contact c on c.owner_user_position_id = up2.id
                                   inner join flow.project p on p.contact_id = c.id
+                         where p.archived is not true
                          union
                          select  distinct p3.id as project_ids
                          from all_positions p5
                                   inner join flow.contact c on c.owner_user_position_id = any(p5.user_position_ids)
                                   inner join flow.project p3 on p3.contact_id = c.id
+                         where p3.archived is not true
                          union
                          select  distinct p3.id as project_ids
                          from all_positions p5
-                                  inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids))as foo)
+                                  inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids)
+                         where p3.archived is not true
+                             )as foo)
                          select p.id,
                                 p.project_name,
                                 p.contact_id,
@@ -276,6 +292,7 @@ BEGIN
                                   left join flow.company_state cs on cs.id = p.company_state_id
                                   left join flow.state s on s.id = cs.state_id
                          where cp.company_id = any (v_company_ids)
+                           and p.archived is not true
                          order by p.date_created desc
                          limit p_limit offset p_offset
                      ) as limited_projects;

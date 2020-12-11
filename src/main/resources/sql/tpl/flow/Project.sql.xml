@@ -8,7 +8,9 @@
     from flow.company_process cp
     inner join flow.project p on cp.id = p.company_process_id
     where cp.company_id = :companyId
-      and cp.process_id = :processId;
+      and cp.process_id = :processId
+      and p.archived is not true
+      ;
   ]]></project.getAllForCompanyProcess>
 
   <project.getProjectIdByProjectProcessStepId><![CDATA[
@@ -23,6 +25,7 @@
       inner join flow.company_process cp on cp.id = p.company_process_id
       inner join flow.company c on c.id = cp.company_id
     where p.id = :projectId
+      and p.archived is not true
       and c.id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
   ]]></project.existsInHierarchy>
 
@@ -30,14 +33,15 @@
     select p.id
     from flow.project p
     where p.id = :projectId
+    and p.archived is not true
   ]]></project.exists>
-
 
   <project.getCompanyId><![CDATA[
     select cp.company_id
     from flow.project p
         inner join flow.company_process cp on cp.id = p.company_process_id
     where p.id = :projectId
+      and p.archived is not true
   ]]></project.getCompanyId>
 
   <project.searchDownline><![CDATA[
@@ -88,6 +92,7 @@
     inner join flow.status_type st on st.id = cp.status_type_id
     where
       cp.company_id = :companyId and
+      p.archived is not true and
       p.project_name ilike '%' || :query || '%'
     order by p.date_created desc
   ]]></project.generateReport>
@@ -139,6 +144,7 @@
         and case when :isParent
             then cp.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else cp.company_id = :companyId end
+            and p.archived is not true
     ]]>
   </project.get>
 
@@ -201,6 +207,7 @@
             then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::int))
             else ps.company_id = :companyId end
       and pps.archived is not true
+      and p.archived is not true
     order by ps.process_step_name;
   ]]></project.getProcessStepsByProjectId>
 
