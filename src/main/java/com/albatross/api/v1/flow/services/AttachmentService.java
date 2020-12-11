@@ -351,7 +351,9 @@ public class AttachmentService {
       if (filename == null){
         return null;
       }
-      return filename.replace(",", "");
+      String cleanFilename = filename.replace(",", "");
+      cleanFilename = cleanFilename.replace("’", "'");
+      return cleanFilename;
     }
 
     public void addToJoinTable(Long attachmentId, Long sourceId, Long attachmentTypeId, boolean deleteFirst) {
