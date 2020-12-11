@@ -121,6 +121,7 @@ BEGIN
                  from round_robin_users rru
                  left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
                  and closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now() + interval '100 days'
+                 and pd2.source not in (523, 524, 530)
                  group by rru.user_id),
              total_avail as (
                  select coalesce(ca.appointment_count,0) as avail, rru.user_id
