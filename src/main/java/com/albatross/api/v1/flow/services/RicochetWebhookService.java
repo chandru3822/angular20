@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.RicochetLead;
@@ -128,7 +129,7 @@ public class RicochetWebhookService {
             HashMap<String, Object> params = new HashMap<>();
             params.put("firstName", lead.getCustomer().getFirstName());
             params.put("lastName", lead.getCustomer().getLastName());
-            params.put("mobile", lead.getCustomer().getPhone1());
+            params.put("mobile", CleanString.cleanPhone(lead.getCustomer().getPhone1()));
             params.put("email", lead.getCustomer().getEmail());
             params.put("street1", lead.getCustomer().getAddress().getAddress1());
             params.put("city", lead.getCustomer().getAddress().getCity());
