@@ -89,8 +89,11 @@ BEGIN
                               left join flow."user" u on u.id = up.user_id
                      WHERE c.company_id = ANY (v_company_ids)
                        and c.date_created is not null
+                       and c.archived is not true
                      order by c.date_created desc
-                     limit p_limit offset p_offset
+                     limit p_limit
+                     offset
+                     p_offset
                  ) as limited_contacts;
         else
             RETURN QUERY
@@ -98,6 +101,7 @@ BEGIN
                     SELECT c.id, 1 as rank
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
+                      and c.archived is not true
                       AND NOT v_clean_name_search_term ~ '^([0-9]+)$'
                       AND lower(translate(coalesce(c.first_name, ''), '*,.& ', '')) || ' ' ||
                           lower(translate(coalesce(c.last_name, ''), '*,.& ', '')) like
@@ -106,16 +110,19 @@ BEGIN
                     SELECT c.id, 2 as rank
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
+                      and c.archived is not true
                       AND c.id::text LIKE '%' || v_clean_id_search_term || '%'
                     union
                     SELECT c.id, 3 as rank
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
+                      and c.archived is not true
                       AND lower(trim(c.email)) LIKE '%' || v_clean_email_search_term || '%'
                     union
                     SELECT c.id, 4 as rank
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
+                        and c.archived is not true
                         and v_clean_phone_search_term ~ '^([0-9]+)$'
                         and (trim(translate(c.phone, '()-+. ', '')) LIKE '%' || v_clean_phone_search_term || '%')
                        or (trim(translate(c.mobile, '()-+. ', '')) LIKE '%' || v_clean_phone_search_term || '%')
@@ -123,6 +130,7 @@ BEGIN
                     SELECT c.id, 5 as rank
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
+                      and c.archived is not true
                       AND lower(trim(translate(coalesce(c.street1, ''), '.,', ''))) || ' ' ||
                           lower(trim(translate(coalesce(c.street2, ''), '.,', '')))
                         like '%' || v_clean_address_search_term || '%'),
@@ -133,7 +141,9 @@ BEGIN
                          from search_contacts sc
                          group by 1
                          order by count(1) desc, sum(rank)
-                         limit p_limit offset p_offset
+                         limit p_limit
+                         offset
+                         p_offset
                      )
                 select c.id,
                        c.first_name,
@@ -161,7 +171,8 @@ BEGIN
                          left join flow.company_state cs on cs.id = c.company_state_id
                          left join flow.state s on s.id = cs.state_id
                          left join flow.user_position up on up.id = c.owner_user_position_id
-                         left join flow."user" u on u.id = up.user_id;
+                         left join flow."user" u on u.id = up.user_id
+                where c.archived is not true;
         end case;
 END;
 $function$
