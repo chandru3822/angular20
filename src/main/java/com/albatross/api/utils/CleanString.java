@@ -1,7 +1,7 @@
 package com.albatross.api.utils;
 
 /**
- * Created by dave on 4/27/17.
+ * Created by randa on 12/11/2020.
  */
 public class CleanString {
 
@@ -19,5 +19,18 @@ public class CleanString {
     String cleanFilename = filename.replace(",", "");
     cleanFilename = cleanFilename.replace("’", "'");
     return cleanFilename;
+  }
+
+  public static String cleanPhone(String phoneNumber) {
+    if (phoneNumber == null){
+      return null;
+    }
+    String cleanPhoneNumber = phoneNumber.replaceAll("[^0-9]", "");
+    //if the resulting cleaned value if not a valid phone number return null
+    //todo: future dev make this work for international numbers
+    if(cleanPhoneNumber.isBlank() || cleanPhoneNumber.length() < 10 || cleanPhoneNumber.length() > 11) {
+      return null;
+    }
+    return cleanPhoneNumber;
   }
 }
