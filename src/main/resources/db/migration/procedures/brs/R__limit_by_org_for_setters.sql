@@ -6,7 +6,7 @@ AS $function$
         RETURN (select array(
             select up.user_id
             from flow.user_position up
-            where up.position_id = 4 --Setter
+            where up.position_id in (4,5) --(Setter, Setter Manager)
                 and up.org_id is not null
                 and up.org_id = any(p_org_ids)
                 and up.user_id = any(p_user_ids)
