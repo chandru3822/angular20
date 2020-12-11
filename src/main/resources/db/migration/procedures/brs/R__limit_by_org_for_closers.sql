@@ -5,8 +5,8 @@ AS $function$
     BEGIN
         RETURN (select array(
             select up.user_id
-	        from flow.user_position up
-            where up.position_id = 1 --Closer
+	          from flow.user_position up
+            where up.position_id in (1,2) --(Closer, Closer Manager)
                 and up.org_id is not null
                 and up.org_id = any(p_org_ids)
                 and up.user_id = any(p_user_ids)
