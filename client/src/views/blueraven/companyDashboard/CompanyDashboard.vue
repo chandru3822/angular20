@@ -408,20 +408,20 @@
 
           if (this.isBrCorporateUser) {
             this.dashValues.forEach(row => {
-              if (['Today', 'Yesterday'].includes(this.selectedDateRange)) {
+              if (['Yesterday', 'Today'].includes(this.selectedDateRange)) {
                 row.plannedTotal = row.plannedTotal !== '-' ? Math.round((row.plannedTotal / 6) * 10) / 10 : '-'
                 row.plannedBrs = row.plannedBrs !== '-' ? Math.round((row.plannedBrs / 6) * 10) / 10 : '-'
                 row.plannedPartner = row.plannedPartner !== '-' ? Math.round((row.plannedPartner / 6) * 10) / 10 : '-'
-              }
 
-              if (['Yesterday', 'Today', 'Current Week', 'Last Week'].includes(this.selectedDateRange)) {
+                row.differenceTotal = row.plannedTotal !== '-' ? this.$filters.currency(row.actualTotal - row.plannedTotal, '', 1) : '-'
+                row.differenceBrs = row.plannedBrs !== '-' ? this.$filters.currency(row.actualBrs - row.plannedBrs, '', 1) : '-'
+                row.differencePartner = row.plannedPartner !== '-' ? this.$filters.currency(row.actualPartner - row.plannedPartner, '', 1) : '-'
+              } else if (['Current Week', 'Last Week'].includes(this.selectedDateRange)) {
                 row.differenceTotal = row.plannedTotal !== '-' ? row.actualTotal - row.plannedTotal : '-'
                 row.differenceBrs = row.plannedBrs !== '-' ? row.actualBrs - row.plannedBrs : '-'
                 row.differencePartner = row.plannedPartner !== '-' ? row.actualPartner - row.plannedPartner : '-'
-              }
-
-              // it doesn't make sense to calculate these values
-              if (['Current Period', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'].includes(this.selectedDateRange)) {
+              } else {
+                // it doesn't make sense to calculate the values for the other date ranges
                 row.plannedTotal = '-'
                 row.plannedBrs = '-'
                 row.plannedPartner = '-'
