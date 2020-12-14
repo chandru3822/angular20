@@ -298,6 +298,7 @@ export default {
       closerApptOverride: false,
       fieldsSaving: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN'),
       userIsScheduler: this.$store.state.user.details.userPositions?.some(p => p.scheduler),
       schedulerCanEdit: false,
       schedulerLoading: true,
@@ -614,7 +615,10 @@ export default {
           }
       },
     getReadOnly: function (field) {
-      return this?.processStep?.processStepStatusTypeId !== 1 || getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
+      // if process_step admin then they can edit completed process step fields, otherwise they can only edit active ones (1 = active, 4 = complete)
+      return  (this.userIsAdmin ? [1,4].includes(this?.processStep?.processStepStatusTypeId) : this?.processStep?.processStepStatusTypeId !== 1 )
+              || getCustomFieldReadOnly(this.$store, field)
+              || !this.userCanEdit
     },
     handleActionCompleted () {
       this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
