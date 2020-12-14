@@ -2263,6 +2263,7 @@
   #setter-dash-container {
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
+    overflow: auto;
   }
 
   #setter-dash-toolbar-container {
