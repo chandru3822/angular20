@@ -135,11 +135,11 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="milestoneDialog" max-width="950">
+    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="milestoneDialog = false">×</a>
+          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
         </v-card-title>
 
         <v-card-text>
@@ -731,11 +731,11 @@
     </div>
     <!-- FUNNEL END -->
 
-    <v-dialog v-model="funnelDrilldownDialog">
+    <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
       <v-card id="funnel-drilldown">
         <v-card-title class="mb-1">
           <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="funnelDrilldownDialog = false">×</a>
+          <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
         </v-card-title>
         <v-divider></v-divider>
         <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
@@ -1069,6 +1069,11 @@
         }
       },
 
+      resetScrollBarPosition () {
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+      },
+
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -1310,9 +1315,7 @@
 
       closeMilestoneDialog () {
         this.milestoneDialog = false
-
-        // reset scroll bar positioning to top
-        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+        this.resetScrollBarPosition()
       },
       /* IRONMAN-RELATED CODE END */
 
@@ -2228,9 +2231,7 @@
 
       closeFunnelDrilldownDialog () {
         this.funnelDrilldownDialog = false
-
-        // reset scroll bar positioning to top
-        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+        this.resetScrollBarPosition()
       }
       /* FUNNEL-RELATED CODE END */
     },
@@ -2263,6 +2264,7 @@
   #setter-dash-container {
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
+    overflow: auto;
   }
 
   #setter-dash-toolbar-container {
@@ -2289,8 +2291,8 @@
           display: flex;
           justify-content: flex-end;
           padding: 5px 12px;
-          height: 45px !important;
           width: 100%;
+          height: 45px !important;
 
           .v-toolbar__items {
             display: flex;
@@ -2640,6 +2642,10 @@
   }
 
   #drilldown-table {
+    ::v-deep .v-data-table__wrapper {
+      max-height: calc(100vh - 250px);
+    }
+
     th, td {
       font-family: "Roboto Condensed", sans-serif;
       font-size: 10px;
@@ -2791,7 +2797,7 @@
 
     #setter-ranking-tables-right-col {
       .ranking-table {
-        margin-bottom: 60px;
+        margin-bottom: 150px;
       }
     }
   }
@@ -3224,6 +3230,10 @@
     }
 
     #funnel-drilldown-table {
+      ::v-deep .v-data-table__wrapper {
+        max-height: calc(100vh - 300px);
+      }
+
       ::v-deep th, ::v-deep td {
         font-size: 10px;
         padding: 5px;
@@ -3302,7 +3312,6 @@
       #setter-dash-toolbar {
         #setter-dash-title-container {
           margin: 0 auto;
-          max-width: calc(100% - 50px);
 
           ::v-deep .v-toolbar__content {
             .v-toolbar__title {
@@ -3548,7 +3557,7 @@
 
       #setter-ranking-tables-right-col {
         .ranking-table {
-          margin-bottom: 80px;
+          margin-bottom: 180px;
         }
       }
     }
@@ -3953,7 +3962,6 @@
         max-width: calc((100% / 2) - 14px);
 
         .ranking-table {
-          margin-bottom: 130px;
           width: 100%;
           max-width: 100%;
         }
@@ -4170,14 +4178,6 @@
   }
 
   @media (min-width: 1135px) {
-    #setter-dash-toolbar-container {
-      #setter-dash-toolbar {
-        #setter-dash-title-container {
-          max-width: 1130px;
-        }
-      }
-    }
-
     .dashboard-tab-max-width {
       max-width: 1130px;
     }

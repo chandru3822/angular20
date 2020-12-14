@@ -1,11 +1,13 @@
 <template>
   <v-container id="closer-dash-container">
     <v-row v-if="showDashboard" id="closer-dash-toolbar-container">
-      <v-col cols="12" id="closer-dash-toolbar">
-        <v-app-bar class="elevation-1" fixed style="top: 48px">
+      <v-col cols="12" id="closer-dash-toolbar" class="pt-0 pb-2">
+        <v-toolbar id="closer-dash-title-container" class="elevation-1">
           <v-toolbar-title>Closer Dashboard</v-toolbar-title>
+        </v-toolbar>
+        <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
-            <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory style="align-self: flex-end">
+            <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
               <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
               <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
               <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
@@ -17,8 +19,7 @@
     </v-row>
 
     <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters
-           :class="{'dashboard-tab-max-width': showDashboard, 'funnel-tab-max-width': !showDashboard}"
-           :style="{'padding-top': showDashboard ? '60px' : ''}">
+           :class="{'dashboard-tab-max-width': showDashboard, 'funnel-tab-max-width': !showDashboard}">
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(1)">
           Dashboard
@@ -134,11 +135,11 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="milestoneDialog" max-width="950">
+    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="milestoneDialog = false">×</a>
+          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
         </v-card-title>
 
         <v-card-text>
@@ -368,7 +369,7 @@
       <!-- OFFICE RANKING END -->
 
       <!-- TOP REPS START -->
-      <div class="ranking-table">
+      <div id="top-reps-table" class="ranking-table">
         <div class="ranking-table-header" id="top-reps-table-header">
           <div>
             <v-icon class="ranking-table-icon mr-2">mdi-account-multiple</v-icon>
@@ -950,11 +951,11 @@
     <!-- APPOINTMENTS TO FDC PIPELINE END -->
 
     <!-- FUNNEL DRILLDOWN START -->
-    <v-dialog v-model="funnelDrilldownDialog">
+    <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
       <v-card id="funnel-drilldown">
         <v-card-title class="mb-1">
           <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="funnelDrilldownDialog = false">×</a>
+          <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
         </v-card-title>
         <v-divider></v-divider>
         <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
@@ -1487,6 +1488,11 @@
         return rankingData
       },
 
+      resetScrollBarPosition () {
+        // reset scroll bar position to top
+        document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+      },
+
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -1673,9 +1679,7 @@
 
       closeMilestoneDialog () {
         this.milestoneDialog = false
-
-        // reset scroll bar positioning to top
-        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+        this.resetScrollBarPosition()
       },
       /* IRONMAN-RELATED CODE END */
 
@@ -2784,9 +2788,7 @@
 
       closeFunnelDrilldownDialog () {
         this.funnelDrilldownDialog = false
-
-        // reset scroll bar positioning to top
-        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+        this.resetScrollBarPosition()
       }
       /* FUNNEL-RELATED CODE END */
     },
@@ -2839,44 +2841,45 @@
 
 <style lang="scss" scoped>
   #closer-dash-container {
-    padding: 0;
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
+    overflow: auto;
   }
 
   #closer-dash-toolbar-container {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-
     #closer-dash-toolbar {
-      padding: 0;
-
       header {
         background-color: #fff !important;
       }
 
-      .v-toolbar {
-        margin-top: -12px;
+      #closer-dash-title-container ::v-deep .v-toolbar__content {
+        width: 100%;
+
+        .v-toolbar__title {
+          font-size: 13px;
+        }
+      }
+
+      #date-range-btns-toolbar {
+        position: fixed;
+        bottom: 0;
+        z-index: 3;
+        height: 45px !important;
 
         ::v-deep .v-toolbar__content {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-
-          .v-toolbar__title {
-            font-size: 13px;
-          }
+          display: flex;
+          justify-content: flex-end;
+          padding: 5px 12px;
+          width: 100%;
+          height: 45px !important;
 
           .v-toolbar__items {
             display: flex;
-            flex-flow: column nowrap;
-            justify-content: center;
+            flex-flow: row nowrap;
+            justify-content: flex-end;
+            align-items: center;
+            padding-right: 0;
           }
-        }
-
-        .v-btn-toggle {
-          margin-right: -5px;
         }
 
         .v-btn-toggle .v-btn {
@@ -2930,6 +2933,7 @@
 
   #ironman-component {
     background: linear-gradient(to bottom, #000000 -50%, #464646 50%);
+    border-radius: 4px;
     width: 100%;
 
     #ironman-banner-mobile {
@@ -3154,7 +3158,7 @@
       flex-flow: row nowrap;
       position: relative;
       border: 0.02em solid black;
-      border-radius: 5px;
+      border-radius: 4px;
       height: 15px;
     }
 
@@ -3165,7 +3169,7 @@
       background: linear-gradient(to right, #164761, #2C8EC2);
       transition: width 1s ease-out;
       opacity: 0.9;
-      border-radius: 5px 0 0 5px;
+      border-radius: 4px 0 0 4px;
       width: 0;
       height: 14px;
     }
@@ -3177,13 +3181,13 @@
     }
 
     #first-segment {
-      border-radius: 5px 0 0 5px;
+      border-radius: 4px 0 0 4px;
       border: 0.03em solid black;
     }
 
     #eighth-segment {
       text-align: center;
-      border-radius: 0 5px 5px 0;
+      border-radius: 0 4px 4px 0;
       border: 0.03em solid black;
     }
 
@@ -3216,6 +3220,10 @@
   }
 
   #drilldown-table {
+    ::v-deep .v-data-table__wrapper {
+      max-height: calc(100vh - 250px);
+    }
+
     th, td {
       font-family: "Roboto Condensed", sans-serif;
       font-size: 10px;
@@ -3255,6 +3263,7 @@
     font-family: "Roboto", sans-serif;
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
     margin-bottom: 15px;
     overflow-x: auto;
     width: 100%;
@@ -3304,26 +3313,30 @@
     }
   }
 
-  #top-reps-table-header {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
+  #top-reps-table {
+    margin-bottom: 150px;
 
-  #top-reps-table-header div {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    padding-right: 3px;
-    padding-bottom: 3px;
-  }
+    #top-reps-table-header {
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-  #top-reps-table-header input {
-    font-weight: normal;
-    border: 1px solid #ccc;
-    padding-left: 3px;
-    margin-right: 5px;
-    max-width: 150px;
+    #top-reps-table-header div {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      padding-right: 3px;
+      padding-bottom: 3px;
+    }
+
+    #top-reps-table-header input {
+      font-weight: normal;
+      border: 1px solid #ccc;
+      padding-left: 3px;
+      margin-right: 5px;
+      max-width: 150px;
+    }
   }
 
   .ranking-table-icon {
@@ -3461,6 +3474,7 @@
   #appts-created-pipeline-container {
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
     width: 100%;
 
     .pipeline-header-container {
@@ -3619,6 +3633,7 @@
   #appts-to-fdc-pipeline-container {
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
     width: 100%;
 
     .pipeline-header-container {
@@ -3920,6 +3935,10 @@
     }
 
     #funnel-drilldown-table {
+      ::v-deep .v-data-table__wrapper {
+        max-height: calc(100vh - 250px);
+      }
+
       ::v-deep {
         th, td {
           font-size: 10px;
@@ -4097,17 +4116,32 @@
   }
 
   @media (min-width: 737px) {
-    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-toolbar__content {
-      .v-toolbar__title {
-        font-size: 18px;
-      }
+    #closer-dash-toolbar-container {
+      #closer-dash-toolbar {
+        #closer-dash-title-container {
+          ::v-deep .v-toolbar__content {
+            .v-toolbar__title {
+              font-size: 18px;
+            }
+          }
+        }
 
-      .v-btn-toggle {
-        margin-right: 0;
+        #date-range-btns-toolbar {
+          height: 60px !important;
 
-        .v-btn {
-          font-size: 12px;
-          height: 30px;
+          ::v-deep .v-toolbar__content {
+            padding: 10px 12px;
+            height: 60px !important;
+          }
+
+          .v-btn-toggle {
+            margin-right: 0;
+
+            .v-btn {
+              font-size: 12px;
+              height: 30px;
+            }
+          }
         }
       }
     }
@@ -4127,7 +4161,6 @@
 
     #ironman-component {
       box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
       max-width: calc(100% - 50px);
       padding: 20px 0;
 
@@ -4317,15 +4350,19 @@
       height: 40px;
     }
 
-    #top-reps-table-header div {
-      padding-right: 0;
-      padding-bottom: 0;
-    }
+    #top-reps-table {
+      margin-bottom: 180px;
 
-    #top-reps-table-header input {
-      font-size: 14px;
-      max-width: 250px;
-      height: 30px;
+      #top-reps-table-header div {
+        padding-right: 0;
+        padding-bottom: 0;
+      }
+
+      #top-reps-table-header input {
+        font-size: 14px;
+        max-width: 250px;
+        height: 30px;
+      }
     }
 
     #appts-created-pipeline-funnel-background {
@@ -4757,17 +4794,25 @@
   }
 
   @media (min-width: 1070px) {
-    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-toolbar__content {
-      .v-toolbar__title {
-        font-size: 20px;
-      }
+    #closer-dash-toolbar-container {
+      #closer-dash-toolbar {
+        #closer-dash-title-container {
+          ::v-deep .v-toolbar__content {
+            .v-toolbar__title {
+              font-size: 20px;
+            }
+          }
+        }
 
-      .v-btn-toggle {
-        margin-right: -2px;
+        #date-range-btns-toolbar {
+          .v-btn-toggle {
+            margin-right: 0;
 
-        .v-btn {
-          font-size: 13px;
-          height: 35px;
+            .v-btn {
+              font-size: 13px;
+              height: 35px;
+            }
+          }
         }
       }
     }
