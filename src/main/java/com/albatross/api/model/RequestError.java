@@ -11,4 +11,8 @@ public class RequestError {
 
   private String message, path;
   private int status;
+
+  public RequestError(String message) {
+    this.message = message;
+  }
 }
