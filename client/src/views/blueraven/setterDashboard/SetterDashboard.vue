@@ -1069,6 +1069,11 @@
         }
       },
 
+      resetScrollBarPosition () {
+        // reset scroll bar positioning to top
+        document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
+      },
+
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -1310,9 +1315,7 @@
 
       closeMilestoneDialog () {
         this.milestoneDialog = false
-
-        // reset scroll bar positioning to top
-        document.getElementsByClassName('v-data-table__wrapper')[0].scrollTop = 0
+        this.resetScrollBarPosition()
       },
       /* IRONMAN-RELATED CODE END */
 
@@ -2228,9 +2231,7 @@
 
       closeFunnelDrilldownDialog () {
         this.funnelDrilldownDialog = false
-
-        // reset scroll bar positioning to top
-        document.getElementsByClassName('v-data-table__wrapper')[1].scrollTop = 0
+        this.resetScrollBarPosition()
       }
       /* FUNNEL-RELATED CODE END */
     },
