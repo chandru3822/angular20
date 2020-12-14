@@ -173,7 +173,7 @@
             <div class="pb-3" v-else>
               <CustomValueInput
                   :readonly="!userCanEdit"
-                  :callback="populateDirtyCfvs"
+                  :callback="checkAvailabilityDate"
                   :field="availabilityDateField"
               />
               <div class="text-right" v-if="availabilityDateField.dateValue">
