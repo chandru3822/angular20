@@ -17,7 +17,7 @@
             <v-btn
               small
               text
-              v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')"
+              v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
               class="d-inline-block"
               @click="$router.push({name: 'projectAdmin', params: {projectId}})"
             >
