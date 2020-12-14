@@ -135,11 +135,11 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="milestoneDialog" max-width="950">
+    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="milestoneDialog = false">×</a>
+          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
         </v-card-title>
 
         <v-card-text>
@@ -731,11 +731,11 @@
     </div>
     <!-- FUNNEL END -->
 
-    <v-dialog v-model="funnelDrilldownDialog">
+    <v-dialog v-model="funnelDrilldownDialog" @input="closeFunnelDrilldownDialog">
       <v-card id="funnel-drilldown">
         <v-card-title class="mb-1">
           <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="funnelDrilldownDialog = false">×</a>
+          <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
         </v-card-title>
         <v-divider></v-divider>
         <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
@@ -1312,7 +1312,7 @@
         this.milestoneDialog = false
 
         // reset scroll bar positioning to top
-        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+        document.getElementsByClassName('v-data-table__wrapper')[0].scrollTop = 0
       },
       /* IRONMAN-RELATED CODE END */
 
@@ -2230,7 +2230,7 @@
         this.funnelDrilldownDialog = false
 
         // reset scroll bar positioning to top
-        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+        document.getElementsByClassName('v-data-table__wrapper')[1].scrollTop = 0
       }
       /* FUNNEL-RELATED CODE END */
     },
@@ -2641,6 +2641,10 @@
   }
 
   #drilldown-table {
+    ::v-deep .v-data-table__wrapper {
+      max-height: calc(100vh - 250px);
+    }
+
     th, td {
       font-family: "Roboto Condensed", sans-serif;
       font-size: 10px;
@@ -3225,6 +3229,10 @@
     }
 
     #funnel-drilldown-table {
+      ::v-deep .v-data-table__wrapper {
+        max-height: calc(100vh - 300px);
+      }
+
       ::v-deep th, ::v-deep td {
         font-size: 10px;
         padding: 5px;
