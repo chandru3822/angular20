@@ -77,18 +77,21 @@ const store = new Vuex.Store({
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
         if (file.size > constants.MAX_FILE_SIZE) {
-          const error = { error: true, errorMsg: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` }
-          callback(null, error)
+          callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
 
-          const resp = await postRequest(`/project/${projectId}/attachment`, formData)
+          try {
+            const resp = await postRequest(`/project/${projectId}/attachment`, formData)
 
-          const {status} = resp
-          if (status === 200) {
-            callback(resp.data)
+            const {status} = resp
+            if (status === 200) {
+              callback(resp.data)
+            }
+          } catch(e) {
+            callback(null, e)
           }
         }
       })
@@ -99,18 +102,21 @@ const store = new Vuex.Store({
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
         if (file.size > constants.MAX_FILE_SIZE) {
-          const error = { error: true, errorMsg: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB` }
-          callback(null, error)
+          callback(null, {message: `File size cannot exceed ${constants.MAX_FILE_SIZE / 1048576}MB`})
         } else {
           let formData = new FormData()
           formData.append('file', file)
           formData.append('attachmentTypeId', attachmentTypeId)
 
-          const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/attachment`, formData)
+          try {
+            const resp = await postRequest(`/projectProcessStep/${projectProcessStepId}/attachment`, formData)
 
-          const {status} = resp
-          if (status === 200) {
-            callback(resp.data)
+            const {status} = resp
+            if (status === 200) {
+              callback(resp.data)
+            }
+          } catch(e) {
+            callback(null, e)
           }
         }
       })

@@ -34,7 +34,7 @@
               label="Upload document"
               @change="uploadDocument"
             />
-          <span class="error-text" v-if="error.error">{{error.errorMsg}}</span>
+          <span class="error-text" v-if="error.message">{{error.message}}</span>
         </v-col>
         <v-row class="d-flex flex-wrap justify-start">
           <v-col
@@ -183,13 +183,12 @@ export default {
             callback: async (newAttachment, error) => {
               if(error) {
                 this.error = error
-                this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                this.snackbar = getSnackbar('ERROR', error.message)
                 this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                this.$refs.fileInput.reset()
               } else {
                 this.attachments = [...this.attachments, newAttachment]
-                this.$refs.fileInput.reset()
               }
+              this.$refs.fileInput.reset()
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           })
