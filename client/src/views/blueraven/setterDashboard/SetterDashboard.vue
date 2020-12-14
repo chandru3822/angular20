@@ -2289,8 +2289,8 @@
           display: flex;
           justify-content: flex-end;
           padding: 5px 12px;
-          height: 45px !important;
           width: 100%;
+          height: 45px !important;
 
           .v-toolbar__items {
             display: flex;
@@ -2791,7 +2791,7 @@
 
     #setter-ranking-tables-right-col {
       .ranking-table {
-        margin-bottom: 60px;
+        margin-bottom: 150px;
       }
     }
   }
@@ -3302,7 +3302,6 @@
       #setter-dash-toolbar {
         #setter-dash-title-container {
           margin: 0 auto;
-          max-width: calc(100% - 50px);
 
           ::v-deep .v-toolbar__content {
             .v-toolbar__title {
@@ -3548,7 +3547,7 @@
 
       #setter-ranking-tables-right-col {
         .ranking-table {
-          margin-bottom: 80px;
+          margin-bottom: 180px;
         }
       }
     }
@@ -3953,7 +3952,6 @@
         max-width: calc((100% / 2) - 14px);
 
         .ranking-table {
-          margin-bottom: 130px;
           width: 100%;
           max-width: 100%;
         }
@@ -4170,14 +4168,6 @@
   }
 
   @media (min-width: 1135px) {
-    #setter-dash-toolbar-container {
-      #setter-dash-toolbar {
-        #setter-dash-title-container {
-          max-width: 1130px;
-        }
-      }
-    }
-
     .dashboard-tab-max-width {
       max-width: 1130px;
     }
