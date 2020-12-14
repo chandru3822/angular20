@@ -85,20 +85,17 @@
                     class="data-col-td clickable" @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
                 <td v-else-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) !== -1"
                     class="data-col-td">{{ item.actualPartner }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ adjustForCertainRanges(item.plannedTotal) }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ adjustForCertainRanges(item.plannedBrs) }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ adjustForCertainRanges(item.plannedPartner) }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td"
-                    :class="(adjustForCertainRanges(item.differenceTotal) >= 0 || adjustForCertainRanges(item.differenceTotal) === '-') ? 'pos_diff' : 'neg_diff'">
-                  {{ adjustForCertainRanges(item.differenceTotal) }}
+                <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ item.plannedTotal }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedBrs }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedPartner }}</td>
+                <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="(item.differenceTotal >= 0 || item.plannedTotal === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ item.differenceTotal }}
                 </td>
-                <td v-if="isBrCorporateUser" class="data-col-td"
-                    :class="(adjustForCertainRanges(item.differenceBrs) >= 0 || adjustForCertainRanges(item.differenceBrs) === '-') ? 'pos_diff' : 'neg_diff'">
-                  {{ adjustForCertainRanges(item.differenceBrs) }}
+                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differenceBrs >= 0 || item.plannedBrs === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ item.differenceBrs }}
                 </td>
-                <td v-if="isBrCorporateUser" class="data-col-td"
-                    :class="(adjustForCertainRanges(item.differencePartner) >= 0 || adjustForCertainRanges(item.differencePartner) === '-') ? 'pos_diff' : 'neg_diff'">
-                  {{ adjustForCertainRanges(item.differencePartner) }}
+                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differencePartner >= 0 || item.plannedPartner === '-') ? 'pos_diff' : 'neg_diff'">
+                  {{ item.differencePartner }}
                 </td>
               </tr>
             </template>
@@ -249,7 +246,6 @@
         isBrCorporateUser: false,
         is7oaksAdmin: this.$store.getters.isFullAdmin,
         headers: [],
-        workingDays: 6,
         timezone: 'US/Mountain',
         selectedDateRange: 'Today',
         startDate: moment().format('YYYY-MM-DD'),
@@ -340,17 +336,7 @@
           }
         }
       },
-      adjustForCertainRanges(value) {
-        //not sure if this will cause a performance issue or not
-        if(['Today', 'Yesterday'].includes(this.selectedDateRange)) {
-          return isNaN(value) ? '-' : this.$filters.currency(value / this.workingDays, '', 1)
-        } else if (['Custom', 'This Month', 'This Year', 'All Time'].includes(this.selectedDateRange)) {
-          //doesn't make sense to calculate these values
-          return '-'
-        } else {
-          return value
-        }
-      },
+
       setDateRange () {
         switch (this.selectedDateRange) {
           case 'Yesterday':
@@ -419,6 +405,32 @@
 
           const {data} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven')
           this.dashValues = cloneDeep(data)
+
+          if (this.isBrCorporateUser) {
+            this.dashValues.forEach(row => {
+              if (['Yesterday', 'Today'].includes(this.selectedDateRange)) {
+                row.plannedTotal = row.plannedTotal !== '-' ? Math.round((row.plannedTotal / 6) * 10) / 10 : '-'
+                row.plannedBrs = row.plannedBrs !== '-' ? Math.round((row.plannedBrs / 6) * 10) / 10 : '-'
+                row.plannedPartner = row.plannedPartner !== '-' ? Math.round((row.plannedPartner / 6) * 10) / 10 : '-'
+
+                row.differenceTotal = row.plannedTotal !== '-' ? this.$filters.currency(row.actualTotal - row.plannedTotal, '', 1) : '-'
+                row.differenceBrs = row.plannedBrs !== '-' ? this.$filters.currency(row.actualBrs - row.plannedBrs, '', 1) : '-'
+                row.differencePartner = row.plannedPartner !== '-' ? this.$filters.currency(row.actualPartner - row.plannedPartner, '', 1) : '-'
+              } else if (['Current Week', 'Last Week'].includes(this.selectedDateRange)) {
+                row.differenceTotal = row.plannedTotal !== '-' ? row.actualTotal - row.plannedTotal : '-'
+                row.differenceBrs = row.plannedBrs !== '-' ? row.actualBrs - row.plannedBrs : '-'
+                row.differencePartner = row.plannedPartner !== '-' ? row.actualPartner - row.plannedPartner : '-'
+              } else {
+                // it doesn't make sense to calculate the values for the other date ranges
+                row.plannedTotal = '-'
+                row.plannedBrs = '-'
+                row.plannedPartner = '-'
+                row.differenceTotal = '-'
+                row.differenceBrs = '-'
+                row.differencePartner = '-'
+              }
+            })
+          }
 
           this.isLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

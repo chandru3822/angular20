@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.io.IOException;
@@ -33,13 +35,28 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   private void logger(WebRequest request) {
+
     String info = request.getDescription(false);
+
+    try {
+      info += ", method=" + ((ServletWebRequest) request).getHttpMethod();
+    } catch (Exception e) {
+      // noop
+    }
 
     User user = securityService.getCurrentUser();
     if (user != null) {
-      info += ", userId: " + user.getId() + ", ";
-      info += "companyId: " + user.getCompanyId() + ", ";
+      info += ", userId=" + user.getId();
+      info += ", companyId=" + user.getCompanyId() ;
     }
+
+    info += ", attachmentTypeId=" + request.getParameter("attachmentTypeId");
+    try {
+      info += ", fileName=" + ((StandardMultipartHttpServletRequest) ((ServletWebRequest) request).getRequest()).getFile("file").getOriginalFilename();
+    } catch (Exception e) {
+      // noop
+    }
+
     log.error("ALBA LOGGER: {}", info);
   }
 }

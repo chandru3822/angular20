@@ -229,7 +229,6 @@ public class CompanyDashboardService {
             apptCreatedValues.put(PLANNED_TOTAL, "-");
             apptCreatedValues.put(PLANNED_BRS, "-");
             apptCreatedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(apptCreatedValues);
         }
         dashValues.put(apptCreatedValues);
 
@@ -244,7 +243,6 @@ public class CompanyDashboardService {
             plannedApptsValues.put(PLANNED_TOTAL, "-");
             plannedApptsValues.put(PLANNED_BRS, "-");
             plannedApptsValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(plannedApptsValues);
         }
         dashValues.put(plannedApptsValues);
 
@@ -259,7 +257,6 @@ public class CompanyDashboardService {
             pitchesValues.put(PLANNED_TOTAL, "-");
             pitchesValues.put(PLANNED_BRS, "-");
             pitchesValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(pitchesValues);
         }
         dashValues.put(pitchesValues);
 
@@ -274,7 +271,6 @@ public class CompanyDashboardService {
             bookingsValues.put(PLANNED_TOTAL, Math.round(plannedValuesMap.get("bookingsBrs") + plannedValuesMap.get("bookingsPartner")));
             bookingsValues.put(PLANNED_BRS, Math.round(plannedValuesMap.get("bookingsBrs")));
             bookingsValues.put(PLANNED_PARTNER, Math.round(plannedValuesMap.get("bookingsPartner")));
-            addDifferenceValues(bookingsValues);
         }
         dashValues.put(bookingsValues);
 
@@ -289,7 +285,6 @@ public class CompanyDashboardService {
             siteSurveysVerifiedValues.put(PLANNED_TOTAL, "-");
             siteSurveysVerifiedValues.put(PLANNED_BRS, "-");
             siteSurveysVerifiedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(siteSurveysVerifiedValues);
         }
         dashValues.put(siteSurveysVerifiedValues);
 
@@ -304,7 +299,6 @@ public class CompanyDashboardService {
             finalDesignsCreatedValues.put(PLANNED_TOTAL, "-");
             finalDesignsCreatedValues.put(PLANNED_BRS, "-");
             finalDesignsCreatedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(finalDesignsCreatedValues);
         }
         dashValues.put(finalDesignsCreatedValues);
 
@@ -319,7 +313,6 @@ public class CompanyDashboardService {
             finalDesignsSentValues.put(PLANNED_TOTAL, "-");
             finalDesignsSentValues.put(PLANNED_BRS, "-");
             finalDesignsSentValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(finalDesignsSentValues);
         }
         dashValues.put(finalDesignsSentValues);
 
@@ -334,7 +327,6 @@ public class CompanyDashboardService {
             finalDesignsApprovedValues.put(PLANNED_TOTAL, Math.round(plannedValuesMap.get("finalDesignsApprovedBrs") + plannedValuesMap.get("finalDesignsApprovedPartner")));
             finalDesignsApprovedValues.put(PLANNED_BRS, Math.round(plannedValuesMap.get("finalDesignsApprovedBrs")));
             finalDesignsApprovedValues.put(PLANNED_PARTNER, Math.round(plannedValuesMap.get("finalDesignsApprovedPartner")));
-            addDifferenceValues(finalDesignsApprovedValues);
         }
         dashValues.put(finalDesignsApprovedValues);
 
@@ -349,7 +341,6 @@ public class CompanyDashboardService {
             planSetsCreatedValues.put(PLANNED_TOTAL, "-");
             planSetsCreatedValues.put(PLANNED_BRS, "-");
             planSetsCreatedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(planSetsCreatedValues);
         }
         dashValues.put(planSetsCreatedValues);
 
@@ -364,7 +355,6 @@ public class CompanyDashboardService {
             permitPacksCreatedValues.put(PLANNED_TOTAL, "-");
             permitPacksCreatedValues.put(PLANNED_BRS, "-");
             permitPacksCreatedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(permitPacksCreatedValues);
         }
         dashValues.put(permitPacksCreatedValues);
 
@@ -379,7 +369,6 @@ public class CompanyDashboardService {
             permitsSubmittedValues.put(PLANNED_TOTAL, "-");
             permitsSubmittedValues.put(PLANNED_BRS, "-");
             permitsSubmittedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(permitsSubmittedValues);
         }
         dashValues.put(permitsSubmittedValues);
 
@@ -394,7 +383,6 @@ public class CompanyDashboardService {
             permitsApprovedValues.put(PLANNED_TOTAL, "-");
             permitsApprovedValues.put(PLANNED_BRS, "-");
             permitsApprovedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(permitsApprovedValues);
         }
         dashValues.put(permitsApprovedValues);
 
@@ -409,7 +397,6 @@ public class CompanyDashboardService {
             installSchedValues.put(PLANNED_TOTAL, "-");
             installSchedValues.put(PLANNED_BRS, "-");
             installSchedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(installSchedValues);
         }
         dashValues.put(installSchedValues);
 
@@ -424,7 +411,6 @@ public class CompanyDashboardService {
             plannedInstallValues.put(PLANNED_TOTAL, "-");
             plannedInstallValues.put(PLANNED_BRS, "-");
             plannedInstallValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(plannedInstallValues);
         }
         dashValues.put(plannedInstallValues);
 
@@ -439,7 +425,6 @@ public class CompanyDashboardService {
             substantialCompletionsValues.put(PLANNED_TOTAL, Math.round(plannedValuesMap.get("substantialCompletionsBrs") + plannedValuesMap.get("substantialCompletionsPartner")));
             substantialCompletionsValues.put(PLANNED_BRS, Math.round(plannedValuesMap.get("substantialCompletionsBrs")));
             substantialCompletionsValues.put(PLANNED_PARTNER, Math.round(plannedValuesMap.get("substantialCompletionsPartner")));
-            addDifferenceValues(substantialCompletionsValues);
         }
         dashValues.put(substantialCompletionsValues);
 
@@ -454,7 +439,6 @@ public class CompanyDashboardService {
             inspectionsSchedValues.put(PLANNED_TOTAL, "-");
             inspectionsSchedValues.put(PLANNED_BRS, "-");
             inspectionsSchedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(inspectionsSchedValues);
         }
         dashValues.put(inspectionsSchedValues);
 
@@ -469,7 +453,6 @@ public class CompanyDashboardService {
             plannedInspectionValues.put(PLANNED_TOTAL, "-");
             plannedInspectionValues.put(PLANNED_BRS, "-");
             plannedInspectionValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(plannedInspectionValues);
         }
         dashValues.put(plannedInspectionValues);
 
@@ -484,7 +467,6 @@ public class CompanyDashboardService {
             inspectionsPassedValues.put(PLANNED_TOTAL, "-");
             inspectionsPassedValues.put(PLANNED_BRS, "-");
             inspectionsPassedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(inspectionsPassedValues);
         }
         dashValues.put(inspectionsPassedValues);
 
@@ -499,7 +481,6 @@ public class CompanyDashboardService {
             inspectionsSubmittedValues.put(PLANNED_TOTAL, "-");
             inspectionsSubmittedValues.put(PLANNED_BRS, "-");
             inspectionsSubmittedValues.put(PLANNED_PARTNER, "-");
-            addDifferenceValues(inspectionsSubmittedValues);
         }
         dashValues.put(inspectionsSubmittedValues);
 
@@ -514,7 +495,6 @@ public class CompanyDashboardService {
             finalCompletionsValues.put(PLANNED_TOTAL, Math.round(plannedValuesMap.get("finalCompletionsBrs") + plannedValuesMap.get("finalCompletionsPartner")));
             finalCompletionsValues.put(PLANNED_BRS, Math.round(plannedValuesMap.get("finalCompletionsBrs")));
             finalCompletionsValues.put(PLANNED_PARTNER, Math.round(plannedValuesMap.get("finalCompletionsPartner")));
-            addDifferenceValues(finalCompletionsValues);
         }
         dashValues.put(finalCompletionsValues);
 
@@ -765,22 +745,6 @@ public class CompanyDashboardService {
         }
 
         return sql;
-    }
-
-    private void addDifferenceValues(JSONObject milestoneJson) {
-        if (milestoneJson.get(PLANNED_TOTAL) == "-") {
-            milestoneJson.put("differenceTotal", "-");
-            milestoneJson.put("differenceBrs", "-");
-        } else {
-            milestoneJson.put("differenceTotal", milestoneJson.getInt(ACTUAL_TOTAL) - milestoneJson.getInt(PLANNED_TOTAL));
-            milestoneJson.put("differenceBrs", milestoneJson.getInt(ACTUAL_BRS) - milestoneJson.getInt(PLANNED_BRS));
-        }
-
-        if (!milestoneJson.getString("milestone").equals("Bookings") && !milestoneJson.getString("milestone").equals("Final Designs Approved") && !milestoneJson.getString("milestone").equals("Substantial Completions") && !milestoneJson.getString("milestone").equals("Final Completions")) {
-            milestoneJson.put("differencePartner", "-");
-        } else {
-            milestoneJson.put("differencePartner", milestoneJson.getInt(ACTUAL_PARTNER) - milestoneJson.getInt(PLANNED_PARTNER));
-        }
     }
 
     private HashMap<String, Double> initPlannedValuesMap() {
