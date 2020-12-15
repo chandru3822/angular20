@@ -7,7 +7,7 @@
         </v-toolbar>
       </v-col>
     </v-row>
-    <v-form ref="companyForm">
+    <v-form ref="companyForm" v-model="validForm">
       <v-row>
         <v-col cols="12">
           <v-text-field v-model="company.companyName"
@@ -20,6 +20,7 @@
           <v-text-field v-model="company.defaultPassword"
                         placeholder="Enter a value"
                         required
+                        :rules="[passwordRule]"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Default Password">
@@ -139,6 +140,7 @@ export default {
       addImage: false,
       snackbar: {},
       company: {},
+      validForm: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
       acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
@@ -156,6 +158,13 @@ export default {
   computed: {
   },
   methods: {
+    passwordRule (value) {
+      if (value && value.length < 8) {
+        return 'Password must be at least 8 characters'
+      } else {
+        return true
+      }
+    },
     async loadCompany () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -171,15 +180,17 @@ export default {
       }
     },
     async saveCompany () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/companies`, this.company)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Company')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if (this.$refs.companyForm.validate()) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/companies`, this.company)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Company')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async deleteAttachment (id) {
