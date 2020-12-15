@@ -24,6 +24,10 @@ body {
   max-width: unset !important;
 }
 
+.bold {
+  font-weight: 600;
+}
+
 .primary-custom-bg {
   background-color: var(--v-primaryCustom-base) ;
   border-color: var(--v-primaryCustom-base);

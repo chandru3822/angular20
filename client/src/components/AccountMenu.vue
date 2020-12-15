@@ -98,7 +98,7 @@
                      VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
                      VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
         menuOpen: false,
-        timezone: this.$store.state.user.details.timezone || null,
+        timezone: this.$store.state.user.details.timezone || {},
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
         timezones: [
           { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},

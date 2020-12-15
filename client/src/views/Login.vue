@@ -83,11 +83,18 @@ export default {
             )
           }
         } catch (e) {
+          console.log('randaLogger',e)
           this.loginLoading = false
           this.$store.commit(
             UserMutations.LOGIN_ERROR,
-            e
+            e.data
           )
+
+          if(e?.status === 406) {
+            //this means the user tried to login with the company default password. redirect to the reset password screen
+              this.$router.push({path: `/resetPassword`})
+          }
+
         }
       } else {
         this.loginLoading = false
