@@ -1,13 +1,10 @@
 package com.albatross.api.utils;
 
-import com.albatross.api.model.RequestError;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -26,15 +23,15 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
   final private SecurityService securityService;
 
   @ExceptionHandler(value = MultipartException.class)
-  protected ResponseEntity<RequestError> multiExHandler(MultipartException e, WebRequest request) {
-      logFileUploadException(request);
-    return new ResponseEntity<>(new RequestError(e.getMessage()), HttpStatus.UNPROCESSABLE_ENTITY);
+  protected void multiExHandler(MultipartException e, WebRequest request) {
+    logFileUploadException(request);
+    log.error(e.getMessage());
   }
 
   @ExceptionHandler(value = IOException.class)
-  protected ResponseEntity<RequestError> ioExHandler(IOException e, WebRequest request) {
+  protected void ioExHandler(IOException e, WebRequest request) {
     logFileUploadException(request);
-    return new ResponseEntity<>(new RequestError(e.getMessage()), HttpStatus.UNPROCESSABLE_ENTITY);
+    log.error(e.getMessage());
   }
 
   private void logFileUploadException(WebRequest request) {
