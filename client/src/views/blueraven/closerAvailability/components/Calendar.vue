@@ -34,7 +34,8 @@
           </v-autocomplete>
         </v-col>
         <v-col>
-          <v-autocomplete v-model="selectedPostalCodeZoneUsers"
+          <v-autocomplete ref="pczuSelect"
+                          v-model="selectedPostalCodeZoneUsers"
                           :items="postalCodeZoneUsers"
                           label="Closers"
                           multiple
@@ -47,7 +48,6 @@
                           @input="[postalCodeZoneUserValuesChanged = true, limiter()]"
                           item-text="fullName"
                           item-value="id"
-                          @blur="getEvents(false)"
           >
             <template
               slot="selection"
@@ -64,21 +64,21 @@
                 class="primary--text caption"
               >{{ selectedPostalCodeZoneUsers.length }} selected</span>
             </template>
-            <v-list-item
+            <template v-slot:prepend-item>
+              <v-list-item
+                  v-if="postalCodeZoneUsers.length <= 10"
+                  ripple
+                  @click="toggleSelectAllPostalCodeZoneUsers()">
+                <v-list-item-action>
+                  <v-icon>{{ iconPostalCodeZoneUsers }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
                 v-if="postalCodeZoneUsers.length <= 10"
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllPostalCodeZoneUsers()">
-              <v-list-item-action>
-                <v-icon>{{ iconPostalCodeZoneUsers }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-              v-if="postalCodeZoneUsers.length <= 10"
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
+                class="mt-2"
+              ></v-divider>
+            </template>
           </v-autocomplete>
         </v-col>
       </v-row>
@@ -136,7 +136,7 @@
   import constants from '@/helpers/constants'
 
   export default {
-    name: 'ScheduleCalendar',
+    name: 'CloserAvailabilityCalendar',
     components: {
       FullCalendar,
     },
@@ -171,6 +171,18 @@
       //when getEvents was placed in the calendar it loaded before the calendar dates were set: :view-skeleton-render="getEvents"
       //placing here seems to have solved that
       this.getEvents()
+
+      //vuetify selects/autocompletes have a bug with the select all feature being used at the same time as the @blur event
+      //the @blur event should only be called when the menu is closed, but in a select all it is called when the select all button is clicked. wreaks havoc.
+      //this sucks but fixes that issue re: https://github.com/vuetifyjs/vuetify/issues/11488
+      this.myDynamicWatcher = this.$watch(
+        () => this.$refs.pczuSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val && this.selectedPostalCodeZoneUsers.length > 0) {
+            this.getEvents(true)
+          }
+        })
     },
     watch: {
       '$store.state.user.details.timezone.value': function () {
@@ -181,7 +193,7 @@
         this.clearSelectedMapResourceEvents()
         this.callback(this.mapResourceEvents)
         this.handleResourceColors()
-      },
+      }
     },
     created() {
       this.getPostalCodeZones()
@@ -247,7 +259,7 @@
                   // this.setCalendarStartAndEndTimes()
                   this.mapResourceEvents = []
                   this.callback(this.mapResourceEvents)
-                  this.getEvents(false, true)
+                  this.getEvents(true)
                 }
               },
               customPrev: {
@@ -259,7 +271,7 @@
                   // this.setCalendarStartAndEndTimes()
                   this.mapResourceEvents = []
                   this.callback(this.mapResourceEvents)
-                  this.getEvents(false, true)
+                  this.getEvents(true)
                 }
               },
               customNext: {
@@ -271,7 +283,7 @@
                   // this.setCalendarStartAndEndTimes()
                   this.mapResourceEvents = []
                   this.callback(this.mapResourceEvents)
-                  this.getEvents(false, true)
+                  this.getEvents(true)
                 }
               },
               customTimelineDay: {
@@ -286,7 +298,7 @@
                   calendarApi.changeView('resourceTimelineDay')
                   this.mapResourceEvents = []
                   this.callback(this.mapResourceEvents)
-                  this.getEvents(false, true)
+                  this.getEvents(true)
                 }
               },
               customTimelineWeek: {
@@ -302,7 +314,7 @@
                   calendarApi.changeView('resourceTimelineWeek')
                   this.mapResourceEvents = []
                   this.callback(this.mapResourceEvents)
-                  this.getEvents(false, true)
+                  this.getEvents(true)
                 }
               },
             }
@@ -338,13 +350,11 @@
         })
       },
       toggleSelectAllPostalCodeZoneUsers () {
-        this.$nextTick(() => {
-          if (this.selectAllPostalCodeZoneUsers) {
-            this.selectedPostalCodeZoneUsers = []
-          } else {
-            this.selectedPostalCodeZoneUsers = cloneDeep(this.postalCodeZoneUsers)
-          }
-        })
+        if (this.selectAllPostalCodeZoneUsers) {
+          this.selectedPostalCodeZoneUsers = []
+        } else {
+          this.selectedPostalCodeZoneUsers = cloneDeep(this.postalCodeZoneUsers)
+        }
       },
       async getPostalCodeZones () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -414,6 +424,7 @@
         return userPositionIds
       },
       async getEvents(reload) {
+        console.log('we did it')
         // localStorage.setItem('caUsers', JSON.stringify(this.selectedPostalCodeZoneUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
