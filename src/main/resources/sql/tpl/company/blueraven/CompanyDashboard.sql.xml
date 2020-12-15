@@ -221,7 +221,6 @@
         select count(1)
         from companies, brs.project_details pd
         where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -246,7 +245,6 @@
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
         where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
             and case when :isParent
                 then pd.company_id = any(companies.ids)
@@ -259,7 +257,6 @@
         from brs.project_details pd
         where pd.company_id = 3
             and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualBrs>
 
@@ -277,7 +274,6 @@
             left outer join flow.state s on s.id = cs.state_id
         where pd.company_id = 3
             and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualBrsDrilldown>
 
@@ -286,7 +282,6 @@
         from brs.project_details pd
         where pd.company_id != 3
             and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualPartner>
 
@@ -304,7 +299,6 @@
             left outer join flow.state s on s.id = cs.state_id
         where pd.company_id != 3
             and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date < (now() AT TIME ZONE 'US/Mountain') :: date
             and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
     ]]></dash.getPitchedActualPartnerDrilldown>
 
