@@ -48,7 +48,6 @@
             inner join flow.project p on p.id = pd.project_id
         where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
-            and pd.source is not null
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -72,7 +71,6 @@
             left outer join flow.state s on s.id = cs.state_id
         where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
-            and pd.source is not null
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -86,7 +84,6 @@
         where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id = 3
-            and pd.source is not null
     ]]></dash.getAppointmentsCreatedActualBrs>
 
     <dash.getAppointmentsCreatedActualBrsDrilldown><![CDATA[
@@ -103,7 +100,6 @@
         where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id = 3
-            and pd.source is not null
     ]]></dash.getAppointmentsCreatedActualBrsDrilldown>
 
     <dash.getAppointmentsCreatedActualPartner><![CDATA[
@@ -113,7 +109,6 @@
         where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id != 3
-            and pd.source is not null
     ]]></dash.getAppointmentsCreatedActualPartner>
 
     <dash.getAppointmentsCreatedActualPartnerDrilldown><![CDATA[
@@ -130,7 +125,6 @@
         where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.closer_appointment_start is not null
             and pd.company_id != 3
-            and pd.source is not null
     ]]></dash.getAppointmentsCreatedActualPartnerDrilldown>
 
     <dash.getPlannedAppointmentsActualTotal><![CDATA[
