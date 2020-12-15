@@ -193,6 +193,7 @@
                         from flow.postal_code_zone_user pczu
                         where postal_code_zone_id = :zoneId
                           and pczu.user_position_id = upv.user_position_id
+                          and case when :loadSchedulers is true then pczu.postal_code_zone_user_type_id = 2 else pczu.postal_code_zone_user_type_id = 1 end
                           and archived is not true)
       order by full_name
 
