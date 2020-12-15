@@ -7,7 +7,9 @@ import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,10 +33,17 @@ public class ObjectTypeTabService {
     Long companyId = currentUser.getCompanyId();
     HashMap<String, Object> params = new HashMap<>();
 
+
     if(null != projectId) {
       //had to change this so that a parent looking at a child project could still see project tabs
       params.put("projectId", projectId);
-      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+      Optional<Long> overrideCompanyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+      if(overrideCompanyId.isPresent()) {
+        companyId = overrideCompanyId.get();
+      } else {
+        log.info("OTT: No Company ID found for project. {}", projectId);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
+      }
     }
 
     params.put("objectTypeId", objectTypeId);
