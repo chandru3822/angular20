@@ -37,6 +37,9 @@ public class UserController {
     @Value("${app.home_url}")
     private String homeUrl;
 
+  @Value("${security.doCompanyDefaultValidation:false}")
+  private Boolean doCompanyDefaultValidation;
+
     @PostMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<User>> searchUsers(@RequestBody UserSearch search, Pageable pageable) {
         return new ResponseEntity<>(userService.searchUsers(search, pageable), HttpStatus.OK);
@@ -169,15 +172,24 @@ public class UserController {
     @RequestMapping(method = RequestMethod.POST, value = "/forgotPassword/change/password", produces = "application/json;charset=UTF-8")
     public String forgotPasswordChangePassword(@RequestBody PasswordResetRequest passwordResetRequest) {
         String result = null;
-        try {
-            if(null != passwordResetRequest.getUserId() && null != passwordResetRequest.getNewPassword()) {
-                result = userService.updatePassword(passwordResetRequest);
-                userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
-            }
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error updating password!");
+        if(null != passwordResetRequest.getUserId() && null != passwordResetRequest.getNewPassword()) {
+          //todo: remove this check after we turn it on and mobile is working
+          if(doCompanyDefaultValidation) {
+            Boolean passwordIsCompanyDefault = securityService.passwordIsCompanyDefault(passwordResetRequest.getUserId(), passwordResetRequest.getNewPassword());
+            if (passwordIsCompanyDefault) {
+              // NOT_ACCEPTABLE = 406
+              throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+            } else {
+              result = userService.updatePassword(passwordResetRequest);
+              userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+            }
+          } else {
+            result = userService.updatePassword(passwordResetRequest);
+            userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
+          }
         }
+
         return result;
     }
 

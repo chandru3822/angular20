@@ -2,7 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './views/Login.vue'
 import ForgotPassword from './views/ForgotPassword.vue'
-import PasswordReset from './views/PasswordReset.vue'
+import ForgotPasswordReset from './views/ForgotPasswordReset.vue'
+import ResetPassword from './views/ResetPassword.vue'
 import store from './store'
 import router from './router'
 import { UserMutations } from './stores/UserStore'
@@ -29,8 +30,14 @@ export default new Router({
     {
       path: '/passwordReset/:uuid?',
       // path: 'passwordReset',
-      name: 'passwordReset',
-      component: PasswordReset,
+      name: 'forgotPasswordReset',
+      component: ForgotPasswordReset,
+      props: true
+    },
+    {
+      path: '/resetPassword',
+      name: 'resetPassword',
+      component: ResetPassword,
       props: true
     },
     {
@@ -45,7 +52,8 @@ export default new Router({
         }
       },
       beforeEnter: async (to, from, next) => {
-        if (!store.state.user.authorized) {
+        if (!store.state.user.authorized && from.name !== 'login') {
+          //only re-route back to login if not already on login
           next('/login')
         } else {
           if (from.name !== 'login') {
@@ -54,6 +62,7 @@ export default new Router({
               store.commit(UserMutations.SET_DETAILS, data)
               next()
             } catch (e) {
+              console.log('jkldsajfklalsd',e)
               next('/login')
             }
           } else {
@@ -199,7 +208,7 @@ export default new Router({
           name: 'companyDashboard',
           meta: {title: 'Albatross - Company Dashboard'},
           component: () => {
-          
+
             if (store.getters.userHasFeature('COMPANY_DASHBOARD')) {
               return import (/* webpackChunkName: "companyDashboard" */ './views/blueraven/companyDashboard/CompanyDashboard.vue')
             } else {
@@ -833,7 +842,7 @@ export default new Router({
               path: 'zipCodes',
               component: () => import (/* webpackChunkName: "propToolAdminZipCodes" */ './views/flow/propToolAdmin/ZipCodes.vue'),
             },
-        
+
           ]
         }, {
           path: '/commissionManagement',

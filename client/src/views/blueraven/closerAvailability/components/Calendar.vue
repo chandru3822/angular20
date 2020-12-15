@@ -424,7 +424,6 @@
         return userPositionIds
       },
       async getEvents(reload) {
-        console.log('we did it')
         // localStorage.setItem('caUsers', JSON.stringify(this.selectedPostalCodeZoneUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed

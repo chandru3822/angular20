@@ -96,14 +96,16 @@ axios.interceptors.response.use((response) => {
       localStorage.removeItem('store')
       store.commit(UserMutations.LOGIN_ERROR, msg)
       router.push({ name: 'login' })
-    } else if (VUE_APP_ENV !== 'local' && status >= 500 && status <= 599) {
+    } else if (status >= 500 && status <= 599) {
       //remove the loading spinner that was likely turned on before this error happened
       store.commit(UserMutations.SET_LOADING, false)
       //dont do this reroute on local, it is super annoying
-      router.push({path: `/serverError?code=${response.status}`})
+      if(VUE_APP_ENV !== 'local') {
+        router.push({path: `/serverError?code=${response.status}`})
+      }
     } else if (![200, 201, 204].includes(status)) {
       //dont take this out, it makes axios await errors work correctly
-      throw response?.data
+      throw { data: response?.data, status }
     }
   }
 })

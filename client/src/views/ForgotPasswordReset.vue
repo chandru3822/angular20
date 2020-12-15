@@ -67,7 +67,7 @@
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
-    name: 'PasswordReset',
+    name: 'ForgotPasswordReset',
 
     data () {
       return {
