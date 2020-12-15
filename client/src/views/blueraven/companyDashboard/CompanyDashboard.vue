@@ -1,226 +1,228 @@
 <template>
-  <v-row style="max-width: 100%;">
-    <v-col cols="12">
-      <v-row id="company-dash-toolbar-container">
-        <v-col cols="12" id="company-dash-toolbar">
-          <v-app-bar class="elevation-1" fixed style="top: 48px">
-            <v-toolbar-title>Company Dashboard</v-toolbar-title>
-            <div id="toolbar-right-side">
-              <v-select class="date-range-dropdown"
-                        v-model="selectedDateRange"
-                        :items="dateRanges"
-                        label="Date Range"
-                        @change="getDashboardValues(false)"
-                        hide-details
-                        dense
-                        outlined
-              ></v-select>
-              <DatetimePickerInput :custom-class="'date-range-date'"
-                                   v-model="startDate"
-                                   :timezone="timezone"
-                                   :max="endDate"
-                                   :type="'date'"
-                                   label="Start Date"
-                                   @input="getDashboardValues(true)"
-                                   hide-details
-                                   :hide-prepend-icon="true"
-                                   :dense="'dense'"
-                                   :outlined="'outlined'"
-              ></DatetimePickerInput>
-              <DatetimePickerInput :custom-class="'date-range-date'"
-                                   v-model="endDate"
-                                   :timezone="timezone"
-                                   :min="startDate"
-                                   :type="'date'"
-                                   label="End Date"
-                                   @input="getDashboardValues(true)"
-                                   hide-details
-                                   :hide-prepend-icon="true"
-                                   :dense="'dense'"
-                                   :outlined="'outlined'"
-              ></DatetimePickerInput>
-              <v-btn v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser)"
-                     id="targets-btn" class="white--text text-capitalize" color="primaryCustom"
-                     to="/companyDashboardTargets" title="View company dashboard targets">
-                Targets
-              </v-btn>
-            </div>
-          </v-app-bar>
-        </v-col>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12">
-          <v-data-table id="company-dash-table"
-                        class="elevation-1 mx-1"
-                        :headers="visibleHeaders"
-                        :items="dashValues"
-                        :loading="isLoading"
-                        loading-text="Loading data..."
-                        hide-default-footer
-                        disable-pagination
-                        disable-sort
-                        mobile-breakpoint=""
-                        dense>
-            <template v-slot:header>
-              <thead id="main-table-header">
-                <tr>
-                  <th id="milestone-col-header" colspan="1">Milestone</th>
-                  <th v-if="isBrCorporateUser" colspan="3">Actual</th>
-                  <th v-if="isBrCorporateUser" colspan="3">Planned</th>
-                  <th v-if="isBrCorporateUser" colspan="3">Difference</th>
-                  <th v-if="!isBrCorporateUser" colspan="3">Total</th>
-                </tr>
-              </thead>
-            </template>
-            <template #item="{ item, index }" class="table-body">
-              <tr :class="[{'light-blue-row': !(index % 2) && item.milestone !== 'Substantial Completions'}, {'blue-row': ['Bookings','Final Designs Approved','Substantial Completions','Final Completions'].indexOf(item.milestone) !== -1}]"
-                  :style="{'background-color': index === 0 ? '#e9f2ff' : ''}">
-                <td class="milestone-col-td">{{ item.milestone }}</td>
-                <td class="data-col-td total-col-td clickable"
-                    @click="getDrilldownData(item.milestone, 'Total')">{{ item.actualTotal }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td clickable"
-                    @click="getDrilldownData(item.milestone, 'BRS')">{{ item.actualBrs }}</td>
-                <td v-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) === -1"
-                    class="data-col-td clickable" @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
-                <td v-else-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) !== -1"
-                    class="data-col-td">{{ item.actualPartner }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ item.plannedTotal }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedBrs }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedPartner }}</td>
-                <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="(item.differenceTotal >= 0 || item.plannedTotal === '-') ? 'pos_diff' : 'neg_diff'">
-                  {{ item.differenceTotal }}
-                </td>
-                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differenceBrs >= 0 || item.plannedBrs === '-') ? 'pos_diff' : 'neg_diff'">
-                  {{ item.differenceBrs }}
-                </td>
-                <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differencePartner >= 0 || item.plannedPartner === '-') ? 'pos_diff' : 'neg_diff'">
-                  {{ item.differencePartner }}
-                </td>
-              </tr>
-            </template>
-            <template v-slot:footer>
-              <div v-if="dashValues.length > 0" id="company-funnel-background"></div>
-            </template>
-          </v-data-table>
-        </v-col>
-      </v-row>
-    </v-col>
-    <v-dialog v-model="drilldownDialog" :content-class="constants.IS_MOBILE ? 'drilldown-dialog' : ''">
-      <v-card>
-        <v-card-title class="mb-1">
-          <span id="drilldown-title">{{ drilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="close">×</a>
-        </v-card-title>
-
-        <v-card-text>
-          <v-data-table
-            id="drilldown-table"
-            :headers="visibleDrilldownHeaders"
-            :items="drilldownData"
-            :footer-props="footerProps"
-            :items-per-page="500"
-            :mobile-breakpoint="0"
-            fixed-header
-            dense
-            class="elevation-1"
-          >
-            <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left">{{ item.projectId ? item.projectId : '' }}</td>
-                <td class="text-left customer-name">{{ item.customerName ? item.customerName : '' }}</td>
-                <td class="text-left">{{ item.state ? item.state : '' }}</td>
-                <td class="text-left">{{ item.sourceName ? item.sourceName : '' }}</td>
-                <td v-if="drilldownHeaders[5].show" class="text-left">
-                  {{ item.appointmentDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[6].show" class="text-left">
-                  {{ item.appointmentOutcome ? item.appointmentOutcome : '' }}
-                </td>
-                <td v-if="drilldownHeaders[7].show" class="text-left">
-                  {{ item.installationAgreementSignedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[8].show" class="text-left">
-                  {{ item.siteSurveyVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[9].show" class="text-left">
-                  {{ item.finalDesignCreatedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[10].show" class="text-left">
-                  {{ item.finalDesignSentToHomeownerDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[11].show" class="text-left">
-                  {{ item.finalDesignSignedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[12].show" class="text-left">
-                  {{ item.planSetCreatedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[13].show" class="text-left">
-                  {{ item.permitPackCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[14].show" class="text-left">
-                  {{ item.permitSubmittedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[15].show" class="text-left">
-                  {{ item.permitApprovedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[16].show" class="text-left">
-                  {{ item.installationScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[17].show" class="text-left">
-                  {{ item.installationDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[18].show" class="text-left">
-                  {{ item.installationCloseoutDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[19].show" class="text-left">
-                  {{ item.substantialCompletionDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[20].show" class="text-left">
-                  {{ item.ahjInspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[21].show" class="text-left">
-                  {{ item.ahjReinspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[22].show" class="text-left">
-                  {{ item.ahjInspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[23].show" class="text-left">
-                  {{ item.ahjReinspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[24].show" class="text-left">
-                  {{ item.ahjFinalInspectionVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[25].show" class="text-left">
-                  {{ item.verifiedInspectionApprovalReceivedByUtilityDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[26].show" class="text-left">
-                  {{ item.ahjInspectionApprovalSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-                <td v-if="drilldownHeaders[27].show" class="text-left">
-                  {{ item.finalCompletionSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
-                </td>
-              </tr>
-            </template>
-
-            <template #no-data>
-              <div class="my-3">
-                No data was found for the specified date range.
+  <v-container id="company-dash-container">
+    <v-row>
+      <v-col cols="12" class="pt-0">
+        <v-row id="company-dash-toolbar-container">
+          <v-col cols="12" id="company-dash-toolbar">
+            <v-toolbar class="elevation-1">
+              <v-toolbar-title>Company Dashboard</v-toolbar-title>
+              <div id="toolbar-right-side">
+                <v-select class="date-range-dropdown"
+                          v-model="selectedDateRange"
+                          :items="dateRanges"
+                          label="Date Range"
+                          @change="getDashboardValues(false)"
+                          hide-details
+                          dense
+                          outlined
+                ></v-select>
+                <DatetimePickerInput :custom-class="'date-range-date'"
+                                     v-model="startDate"
+                                     :timezone="timezone"
+                                     :max="endDate"
+                                     :type="'date'"
+                                     label="Start Date"
+                                     @input="getDashboardValues(true)"
+                                     hide-details
+                                     :hide-prepend-icon="true"
+                                     :dense="'dense'"
+                                     :outlined="'outlined'"
+                ></DatetimePickerInput>
+                <DatetimePickerInput :custom-class="'date-range-date'"
+                                     v-model="endDate"
+                                     :timezone="timezone"
+                                     :min="startDate"
+                                     :type="'date'"
+                                     label="End Date"
+                                     @input="getDashboardValues(true)"
+                                     hide-details
+                                     :hide-prepend-icon="true"
+                                     :dense="'dense'"
+                                     :outlined="'outlined'"
+                ></DatetimePickerInput>
+                <v-btn v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser) && !constants.IS_MOBILE"
+                       id="targets-btn" class="white--text text-capitalize" color="primaryCustom"
+                       to="/companyDashboardTargets" title="View company dashboard targets">
+                  Targets
+                </v-btn>
               </div>
-            </template>
-          </v-data-table>
-        </v-card-text>
+            </v-toolbar>
+          </v-col>
+        </v-row>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn id="drilldown-close-btn" class="white--text text-capitalize mr-4 mb-2"
-                 color="primaryButton" @click="close">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <Snackbar :snackbar="snackbar"></Snackbar>
-  </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-data-table id="company-dash-table"
+                          class="elevation-1 mx-1"
+                          :headers="visibleHeaders"
+                          :items="dashValues"
+                          :loading="isLoading"
+                          loading-text="Loading data..."
+                          hide-default-footer
+                          disable-pagination
+                          disable-sort
+                          mobile-breakpoint=""
+                          dense>
+              <template v-slot:header>
+                <thead id="main-table-header">
+                  <tr>
+                    <th id="milestone-col-header" colspan="1">Milestone</th>
+                    <th v-if="isBrCorporateUser" colspan="3">Actual</th>
+                    <th v-if="isBrCorporateUser" colspan="3">Planned</th>
+                    <th v-if="isBrCorporateUser" colspan="3">Difference</th>
+                    <th v-if="!isBrCorporateUser" colspan="3">Total</th>
+                  </tr>
+                </thead>
+              </template>
+              <template #item="{ item, index }" class="table-body">
+                <tr :class="[{'light-blue-row': !(index % 2) && item.milestone !== 'Substantial Completions'}, {'blue-row': ['Bookings','Final Designs Approved','Substantial Completions','Final Completions'].indexOf(item.milestone) !== -1}]"
+                    :style="{'background-color': index === 0 ? '#e9f2ff' : ''}">
+                  <td class="milestone-col-td">{{ item.milestone }}</td>
+                  <td class="data-col-td total-col-td clickable"
+                      @click="getDrilldownData(item.milestone, 'Total')">{{ item.actualTotal }}</td>
+                  <td v-if="isBrCorporateUser" class="data-col-td clickable"
+                      @click="getDrilldownData(item.milestone, 'BRS')">{{ item.actualBrs }}</td>
+                  <td v-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) === -1"
+                      class="data-col-td clickable" @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
+                  <td v-else-if="isBrCorporateUser && ['Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) !== -1"
+                      class="data-col-td">{{ item.actualPartner }}</td>
+                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ item.plannedTotal }}</td>
+                  <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedBrs }}</td>
+                  <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedPartner }}</td>
+                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="(item.differenceTotal >= 0 || item.plannedTotal === '-') ? 'pos_diff' : 'neg_diff'">
+                    {{ item.differenceTotal }}
+                  </td>
+                  <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differenceBrs >= 0 || item.plannedBrs === '-') ? 'pos_diff' : 'neg_diff'">
+                    {{ item.differenceBrs }}
+                  </td>
+                  <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differencePartner >= 0 || item.plannedPartner === '-') ? 'pos_diff' : 'neg_diff'">
+                    {{ item.differencePartner }}
+                  </td>
+                </tr>
+              </template>
+              <template v-slot:footer>
+                <div v-if="dashValues.length > 0" id="company-funnel-background"></div>
+              </template>
+            </v-data-table>
+          </v-col>
+        </v-row>
+      </v-col>
+      <v-dialog v-model="drilldownDialog" :content-class="constants.IS_MOBILE ? 'drilldown-dialog' : ''" @input="close">
+        <v-card>
+          <v-card-title class="mb-1">
+            <span id="drilldown-title">{{ drilldownTitle }}</span>
+            <a class="close-modal-x pb-3" title="Close" @click="close">×</a>
+          </v-card-title>
+
+          <v-card-text>
+            <v-data-table
+              id="drilldown-table"
+              :headers="visibleDrilldownHeaders"
+              :items="drilldownData"
+              :footer-props="footerProps"
+              :items-per-page="500"
+              :mobile-breakpoint="0"
+              fixed-header
+              dense
+              class="elevation-1"
+            >
+              <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
+                <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+                  <td class="text-left">{{ index + 1 }}</td>
+                  <td class="text-left">{{ item.projectId ? item.projectId : '' }}</td>
+                  <td class="text-left customer-name">{{ item.customerName ? item.customerName : '' }}</td>
+                  <td class="text-left">{{ item.state ? item.state : '' }}</td>
+                  <td class="text-left">{{ item.sourceName ? item.sourceName : '' }}</td>
+                  <td v-if="drilldownHeaders[5].show" class="text-left">
+                    {{ item.appointmentDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[6].show" class="text-left">
+                    {{ item.appointmentOutcome ? item.appointmentOutcome : '' }}
+                  </td>
+                  <td v-if="drilldownHeaders[7].show" class="text-left">
+                    {{ item.installationAgreementSignedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[8].show" class="text-left">
+                    {{ item.siteSurveyVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[9].show" class="text-left">
+                    {{ item.finalDesignCreatedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[10].show" class="text-left">
+                    {{ item.finalDesignSentToHomeownerDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[11].show" class="text-left">
+                    {{ item.finalDesignSignedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[12].show" class="text-left">
+                    {{ item.planSetCreatedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[13].show" class="text-left">
+                    {{ item.permitPackCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[14].show" class="text-left">
+                    {{ item.permitSubmittedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[15].show" class="text-left">
+                    {{ item.permitApprovedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[16].show" class="text-left">
+                    {{ item.installationScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[17].show" class="text-left">
+                    {{ item.installationDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[18].show" class="text-left">
+                    {{ item.installationCloseoutDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[19].show" class="text-left">
+                    {{ item.substantialCompletionDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[20].show" class="text-left">
+                    {{ item.ahjInspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[21].show" class="text-left">
+                    {{ item.ahjReinspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[22].show" class="text-left">
+                    {{ item.ahjInspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[23].show" class="text-left">
+                    {{ item.ahjReinspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[24].show" class="text-left">
+                    {{ item.ahjFinalInspectionVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[25].show" class="text-left">
+                    {{ item.verifiedInspectionApprovalReceivedByUtilityDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[26].show" class="text-left">
+                    {{ item.ahjInspectionApprovalSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                  <td v-if="drilldownHeaders[27].show" class="text-left">
+                    {{ item.finalCompletionSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
+                  </td>
+                </tr>
+              </template>
+
+              <template #no-data>
+                <div class="my-3">
+                  No data was found for the specified date range.
+                </div>
+              </template>
+            </v-data-table>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn id="drilldown-close-btn" class="white--text text-capitalize mr-4 mb-2"
+                   color="primaryButton" @click="close">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -551,8 +553,8 @@
           this.drilldownHeaders[i].show = false
         }
 
-        // reset scroll bar positioning to top
-        document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+        // reset scroll bar positioning to top -- index 0 is the main table, index 1 is the table in the v-dialog
+        document.getElementsByClassName('v-data-table__wrapper')[1].scrollTop = 0
       },
     },
     created () {
@@ -596,13 +598,18 @@
 </style>
 
 <style lang="scss" scoped>
+  #company-dash-container {
+    overflow: auto;
+  }
 
   #company-dash-toolbar-container {
+    margin: 0 auto;
+
     #company-dash-toolbar {
-      z-index: 2;
       display: flex;
       flex-flow: row nowrap;
       justify-content: space-between;
+      padding: 0;
 
       header {
         background-color: #fff !important;
@@ -658,8 +665,7 @@
   #company-dash-table {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
-    margin: 12px auto 0 auto !important;
-    width: 100%;
+    margin: 0 auto 12px auto !important;
 
     #main-table-header {
       #milestone-col-header {
@@ -903,8 +909,7 @@
     }
 
     #company-dash-table {
-      margin: 24px auto !important;
-      height: 100%;
+      margin: 0 auto 24px auto !important;
 
       #main-table-header {
         #milestone-col-header {
