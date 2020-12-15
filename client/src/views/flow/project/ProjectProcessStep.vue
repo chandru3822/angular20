@@ -615,8 +615,8 @@ export default {
           }
       },
     getReadOnly: function (field) {
-      // if process_step admin then they can edit completed process step fields, otherwise they can only edit active ones (1 = active, 4 = complete)
-      return  (this.userIsAdmin ? ![1,4].includes(this?.processStep?.processStepStatusTypeId) : this?.processStep?.processStepStatusTypeId !== 1 )
+      // if process_step admin then they can edit any process step fields, otherwise they can only edit active ones (1 = active)
+      return  (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
               || getCustomFieldReadOnly(this.$store, field)
               || !this.userCanEdit
     },
