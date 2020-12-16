@@ -165,7 +165,43 @@
               label="Created Date"
               :readonly="true"
             />
+            <v-dialog
+              v-if="userIsAdmin"
+              v-model="deleteContactConfirm"
+              width="500">
+              <template #activator="{ on }">
+                <v-btn color="primaryCustom" dark class="mr-2 white--text" v-on="on">
+                  Delete Contact
+                </v-btn>
+              </template>
+              <v-card>
+                <v-card-title
+                  class="headline grey lighten-2"
+                  primary-title>
+                  Confirm
+                </v-card-title>
 
+                <v-card-text class="pt-4">
+                  <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this contact?</span>
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    @click="deleteContactConfirm = false">
+                    No
+                  </v-btn>
+                  <v-btn
+                    color="primaryCustom"
+                    text
+                    @click="deleteContact">
+                    Yes
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -234,6 +270,7 @@ export default {
       snackbar: {},
       states: [],
       contact: {},
+      deleteContactConfirm: false,
       addressChanged: false,
       contactLoading: true,
       customFieldGroups: [],
@@ -243,6 +280,7 @@ export default {
       owners: [],
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADMIN'),
       companyId: this.$store.state.user.details.companyId,
       timezone: this.$store.state.user.details.timezone?.value,
       changeOwner: false,
@@ -443,6 +481,21 @@ export default {
     },
     getReadOnly: function (field) {
       return !this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
+    },
+    async deleteContact() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/contact/${this.contact.id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Contact Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$router.push('/contacts')
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error deleting contact')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }

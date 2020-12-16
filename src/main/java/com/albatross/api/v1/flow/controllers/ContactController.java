@@ -52,6 +52,11 @@ public class ContactController {
         return contactService.updateContact(contact);
     }
 
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteContact(@PathVariable Long id) {
+        contactService.deleteContact(id);
+    }
+
     @PutMapping(value = "/{contactId}/updateOwner", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updateOwner(@PathVariable Long contactId,
                             @RequestBody Owner owner) {
