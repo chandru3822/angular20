@@ -664,6 +664,11 @@ public class PandaDocService {
         tokens.put("Deal.Address.City", result.get("city"));
         tokens.put("Deal.Address.StateAbbr", result.get("abbreviation"));
         tokens.put("Deal.Address.PostalCode", result.get("postal_code"));
+        tokens.put("Deal.1st Year Production Estimate (kWh)", result.get("year_1_kwh_output"));
+        tokens.put("Deal.Referral Promotion Amount", result.get("referral_promotion_amount"));
+        tokens.put("Deal.Total Cash Down Payment", result.get("total_cash_down_payment"));
+        tokens.put("Deal.System Size", result.get("system_size"));
+        tokens.put("Deal.Total System Price", result.get("total_system_price"));
 
         // include the current date for use in the template
         String today = ZonedDateTime.now(ZoneId.of("US/Mountain"))

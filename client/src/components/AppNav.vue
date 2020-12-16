@@ -14,8 +14,8 @@
         </v-btn>
       </v-col>
       <v-col cols="12" class="pt-0 pb-0">
-        
-        <v-app-bar dense id="header" :color="headerColor" tabs dark>
+
+        <v-app-bar dense id="header" :color="headerColor" tabs dark style="z-index: 1001;">
           <v-menu data-app left
                   offset-y
                   :max-height="`calc(100vh - 20px)`"
@@ -99,7 +99,7 @@ export default {
   name: 'appNav',
   components: {
 
-    
+
     AccountMenu,
     CompanyTools,
   },

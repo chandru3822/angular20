@@ -3,16 +3,14 @@ package com.albatross.api.v1.flow.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @NoArgsConstructor
 public class Project {
 
-  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, companyStateId, companyCountryId;
-  private String projectName, processName, projectStatusType, state, timeZone, country, street1, street2, city, postalCode, stateAbbreviation;
+  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, companyStateId, companyCountryId, createdById;
+  private String projectName, processName, projectStatusType, state, timeZone, country, street1, street2, city, postalCode, stateAbbreviation, createdBy;
   Double latitude, longitude;
-  private LocalDate dateCreated;
+  private String dateCreated;
   private Owner owner;
   private Contact contact;
   private Boolean projectOwnerReadonly;

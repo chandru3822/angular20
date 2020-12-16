@@ -56,11 +56,34 @@ BEGIN
                 update brs.project_details
                 set cancelled_date = now()
                 where project_id = p_project_id;
+                insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+                select 99999999,
+                       concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
+                       (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
+                       (select u.phone_number from flow.user_position up
+                           inner join flow."user" u on up.user_id = u.id
+                           where up.id = p.user_position_id),
+                       now(), 1
+                from flow.project p
+                    inner join flow.company_state cs on cs.id = p.company_state_id
+                    inner join flow.state s on cs.state_id = s.id
+                where p.id = p_project_id;
             elsif p_status = 'Cancelled' and v_company_current_project_status_type = 'On Hold' then
                 update brs.project_details
                 set cancelled_date = now()
                 where project_id = p_project_id;
-
+                insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+                select 99999999,
+                       concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
+                       (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
+                       (select u.phone_number from flow.user_position up
+                                                       inner join flow."user" u on up.user_id = u.id
+                        where up.id = p.user_position_id),
+                       now(), 1
+                from flow.project p
+                         inner join flow.company_state cs on cs.id = p.company_state_id
+                         inner join flow.state s on cs.state_id = s.id
+                where p.id = p_project_id;
             elsif p_status = 'On Hold' and v_company_current_project_status_type = 'Active' then
                 update brs.project_details
                 set on_hold_date = now()
