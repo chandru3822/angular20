@@ -12,6 +12,8 @@
                   {{ project.projectName}}
                 </router-link>
                 <span v-else>{{ project.projectName}}</span>
+                <br/>
+                <span class="project-created">{{project.createdBy}} - {{project.dateCreated | formatDate('timestamp')}}</span>
               </div>
               <div class="project-subtitle">
                 <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
@@ -364,6 +366,11 @@ export default {
     padding-left: 0;
     padding-right: 0;
     padding-top: 0;
+  }
+  .project-created {
+    font-size: 12px;
+    color: grey;
+    font-style: italic;
   }
 </style>
 

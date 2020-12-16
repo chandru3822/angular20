@@ -116,6 +116,8 @@
         p.time_zone,
         pro.process_name,
         p.contact_id,
+        p.created_by_id,
+        concat(u.first_name, ' ', u.last_name) as created_by,
         comp.project_owner_readonly,
         (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
@@ -135,6 +137,7 @@
       inner join flow.project p on cp.id = p.company_process_id
       inner join flow.process pro on pro.id = cp.process_id
       inner join flow.company comp on cp.company_id = comp.id
+      inner join flow."user" u on u.id = p.created_by_id
       left join flow.company_state cs on cs.id = p.company_state_id
       left join flow.state s on s.id = cs.state_id
       left join flow.company_country cc on cc.id = p.company_country_id
