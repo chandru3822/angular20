@@ -130,6 +130,16 @@ public class ProjectService {
       new ProjectMapper<>(Project.class, om));
   }
 
+  public void deleteProject(Long projectId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.getId());
+    params.put("projectId", projectId);
+
+    sqlCache.update("project.delete", params);
+  }
+
   public List<Owner> getOwners() {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());

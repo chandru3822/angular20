@@ -2,13 +2,53 @@
 <v-row id="project-admin-container">
   <v-col cols="12">
     <v-row class="project-header">
-      <v-col cols="8" class="text-left pl-5">
-        <div class="project-title">
-          <router-link :to="`/project/${projectId}/details`">{{ contact.fullName}}</router-link>
+      <v-col cols="12" class="text-left pl-5">
+        <div class="d-inline-block">
+          <div class="project-title">
+            <router-link :to="`/project/${projectId}/details`">{{ contact.fullName}}</router-link>
+          </div>
+          <div class="project-subtitle">
+            {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
+          </div>
         </div>
-        <div class="project-subtitle">
-          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
-        </div>
+        <v-dialog
+          class="d-inline-block"
+          v-model="deleteProjectConfirm"
+          width="500">
+          <template #activator="{ on }">
+            <v-btn color="primaryCustom" dark class="mr-2  float-right white--text" v-on="on">
+              Delete Project
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title
+              class="headline grey lighten-2"
+              primary-title>
+              Confirm
+            </v-card-title>
+
+            <v-card-text class="pt-4">
+              <span class="bold error-text">WARNING: This cannot be undone. Are you sure you want to delete this project?</span>
+            </v-card-text>
+
+            <v-divider></v-divider>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                @click="deleteProjectConfirm = false">
+                No
+              </v-btn>
+              <v-btn
+                color="primaryCustom"
+                text
+                @click="deleteProject">
+                Yes
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
       </v-col>
 
     </v-row>
@@ -147,6 +187,7 @@ export default {
       process: {},
       contact: {},
       snackbar: {},
+      deleteProjectConfirm: false,
       displayDropdown: false,
       displayChangeOwner: false,
       availableOwners: [],
@@ -325,6 +366,21 @@ export default {
         } finally {
             this.$store.commit(AppMutations.SET_LOADING, false)
         }
+    },
+    async deleteProject() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/project/${this.projectId}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Project Deleted')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$router.push('/projects')
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error deleting project')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }

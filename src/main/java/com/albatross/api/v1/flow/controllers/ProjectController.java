@@ -39,6 +39,11 @@ public class ProjectController {
       .orElse(ResponseEntity.notFound().build());
   }
 
+  @DeleteMapping(value = "/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteProject(@PathVariable Long projectId) {
+    projectService.deleteProject(projectId);
+  }
+
   @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Owner> getOwners() {
     return projectService.getOwners();
