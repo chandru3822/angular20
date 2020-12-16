@@ -89,7 +89,7 @@ public class PostalCodeService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
-    params.put("userPositionId", zoneUser.getUserPositionId());
+    params.put("userId", zoneUser.getUserId());
     params.put("createdById", user.getId());
     params.put("postalCodeZoneUserTypeId", postalCodeZoneUserTypeId);
 
