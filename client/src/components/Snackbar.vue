@@ -1,5 +1,6 @@
 <template>
   <v-snackbar
+      id="app-snackbar"
       v-model="show"
       :bottom="snackbar.y === 'bottom'"
       :left="snackbar.x === 'left'"
@@ -44,5 +45,7 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-
+#app-snackbar {
+  z-index: 1002 !important;
+}
 </style>

@@ -164,6 +164,14 @@
     where id = :id
   </project.update>
 
+  <project.delete>
+    update flow.project set
+      archived = true,
+      modified_by_id = :modifiedById,
+      date_modified = now()
+    where id = :projectId
+  </project.delete>
+
   <project.insert>
     <![CDATA[
       insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code)

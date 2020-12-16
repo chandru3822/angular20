@@ -161,6 +161,14 @@
     where id = :id
   ]]></contact.updateContact>
 
+  <contact.delete><![CDATA[
+    update flow.contact set
+           archived = true,
+           modified_by_id = :modifiedById,
+           date_modified = now()
+    where id = :contactId
+  ]]></contact.delete>
+
   <contact.insertContact><![CDATA[
     insert into flow.contact(contact_type_id, first_name, last_name, street1, city, company_state_id, postal_code, company_country_id, phone, email, mobile, created_by_id, company_id, owner_user_position_id)
     values (:contactTypeId, trim(:firstName), trim(:lastName), :street1, :city, :companyStateId, :postalCode, :companyCountryId, :phone, :email, :mobile, :createdById, :companyId, :ownerUserPositionId)

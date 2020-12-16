@@ -13,7 +13,7 @@
                 </router-link>
                 <span v-else>{{ project.projectName}}</span>
                 <br/>
-                <span class="project-created">{{project.createdBy}} - {{project.dateCreated | formatDate('timestamp')}}</span>
+                <span class="project-created">Created By: {{project.createdBy}} - {{project.dateCreated | formatDate('timestamp')}}</span>
               </div>
               <div class="project-subtitle">
                 <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
