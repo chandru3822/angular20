@@ -27,20 +27,20 @@
               <v-toolbar-title>Password Reset</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
-              <v-form ref="resetNewForm">
-                <h3 class="error--text mb-3" v-if="!passwordsMatch">PASSWORDS MUST MATCH</h3>
+              <v-form ref="resetNewForm" v-model="validForm" @submit.prevent="onSubmit()">
+<!--                <h3 class="error&#45;&#45;text mb-3" v-if="!passwordsMatch">PASSWORDS MUST MATCH</h3>-->
                 <v-text-field color="primaryCustom"
                               v-model="newPassword"
                               required
                               type="password"
-                              :rules="requiredRules"
+                              :rules="[passwordRule]"
                               name="newPass"
                               label="New Password"></v-text-field>
                 <v-text-field color="primaryCustom"
                               v-model="newPasswordAgain"
                               type="password"
                               required
-                              :rules="requiredRules"
+                              :rules="[passwordRule]"
                               name="newPassAgain"
                               label="Re-enter New Password"></v-text-field>
                 <v-card-actions>
@@ -48,7 +48,7 @@
                     Cancel
                   </router-link>
                   <v-spacer></v-spacer>
-                  <v-btn color="primaryButton" @click="validateForm" dark>Submit</v-btn>
+                  <v-btn color="primaryButton" :loading="savingPassword" type="submit" dark>Submit</v-btn>
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -67,12 +67,14 @@
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
-    name: 'PasswordReset',
+    name: 'ForgotPasswordReset',
 
     data () {
       return {
         snackbar: {},
+        validForm: false,
         passwordsMatch: true,
+        savingPassword: false,
         requestValid: false,
         requestValidating: true,
         newPassword: null,
@@ -85,6 +87,17 @@
       this.validateResetRequest()
     },
     methods: {
+      passwordRule (value) {
+        if (value && value.length < 8) {
+          return 'Password must be at least 8 characters'
+        } else if (!value) {
+          return 'Field is Required'
+        } else if (value && this.newPasswordAgain && this.newPassword !== this.newPasswordAgain) {
+          return 'Both fields must match'
+        }  else {
+          return true
+        }
+      },
       async validateResetRequest () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -102,32 +115,30 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async validateForm () {
+      async onSubmit () {
+        this.savingPassword = true
         if (this.$refs.resetNewForm.validate()) {
-          if(this.newPassword === this.newPasswordAgain) {
-            this.passwordsMatch = true
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            try {
-              let params = {
-                newPassword: this.newPassword,
-                newPasswordAgain: this.newPasswordAgain,
-                userId: this.user.id
-              }
-              await postRequest(`/user/forgotPassword/change/password`, params)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-              this.snackbar = getSnackbar('SUCCESS', 'Your password has been changed.')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$router.push('/login')
-            } catch (e) {
-              console.error('*** ERROR ***', e)
-              let msg = e?.data?.message ?? 'Error Retrieving Account Details'
-              this.snackbar = getSnackbar('ERROR', msg)
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            let params = {
+              newPassword: this.newPassword,
+              newPasswordAgain: this.newPasswordAgain,
+              userId: this.user.id
             }
-          } else {
-            this.passwordsMatch = false
+            await postRequest(`/user/forgotPassword/change/password`, params)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.snackbar = getSnackbar('SUCCESS', 'Your password has been changed.')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$router.push('/login')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            let msg = e?.data?.message ?? 'Error Retrieving Account Details'
+            this.snackbar = getSnackbar('ERROR', msg)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
+        } else {
+          this.savingPassword = false
         }
       },
 

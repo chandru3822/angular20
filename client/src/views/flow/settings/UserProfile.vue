@@ -54,12 +54,14 @@
           <v-text-field v-model="user.newPassword"
                         placeholder="Enter a new password"
                         required
+                        type="password"
                         :rules="[passwordRule]"
                         label="Change Password">
           </v-text-field>
           <v-text-field v-model="user.newPasswordConfirm"
                         placeholder="Verify password"
                         required
+                        type="password"
                         :rules="[passwordRule]"
                         label="Confirm Password">
           </v-text-field>
@@ -223,8 +225,9 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        let errorMsg = e?.message ? 'Error Saving User: ' + e.message : 'Error Saving User'
+        let errorMsg = e?.message ? 'Error Saving User: ' + e.message : e?.data?.message ? 'Error Saving User: ' + e.data.message :'Error Saving User'
         this.snackbar = getSnackbar('ERROR', errorMsg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

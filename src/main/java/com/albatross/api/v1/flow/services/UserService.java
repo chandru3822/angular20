@@ -10,14 +10,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +44,9 @@ public class UserService {
 
   @Autowired
   ObjectMapper om;
+
+  @Value("${security.doCompanyDefaultValidation:false}")
+  private Boolean doCompanyDefaultValidation;
 
   public Page<User> searchUsers(UserSearch search, Pageable pageable) {
     User user = securityService.getCurrentUser();
@@ -135,9 +141,18 @@ public class UserService {
 //      }
       //save user password if sent in
       if(null != user.getNewPassword()) {
-        String newPwd = BCrypt.hashpw(user.getNewPassword(), BCrypt.gensalt(10));
-        params.put("password", newPwd);
-        sqlCache.update("user.saveUserPassword", params);
+        //todo: remove this check after we turn it on and mobile is working
+        if(doCompanyDefaultValidation) {
+          Boolean passwordIsCompanyDefault = securityService.passwordIsCompanyDefault(user.getId(), user.getNewPassword());
+          if(passwordIsCompanyDefault) {
+            // NOT_ACCEPTABLE = 406
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+          } else {
+            securityService.updateUserPassword(id, user.getNewPassword());
+          }
+        } else {
+          securityService.updateUserPassword(id, user.getNewPassword());
+        }
       }
     } else {
       //get the default password
@@ -161,6 +176,8 @@ public class UserService {
     }
     return getUser(id, userIsAlbatross);
   }
+
+
 
   public Optional<User> getUser(Long id, Boolean userIsAlbatross) {
     //this userIsAlbatross stuff was all super dumb because we can't load albatross users the same way as regular users

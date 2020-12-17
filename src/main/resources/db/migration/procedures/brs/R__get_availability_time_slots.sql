@@ -22,7 +22,7 @@ BEGIN
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                     inner join flow.user_position up on up.id = pczu.user_position_id and primary_flag is true
+                     inner join flow.user_position up on up.user_id = pczu.user_id and primary_flag is true
                      inner join flow.position p1 on p1.id = up.position_id and p1.schedulable is true
             where p.id = p_project_id
             group  by up.user_id,up.id
@@ -48,8 +48,7 @@ BEGIN
         union all
         select ra.user_id,-1 as id, ra.start_time as start_time, ra.end_time as end_time
         from flow.resource_appointment ra
-                 inner join flow.user_position up on up.user_id = ra.user_id and up.primary_flag is true
-                 inner join flow.postal_code_zone_user pczu on pczu.user_position_id  = up.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
+                 inner join flow.postal_code_zone_user pczu on pczu.user_id  = ra.user_id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id and pcz.archived is false
                  inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id and pc.archived is false
                  inner join flow.project p on p.postal_code = pc.postal_code
@@ -90,7 +89,7 @@ BEGIN
                                  (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time,
                                  closer_end_time
                           from (
-                                   select up.user_id,
+                                   select pczu.user_id,
                                           generate_series(
                                                   ($$'$$ || p_available_date || $$'$$ || rsa.start_time)::timestamp,
                                                   (case
@@ -105,8 +104,7 @@ BEGIN
                                             inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                                             inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                                             inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                                            inner join flow.user_position up on up.id = pczu.user_position_id and primary_flag is true
-                                            inner join flow.resource_schedule rs on rs.user_id = up.user_id and rs.archived is false
+                                            inner join flow.resource_schedule rs on rs.user_id = pczu.user_id and rs.archived is false
                                                 and p_available_date >= rs.start_date and case when rs.end_date is not null then
                                                                                                    p_available_date <= rs.end_date
                                                                                             else 1=1 end

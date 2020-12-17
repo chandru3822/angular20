@@ -36,8 +36,9 @@
                                                  limit 1))
         where id != 1
     )
-    select c.id, c.company_name
+    select c.id, c.company_name, comp.default_password
     from companies c
+    inner join flow.company comp on comp.id = c.id
     inner join flow.user_status_type ust on ust.company_id = c.id
     inner join flow.company_user_status cus on cus.user_status_type_id = ust.id
     where cus.user_id = :userId

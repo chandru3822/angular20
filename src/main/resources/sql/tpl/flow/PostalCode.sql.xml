@@ -20,20 +20,15 @@
        coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
                  FROM (
                           select pczu.id,
-                                 p.scheduler,
-                                 p.schedulable,
-                                 pczu.user_position_id as "userPositionId",
+                                 pczu.user_id as "userId",
                                  u.first_name as "firstName",
                                  u.last_name as "lastName",
                                  concat(u.first_name, ' ', u.last_name) AS "fullName",
                                  pczu.postal_code_zone_id as "postalCodeZoneId",
                                  pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
-                                 pczu.archived,
-                                 p.position
+                                 pczu.archived
                           from flow.postal_code_zone_user pczu
-                            inner join flow.user_position up on up.id = pczu.user_position_id
-                            inner join flow.user u on u.id = up.user_id
-                            inner join flow.position p on p.id = up.position_id
+                            inner join flow.user u on u.id = pczu.user_id
                           where pczu.postal_code_zone_id = pcz.id
                             and pczu.archived is not true
                           and pczu.postal_code_zone_user_type_id = 1
@@ -42,20 +37,15 @@
           coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
                  FROM (
                           select pczu.id,
-                                 p.scheduler,
-                                 p.schedulable,
-                                 pczu.user_position_id as "userPositionId",
+                                 pczu.user_id as "userId",
                                  u.first_name as "firstName",
                                  u.last_name as "lastName",
                                  concat(u.first_name, ' ', u.last_name) AS "fullName",
                                  pczu.postal_code_zone_id as "postalCodeZoneId",
                                  pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
-                                 pczu.archived,
-                                 p.position
+                                 pczu.archived
                           from flow.postal_code_zone_user pczu
-                            inner join flow.user_position up on up.id = pczu.user_position_id
-                            inner join flow.user u on u.id = up.user_id
-                            inner join flow.position p on p.id = up.position_id
+                            inner join flow.user u on u.id = pczu.user_id
                           where pczu.postal_code_zone_id = pcz.id
                             and pczu.archived is not true
                             and pczu.postal_code_zone_user_type_id = 2
@@ -100,8 +90,8 @@
   ]]></postalCode.deleteZone>
 
   <postalCode.insertZoneUser><![CDATA[
-    insert into flow.postal_code_zone_user(postal_code_zone_id, date_created, created_by_id, user_position_id, postal_code_zone_user_type_id)
-    values (:postalCodeZoneId, now(), :createdById, :userPositionId, :postalCodeZoneUserTypeId)
+    insert into flow.postal_code_zone_user(postal_code_zone_id, date_created, created_by_id, user_id, postal_code_zone_user_type_id)
+    values (:postalCodeZoneId, now(), :createdById, :userId, :postalCodeZoneUserTypeId)
   ]]></postalCode.insertZoneUser>
 
   <postalCode.deleteZoneUser><![CDATA[
@@ -117,17 +107,12 @@
        pczu.postal_code_zone_id,
        u.first_name,
        u.last_name,
-       p.scheduler,
-       p.schedulable,
        concat(u.first_name, ' ', u.last_name) AS full_name,
-       pczu.user_position_id,
+       pczu.user_id,
        pczu.postal_code_zone_user_type_id,
-       pczu.archived,
-       p.position
+       pczu.archived
     from flow.postal_code_zone_user pczu
-        inner join flow.user_position up on up.id = pczu.user_position_id
-        inner join flow.user u on u.id = up.user_id
-        inner join flow.position p on p.id = up.position_id
+             inner join flow.user u on u.id = pczu.user_id
     where pczu.id = :id
   ]]></postalCode.getZoneUser>
 
@@ -156,26 +141,20 @@
   <postalCode.userCanSchedule><![CDATA[
     select pczu.*
     from flow.postal_code_zone_user pczu
-      inner join flow.user_position up on up.id = pczu.user_position_id
-      inner join flow.postal_code_zone pcz on pczu.postal_code_zone_id = pcz.id
-      inner join flow.postal_code pc on pcz.id = pc.postal_code_zone_id
-    where up.user_id = :userId
+             inner join flow.postal_code_zone pcz on pczu.postal_code_zone_id = pcz.id
+             inner join flow.postal_code pc on pcz.id = pc.postal_code_zone_id
+    where pczu.user_id = :userId
       and pczu.archived is not true
       and pcz.company_id = :companyId
-      and up.primary_flag is true
-      and up.archived is not true
-      and up.start_date < now()
-      and (up.end_date is null or up.end_date > now())
       and pc.postal_code = :postalCode
   ]]></postalCode.userCanSchedule>
 
   <postalCode.getAvailableZoneUsers><![CDATA[
       select distinct upv.user_id as id,
-                upv.user_position_id,
                 upv.first_name,
                 upv.position_id,
                 upv.last_name,
-                concat(upv.first_name, ' ', upv.last_name, ' - ', upv.position) AS full_name,
+                concat(upv.first_name, ' ', upv.last_name) AS full_name,
                 concat(upv.first_name, ' ', upv.last_name) AS title
       from flow.user_positions_vw upv
       where case when :isParent and :isSchedulingTool
@@ -189,10 +168,10 @@
         and upv.start_date <= now()
         and upv.primary_flag is true
         and (upv.end_date is null or upv.end_date >= now())
-        and not exists (select pczu.user_position_id
+        and not exists (select pczu.user_id
                         from flow.postal_code_zone_user pczu
                         where postal_code_zone_id = :zoneId
-                          and pczu.user_position_id = upv.user_position_id
+                          and pczu.user_id = upv.user_id
                           and case when :loadSchedulers is true then pczu.postal_code_zone_user_type_id = 2 else pczu.postal_code_zone_user_type_id = 1 end
                           and archived is not true)
       order by full_name
@@ -200,23 +179,12 @@
   ]]></postalCode.getAvailableZoneUsers>
 
   <postalCode.getAllZoneUsers><![CDATA[
-    with t1 as (
-        select distinct upv.user_id                                as id,
-                        upv.user_id,
-                        upv.user_position_id,
-                        upv.first_name,
-                        upv.last_name,
-                        concat(upv.first_name, ' ', upv.last_name) AS full_name,
-                        concat(upv.first_name, ' ', upv.last_name) AS title
-        from flow.postal_code_zone_user pczu
-                 inner join flow.user_positions_vw upv on upv.user_position_id = pczu.user_position_id
-                 inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
-        where pczu.archived is not true
-          and pcz.company_id = :companyId
-          and upv.position_schedulable is true
-          and ((cast(:zoneIds as int[]) is null) OR pczu.postal_code_zone_id = any (:zoneIds))
-    )
-    select *,
+    select pczu.user_id                                as id,
+           pczu.user_id,
+           u.first_name,
+           u.last_name,
+           concat(u.first_name, ' ', u.last_name) AS full_name,
+           concat(u.first_name, ' ', u.last_name) AS title,
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(positions)))
                         FROM (
@@ -243,11 +211,18 @@
                                  FROM flow.user_position up
                                           inner join flow.position p on p.id = up.position_id
                                           inner join flow.org o on o.id = up.org_id
-                                 WHERE up.user_id = t1.user_id
+                                 WHERE up.user_id = pczu.user_id
                                    and up.archived is not true
                                    and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
-    from t1
+    from flow.postal_code_zone_user pczu
+             inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
+        inner join flow."user" u on u.id = pczu.user_id
+    where pczu.archived is not true
+      and pcz.company_id = :companyId
+      and pczu.postal_code_zone_user_type_id = 1
+      and ((cast(:zoneIds as int[]) is null) OR pczu.postal_code_zone_id = any (:zoneIds))
     order by full_name
+
   ]]></postalCode.getAllZoneUsers>
 
   <postalCode.checkForExisting><![CDATA[
