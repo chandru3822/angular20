@@ -125,22 +125,17 @@
   <closerDashboard.getRoundRobins>
     <![CDATA[
       SELECT pcz.id,
-             pcz.company_id,
-             pcz.zone_name,
-             pczu.archived
+       pcz.company_id,
+       pcz.zone_name,
+       pczu.archived
       FROM flow.postal_code_zone_user pczu
-        INNER JOIN flow.user_position up ON up.id = pczu.user_position_id
-        INNER JOIN flow.position p ON p.id = up.position_id
-        INNER JOIN flow.postal_code_zone pcz ON pcz.id = pczu.postal_code_zone_id
-      WHERE up.user_id = :userId
+           INNER JOIN flow.postal_code_zone pcz ON pcz.id = pczu.postal_code_zone_id
+      WHERE pczu.user_id = :userId
         AND pczu.archived IS FALSE
         AND pcz.archived IS FALSE
-        and pcz.company_id = :companyId
+        and pcz.company_id = 3
         -- postal_code_zone_user_type_id = 1 means schedule to (2 = schedule by)
         AND pczu.postal_code_zone_user_type_id = 1
-        AND up.archived IS NOT TRUE
-        AND up.start_date <= now()
-        AND (up.end_date is null or up.end_date >= now())
     ]]>
   </closerDashboard.getRoundRobins>
 
