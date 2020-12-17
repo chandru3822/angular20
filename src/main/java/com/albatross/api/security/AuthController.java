@@ -20,6 +20,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
+
 @Slf4j
 @RestController
 @RequestMapping(value = "/auth")
@@ -33,6 +35,9 @@ public class AuthController {
 
     @Value("${security.jwt.expireDuration}")
     private Long jwtExpireDuration;
+
+  @Value("${security.doCompanyDefaultValidation:false}")
+  private Boolean doCompanyDefaultValidation;
 
   @GetMapping(value = "/heartbeat")
   public ResponseEntity getHeartbeat() {
@@ -68,6 +73,23 @@ public class AuthController {
       return ResponseEntity.badRequest().body("Account is Locked");
     }
 
+    //cannot turn this on in prod until mobile is ready
+    //todo: remove this check after we turn it on and mobile is working
+    if(doCompanyDefaultValidation) {
+      if(null != creds.newPassword) {
+        // called after user was already told they needed to reset their password
+        securityService.updateUserPassword(user.getId(), creds.newPassword);
+      } else {
+        //validate that the user's password is not the same as the company default for any company they have access to
+        Boolean passwordIsCompanyDefault = securityService.passwordIsCompanyDefault(user.getId(), creds.getPassword());
+        if(passwordIsCompanyDefault) {
+          log.info("AUTH: Login attempted with company default password for user: " + creds.getUsername());
+          // NOT_ACCEPTABLE = 406
+          return ResponseEntity.status(NOT_ACCEPTABLE).body("You must reset your password. Cannot use company default.");
+        }
+      }
+    }
+
     List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
     user.setFeatureAccess(results);
 
@@ -92,7 +114,7 @@ public class AuthController {
 
   @Data
   public static class Credentials {
-    private String username, password;
+    private String username, password, newPassword;
   }
 
   /**

@@ -139,7 +139,6 @@
               :fixed-header="true"
               :search="debouncedSearch"
               :footer-props="footerProps"
-              disable-sort
               :mobile-breakpoint="0"
               :show-select="payrollStatus.showSelect"
               :loading="dataLoading"
@@ -592,7 +591,7 @@
           if(this.currentPayroll?.selectedProjectIds?.length === data.length) {
             this.selectAll = true
           }
-          
+
           this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
 
           this.dataLoading = false

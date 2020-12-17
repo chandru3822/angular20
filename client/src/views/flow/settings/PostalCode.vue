@@ -56,7 +56,7 @@
                     label="Select a User..."
                     :loading="usersLoading"
                     item-text="fullName"
-                          item-value="userPositionId"
+                    item-value="userId"
                     return-object
                     autocomplete="off">
           </v-autocomplete>
@@ -87,7 +87,7 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.fullName}} - {{item.position}}</td>
+              <td class="text-left">{{item.fullName}}</td>
               <td>
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
@@ -149,7 +149,7 @@
                     label="Select a User..."
                     :loading="schedulersLoading"
                     item-text="fullName"
-                    item-value="userPositionId"
+                    item-value="userId"
                     return-object
                           autocomplete="off">
           </v-autocomplete>
@@ -180,7 +180,7 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.fullName}} - {{item.position}}</td>
+              <td class="text-left">{{item.fullName}}</td>
               <td>
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
@@ -414,7 +414,7 @@
         try {
           let params = {
             postalCodeZoneId: this.zoneId,
-            userPositionId: selected.userPositionId,
+            userId: selected.id,
           }
           let url = scheduleTo ? `/postalCode/zone/saveScheduleToUser` : `/postalCode/zone/saveScheduleByUser`
           const {data} = await postRequest(url, params)

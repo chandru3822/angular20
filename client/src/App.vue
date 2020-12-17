@@ -9,7 +9,7 @@
       </v-toolbar-items>
     </v-toolbar>
 <!--    <v-toolbar v-if="showMobileBanner && $route.name !== 'login'">-->
-    <v-toolbar v-if="!dismissMobileToolbar && showMobileBanner && $route.name !== 'login' && $route.name !== 'forgotPassword' && $route.path !== '/apps'"
+    <v-toolbar v-if="!dismissMobileToolbar && showMobileBanner && !noNavRoutes.includes($route.name) && $route.path !== '/apps'"
                class="clickable"
                dense>
       <v-toolbar-title  @click="goToApps">
@@ -25,7 +25,7 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <AppNav v-if="$route.name !== 'login' && $route.name !== 'forgotPassword' && !hideHeader"/>
+    <AppNav v-if="!noNavRoutes.includes($route.name) && !hideHeader"/>
     <v-main>
       <v-container class="router-container">
         <Spinner v-if="$store.state.app.loading" :spinnerColor="'primaryCustom'" :size="100"></Spinner>
@@ -53,6 +53,7 @@
     data() {
       return {
         hideHeader: this.$store.state.user.hideHeader || false,
+        noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword'],
         showMobileBanner: false,
         dismissMobileToolbar: false
       }

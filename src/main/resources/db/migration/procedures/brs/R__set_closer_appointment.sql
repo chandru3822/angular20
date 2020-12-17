@@ -45,12 +45,11 @@ BEGIN
                                                       available_users,created_by_id
                                                       )
         (with round_robin_users as (
-            select up.user_id, pcz.distribution_time_frame_days
+            select pczu.user_id, pcz.distribution_time_frame_days
             from flow.project p
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                     inner join flow.user_position up on up.id = pczu.user_position_id and up.primary_flag is true
             where p.id = p_project_id),
              lead_gen_num as (
                  select rru.user_id, count(pd.id) as lead_gen_num
@@ -149,7 +148,11 @@ BEGIN
                                      else
                                  round(score / sum(score) over (), 2) end as total_lead_allocation,
                                  round(acutal_lead_allocation, 2)     as acutal_lead_allocation,
-                                 case when foo1.position_id =2 then
+                                 case when (select count(1) > 0 as count
+                                            from flow.user_position up
+                                            where up.user_id = foo1.user_id and
+                                                  up.primary_flag is true and
+                                                  up.position_id = 2) then
                                      foo1.score * 1.5
                                      else
                                          foo1.score end as score,
@@ -177,38 +180,33 @@ BEGIN
                                           foo.self_gen,
                                           foo.avail,
                                           foo.appointment_count_with_interval,
-                                          foo.appointment_count,
-                                          foo.position_id
+                                          foo.appointment_count
                                    from (
-                                            select up2.user_id,
+                                            select pczu.user_id,
                                                    coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
                                                    coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
                                                    coalesce(sg.self_gen, 0)                          as self_gen,
                                                    ac.appointment_count,
                                                    coalesce(ta.avail, 0)                             as avail,
-                                                   coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
-                                                   up2.position_id
+                                                   coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval
                                             from flow.project p
                                                      inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                                                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                                                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                                                     inner join flow.user_position up2 on up2.id = pczu.user_position_id and up2.primary_flag is true
-                                                     left join lead_gen_num lgn on lgn.user_id = up2.user_id
-                                                     left join lead_gen_den lgd on lgd.user_id = up2.user_id
-                                                     left join self_gen sg on sg.user_id = up2.user_id
-                                                     left join appointment_count ac on ac.user_id = up2.user_id
-                                                     left join total_avail ta on ta.user_id = up2.user_id
-                                                     left join appointment_count_with_interval acwi on acwi.user_id = up2.user_id
+                                                     left join lead_gen_num lgn on lgn.user_id = pczu.user_id
+                                                     left join lead_gen_den lgd on lgd.user_id = pczu.user_id
+                                                     left join self_gen sg on sg.user_id = pczu.user_id
+                                                     left join appointment_count ac on ac.user_id = pczu.user_id
+                                                     left join total_avail ta on ta.user_id = pczu.user_id
+                                                     left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
                                             where p.id = p_project_id
-                                            group by up2.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
+                                            group by pczu.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                                      ac.appointment_count,
                                                      pcz.distribution_time_frame_days, ta.avail,
-                                                     acwi.appointment_count_with_interval,
-                                                     up2.position_id) as foo
+                                                     acwi.appointment_count_with_interval) as foo
                                    group by foo.user_id, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
                                             foo.appointment_count,
-                                            foo.avail, foo.appointment_count_with_interval,
-                                            foo.position_id) as foo1) as foo2
+                                            foo.avail, foo.appointment_count_with_interval) as foo1) as foo2
                  group by foo2.user_id, foo2.acutal_lead_allocation, foo2.total_lead_allocation,
                           foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
                           foo2.lead_gen_num,

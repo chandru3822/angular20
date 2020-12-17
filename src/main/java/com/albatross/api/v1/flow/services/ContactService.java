@@ -113,6 +113,14 @@ public class ContactService {
     return result.orElse(null);
   }
 
+  public void deleteContact(Long contactId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.getId());
+    params.put("contactId", contactId);
+    sqlCache.update("contact.delete", params);
+  }
+
   public Contact updateContact(Contact contact) {
     User currentUser = securityService.getCurrentUser();
 
