@@ -54,8 +54,9 @@ BEGIN
                  inner join flow.project p on p.postal_code = pc.postal_code
                  inner join user_ids ui2 on ui2.user_id = ra.user_id
         where p.id = p_project_id and ra.archived is false
-          and start_time >= p_start_time
-          and end_time <= p_end_time
+          and ((start_time between p_start_time and p_end_time
+        or ra.end_time between p_start_time and p_end_time)
+              or (ra.start_time < p_start_time and ra.end_time > p_end_time))
     );
 
     return query
