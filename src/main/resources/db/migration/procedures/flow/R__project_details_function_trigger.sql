@@ -111,6 +111,9 @@ declare
     v_sql        character varying;
     v_value      character varying;
     v_record     record;
+    v_parent_project_process_step_id  integer;
+    v_timestamp_value timestamp;
+    v_project_id1 integer;
 BEGIN
 
     select pps.project_id
@@ -118,6 +121,63 @@ BEGIN
     from flow.project_process_step pps
     where pps.id = new.project_process_step_id
       and pps.main is true;
+
+    select pps.project_id
+    into v_project_id1
+    from flow.project_process_step pps
+    where pps.id = new.project_process_step_id;
+
+
+    if new.custom_field_group_assignment_id = 4 then
+        select pps2.parent_project_process_step_id
+        into v_parent_project_process_step_id
+        from flow.project_process_step pps2
+        where pps2.id = new.project_process_step_id;
+
+        if v_parent_project_process_step_id is not null then
+
+            select timestamp_value
+            into v_timestamp_value
+            from flow.project_process_step pps3
+            inner join flow.project_process_step_custom_field_value ppscfv  on pps3.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+            where pps3.id = v_parent_project_process_step_id and
+                  pps3.process_step_id = 1;
+        else
+            select min(timestamp_value)
+            into v_timestamp_value
+            from flow.project_process_step pps4
+                     inner join flow.project_process_step_custom_field_value ppscfv1  on pps4.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 5
+            where pps4.project_id = v_project_id1 and
+                    pps4.process_step_id = 1
+            limit 1;
+
+        end if;
+
+        if new.int_value  in (2,1139,1140) then
+        update brs.project_details
+        set first_appointment_pitched = coalesce(v_timestamp_value,now())
+        where project_id = v_project_id1 and
+            first_appointment_pitched is null;
+        elsif new.int_value  in (3) then
+        update brs.project_details
+        set first_appointment_missed = coalesce(v_timestamp_value,now())
+        where project_id = v_project_id1 and
+            first_appointment_missed is null;
+        elseif new.int_value is not null and
+          new.int_value  not in (2,3,1139,1140) then
+        update brs.project_details
+        set first_appointment_not_pitched_or_missed =coalesce(v_timestamp_value,now())
+        where project_id = v_project_id1 and
+            first_appointment_not_pitched_or_missed is null;
+      end if;
+    elsif new.custom_field_group_assignment_id = 5 and
+          new.timestamp_value is not null then
+        update brs.project_details
+        set first_appointment = new.timestamp_value
+        where project_id = v_project_id1 and
+            first_appointment is null;
+    end if;
+
 
     for v_record in
         select pdc.id,
