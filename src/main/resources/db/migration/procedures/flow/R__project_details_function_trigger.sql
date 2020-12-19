@@ -114,6 +114,7 @@ declare
     v_parent_project_process_step_id  integer;
     v_timestamp_value timestamp;
     v_project_id1 integer;
+    v_field_name varchar;
 BEGIN
 
     select pps.project_id
@@ -127,8 +128,15 @@ BEGIN
     from flow.project_process_step pps
     where pps.id = new.project_process_step_id;
 
+    select cf.field_name
+    into v_field_name
+    from flow.custom_field_group_assignment cfga
+             inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
+             inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
+    where cfga.id = new.custom_field_group_assignment_id and cfga.archived is false;
 
-    if new.custom_field_group_assignment_id = 4 then
+
+    if v_field_name = 'Closer Appointment Outcome' then
         select pps2.parent_project_process_step_id
         into v_parent_project_process_step_id
         from flow.project_process_step pps2
@@ -155,27 +163,66 @@ BEGIN
 
         if new.int_value  in (2,1139,1140) then
         update brs.project_details
-        set first_appointment_pitched = coalesce(v_timestamp_value,now())
+        set first_appointment_pitched = coalesce(v_timestamp_value,now()),
+            first_appointment_pitched_id = new.int_value
         where project_id = v_project_id1 and
             first_appointment_pitched is null;
         elsif new.int_value  in (3) then
         update brs.project_details
-        set first_appointment_missed = coalesce(v_timestamp_value,now())
+        set first_appointment_missed = coalesce(v_timestamp_value,now()),
+            first_appointment_missed_id = new.int_value
         where project_id = v_project_id1 and
             first_appointment_missed is null;
         elseif new.int_value is not null and
           new.int_value  not in (2,3,1139,1140) then
         update brs.project_details
-        set first_appointment_not_pitched_or_missed =coalesce(v_timestamp_value,now())
+        set first_appointment_not_pitched_or_missed =coalesce(v_timestamp_value,now()),
+            first_appointment_not_pitched_or_missed_id = new.int_value
         where project_id = v_project_id1 and
             first_appointment_not_pitched_or_missed is null;
       end if;
-    elsif new.custom_field_group_assignment_id = 5 and
+    elsif v_field_name = 'Closer Appointment Start Time' and
           new.timestamp_value is not null then
         update brs.project_details
         set first_appointment = new.timestamp_value
         where project_id = v_project_id1 and
             first_appointment is null;
+    elsif v_field_name = 'Installation Agreement Signed' and
+          new.date_value is not null then
+        update brs.project_details
+        set installation_agreement_signed_date = new.date_value
+        where project_id = v_project_id1 and
+            installation_agreement_signed_date is null;
+    elsif v_field_name = 'Final Design Signed' and
+          new.date_value is not null then
+        update brs.project_details
+        set final_design_signed_date = new.date_value
+        where project_id = v_project_id1 and
+            final_design_signed_date is null;
+    elsif v_field_name = 'Final Design Complete' and
+          new.date_value is not null then
+        update brs.project_details
+        set final_design_complete_date = new.date_value
+        where project_id = v_project_id1 and
+            final_design_complete_date is null;
+    elsif v_field_name = 'Substantial Completion' and
+          new.date_value is not null then
+        update brs.project_details
+        set substantial_completion_date = new.date_value
+        where project_id = v_project_id1 and
+            substantial_completion_date is null;
+    elsif v_field_name = 'Final Completion Submitted' and
+          new.date_value is not null then
+        update brs.project_details
+        set final_completion_submitted_date = new.date_value
+        where project_id = v_project_id1 and
+            final_completion_submitted_date is null;
+    elsif v_field_name = 'Final Completion Approved' and
+          new.date_value is not null then
+        update brs.project_details
+        set final_completion_approved_date = new.date_value
+        where project_id = v_project_id1 and
+            final_completion_approved_date is null;
     end if;
 
 
@@ -187,9 +234,12 @@ BEGIN
                pdc.second_data_type_id,
                cf.list_of_value_id
         from brs.project_details_config pdc
-                 left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
-                 left join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.list_of_value_id is not null
+                 inner join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
         where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
+        and cf.field_name not in ('Installation Agreement Signed','Final Design Signed',
+                                 'Final Design Complete','Substantial Completion',
+                                 'Final Completion Submitted','Final Completion Approved')
         loop
 
 
@@ -498,6 +548,9 @@ BEGIN
               and cf.archived is false
               and cfg.archived is false
               and cfga.archived is false
+              and cf.field_name not in ('Installation Agreement Signed','Final Design Signed',
+                                        'Final Design Complete','Substantial Completion',
+                                        'Final Completion Submitted','Final Completion Approved')
             loop
                 v_count = v_count + 1;
                 if v_record.second_field_to_update is not null then
