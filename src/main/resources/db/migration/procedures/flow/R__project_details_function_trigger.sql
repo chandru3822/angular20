@@ -371,7 +371,6 @@ declare
     v_sql                    character varying;
     v_value                  character varying;
     v_second_field_to_update character varying;
-    v_ahj_name               character varying;
 BEGIN
 
     select pdc.id, field_to_update, data_type_id, second_field_to_update
@@ -379,14 +378,6 @@ BEGIN
     from brs.project_details_config pdc
     where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id;
 
-    select ahj.name
-    into v_ahj_name
-    from flow.custom_field_group_assignment cfga
-             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-             inner join brs.ahj ahj on ahj.id = new.int_value
-    where cfga.id = new.custom_field_group_assignment_id
-      and cf.field_name = 'AHJ'
-    limit 1;
 
     if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6, 5) then
         if v_data_type_id = 1 then
@@ -415,6 +406,19 @@ BEGIN
         execute v_sql;
 
         if v_second_field_to_update is not null then
+            if v_field_to_update = 'ahj' and new.int_value is not null then
+                select quote_literal(ahj.name)
+                into v_value
+                from  brs.ahj ahj
+                where  ahj.id = new.int_value
+                limit 1;
+            elsif v_field_to_update = 'utility_company' and new.int_value is not null then
+                select quote_literal(au.name)
+                into v_value
+                from  brs.ahj_utility au
+                where  au.id = new.int_value
+                limit 1;
+            else
             case when new.int_value is null then select 'null' into v_value;
                 else
                     select quote_literal(name)
@@ -422,18 +426,11 @@ BEGIN
                     from flow.list_of_value
                     where id = new.int_value;
                 end case;
+            end if;
             v_sql = $$update brs.project_details set $$ || v_second_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || new.project_id;
             execute v_sql;
         end if;
-
-        if v_ahj_name is not null then
-            update brs.project_details
-            set ahj_name = v_ahj_name
-            where project_id = new.project_id;
-        end if;
-
-
     end if;
 
     RETURN NULL;
@@ -565,7 +562,7 @@ BEGIN
         v_sql = trim(trailing ' ,' from v_sql);
         v_sql = v_sql || ' where project_id = ' || new.project_id || ';';
         if v_count > 0 then
-            raise notice 'v_sql%',v_sql;
+           -- raise notice 'v_sql%',v_sql;
             execute v_sql;
         end if;
     end if;
