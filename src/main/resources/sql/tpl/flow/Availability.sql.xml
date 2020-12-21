@@ -143,6 +143,8 @@
         date_modified = now(),
         all_day = :allDay,
         description = :description,
+        location = :location,
+        title = :title,
         recurrence = :recurrence,
         recurring_start_time = :recurringStartTime,
         recurring_end_time = :recurringEndTime
@@ -150,8 +152,8 @@
   ]]></availability.updateAppointment>
 
   <availability.insertAppointment><![CDATA[
-    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type)
-    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType)
+    insert into flow.resource_appointment(company_id, user_id, org_id, start_time, end_time, created_by_id, all_day, description, title, recurrence, recurring_start_time, recurring_end_time, recurring_event_id, recurring_event_end_type, location)
+    values (:companyId, :userId, :orgId, :startTime::timestamp, :endTime::timestamp, :createdById, :allDay, :description, :title, :recurrence, :recurringStartTime, :recurringEndTime, :recurringEventId, :recurringEventEndType, :location)
   ]]></availability.insertAppointment>
 
   <availability.getAppointment><![CDATA[
@@ -164,6 +166,10 @@
         ra.archived,
         ra.description,
         ra.all_day,
+        ra.title,
+        ra.location,
+        ra.latitude,
+        ra.longitude,
         ra.recurrence,
         ra.recurring_event_end_type,
         ra.recurring_event_id,
@@ -186,6 +192,10 @@
         ra.archived,
         ra.description,
         ra.company_id,
+        ra.title,
+        ra.location,
+        ra.latitude,
+        ra.longitude,
         ra.all_day,
         ra.recurrence,
         ra.recurring_event_id,
@@ -266,7 +276,7 @@
   <availability.setCloserAppointment><![CDATA[
     select * from flow.set_closer_appointment(:projectId::int, :userId::int, :projectProcessStepId::int, :appointmentTime::timestamp, :users::int[]);
   ]]></availability.setCloserAppointment>
-  
+
   <availability.saveOverrideInfoToAudit><![CDATA[
     insert into brs.set_closer_appointment_audit(project_id, user_position_id, project_process_step_id, created_date, created_by_id, override)
     values(:projectId, :userPositionId, :projectProcessStepId, now(), :createdById, true)
@@ -349,4 +359,11 @@
   <availability.cacheAvailability><![CDATA[
         select brs.cache_available_time_slots()
   ]]></availability.cacheAvailability>
+
+  <availability.updateGeoLocation><![CDATA[
+    update flow.resource_appointment set
+           latitude = :latitude,
+           longitude = :longitude
+    where id = :id
+  ]]></availability.updateGeoLocation>
 </sql>

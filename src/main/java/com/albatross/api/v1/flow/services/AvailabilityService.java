@@ -3,12 +3,14 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mapbox.geojson.Point;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.ObjLongConsumer;
 
 
 /**
@@ -53,6 +56,7 @@ import java.util.*;
 public class AvailabilityService {
 
   private final SqlCache sqlCache;
+  private final LocationUtils locationUtils;
   private final SecurityService securityService;
   private final DataSource dataSource;
   private final ObjectMapper om;
@@ -210,23 +214,23 @@ public class AvailabilityService {
     }
 
   }
-  
+
   @Data
   public static class OverrideAudit {
     private Long userPositionId, projectId, projectProcessStepId;
   }
-  
+
   public void saveOverrideInfoToAudit(OverrideAudit audit) {
     User user = securityService.getCurrentUser();
-    
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("createdById", user.getId());
     params.put("projectId", audit.getProjectId());
     params.put("projectProcessStepId", audit.getProjectProcessStepId());
     params.put("userPositionId", audit.getUserPositionId());
-    
+
     sqlCache.update("availability.saveOverrideInfoToAudit", params);
-    
+
   }
 
 //  appointments
@@ -253,7 +257,10 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("startTime", ra.getStartTime());
     params.put("endTime", ra.getEndTime());
+    //title was added recently and the current mobile app doesn't send it in, it only sends description. will default to use that until the app supports Title
+    params.put("title", null != ra.getTitle() ? ra.getTitle() : ra.getDescription());
     params.put("description", ra.getDescription());
+    params.put("location", ra.getLocation());
     params.put("allDay", ra.getAllDay() == null ? false : ra.getAllDay());
     params.put("companyId", user.getCompanyId());
     params.put("orgId", ra.getOrgId());
@@ -280,7 +287,15 @@ public class AvailabilityService {
       }
     }
 
-    return getOneResourceAppointment(id);
+    ResourceAppointment appt = getOneResourceAppointment(id);
+    if(null == ra.getId() || ra.getReloadCoordinates()) {
+      getAppointmentsCoordinates(ra.getLocation(), id);
+    }
+    return appt;
+  }
+
+  public void getAppointmentsCoordinates(String address, Long id) {
+    locationUtils.getGeocode(address, id, new CustomGeoFunction());
   }
 
   public void processFutureRecurringEvents() {
@@ -570,6 +585,31 @@ public class AvailabilityService {
       TypeReference<List<ResourceScheduleAvailability>> resourceScheduleAvailabilityRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "resourceScheduleAvailability",
         new JsonCollectionDeserializer(resourceScheduleAvailabilityRef, objectMapper));
+    }
+  }
+
+  private class CustomGeoFunction implements ObjLongConsumer {
+
+    @Override
+    public void accept(Object geoResult, long id) {
+      // note: the coordinates in the returned object are reversed: Long, Lat
+
+      //get the lat and long from point
+      Point point = (Point)geoResult;
+      Double latitude, longitude;
+      List<Double> coordinates = point.coordinates();
+      latitude = coordinates.get(1);
+      longitude = coordinates.get(0);
+
+      if(null != latitude && null != longitude) {
+        //if lat and long then update appts's location
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("latitude", latitude);
+        params.put("longitude", longitude);
+        params.put("id", id);
+
+        sqlCache.update("availability.updateGeoLocation", params);
+      }
     }
   }
 
