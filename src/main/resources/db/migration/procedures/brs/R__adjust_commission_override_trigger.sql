@@ -4,21 +4,23 @@ $$
 declare
 
 BEGIN
-    with milestone_one_projects as (
+    create table  milestone_one_projects as (
         select project_id, min(process_step_complete_date) milestone_one_complete_date
         from flow.project_process_step pps
                  inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
                  inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.process_step_status_type = 'COMPLETE'
         where pps.process_step_id = 175
-        group by project_id)
+        group by project_id);
+
     perform brs.insert_commissions_on_project(p.id)
     from brs.project_details pd
     inner join flow.project p on p.id = pd.project_id
-    inner join milestone_one_projects mop2 on mop2.project_id = p.id
+    inner join milestone_one_projects mop on mop.project_id = p.id
     left join brs.project_commission_ledger pcl on pcl.project_id = p.id
         where pd.closer_user_id = new.user_id
     and pcl.id is null;
-    RETURN NULL;
+    drop table milestone_one_projects;
+    RETURN null;
 END
 $$
     LANGUAGE plpgsql;
