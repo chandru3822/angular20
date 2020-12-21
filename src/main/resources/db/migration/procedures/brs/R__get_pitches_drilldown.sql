@@ -29,15 +29,40 @@ BEGIN
                    concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
                    pd.source_name as source,
-                   pd.closer_appointment_start as appointment_date,
-                   pd.closer_appointment_outcome_name as appointment_outcome
+                   (case when pd.first_appointment_pitched is not null
+                             then pd.first_appointment_pitched
+                         when pd.first_appointment_pitched is null
+                             and pd.first_appointment_missed is not null
+                             then pd.first_appointment_missed
+                         else pd.closer_appointment_start
+                         end) as appointment_date,
+                   lov.name as appointment_outcome
             from flow.project p
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.position_id = 4 and up.primary_flag is true)
-            where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between v_start_date and v_end_date
+                left join flow.list_of_value lov on (case when pd.first_appointment_pitched is not null
+                                                              then pd.first_appointment_pitched_id
+                                                          when pd.first_appointment_pitched is null
+                                                              and pd.first_appointment_missed is not null
+                                                              then pd.first_appointment_missed_id
+                                                          else pd.closer_appointment_outcome
+                                                          end) = lov.id
+            where (((case when pd.first_appointment_pitched is not null
+                              then pd.first_appointment_pitched
+                          when pd.first_appointment_pitched is null
+                              and pd.first_appointment_missed is not null
+                              then pd.first_appointment_missed
+                          else pd.closer_appointment_start
+                          end) at time zone 'UTC') at time zone 'US/Mountain') :: date between v_start_date and v_end_date
                 and pd.source in (525, 526) --(Setter Gen, Retargeted)
-                and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                and (case when pd.first_appointment_pitched is not null
+                              then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                          when pd.first_appointment_pitched is null
+                              and pd.first_appointment_missed is not null
+                              then pd.first_appointment_missed_id in (2,3,1139,1140)
+                          else pd.closer_appointment_outcome in (2,3,1139,1140)
+                          end)
                 and case when p_is_setter_mgr is true then up.org_id = p_setter_mgr_office_id
                     else pd.setter_user_id = p_user_id
                     end
