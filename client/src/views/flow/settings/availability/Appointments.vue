@@ -310,17 +310,17 @@
       },
     },
     created() {
-      if(VUE_APP_ENV === 'local') {
-        //randa test stuff
-        this.addNew = true
-        this.newAppt = {
-          title: 'hello world',
-          description: 'hello description',
-          startTime: '2020-12-28T19:00:00.000Z',
-          endTime: '2020-12-28T21:00:00.000Z',
-          repeat: false
-        }
-      }
+      // if(VUE_APP_ENV === 'local') {
+      //   //randa test stuff
+      //   this.addNew = true
+      //   this.newAppt = {
+      //     title: 'hello world',
+      //     description: 'hello description',
+      //     startTime: '2020-12-28T19:00:00.000Z',
+      //     endTime: '2020-12-28T21:00:00.000Z',
+      //     repeat: false
+      //   }
+      // }
       this.getAppointments()
     },
     methods: {
