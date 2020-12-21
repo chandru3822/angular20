@@ -4,7 +4,7 @@ $$
 declare
 
 BEGIN
-    create table  milestone_one_projects as (
+    create temp table  milestone_one_projects as (
         select project_id, min(process_step_complete_date) milestone_one_complete_date
         from flow.project_process_step pps
                  inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
