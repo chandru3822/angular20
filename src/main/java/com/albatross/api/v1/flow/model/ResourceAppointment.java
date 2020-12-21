@@ -12,10 +12,14 @@ import java.util.Date;
 public class ResourceAppointment {
 
   private Long id, companyId, userId, orgId, duration;
-  private String description, recurrence, recurringEventId, recurringEventEndType;
+  private String title, description, location, recurrence, recurringEventId, recurringEventEndType;
+  private Double latitude, longitude;
   private Date startTime, endTime, recurringStartTime, recurringEndTime;
   private Boolean archived, allDay, repeat;
 
   //i am having trouble with date comparisons of different types and converting back and forth. going to just use a string for comparison for now _rn
   String startTimeString, endTimeString;
+
+  //tells server to update geolocation
+  private Boolean reloadCoordinates = false;
 }
