@@ -67,12 +67,23 @@
 
         </v-card>
         <v-divider v-if="addUser"></v-divider>
+        <v-card-title class="pt-0">
+          <v-text-field
+            v-model="search"
+            prepend-inner-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-card-title>
+        <v-divider></v-divider>
         <v-data-table
           :headers="userHeaders"
           :items="filterUsers()"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
+          :search="search"
           :loading="dataLoading"
           hide-default-footer
           class="elevation-1"
@@ -160,12 +171,23 @@
 
         </v-card>
         <v-divider v-if="addScheduler"></v-divider>
+        <v-card-title class="pt-0">
+          <v-text-field
+            v-model="schedulerSearch"
+            prepend-inner-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-card-title>
+        <v-divider></v-divider>
         <v-data-table
           :headers="schedulerHeaders"
           :items="filterSchedulers()"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
+          :search="schedulerSearch"
           :loading="schedulersLoading"
           hide-default-footer
           class="elevation-1"
@@ -248,12 +270,23 @@
           </v-btn>
         </v-card>
         <v-divider v-if="addCode"></v-divider>
+        <v-card-title class="pt-0">
+          <v-text-field
+            v-model="codeSearch"
+            prepend-inner-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-card-title>
+        <v-divider></v-divider>
         <v-data-table
           :headers="codeHeaders"
           :items="filterPostalCodes()"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
+          :search="codeSearch"
           :loading="dataLoading"
           hide-default-footer
           class="elevation-1"
@@ -334,20 +367,23 @@
         schedulers: [],
         schedulersLoading: false,
         addScheduler: false,
+        schedulerSearch: '',
         schedulerHeaders: [
-          {text: 'Name', value: 'name', show: true},
+          {text: 'Name', value: 'fullName', show: true},
           {text: '', value: 'icons', show: true},
         ],
         selectedUser: {},
         users: [],
         usersLoading: false,
         addUser: false,
+        search: '',
         userHeaders: [
-          {text: 'Name', value: 'name', show: true},
+          {text: 'Name', value: 'fullName', show: true},
           {text: '', value: 'icons', show: true},
         ],
         addCode: false,
         newCode: '',
+        codeSearch: '',
         codeHeaders: [
           {text: 'Postal Code', value: 'postalCode', show: true},
           {text: '', value: 'icons', show: true},
