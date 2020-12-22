@@ -557,73 +557,73 @@ EXECUTE PROCEDURE flow.update_contact_details_project_details();
 
 
 
-CREATE OR REPLACE FUNCTION flow.update_project_process_step_custom_value()
-    RETURNS TRIGGER AS
-$body$
-
-declare
-    v_record record;
-    v_sql    text;
-    v_found  bigint;
-    v_count  integer = 0;
-BEGIN
-
-    select count(1)
-    into v_found
-    from flow.project_process_step
-    where process_step_id = new.process_step_id
-      and project_id = new.project_id
-      and id != new.id
-      and main is false
-      and new.main is true;
-
-    if old.main is false and new.main is true or v_found > 0 then
-        v_sql = 'update brs.project_details set ';
-        for v_record in
-            select pdc.field_to_update, pdc.second_field_to_update
-            from flow.custom_field_group_assignment cfga
-                     inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                     inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                     inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                     inner join flow.data_type dt on dt.id = cdt.data_type_id
-                     inner join brs.project_details_config pdc on pdc.custom_field_group_assignment_id = cfga.id
-            where cfg.process_step_id = new.process_step_id
-              and cf.archived is false
-              and cfg.archived is false
-              and cfga.archived is false
-              and cf.field_name not in ('Installation Agreement Signed', 'Final Design Signed',
-                                        'Final Design Complete', 'Substantial Completion',
-                                        'Final Completion Submitted', 'Final Completion Approved')
-            loop
-                v_count = v_count + 1;
-                if v_record.second_field_to_update is not null then
-                    if not v_record.second_field_to_update = any (string_to_array(v_sql, ' ')) then
-                        v_sql = v_sql || v_record.second_field_to_update || ' = null , ';
-                    end if;
-                end if;
-                if not v_record.field_to_update = any (string_to_array(v_sql, ' ')) then
-                    v_sql = v_sql || v_record.field_to_update || ' = null , ';
-                end if;
-            end loop;
-        v_sql = trim(trailing ' ,' from v_sql);
-        v_sql = v_sql || ' where project_id = ' || new.project_id || ';';
-        if v_count > 0 then
-            -- raise notice 'v_sql%',v_sql;
-            execute v_sql;
-        end if;
-    end if;
-
-    update flow.project_process_step_custom_field_value
-    set id = id
-    where project_process_step_id = new.id;
-    RETURN NULL;
-END
-$body$
-    LANGUAGE plpgsql;
-
-drop trigger if exists update_project_process_step_custom_value_trg on flow.project_process_step;
-CREATE TRIGGER update_project_process_step_custom_value_trg
-    after INSERT or update
-    ON flow.project_process_step
-    FOR EACH ROW
-EXECUTE PROCEDURE flow.update_project_process_step_custom_value();
+-- CREATE OR REPLACE FUNCTION flow.update_project_process_step_custom_value()
+--     RETURNS TRIGGER AS
+-- $body$
+--
+-- declare
+--     v_record record;
+--     v_sql    text;
+--     v_found  bigint;
+--     v_count  integer = 0;
+-- BEGIN
+--
+--     select count(1)
+--     into v_found
+--     from flow.project_process_step
+--     where process_step_id = new.process_step_id
+--       and project_id = new.project_id
+--       and id != new.id
+--       and main is false
+--       and new.main is true;
+--
+--     if old.main is false and new.main is true or v_found > 0 then
+--         v_sql = 'update brs.project_details set ';
+--         for v_record in
+--             select pdc.field_to_update, pdc.second_field_to_update
+--             from flow.custom_field_group_assignment cfga
+--                      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+--                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+--                      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+--                      inner join flow.data_type dt on dt.id = cdt.data_type_id
+--                      inner join brs.project_details_config pdc on pdc.custom_field_group_assignment_id = cfga.id
+--             where cfg.process_step_id = new.process_step_id
+--               and cf.archived is false
+--               and cfg.archived is false
+--               and cfga.archived is false
+--               and cf.field_name not in ('Installation Agreement Signed', 'Final Design Signed',
+--                                         'Final Design Complete', 'Substantial Completion',
+--                                         'Final Completion Submitted', 'Final Completion Approved')
+--             loop
+--                 v_count = v_count + 1;
+--                 if v_record.second_field_to_update is not null then
+--                     if not v_record.second_field_to_update = any (string_to_array(v_sql, ' ')) then
+--                         v_sql = v_sql || v_record.second_field_to_update || ' = null , ';
+--                     end if;
+--                 end if;
+--                 if not v_record.field_to_update = any (string_to_array(v_sql, ' ')) then
+--                     v_sql = v_sql || v_record.field_to_update || ' = null , ';
+--                 end if;
+--             end loop;
+--         v_sql = trim(trailing ' ,' from v_sql);
+--         v_sql = v_sql || ' where project_id = ' || new.project_id || ';';
+--         if v_count > 0 then
+--             -- raise notice 'v_sql%',v_sql;
+--             execute v_sql;
+--         end if;
+--     end if;
+--
+--     update flow.project_process_step_custom_field_value
+--     set id = id
+--     where project_process_step_id = new.id;
+--     RETURN NULL;
+-- END
+-- $body$
+--     LANGUAGE plpgsql;
+--
+-- drop trigger if exists update_project_process_step_custom_value_trg on flow.project_process_step;
+-- CREATE TRIGGER update_project_process_step_custom_value_trg
+--     after INSERT or update
+--     ON flow.project_process_step
+--     FOR EACH ROW
+-- EXECUTE PROCEDURE flow.update_project_process_step_custom_value();
