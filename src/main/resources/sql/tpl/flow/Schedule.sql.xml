@@ -128,7 +128,7 @@
            ra.end_time as "end",
            null::int,
            ra.all_day,
-           ra.description as "title",
+           ra.title,
            'background' as rendering,
            case when ra.org_id is not null then 1 else 2 end as system_list_type_id
     from flow.resource_appointment ra

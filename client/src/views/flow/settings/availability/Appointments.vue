@@ -8,9 +8,20 @@
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add Schedule</v-card-title>
           <v-text-field
-            v-model="newAppt.description"
+            v-model="newAppt.title"
             counter="50"
-            label="Description"
+            placeholder=" "
+            label="Title"
+          ></v-text-field>
+          <v-text-field
+            v-model="newAppt.description"
+            placeholder=" "
+            label="Description (optional)"
+          ></v-text-field>
+          <v-text-field
+            v-model="newAppt.location"
+            placeholder=" "
+            label="Location (optional)"
           ></v-text-field>
           <DatetimePickerInput
             v-model="newAppt.startTime"
@@ -54,7 +65,7 @@
             <v-card-actions>
               <v-btn color="secondary" @click="[newAppt = {}, addNew = false]">Cancel</v-btn>
               <v-btn color="primaryCustom"  @click="saveAppt(newAppt)" class="white--text"
-                     :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.description || newAppt.description.length > 50">
+                     :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.title || newAppt.title.length > 50">
                 Save
               </v-btn>
             </v-card-actions>
@@ -88,11 +99,22 @@
               <v-card flat color="transparent" class="px-3">
                 <!-- no edits allowed to recurring events for now -->
                 <v-text-field
-                  v-model="appt.description"
+                  v-model="appt.title"
                   counter="50"
                   :readonly="appt.recurringEventId != null"
                   :disabled="appt.recurringEventId != null"
-                  label="Description"
+                  label="Title"
+                ></v-text-field>
+                <v-text-field
+                  v-model="appt.description"
+                  :readonly="appt.recurringEventId != null"
+                  :disabled="appt.recurringEventId != null"
+                  label="Description (optional)"
+                ></v-text-field>
+                <v-text-field
+                  v-model="appt.location"
+                  placeholder=" "
+                  label="Location (optional)"
                 ></v-text-field>
                 <DatetimePickerInput
                   v-model="appt.startTime"
@@ -140,7 +162,7 @@
                 <v-card-actions>
                   <v-card-actions>
                     <v-btn color="primaryCustom"  @click="saveAppt(appt)" class="white--text"
-                           :disabled="saveError || !appt.startTime || !appt.endTime || !appt.description || appt.description.length > 50">
+                           :disabled="saveError || !appt.startTime || !appt.endTime || !appt.title || appt.title.length > 50">
                       Save
                     </v-btn>
                   </v-card-actions>
@@ -152,7 +174,7 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.startTime | formatDate(item.allDay ? 'timestampAsDate' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'timestampAsDate' : 'timestamp')}}</td>
-              <td class="text-left">{{item.description}}</td>
+              <td class="text-left">{{item.title}}</td>
               <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
               <td class="text-left">
                 <v-btn small text @click="[expanded = [item], selectedIndex = index, saveError = false]"
@@ -246,7 +268,7 @@
           this.newAppt = {}
           this.getAppointments()
         }
-      }
+      },
     },
     data() {
       return {
@@ -276,7 +298,7 @@
         timezone: this.$store.state.user.details.timezone.value,
         headers: [
           { text: 'Appointments', value: 'appointment', show: true},
-          { text: 'Description', value: 'description', show: true},
+          { text: 'Title', value: 'title', show: true},
           { text: 'All Day', value: 'allDay', show: true},
           { text: '', value: 'icons', show: true}
         ],
@@ -288,17 +310,18 @@
       },
     },
     created() {
-      this.getAppointments()
       // if(VUE_APP_ENV === 'local') {
       //   //randa test stuff
       //   this.addNew = true
       //   this.newAppt = {
-      //     description: 'hello world',
-      //     startTime: '2020-10-28T19:00:00.000Z',
-      //     endTime: '2020-10-28T21:00:00.000Z',
-      //     repeat: true
+      //     title: 'hello world',
+      //     description: 'hello description',
+      //     startTime: '2020-12-28T19:00:00.000Z',
+      //     endTime: '2020-12-28T21:00:00.000Z',
+      //     repeat: false
       //   }
       // }
+      this.getAppointments()
     },
     methods: {
       async getAppointments() {
@@ -329,6 +352,11 @@
           this.saveError = true
           this.saveErrorMsg = '* Appointment End must be after Appointment Start'
         } else {
+          if(!appt.repeat) {
+            //clear out recurrence fields if not repeat when saved
+            appt.recurrence = null
+            appt.recurringEventType = null
+          }
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
             if( appt.allDay) {

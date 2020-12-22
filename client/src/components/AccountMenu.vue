@@ -146,8 +146,10 @@
         ]
       }
     },
-    updated () {
+    created () {
       this.getUserImage()
+    },
+    updated () {
       if(this.$store.state.user.details.timezone === null) {
         this.timezone = {
           friendlyValue: moment.tz.guess(),

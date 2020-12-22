@@ -25,6 +25,7 @@
               item-text="label"
               return-object
               multiple
+              clearable
               :readonly="readonly"
               :disabled="readonly"
               @input="updateRecurrenceString"
@@ -35,6 +36,7 @@
               label="By Day of Week"
               item-text="label"
               return-object
+              clearable
               :readonly="readonly"
               :disabled="readonly"
               @input="updateRecurrenceString"

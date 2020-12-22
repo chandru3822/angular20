@@ -30,11 +30,15 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            -- and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                 (now() at time zone 'US/Mountain')::date)                                                                                   as today_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -42,11 +46,15 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --   and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                 (now() at time zone 'US/Mountain')::date - 1)                                                                               as yesterday_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -54,13 +62,17 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 (now() at time zone 'US/Mountain')::date - 7
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                 (now() at time zone 'US/Mountain')::date)                                                                                   as seven_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -68,13 +80,17 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            -- and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 (now() at time zone 'US/Mountain')::date - 14
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                 (now() at time zone 'US/Mountain')::date - 7)                                                                               as prev_seven_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -82,13 +98,17 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 (now() at time zone 'US/Mountain')::date - 30
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                 (now() at time zone 'US/Mountain')::date)                                                                                   as thirty_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -98,11 +118,15 @@ BEGIN
                                           where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 (now() at time zone 'US/Mountain')::date - 60
                                             and pd.source = 525 --Setter Gen
-                                            --  and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                 (now() at time zone 'US/Mountain')::date - 30)                                                                              as prev_thirty_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -110,10 +134,14 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
+
                                   from brs.setter_funnel
                                   where id = 3
                               ),
@@ -131,102 +159,377 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1 --do nothing, since pd.first_appointment only corresponds with appointments that don't have an outcome
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain')::date)                                  as today_day_count,
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date) as today_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain')::date - 1)                              as yesterday_day_count,
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date - 1) as yesterday_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 7
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date)                                  as seven_day_count,
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 7
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date) as seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 14
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 7)                              as prev_seven_day_count,
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 14
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 7) as prev_seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 30
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date)                                  as thirty_day_count,
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 30
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date) as thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
-                                                 and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 60
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 30)                             as prev_thirty_day_count,
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 60
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 30) as prev_thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
                                        from brs.setter_funnel
                                        where id = 1
                                    ),
@@ -244,81 +547,195 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain')::date)                                  as today_day_count,
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date) as today_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain')::date - 1)                              as yesterday_day_count,
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date - 1) as yesterday_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 7
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date)                                  as seven_day_count,
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 7
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date) as seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 14
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 7)                              as prev_seven_day_count,
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 14
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 7) as prev_seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     ((now() at time zone 'US/Mountain')::date) - 30
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date)                                  as thirty_day_count,
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() at time zone 'US/Mountain')::date) - 30
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date) as thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     ((now() at time zone 'US/Mountain')::date) - 60
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 30)                             as prev_thirty_day_count,
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() at time zone 'US/Mountain')::date) - 60
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 30) as prev_thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
                                        from brs.setter_funnel
                                        where id = 2
                                    )
@@ -379,8 +796,11 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --   and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                 (now() at time zone 'US/Mountain')::date
@@ -389,6 +809,7 @@ BEGIN
                                                 (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                               p_org_ids,
                                                                               ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as today_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -396,8 +817,11 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --       and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                 (now() at time zone 'US/Mountain')::date - 1
@@ -406,6 +830,7 @@ BEGIN
                                                 (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                               p_org_ids,
                                                                               ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as yesterday_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -413,8 +838,11 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --        and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 ((now() at time zone 'US/Mountain')::date) - 7
@@ -425,6 +853,7 @@ BEGIN
                                                 (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                               p_org_ids,
                                                                               ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as seven_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -432,8 +861,11 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --      and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 ((now() at time zone 'US/Mountain')::date) - 14
@@ -444,6 +876,7 @@ BEGIN
                                                 (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                               p_org_ids,
                                                                               ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as prev_seven_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -451,8 +884,11 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --      and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 ((now() at time zone 'US/Mountain')::date) - 30
@@ -463,6 +899,7 @@ BEGIN
                                                 (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                               p_org_ids,
                                                                               ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as thirty_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -470,8 +907,11 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --      and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                 ((now() at time zone 'US/Mountain')::date) - 60
@@ -482,6 +922,7 @@ BEGIN
                                                 (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                               p_org_ids,
                                                                               ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as prev_thirty_day_count,
+
                                          (select count(1)
                                           from brs.project_details pd
                                                    inner join flow.project p on p.id = pd.project_id
@@ -489,8 +930,11 @@ BEGIN
                                                               on (up.user_id = pd.setter_user_id and
                                                                   up.primary_flag is true and up.position_id = 4)
                                           where pd.source = 525 --Setter Gen
-                                            --     and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) --Cancelled
-                                            and pd.closer_appointment_start is not null
+                                            and (pd.first_appointment_pitched is not null
+                                                or pd.first_appointment_missed is not null
+                                                or pd.first_appointment_not_pitched_or_missed is not null
+                                                or pd.first_appointment is not null
+                                                or pd.closer_appointment_start is not null)
                                             and pd.company_id = v_company_id
                                             and ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                             and pd.setter_user_id = any (p_user_ids)
@@ -516,17 +960,50 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1 --do nothing, since pd.first_appointment only corresponds with appointments that don't have an outcome
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as today_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -534,18 +1011,50 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain')::date - 1
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date - 1
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as yesterday_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -553,20 +1062,66 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     ((now() at time zone 'US/Mountain')::date) - 7
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 7
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -574,21 +1129,66 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     ((now() at time zone 'US/Mountain')::date) - 14
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 7
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 14
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 7
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as prev_seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -596,20 +1196,66 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 30
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 30
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -617,21 +1263,66 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 60
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 30
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 60
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 30
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as prev_thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -639,12 +1330,44 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                      --Setter Gen
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome != 4) --Cancelled
-                                                 and pd.closer_appointment_start is not null
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                               then pd.first_appointment_pitched_id != 4 --Cancelled
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is not null
+                                                               then pd.first_appointment_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is not null
+                                                               then pd.first_appointment_not_pitched_or_missed_id != 4
+                                                           when pd.first_appointment_pitched is null
+                                                               and pd.first_appointment_missed is null
+                                                               and pd.first_appointment_not_pitched_or_missed is null
+                                                               and pd.first_appointment is not null
+                                                               then 1=1
+                                                           else (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4)
+                                                           end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.first_appointment_not_pitched_or_missed is not null
+                                                     or pd.first_appointment is not null
+                                                     or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
@@ -668,14 +1391,29 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as today_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -683,15 +1421,29 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain')::date - 1
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date = (now() at time zone 'US/Mountain')::date - 1
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as yesterday_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -699,17 +1451,36 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 7
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 7
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -717,18 +1488,36 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 14
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 7
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= (now() at time zone 'US/Mountain')::date - 14
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 7
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as prev_seven_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -736,17 +1525,36 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 30
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() at time zone 'US/Mountain')::date) - 30
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -754,18 +1562,36 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date >=
-                                                     (now() at time zone 'US/Mountain')::date - 60
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date - 30
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() at time zone 'US/Mountain')::date) - 60
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date - 30
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],
                                                                                    p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))) as prev_thirty_day_count,
+
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
@@ -773,9 +1599,23 @@ BEGIN
                                                                    on (up.user_id = pd.setter_user_id and
                                                                        up.primary_flag is true and up.position_id = 4)
                                                where pd.source = 525                                     --Setter Gen
-                                                 and pd.closer_appointment_outcome in (2, 3, 1139, 1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and (case when pd.first_appointment_pitched is not null
+                                                          then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                      when pd.first_appointment_pitched is null
+                                                          and pd.first_appointment_missed is not null
+                                                          then pd.first_appointment_missed_id in (2,3,1139,1140)
+                                                      else pd.closer_appointment_outcome in (2,3,1139,1140)
+                                                      end)
+                                                 and (pd.first_appointment_pitched is not null
+                                                     or pd.first_appointment_missed is not null
+                                                     or pd.closer_appointment_start is not null)
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                                 then pd.first_appointment_pitched
+                                                             when pd.first_appointment_pitched is null
+                                                                 and pd.first_appointment_missed is not null
+                                                                 then pd.first_appointment_missed
+                                                             else pd.closer_appointment_start
+                                                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.setter_user_id = any (p_user_ids)
                                                  and pd.setter_user_id = any
                                                      (brs.limit_by_org_for_setters(Array [pd.setter_user_id]::integer[],

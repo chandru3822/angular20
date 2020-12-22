@@ -32,7 +32,22 @@ BEGIN
                      then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
                      else ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
                      end
-                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                 and (((case when pd.first_appointment_pitched is not null
+                                 then pd.first_appointment_pitched
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is not null
+                                 then pd.first_appointment_missed
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is null
+                                 and pd.first_appointment_not_pitched_or_missed is not null
+                                 then pd.first_appointment_not_pitched_or_missed
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is null
+                                 and pd.first_appointment_not_pitched_or_missed is null
+                                 and pd.first_appointment is not null
+                                 then pd.first_appointment
+                             else pd.closer_appointment_start
+                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
                  and pd.setter_user_id = any(v_setter_ids)
                  and pd.company_id = 3
@@ -47,8 +62,20 @@ BEGIN
                      then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
                      else ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
                      end
-                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                 and (((case when pd.first_appointment_pitched is not null
+                                 then pd.first_appointment_pitched
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is not null
+                                 then pd.first_appointment_missed
+                             else pd.closer_appointment_start
+                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                 and (case when pd.first_appointment_pitched is not null
+                               then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                           when pd.first_appointment_pitched is null
+                               and pd.first_appointment_missed is not null
+                               then pd.first_appointment_missed_id in (2,3,1139,1140)
+                           else pd.closer_appointment_outcome in (2,3,1139,1140)
+                           end)
                  and pd.setter_user_id = any(v_setter_ids)
                  and pd.company_id = 3
             ) as total_pitches

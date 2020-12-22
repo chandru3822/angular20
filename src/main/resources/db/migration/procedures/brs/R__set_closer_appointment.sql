@@ -269,7 +269,9 @@ BEGIN
 --         raise notice 'this is v_user_idd %',v_user_id;
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
-                set int_value = v_user_position_id
+                set int_value = v_user_position_id,
+                modified_by_id = p_current_user_id,
+                date_modified = now()
                 where id = v_project_process_step_custom_field_value_id;
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
@@ -289,7 +291,9 @@ BEGIN
 
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
-                set timestamp_value = p_appointment_start_time
+                set timestamp_value = p_appointment_start_time,
+                    modified_by_id = p_current_user_id,
+                    date_modified = now()
                 where id = v_project_process_step_custom_field_value_id;
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
@@ -310,7 +314,9 @@ BEGIN
 
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
-                set timestamp_value = p_appointment_start_time + (v_default_appointment_length || 'minutes')::interval
+                set timestamp_value = p_appointment_start_time + (v_default_appointment_length || 'minutes')::interval,
+                    modified_by_id = p_current_user_id,
+                    date_modified = now()
                 where id = v_project_process_step_custom_field_value_id;
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
