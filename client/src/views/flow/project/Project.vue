@@ -9,7 +9,7 @@
               <div class="project-title">
                 <router-link v-if="$store.getters.userHasFeature('CONTACTS')"
                              :to="`/contact/${project.contactId}`">
-                  {{ project.projectName}}
+                  {{ project.projectName}} <span v-if="project.mobile">- {{ formatPhoneNumber(project.mobile) }}</span>
                 </router-link>
                 <span v-else>{{ project.projectName}}</span>
                 <br/>
@@ -49,7 +49,8 @@
                             item-value="id"
                   ></v-select>
                 </div>
-                <v-btn x-small text v-if="userCanEdit" @click="[editAddress = !editAddress, project.reloadCoordinates = true, getStatesAndCountries()]">
+                <v-btn x-small text v-if="userCanEdit"
+                       @click="[editAddress = !editAddress, project.reloadCoordinates = true, getStatesAndCountries()]">
                   <span v-if="editAddress">Cancel</span>
                   <v-icon v-else>edit</v-icon>
                 </v-btn>
@@ -177,187 +178,190 @@
 </template>
 
 <script>
-import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
-import ProjectDetails from '@/views/flow/project/ProjectDetails'
-import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
-import ProjectNotes from '@/views/flow/project/ProjectNotes'
-import Messaging from '@/views/flow/components/Messaging'
-import constants from '@/helpers/constants'
-import {getCountries} from '@/services/countryService'
-import {getCompanyStates} from '@/services/stateService'
+  import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
+  import {AppMutations} from '@/stores/AppStore'
+  import ProjectDetails from '@/views/flow/project/ProjectDetails'
+  import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
+  import ProjectNotes from '@/views/flow/project/ProjectNotes'
+  import Messaging from '@/views/flow/components/Messaging'
+  import constants from '@/helpers/constants'
+  import {getCountries} from '@/services/countryService'
+  import {getCompanyStates} from '@/services/stateService'
 
-export default {
-  name: 'Project',
-  components: {
-    ProjectDetails,
-    ActiveProcessSteps,
-    ProjectNotes,
-    Messaging
-  },
-  data () {
-    return {
-      snackbar: {},
-      tabs: [],
-      tabsLoading: true,
-      selectedTab: {},
-      secondaryTab: 1,
-      menuOpen: false,
-      constants,
-      projectId: parseInt(this.$route.params.projectId),
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      displayChangeOwner: false,
-      availableOwners: [],
-      editAddress: false,
-      statuses: [],
-      project: {},
-      states: [],
-      countries: [],
-      projectLoading: true,
-      breadcrumbs: [
-        {
-          text: 'Back to Projects',
-          disabled: false,
-          exact: true,
-          to: `/projects`
-        },
-      ]
-    }
-  },
-  created () {
-    this.getProject()
-    this.getStatuses()
-    this.getProjectTabs()
-  },
-  methods: {
-    getProjectTabs: async function () {
-      this.tabsLoading = true
-      try {
-        let params = {
-          projectId: parseInt(this.projectId)
+  export default {
+    name: 'Project',
+    components: {
+      ProjectDetails,
+      ActiveProcessSteps,
+      ProjectNotes,
+      Messaging
+    },
+    data() {
+      return {
+        snackbar: {},
+        tabs: [],
+        tabsLoading: true,
+        selectedTab: {},
+        secondaryTab: 1,
+        menuOpen: false,
+        constants,
+        formatPhoneNumber,
+        projectId: parseInt(this.$route.params.projectId),
+        companyId: this.$store.state.user.details.companyId,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
+        displayChangeOwner: false,
+        availableOwners: [],
+        editAddress: false,
+        statuses: [],
+        project: {},
+        states: [],
+        countries: [],
+        projectLoading: true,
+        breadcrumbs: [
+          {
+            text: 'Back to Projects',
+            disabled: false,
+            exact: true,
+            to: `/projects`
+          },
+        ]
+      }
+    },
+    created() {
+      this.getProject()
+      this.getStatuses()
+      this.getProjectTabs()
+    },
+    methods: {
+      getProjectTabs: async function () {
+        this.tabsLoading = true
+        try {
+          let params = {
+            projectId: parseInt(this.projectId)
+          }
+          const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
+          this.tabs = data
+          this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
+        } catch (e) {
+          logError(e)
+        } finally {
+          this.tabsLoading = false
         }
-        const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
-        this.tabs = data
-        this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.tabsLoading = false
-      }
-    },
-    getProject: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/project/${this.projectId}`)
-        this.project = data
-        window.document.title = `Project Details - ${this.project.projectName}`
-        this.projectLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        this.projectLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        logError(e)
-      }
-    },
-    updateOwner: async function () {
-      this.displayChangeOwner = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getStatuses: async function () {
-      try {
-        const {data} = await getRequestWithParams('/project/status', { params: {
-          projectId: this.projectId
-        }})
-        this.statuses = data
-      } catch (e) {
-        this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    updateStatus: async function () {
-      try {
+      },
+      getProject: async function () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await postRequest(`/project/${this.projectId}/status`, this.project)
-      }  catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error updating project status')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    saveProjectAddress: async function() {
-      this.editAddress = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/project`, this.project)
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getStatesAndCountries: function () {
-      // only load countries and states if they try to edit the project address and they haven't already been loaded
-      if(this.states.length === 0 || this.countries.length === 0) {
-        this.getCompanyStates()
-        this.getCountries()
-      }
-    },
-    getCompanyStates: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getCompanyStates()
-        this.states = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getCountries: async function () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getCountries()
-        this.countries = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getOwners: async function () {
-      console.log('hello')
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/project/owners`)
-        this.availableOwners = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+        try {
+          const {data} = await getRequest(`/project/${this.projectId}`)
+          this.project = data
+          window.document.title = `Project Details - ${this.project.projectName}`
+          this.projectLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.projectLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          logError(e)
+        }
+      },
+      updateOwner: async function () {
+        this.displayChangeOwner = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/project/${this.projectId}/owner`, this.project.owner)
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getStatuses: async function () {
+        try {
+          const {data} = await getRequestWithParams('/project/status', {
+            params: {
+              projectId: this.projectId
+            }
+          })
+          this.statuses = data
+        } catch (e) {
+          this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
+      updateStatus: async function () {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await postRequest(`/project/${this.projectId}/status`, this.project)
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error updating project status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      saveProjectAddress: async function () {
+        this.editAddress = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/project`, this.project)
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getStatesAndCountries: function () {
+        // only load countries and states if they try to edit the project address and they haven't already been loaded
+        if (this.states.length === 0 || this.countries.length === 0) {
+          this.getCompanyStates()
+          this.getCountries()
+        }
+      },
+      getCompanyStates: async function () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getCompanyStates()
+          this.states = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getCountries: async function () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getCountries()
+          this.countries = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getOwners: async function () {
+        console.log('hello')
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/project/owners`)
+          this.availableOwners = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Owners')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+    }
   }
-}
 </script>
 
 <style lang="scss" scoped>
@@ -367,6 +371,7 @@ export default {
     padding-right: 0;
     padding-top: 0;
   }
+
   .project-created {
     font-size: 12px;
     color: grey;
