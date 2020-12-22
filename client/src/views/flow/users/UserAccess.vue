@@ -229,7 +229,7 @@
         try {
           const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
-              isSchedulingTool: false
+              isSchedulingTool: true
             }
           })
           this.orgCalendars = data
