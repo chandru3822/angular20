@@ -144,6 +144,7 @@ where cpsst.process_step_status_type_id = 1 and
       pps.main is true and
       pps.archived is not true and
       ps.archived is not true and
+      p.archived is not true and
       psa.archived is not true and
       psa.trigger_automatically is true and
       psa.time_based_trigger is true

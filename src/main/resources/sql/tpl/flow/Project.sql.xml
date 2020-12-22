@@ -109,6 +109,8 @@
         p.postal_code,
         p.company_country_id,
         c.country,
+        ct.phone,
+        ct.mobile,
         p.contact_id,
         p.date_created,
         cp.company_id,
@@ -135,6 +137,7 @@
         cpst.project_status_type
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
+      inner join flow.contact ct on ct.id = p.contact_id
       inner join flow.process pro on pro.id = cp.process_id
       inner join flow.company comp on cp.company_id = comp.id
       inner join flow."user" u on u.id = p.created_by_id

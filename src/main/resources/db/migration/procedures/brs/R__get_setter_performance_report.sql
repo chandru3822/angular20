@@ -25,7 +25,22 @@ BEGIN
                  inner join flow.contact c on c.id = p.contact_id
                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
-                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                 and (((case when pd.first_appointment_pitched is not null
+                                 then pd.first_appointment_pitched
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is not null
+                                 then pd.first_appointment_missed
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is null
+                                 and pd.first_appointment_not_pitched_or_missed is not null
+                                 then pd.first_appointment_not_pitched_or_missed
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is null
+                                 and pd.first_appointment_not_pitched_or_missed is null
+                                 and pd.first_appointment is not null
+                                 then pd.first_appointment
+                             else pd.closer_appointment_start
+                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
                  and pd.setter_user_id not in (2354810, 2390159)
                  and pd.setter_user_id = p_user_id
@@ -37,8 +52,20 @@ BEGIN
                  inner join flow.contact c on c.id = p.contact_id
                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
-                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                 and pd.closer_appointment_outcome in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                 and (((case when pd.first_appointment_pitched is not null
+                                 then pd.first_appointment_pitched
+                             when pd.first_appointment_pitched is null
+                                 and pd.first_appointment_missed is not null
+                                 then pd.first_appointment_missed
+                             else pd.closer_appointment_start
+                             end) at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                 and (case when pd.first_appointment_pitched is not null
+                               then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                           when pd.first_appointment_pitched is null
+                               and pd.first_appointment_missed is not null
+                               then pd.first_appointment_missed_id in (2,3,1139,1140)
+                           else pd.closer_appointment_outcome in (2,3,1139,1140)
+                           end)
                  and pd.setter_user_id not in (2354810, 2390159)
                  and pd.setter_user_id = p_user_id
                  and pd.company_id = 3
