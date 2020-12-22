@@ -211,7 +211,7 @@
       where uoa.user_id = :userId
           and uoa.archived is not true
           and o.archived is not true
-        and o.company_id = :companyId
+          and (o.company_id = :companyId OR o.available_to_children is true)
       order by o.org_name;
   ]]></org.getOrgCalendarsForUser>
 
