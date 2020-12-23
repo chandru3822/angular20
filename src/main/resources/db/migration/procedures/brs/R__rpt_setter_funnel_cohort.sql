@@ -280,9 +280,22 @@ BEGIN
                                                      or pd.first_appointment is not null
                                                      or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date) as seven_day_count,
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date) as seven_day_count,
 
                                               (select count(1)
                                                from brs.project_details pd
