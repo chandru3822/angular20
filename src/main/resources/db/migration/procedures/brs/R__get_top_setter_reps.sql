@@ -15,7 +15,7 @@ BEGIN
       from flow.project p
         inner join brs.project_details pd on pd.project_id = p.id
         inner join flow.contact c on c.id = p.contact_id
-        inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id = 4)
+        inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
         inner join flow.user u on u.id = pd.setter_user_id
       where (((case when pd.first_appointment_pitched is not null
                         then pd.first_appointment_pitched

@@ -15,7 +15,7 @@ BEGIN
     FROM flow.user_position
     WHERE org_id = p_office_id
         AND primary_flag IS TRUE
-        AND position_id = 4;
+        AND position_id in (4,5);
 
     RETURN v_setter_ids;
 
