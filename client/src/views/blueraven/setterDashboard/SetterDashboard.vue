@@ -361,7 +361,7 @@
               <td class="center-text">{{ office.rank }}</td>
               <td class="left-text">{{ office.org }}</td>
               <td class="center-text">{{ office.total_appointments }}</td>
-              <td class="center-text">{{ office.pitches }}</td>
+              <td class="center-text">{{ office.total_pitches }}</td>
               <td class="center-text">{{ office.pitch_percentage }}%</td>
             </tr>
           </table>
