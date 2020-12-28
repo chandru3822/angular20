@@ -52,6 +52,7 @@
               class="mt-5"
               prepend-inner-icon="search"
               text
+              clearable
               label="Search contacts..."
               v-model="search"
               @input="debounceGetContacts"
@@ -158,12 +159,23 @@ export default {
     }
   },
   watch: {
-    options: {
-      handler () {
-        this.getContacts()
-      },
-      deep: true,
-    },
+    // options: {
+    //   handler () {
+    //     this.getContacts()
+    //   },
+    //   deep: true,
+    // },
+  },
+  beforeRouteEnter(to, from, next) {
+    //if coming to this page from the project details - use the previously used searchQuery
+    next((vm) => {
+      if(from?.fullPath.includes('/contact/')) {
+        vm.search = localStorage.getItem('contactSearch') || ''
+      } else {
+        localStorage.removeItem('contactSearch')
+      }
+      vm.getContacts()
+    });
   },
   created () {
     if (this.$store.getters.userHasFeature('SMARTLIST')) {
@@ -184,6 +196,9 @@ export default {
     },
     debounceGetContacts: debounce( function () {
       this.dataLoading = true
+      //don't allow search to be null - causes issues
+      this.search = this.search || ''
+      localStorage.setItem('contactSearch', this.search)
       this.getContacts()
     }, 500),
     async getContacts () {
