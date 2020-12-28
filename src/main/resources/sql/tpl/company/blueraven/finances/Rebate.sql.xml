@@ -179,7 +179,7 @@
             select * from (
               select p.id project_id,
               pcs.customer_name project_name,
-              pcs.sc,
+              pcs.sc substantialCompletionDate,
               coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
               (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
               coalesce(prps.name,'New') state,
@@ -213,7 +213,7 @@
                     and cf.company_id = (select company_id from brs.project_details pd where pd.project_id = p.id))
               and pscfv.int_value is not null
               and pcs.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
-                ) as payments where payments.entered_into_payment_system_date != null
+                ) as payments where entered_into_payment_system_date is not null
         ]]>
   </rebate.getPaymentsPending>
 
@@ -222,7 +222,7 @@
             select prp.id payment_id,
             p.id project_id,
             pcs.customer_name project_name,
-			pcs.sc,
+			      pcs.sc substantialCompletionDate,
             (select batch_date::date
              from brs.project_rebate_payment prp1
                  inner join brs.project_rebate_batch drb on drb.id = prp1.project_rebate_batch_id
@@ -262,7 +262,7 @@
        select * from (
          select p.id project_id,
          pcs.customer_name project_name,
-         pcs.sc,
+         pcs.sc substantialCompletionDate,
          sum(prp.payment_amount) payment_amount,
          coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
          (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = prp.created_by_user_id) as createdBy,
@@ -301,7 +301,7 @@
       from (
       select p.id project_id,
       pcs.customer_name as project_name,
-      pcs.sc,
+      pcs.sc substantialCompletionDate,
       (total_promotion_amount)/(num_of_promotion_payments)::numeric as payment_amount,
       c.id as contact_id,
       c.street1,
