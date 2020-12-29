@@ -28,7 +28,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -44,7 +44,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -60,7 +60,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -78,7 +78,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -96,7 +96,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -114,7 +114,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -131,7 +131,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -156,7 +156,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -204,7 +204,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -252,7 +252,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -280,16 +280,29 @@ BEGIN
                                                      or pd.first_appointment is not null
                                                      or pd.closer_appointment_start is not null)
                                                  and pd.company_id = v_company_id
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone
-                                                      'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain')::date) as seven_day_count,
+                                                 and (((case when pd.first_appointment_pitched is not null
+                                                     then pd.first_appointment_pitched
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is not null
+                                                     then pd.first_appointment_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is not null
+                                                     then pd.first_appointment_not_pitched_or_missed
+                                                 when pd.first_appointment_pitched is null
+                                                     and pd.first_appointment_missed is null
+                                                     and pd.first_appointment_not_pitched_or_missed is null
+                                                     and pd.first_appointment is not null
+                                                     then pd.first_appointment
+                                                 else pd.closer_appointment_start
+                                                 end) at time zone 'UTC') at time zone 'US/Mountain') :: date <= (now() at time zone 'US/Mountain')::date) as seven_day_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -339,7 +352,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -389,7 +402,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -439,7 +452,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -496,7 +509,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -517,7 +530,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -538,7 +551,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -561,7 +574,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -584,7 +597,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -607,7 +620,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -630,7 +643,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -744,7 +757,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -765,7 +778,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -786,7 +799,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -807,7 +820,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -827,7 +840,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -848,7 +861,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -869,7 +882,7 @@ BEGIN
                                                    inner join flow.project p on p.id = pd.project_id
                                                    inner join flow.user_position up
                                                               on (up.user_id = pd.setter_user_id and
-                                                                  up.primary_flag is true and up.position_id = 4)
+                                                                  up.primary_flag is true and up.position_id in (4,5))
                                           where pd.source = 525 --Setter Gen
                                             and (pd.first_appointment_pitched is not null
                                                 or pd.first_appointment_missed is not null
@@ -899,7 +912,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -952,7 +965,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -1005,7 +1018,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -1060,7 +1073,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -1114,7 +1127,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -1168,7 +1181,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -1222,7 +1235,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                      --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                                then pd.first_appointment_pitched_id != 4 --Cancelled
@@ -1284,7 +1297,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -1309,7 +1322,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -1335,7 +1348,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -1363,7 +1376,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -1391,7 +1404,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -1418,7 +1431,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -1446,7 +1459,7 @@ BEGIN
                                                         inner join flow.project p on p.id = pd.project_id
                                                         inner join flow.user_position up
                                                                    on (up.user_id = pd.setter_user_id and
-                                                                       up.primary_flag is true and up.position_id = 4)
+                                                                       up.primary_flag is true and up.position_id in (4,5))
                                                where pd.source = 525                                     --Setter Gen
                                                  and (case when pd.first_appointment_pitched is not null
                                                           then pd.first_appointment_pitched_id in (2,3,1139,1140) --(Pitched, Missed, Pitched - Proposal Not Shown, Pitched - Proposal Shown)

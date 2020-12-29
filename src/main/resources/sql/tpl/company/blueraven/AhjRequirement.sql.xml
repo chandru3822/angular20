@@ -49,27 +49,26 @@
         from brs.ahj_requirements ar
         where status_id = 3
       )
-      SELECT ar.ahj_id as "ahjId",
+      SELECT ar.ahj_id ahjId,
              ar.archived,
              ar.position,
-             ar.status_id "statusId",
+             ar.status_id statusId,
              ars.name status,
              ar.complete,
-             ar.date_created "dateCreated",
-             ar.created_by_id "createdById",
-             concat(u.first_name, ' ', u.last_name) AS "createdBy",
-             ar.date_modified "dateModified",
-             ar.modified_by_id "modifiedById",
-             concat(u2.first_name, ' ', u2.last_name) AS "modifiedBy",
+             ar.date_created dateCreated,
+             ar.created_by_id createdById,
+             concat(u.first_name, ' ', u.last_name) createdBy,
+             ar.date_modified dateModified,
+             ar.modified_by_id modifiedById,
+             concat(u2.first_name, ' ', u2.last_name) modifiedBy,
              r.id,
              r.description,
-             r.requirement_type_id as "requirementTypeId",
-             ar.original_requirement_id "originalRequirementId",
-             art.name "requirementType",
-             CASE
-               WHEN oc.original_requirement_id is not null THEN true
-               ELSE false
-             END AS "hasOpenChallenge"
+             r.requirement_type_id requirementTypeId,
+             ar.original_requirement_id originalRequirementId,
+             art.name requirementType,
+             (case when oc.original_requirement_id is not null then true
+                   else false
+                   end) hasOpenChallenge
       FROM brs.ahj_requirements ar
         LEFT JOIN open_challenge oc ON oc.ahj_id = ar.ahj_id
           AND oc.original_requirement_id = ar.original_requirement_id

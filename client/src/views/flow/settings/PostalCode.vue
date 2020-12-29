@@ -13,6 +13,11 @@
                         label="Distribution Time Frame"
                         v-model="zone.distributionTimeFrameDays">
           </v-text-field>
+          <v-text-field text class="d-inline-block mt-4 ml-3"
+                        type="text"
+                        label="Schedulable Future Days"
+                        v-model="zone.schedulableFutureDays">
+          </v-text-field>
           <v-btn text color="primaryCustom" @click="saveZoneInfo()">
             <v-icon>save</v-icon>
           </v-btn>
@@ -22,6 +27,9 @@
 
           <div class="dtf">
             Distribution Time Frame: {{zone.distributionTimeFrameDays}} days
+          </div>
+          <div class="dtf mb-2">
+            Schedulable Future Days: {{zone.schedulableFutureDays}} days
           </div>
 
 

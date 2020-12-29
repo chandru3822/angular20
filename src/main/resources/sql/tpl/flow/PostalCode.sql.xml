@@ -11,10 +11,26 @@
     order by zone_name
   ]]></postalCode.getZones>
 
+  <postalCode.getZoneByPostalCode><![CDATA[
+    select pcz.id,
+       company_id,
+       zone_name,
+       distribution_time_frame_days,
+       schedulable_future_days
+    from flow.postal_code_zone pcz
+        inner join flow.postal_code pc on pcz.id = pc.postal_code_zone_id
+    where company_id = :companyId
+      and pcz.archived is not true
+      and pc.archived is not true
+      and postal_code = :postalCode
+    limit 1
+  ]]></postalCode.getZoneByPostalCode>
+
   <postalCode.getZone><![CDATA[
     select pcz.id,
        pcz.company_id,
        pcz.distribution_time_frame_days,
+       pcz.schedulable_future_days,
        pcz.zone_name,
        pcz.archived,
        coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
@@ -68,14 +84,15 @@
 
 
   <postalCode.insertZone><![CDATA[
-    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id, distribution_time_frame_days)
-    values (:companyId, :zoneName, now(), :createdById, :distributionTimeFrameDays)
+    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id, distribution_time_frame_days, schedulable_future_days)
+    values (:companyId, :zoneName, now(), :createdById, :distributionTimeFrameDays, :schedulableFutureDays)
   ]]></postalCode.insertZone>
 
   <postalCode.updateZone><![CDATA[
     update flow.postal_code_zone
     set zone_name = :zoneName,
         distribution_time_frame_days = :distributionTimeFrameDays,
+        schedulable_future_days = :schedulableFutureDays,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
