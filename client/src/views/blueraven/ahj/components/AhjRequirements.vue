@@ -108,8 +108,6 @@
       <div class="empty-list mx-3 mt-3" v-show="requirementsCopy.length < 1">
         No requirements found
       </div>
-
-
     </div>
 
     <v-card v-if="!transparent">
@@ -319,15 +317,22 @@
         } else {
           try {
             this.requirement.archived = false
+
+            // resets the requirement status ID so that updates still work after a challenge is denied
+            if (this.requirement.statusId === 4) {
+              this.requirement.statusId = 1
+            }
+
             const {data} = await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
-            let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
-            this.requirementsCopy[updatedRequirementIndex].description = data.description
+            let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data?.originalRequirementId)
+            this.requirementsCopy[updatedRequirementIndex].id = data?.id
+            this.requirementsCopy[updatedRequirementIndex].description = data?.description
             this.requirementsCopy[updatedRequirementIndex].position = this.requirement.position
 
-            if (data.dateModified) {
+            if (data?.dateModified) {
               this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModified).format('MM/DD/YY h:mm A')
             } else {
-              this.requirementsCopy[updatedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
+              this.requirementsCopy[updatedRequirementIndex].formattedDateCreated = moment(data?.dateCreated).format('MM/DD/YY h:mm A')
             }
 
             this.snackbar = getSnackbar('SUCCESS', 'Requirement updated')
