@@ -13,9 +13,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import java.sql.Array;
@@ -59,6 +61,7 @@ public class PostalCodeService {
     params.put("companyId", user.getCompanyId());
     params.put("zoneName", zone.getZoneName());
     params.put("distributionTimeFrameDays", zone.getDistributionTimeFrameDays());
+    params.put("schedulableFutureDays", zone.getSchedulableFutureDays());
 
     Long id;
     if(null != zone.getId()) {
@@ -169,6 +172,30 @@ public class PostalCodeService {
 
     List<User> results = sqlCache.query("postalCode.getAvailableZoneUsers", params, User.class);
     return results;
+  }
+
+  public PostalCodeZone getZoneByPostalCode(String postalCode, Long projectId) {
+    User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
+    HashMap<String, Object> params = new HashMap<>();
+
+    if(null != projectId) {
+      //had to change this so that a parent looking at a child project could still see project tabs
+      params.put("projectId", projectId);
+      Optional<Long> overrideCompanyId = sqlCache.queryForObjectOptional("project.getCompanyId", params, Long.class);
+      if(overrideCompanyId.isPresent()) {
+        companyId = overrideCompanyId.get();
+      } else {
+        log.info("PCS: No Company ID found for project. {}", projectId);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
+      }
+    }
+
+    params.put("postalCode", postalCode);
+    params.put("companyId", companyId);
+
+    Optional<PostalCodeZone> result = sqlCache.get("postalCode.getZoneByPostalCode", params, PostalCodeZone.class);
+    return result.orElse(null);
   }
 
   public Boolean userCanSchedule(String postalCode) {

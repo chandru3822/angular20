@@ -67,7 +67,7 @@
             <td class="text-left">
               <router-link :to="`/project/${it.projectId}/details`">{{ it.projectId}}</router-link>
             </td>
-            <td class="text-left">{{ it.sc ? it.sc : '' }}</td>
+            <td class="text-left">{{ it.substantialCompletionDate | formatDate('date') }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>
             <td class="text-left">{{ it.product ? it.product : '' }}</td>
             <td class="text-left">{{ it.totalPromotionAmount || 0 | currency('$', 2) }}</td>
@@ -239,7 +239,7 @@
             headers: [
                 {text: 'Project Name', value: 'projectName', show: true},
                 {text: 'Project ID', value: 'projectId', show: true},
-                {text: 'Substantial Completion', value: 'sc', show: true},
+                {text: 'Substantial Completion', value: 'substantialCompletionDate', show: true},
                 {text: 'Financier', value: 'financier', show: true},
                 {text: 'Product', value: 'product', show: true},
                 {text: 'Total Promotion Amount', value: 'totalPromotionAmount', show: true},

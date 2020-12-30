@@ -232,17 +232,20 @@
         this.requirementHistory[0].statusId = this.selectedRequirementStatusId
 
         try {
-          await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
+          const {data} = await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
           this.originalRequirement.hasOpenChallenge = false
           this.originalRequirement.statusId = this.selectedRequirementStatusId
 
           // only runs when the challenge status isn't "Denied"
           if (this.originalRequirement.statusId !== 4) {
+            this.originalRequirement.id = data?.id
             this.originalRequirement.description = this.requirementHistory[0].description
             this.originalRequirement.formattedDateModified = moment().format('MM/DD/YY hh:mm A')
+            this.snackbar = getSnackbar('SUCCESS', 'Challenge accepted.')
+          } else {
+            this.snackbar = getSnackbar('SUCCESS', 'Challenge status updated')
           }
 
-          this.snackbar = getSnackbar('SUCCESS', 'Challenge status updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           console.error('*** ERROR ***', e)

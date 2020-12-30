@@ -12,6 +12,8 @@
       v-model="field.dateValue"
       :timezone="this.timezone"
       :type="'date'"
+      :min-date="minDate"
+      :max-date="maxDate"
       :format="'MMMM DD, YYYY'"
       :label="field.fieldName"
       :readonly="readonly"
@@ -152,6 +154,8 @@ export default {
       type: Boolean,
       default: true
     },
+    minDate: String,
+    maxDate: String,
     callback: Function
   },
   components: {

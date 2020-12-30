@@ -533,7 +533,7 @@
                         :transparent="false"
                         :requirementTypeId="5"
                         :itemType="itemType"
-                        :ahjId="ahjId"
+                        :itemId="ahjId"
                         :requirements="ahjInspection.installationRequirements"
         ></AhjRequirement>
       </v-col>

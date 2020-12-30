@@ -863,7 +863,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -879,13 +879,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_submittal_start_time permit_submitted_date
+               pd.permit_pack_submittal_end_time permit_submitted_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -895,7 +895,7 @@
     <dash.getPermitsSubmittedActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsSubmittedActualBrs>
 
@@ -904,20 +904,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_submittal_start_time permit_submitted_date
+               pd.permit_pack_submittal_end_time permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPermitsSubmittedActualBrsDrilldown>
 
     <dash.getPermitsSubmittedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsSubmittedActualPartner>
 
@@ -926,13 +926,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.permit_pack_submittal_start_time permit_submitted_date
+               pd.permit_pack_submittal_end_time permit_submitted_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where ((pd.permit_pack_submittal_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
+        where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPermitsSubmittedActualPartnerDrilldown>
 

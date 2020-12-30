@@ -475,18 +475,17 @@
              aur.complete,
              aur.date_created,
              aur.created_by_id,
-             concat(u.first_name, ' ', u.last_name) AS "createdBy",
+             concat(u.first_name, ' ', u.last_name) createdBy,
              aur.date_modified,
              aur.modified_by_id,
-             concat(u2.first_name, ' ', u2.last_name) AS "modifiedBy",
+             concat(u2.first_name, ' ', u2.last_name) modifiedBy,
              ar.id,
              ar.description,
              ar.requirement_type_id,
              aur.original_requirement_id,
-             CASE
-               WHEN oc.original_requirement_id IS NOT NULL THEN true
-               ELSE false
-             END AS has_open_challenge
+             (case when oc.original_requirement_id is not null then true
+                  else false
+                  end) has_open_challenge
       FROM brs.ahj_utility_requirements aur
         LEFT JOIN open_challenge oc ON oc.utility_id = aur.utility_id
           AND oc.original_requirement_id = aur.original_requirement_id
