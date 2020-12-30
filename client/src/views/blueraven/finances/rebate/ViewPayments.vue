@@ -99,7 +99,7 @@
                               disabled
                 ></v-text-field>
                 <v-text-field label="Substantial Completion"
-                              v-model="newPayItem.sc"
+                              v-model="newPayItem.substantialCompletionDate"
                               disabled
                 ></v-text-field>
                 <v-text-field label="Financier"
@@ -456,6 +456,10 @@
         }
       },
       enterPayment (item) {
+        if (item.substantialCompletionDate != null) {
+          item.substantialCompletionDate = moment(item.substantialCompletionDate).format('MM/DD/YYYY')
+        }
+
         this.newPayItem = Object.assign({}, item)
         this.newPayDialog = true
       },

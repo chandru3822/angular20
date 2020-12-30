@@ -31,7 +31,7 @@ BEGIN
                   FROM flow.project p1
                            inner join brs.project_details pd on pd.project_id = p1.id
                            inner join milestone_one_projects mop2 on mop2.project_id = p1.id and
-                                                                     mop2.milestone_one_complete_date <= p_period_end
+                                                                     mop2.milestone_one_complete_date::date <= p_period_end
                            inner join brs.project_override po on po.project_id = p1.id
                            inner join brs.override_plan op on op.id = po.override_plan_id
                            inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
@@ -50,7 +50,7 @@ BEGIN
                   FROM flow.project p1
                            inner join brs.project_details pd on pd.project_id = p1.id
                            inner join milestone_two_projects mtp2 on mtp2.project_id = p1.id and
-                                                                     mtp2.milestone_two_complete_date <= p_period_end
+                                                                     mtp2.milestone_two_complete_date::date <= p_period_end
                            inner join brs.project_override po on po.project_id = p1.id
                            inner join brs.override_plan op on op.id = po.override_plan_id
                            inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id

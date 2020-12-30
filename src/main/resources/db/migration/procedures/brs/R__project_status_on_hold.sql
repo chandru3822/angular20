@@ -13,7 +13,9 @@ BEGIN
              inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where p.id = p_project_id
       and pst.project_status_type = 'On Hold';
-
+    if v_on_hold is null then
+        v_on_hold = false;
+    end if;
     return v_on_hold;
 
 END
