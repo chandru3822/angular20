@@ -312,7 +312,7 @@ BEGIN
           )*/
                             AS overrides_paid_to_date
                  FROM flow.project p
-                          inner join milestone1 mop on mop.project_id = p.id
+                         -- inner join milestone1 mop on mop.project_id = p.id
                           inner join brs.project_details pd on pd.project_id = p.id
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.closer_user_id
@@ -324,7 +324,8 @@ BEGIN
                           left join flow.list_of_value lov_proof_of_home  on lov_proof_of_home.id = pd.proof_of_homeowners_insurance_required
                  WHERE  (ec.project_id is null) and
                      CASE WHEN p_project_ids IS NOT NULL
-                              THEN p.id = ANY(p_project_ids) ELSE 1 = 1 END
+                              THEN p.id = ANY(p_project_ids) ELSE
+                         p.id in (select m1.project_id from milestone1 m1) END
                    AND CASE WHEN p_contact_id IS NOT NULL
                                 THEN c.id = p_contact_id ELSE 1 = 1 END
                    AND CASE WHEN p_sales_rep IS NOT NULL
