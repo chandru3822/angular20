@@ -40,6 +40,9 @@ public class RebateService {
   ObjectMapper om;
 
   public List<RebatePayment> getPending() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("createdBy", user.getId());
     return sqlCache.query("rebate.getPaymentsPending", new HashMap<>(), RebatePayment.class);
   }
 
