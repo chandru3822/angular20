@@ -70,7 +70,15 @@ BEGIN
           WHERE utility_id = p_utility_id
                 AND requirement_id <> p_requirement_id
                 AND position = p_position
-                AND status_id = 1;
+                AND status_id = 1
+          RETURNING requirement_id
+            INTO o_req_id;
+
+          UPDATE brs.ahj_requirement
+          SET
+            archived = true
+          WHERE
+            id = o_req_id;
         END IF;
 
 
@@ -103,7 +111,15 @@ BEGIN
           WHERE ahj_id = p_ahj_id
                 AND requirement_id <> p_requirement_id
                 AND position = p_position
-                AND status_id = 1;
+                AND status_id = 1
+          RETURNING requirement_id
+            INTO o_req_id;
+
+          UPDATE brs.ahj_requirement
+          SET
+            archived = true
+          WHERE
+            id = o_req_id;
         END IF;
       END IF;
 
@@ -142,7 +158,7 @@ BEGIN
 
       -- link the new utility requirement record with the AHJ
       INSERT INTO brs.ahj_utility_requirements (
-        utility_id, requirement_id, original_requirement_id, status_id, position, complete, created_by_id, modified_by_id, archived
+        utility_id, requirement_id, original_requirement_id, status_id, position, complete, created_by_id, date_modified, modified_by_id, archived
       )
         SELECT
           p_utility_id,
@@ -152,6 +168,7 @@ BEGIN
           p_position,
           p_complete,
           p_user_id,
+          now(),
           p_user_id,
           p_archived
         FROM brs.ahj_utility_requirements
@@ -170,6 +187,12 @@ BEGIN
         WHERE utility_id = p_utility_id
               AND requirement_id = p_requirement_id
               AND status_id = 1;
+
+        UPDATE brs.ahj_requirement
+        SET
+          archived = true
+        WHERE
+          id = p_requirement_id;
       END IF;
 
 
@@ -180,7 +203,7 @@ BEGIN
 
       -- link the new requirement record with the AHJ
       INSERT INTO brs.ahj_requirements (
-        ahj_id, requirement_id, original_requirement_id, status_id, position, complete, created_by_id, modified_by_id, archived
+        ahj_id, requirement_id, original_requirement_id, status_id, position, complete, created_by_id, date_modified, modified_by_id, archived
       )
         SELECT
           p_ahj_id,
@@ -190,6 +213,7 @@ BEGIN
           p_position,
           p_complete,
           p_user_id,
+          now(),
           p_user_id,
           p_archived
         FROM brs.ahj_requirements
@@ -208,6 +232,13 @@ BEGIN
         WHERE ahj_id = p_ahj_id
               AND requirement_id = p_requirement_id
               AND status_id = 1;
+
+
+        UPDATE brs.ahj_requirement
+        SET
+          archived = true
+        WHERE
+          id = p_requirement_id;
       END IF;
     END IF;
 

@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class PostalCodeZone {
 
-  private Long id, companyId, distributionTimeFrameDays;
+  private Long id, companyId, distributionTimeFrameDays, schedulableFutureDays;
   private String zoneName;
   private Boolean archived;
   private List<PostalCodeZoneUser> scheduleToUsers, scheduleByUsers;
