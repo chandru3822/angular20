@@ -168,7 +168,7 @@ BEGIN
                                                0)  total,
                                        1 as milestone_id
                                 FROM flow.project p1
-                                         inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date <= v_period_end_date
+                                         inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                          inner join brs.project_override po on po.project_id = p1.id
                                          INNER JOIN brs.override_plan_receiving_user opru
                                                     ON opru.override_plan_id = po.override_plan_id
@@ -184,7 +184,7 @@ BEGIN
                                                0)  total,
                                        2 as milestone_id
                                 FROM flow.project p1
-                                         inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date <= v_period_end_date
+                                         inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                          inner join brs.project_override po on po.project_id = p1.id
                                          INNER JOIN brs.override_plan_receiving_user opru
                                                     ON opru.override_plan_id = po.override_plan_id
@@ -247,7 +247,7 @@ BEGIN
                                                                                                                          else 0 end,2),
                                                            0) end total
                                  FROM flow.project p1
-                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date <= v_period_end_date
+                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                           inner join brs.project_commission pc on pc.project_id = p1.id
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
@@ -262,7 +262,7 @@ BEGIN
                                                                                                                         else 0 end,2),
                                                            0) end total
                                  FROM flow.project p1
-                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date <= v_period_end_date
+                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                           inner join brs.project_commission pc on pc.project_id = p1.id
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 2
@@ -275,7 +275,7 @@ BEGIN
                                                                                                      from brs.override_plan_receiving_user opru
                                                                                                      where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
-                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date <= v_period_end_date
+                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                           inner join brs.project_override po on po.project_id = p1.id
                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                  WHERE p1.id = p.id),0) + coalesce(
@@ -285,7 +285,7 @@ BEGIN
                                                                                                        from brs.override_plan_receiving_user opru
                                                                                                        where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
-                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date <= v_period_end_date
+                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                           inner join brs.project_override po on po.project_id = p1.id
                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                  WHERE p1.id = p.id),0) AS override_earned,
