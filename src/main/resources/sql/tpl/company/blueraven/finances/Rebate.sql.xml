@@ -182,7 +182,6 @@
               pcs.sc substantialCompletionDate,
               coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
               (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
-              coalesce(prps.name,'New') state,
               (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = prp.created_by_user_id) as createdBy,
               (select lov.name
                 from flow.list_of_value lov
@@ -196,7 +195,6 @@
               from flow.project p
                 left outer join brs.project_commission_snapshot pcs ON pcs.project_id = p.id
                 left outer join brs.project_rebate_payment prp on p.id = prp.project_id
-                left outer join brs.project_rebate_payment_state prps on prp.project_rebate_payment_state_id = prps.id
                 left outer join flow.project_process_step pps
                             on pps.project_id = p.id and pps.process_step_id = 4
                 left outer join flow.project_process_step_custom_field_value pscfv
@@ -213,6 +211,24 @@
                     and cf.company_id = (select company_id from brs.project_details pd where pd.project_id = p.id))
               and pscfv.int_value is not null
               and pcs.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
+              and (select lov.name
+                         from flow.list_of_value lov
+                         where lov.id = pd.product) in ('BluePower Plus','BluePower Plus PrePaid')
+            group by p.id,
+                     pcs.customer_name,
+                     pcs.sc,
+                     coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0),
+                     (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),
+                     (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = prp.created_by_user_id),
+                     (select lov.name
+                      from flow.list_of_value lov
+                      where lov.id = pd.primary_financier),
+                     pd.num_of_promotion_payments,
+                     (select lov.name
+                      from flow.list_of_value lov
+                      where lov.id = pd.product),
+                     pd.total_promotion_amount,
+                     pcfv.date_value
                 ) as payments where entered_into_payment_system_date is not null
         ]]>
   </rebate.getPaymentsPending>
