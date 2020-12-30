@@ -43,7 +43,7 @@ public class RebateService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("createdBy", user.getId());
-    return sqlCache.query("rebate.getPaymentsPending", new HashMap<>(), RebatePayment.class);
+    return sqlCache.query("rebate.getPaymentsPending", params, RebatePayment.class);
   }
 
   public List<RebatePayment> getUnbalancedPayments() {
