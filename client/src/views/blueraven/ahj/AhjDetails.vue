@@ -1,34 +1,36 @@
 <template>
-  <v-row>
-    <v-col cols="12" class="pt-0">
-      <v-row justify="space-between">
-        <v-col class="text-left pa-0" cols="12">
-          <v-btn id="back-btn" text class="pl-1 pr-2" :to="'/ahj'">
-            <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
-          </v-btn>
+  <v-container id="ahj-details-container">
+    <v-row>
+      <v-col cols="12" class="pt-0">
+        <v-row justify="space-between">
+          <v-col class="text-left pa-0" cols="12">
+            <v-btn id="back-btn" text class="pl-1 pr-2" :to="'/ahj'">
+              <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
+            </v-btn>
 
-          <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
-            <div class="page-title">AHJ</div>
-            <div class="page-info">
-              <div>{{ ahj.name }}</div>
-              <div>{{ ahj.metroArea }}</div>
-              <div>{{ ahj.state }}</div>
+            <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
+              <div class="page-title">AHJ</div>
+              <div class="page-info">
+                <div>{{ ahj.name }}</div>
+                <div>{{ ahj.metroArea }}</div>
+                <div>{{ ahj.state }}</div>
+              </div>
             </div>
-          </div>
 
-          <v-tabs id="fixed-tabs-bar" class="" background-color="var(--v-secondary-base)">
-            <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path"
-                   class="text-capitalize ma-0"
-                   :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
-              {{ tab.label }}
-            </v-tab>
-          </v-tabs>
+            <v-tabs id="fixed-tabs-bar" class="" background-color="var(--v-secondary-base)">
+              <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path"
+                     class="text-capitalize ma-0"
+                     :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+                {{ tab.label }}
+              </v-tab>
+            </v-tabs>
 
-          <router-view class="px-3" />
-        </v-col>
-      </v-row>
-    </v-col>
-  </v-row>
+            <router-view class="px-3" />
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
