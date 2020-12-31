@@ -98,16 +98,15 @@
                        select prp.id,
                          prp.payment_amount as "paymentAmount",
                          prp.payment_nbr as "paymentNbr",
-                         pcs.customer_name as "projectName",
+                         pd.contact_name as "projectName",
                          prp.check_number as "checkNumber",
                          prp.project_rebate_payment_state_id as "paymentStateId",
                          prp.project_id as "projectId"
                        from brs.project_rebate_payment prp
                          INNER JOIN flow.project p on p.id = prp.project_id
-                         INNER JOIN brs.project_commission_snapshot pcs ON pcs.project_id = p.id
+                         left join brs.project_details pd on pd.project_id = p.id
                        where prp.project_rebate_batch_id = drb.id
-                       and pcs.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
-                       group by prp.id, prp.payment_nbr, pcs.customer_name
+                       group by prp.id, prp.payment_nbr, pd.contact_name
                        order by payment_nbr) rebatePayments), '[]') AS "rebatePayments"
             from brs.project_rebate_batch drb
               LEFT JOIN flow."user" u on u.id = drb.updated_by_user_id
@@ -209,8 +208,8 @@
     <![CDATA[
             select prp.id payment_id,
             p.id project_id,
-            pcs.customer_name project_name,
-			      pcs.sc substantialCompletionDate,
+            pd.contact_name project_name,
+			      pd.substantial_completion_date substantialCompletionDate,
             (select batch_date::date
              from brs.project_rebate_payment prp1
                  inner join brs.project_rebate_batch drb on drb.id = prp1.project_rebate_batch_id
@@ -223,25 +222,18 @@
             (select min(payment_nbr) from brs.project_rebate_payment where project_id = p.id and project_rebate_payment_state_id = 1) next_scheduled_payment,
             prps.name state,
             case when (select count(1) from brs.project_rebate_payment where project_id = p.id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
-            (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = prp.created_by_user_id) as createdBy,
-            (select lov.name
-                from flow.list_of_value lov
-                where lov.id = pd.primary_financier) as financier,
+            pd.primary_financier_name as financier,
             pd.num_of_promotion_payments as numberOfPromotionPayments,
-            (select lov.name
-                from flow.list_of_value lov
-                where lov.id = pd.product) as product,
+            pd.product_name as product,
             pd.total_promotion_amount,
             pd.entered_into_payment_system_date,
             (pd.total_promotion_amount - (select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
             false as selected
 			from flow.project p
-                inner join brs.project_commission_snapshot pcs ON pcs.project_id = p.id
                 inner join brs.project_rebate_payment prp on p.id = prp.project_id
                 inner join brs.project_rebate_payment_state prps on prp.project_rebate_payment_state_id = prps.id
-			    left join brs.project_details pd on pd.project_id = p.id
+			          left join brs.project_details pd on pd.project_id = p.id
 			where prp.payment_nbr = (select min(payment_nbr) from brs.project_rebate_payment prp1 where prp.project_id = prp1.project_id and prp1.project_rebate_payment_state_id = 1)
-                and pcs.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
         ]]>
   </rebate.getPaymentsNeedApproval>
 
@@ -249,32 +241,25 @@
     <![CDATA[
        select * from (
          select p.id project_id,
-         pcs.customer_name project_name,
-         pcs.sc substantialCompletionDate,
+         pd.contact_name project_name,
+         pd.substantial_completion_date substantialCompletionDate,
          sum(prp.payment_amount) payment_amount,
          coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
-         (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = prp.created_by_user_id) as createdBy,
-         (select lov.name
-                from flow.list_of_value lov
-                where lov.id = pd.primary_financier) as financier,
+         pd.primary_financier_name as financier,
          pd.num_of_promotion_payments as numberOfPromotionPayments,
-         (select lov.name
-                from flow.list_of_value lov
-                where lov.id = pd.product) as product,
+         pd.product_name as product,
          pd.total_promotion_amount,
          pd.entered_into_payment_system_date
          from flow.project p
-           inner join brs.project_commission_snapshot pcs ON pcs.project_id = p.id
            inner join brs.project_rebate_payment prp on p.id = prp.project_id
            left join brs.project_details pd on pd.project_id = p.id
-         where pcs.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
            group by p.id,
-           pcs.customer_name,
-           pcs.sc,
-           primary_financier,
+           pd.contact_name,
+           pd.substantial_completion_date,
+           pd.primary_financier_name,
            num_of_promotion_payments,
            entered_into_payment_system_date,
-           product,
+           pd.product_name,
            total_promotion_amount,
            entered_into_payment_system_date,
            coalesce((select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0),
@@ -288,8 +273,8 @@
       select array_to_json(array_agg(row_to_json(results)))
       from (
       select p.id project_id,
-      pcs.customer_name as project_name,
-      pcs.sc substantialCompletionDate,
+      pd.contact_name project_name,
+      pd.substantial_completion_date substantialCompletionDate,
       (total_promotion_amount)/(num_of_promotion_payments)::numeric as payment_amount,
       c.id as contact_id,
       c.street1,
@@ -304,13 +289,9 @@
                     where cs.id = c.mailing_company_state_id) as mailing_state_abbr,
       c.mailing_company_state_id as mailing_state_id,
       c.mailing_postal_code,
-      (select lov.name
-                from flow.list_of_value lov
-                where lov.id = pd.primary_financier) as financier,
+      pd.primary_financier_name as financier,
       pd.num_of_promotion_payments as numberOfPromotionPayments,
-      (select lov.name
-                from flow.list_of_value lov
-                where lov.id = pd.product) as product,
+      pd.product_name as product,
       pd.total_promotion_amount,
       pd.entered_into_payment_system_date,
       coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
@@ -332,17 +313,15 @@
       left join brs.project_rebate_batch drb on drb.id = drp.project_rebate_batch_id
       inner join brs.project_rebate_payment_state s on project_rebate_payment_state_id = s.id where project_id = p.id order by payment_nbr)payment_history) payment_history
       from flow.project p
-        inner join brs.project_commission_snapshot pcs ON pcs.project_id = p.id
+        left join brs.project_details pd on pd.project_id = p.id
         inner join brs.project_rebate_payment drp on p.id = drp.project_id
         inner join flow.contact c on c.id = p.contact_id
         left outer join flow.company_state cs on cs.id = c.company_state_id
         left outer join flow.state s on s.id = cs.state_id
-        left join brs.project_details pd on pd.project_id = p.id
       where p.id = :projectId
-        and pcs.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
       group by p.id,
-      pcs.customer_name,
-      pcs.sc,
+      pd.contact_name,
+      pd.substantial_completion_date,
       total_promotion_amount,
       num_of_promotion_payments,
       payment_amount,
@@ -357,8 +336,8 @@
       c.mailing_city,
       s.abbreviation,
       c.mailing_postal_code,
-      primary_financier,
-      product,
+      pd.primary_financier_name,
+      pd.product_name,
       entered_into_payment_system_date,
       coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0)
     ) results
