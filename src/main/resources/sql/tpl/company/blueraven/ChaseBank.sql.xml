@@ -46,4 +46,8 @@
         where id = :paymentId
     ]]>
   </chasebank.saveCheckNumberToPayment>
+
+  <chasebank.getInvoiceNumber>
+    select nextval('brs.invoice_nbr_seq')
+  </chasebank.getInvoiceNumber>
 </sql>
