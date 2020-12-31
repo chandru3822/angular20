@@ -128,13 +128,13 @@
         <td>Total Promotion Amount</td>
         <td>
           <div v-if="editTotalPromotionAmount == false">
-            {{rebateDetails.totalpromotionamount || 0 | currency('$', 2) }}
+            {{rebateDetails.total_promotion_amount || 0 | currency('$', 2) }}
             <v-icon small class="mr-3" @click="editTotalPromotionAmount = true">
               edit
             </v-icon>
           </div>
           <div v-if="editTotalPromotionAmount" class="flex-display" style="width: 100px">
-            <v-text-field style="width: 80px" type="number" v-model="rebateDetails.totalpromotionamount">
+            <v-text-field style="width: 80px" type="number" v-model="rebateDetails.total_promotion_amount">
             </v-text-field>
             <v-icon @click="updateTotalPromotionAmount()">
                 save
@@ -287,20 +287,20 @@
           <div>
           <tr>
             <td class="left-align">
-              <v-icon v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.totalpromotionamount"
+              <v-icon v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.total_promotion_amount"
                       @click="addNewRow()">
                 add
               </v-icon>
             </td>
             <td></td>
             <td></td>
-            <td class="text-center font-weight-bold" :class="{'error-message': rebateDetails.sumOfNonCanceledPayments > rebateDetails.totalpromotionamount}">
+            <td class="text-center font-weight-bold" :class="{'error-message': rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount}">
               {{rebateDetails.sumOfNonCanceledPayments || 0 | currency('$', 2)  }} <br>
               <span class="error-message" v-if="remainingBalance < 0">({{remainingBalance || 0 | currency('$', 2) }})<br></span>
               (Non-Canceled)
             </td>
             <td>
-              <v-icon v-if="userCanEdit" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.totalpromotionamount"
+              <v-icon v-if="userCanEdit" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.total_promotion_amount"
                       @click="savePaymentHistoryChanges()">
                 save
               </v-icon>
@@ -379,12 +379,13 @@
           await this.getStates();
           const {data} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
           this.rebateDetails = data[0];
+          debugger;
           this.rebateDetails.sc = moment(this.rebateDetails.sc).format('MM/DD/YYYY')
           this.rebateDetails.entered_into_system_date = moment(this.rebateDetails.entered_into_system_date).format('MM/DD/YYYY')
 
           let payment_amount = 0;
           if (this.rebateDetails.numberofpromotionpayments > 0) {
-            payment_amount = parseFloat(this.rebateDetails.totalpromotionamount) / parseFloat(this.rebateDetails.numberofpromotionpayments)
+            payment_amount = parseFloat(this.rebateDetails.total_promotion_amount) / parseFloat(this.rebateDetails.numberofpromotionpayments)
           }
           this.rebateDetails.payment_amount = payment_amount;
           this.mailingDetails = {
@@ -502,7 +503,7 @@
         this.editTotalPromotionAmount = false
 
         const params = {
-          totalPromotionAmount: this.rebateDetails.totalpromotionamount,
+          totalPromotionAmount: this.rebateDetails.total_promotion_amount,
           projectId: this.rebateDetails.project_id
         }
         try {
@@ -580,7 +581,7 @@
             this.sumOfNonCanceledPayments += parseFloat(ph.payment_amount)
           }
         })
-        this.remainingBalance = this.sumOfNonCanceledPayments - parseFloat(this.rebateDetails.totalpromotionamount)
+        this.remainingBalance = this.sumOfNonCanceledPayments - parseFloat(this.rebateDetails.total_promotion_amount)
       },
       async updatePaymentNote() {
         try {
