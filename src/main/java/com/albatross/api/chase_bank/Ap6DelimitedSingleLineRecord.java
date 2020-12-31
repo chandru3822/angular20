@@ -33,6 +33,7 @@ import static org.apache.commons.lang3.StringUtils.*;
                     "checkNumber",
                     "firstPayeeName",
                     "secondPayeeName",
+                    "vendorNumber",
                     "payeeAddressLine1",
                     "payeeAddressLine2",
                     "payeePhone",
@@ -42,6 +43,7 @@ import static org.apache.commons.lang3.StringUtils.*;
                     "payeeState",
                     "payeePostalCode",
                     "payeeCountry",
+                    "invoiceNumber",
                     "description",
                     "invoiceDate",
                     "netAmount",
@@ -100,8 +102,11 @@ public class Ap6DelimitedSingleLineRecord {
     @NonNull
     private CheckNumber checkNumber;
     @NonNull
+    private InvoiceNumber invoiceNumber;
+    @NonNull
     private Name firstPayeeName;
                               private Name secondPayeeName;
+    @NonNull                  private VendorNumber vendorNumber;
                               private Phone payeePhone;
     @NonNull
     private AddressLine payeeAddressLine1;
@@ -233,6 +238,24 @@ public class Ap6DelimitedSingleLineRecord {
         }
     }
 
+    public static class InvoiceNumber implements ToStringSerializable {
+      private final String invoiceNum;
+
+      public InvoiceNumber(Integer invoiceNum) {
+        this(invoiceNum.toString());
+      }
+
+      public InvoiceNumber(String invoiceNum) {
+        checkArgument(isNumeric(invoiceNum), "check number must only be numbers");
+        checkArgument(invoiceNum.length() <= 30, "check number must be no more than 30 digits");
+        this.invoiceNum = invoiceNum;
+      }
+
+      public String toString() {
+        return invoiceNum;
+      }
+    }
+
     public static class Name implements ToStringSerializable {
         private static final Predicate<String> validChars = CharMatcher.javaLetterOrDigit()
                 .or(CharMatcher.forPredicate(Character::isSpaceChar))
@@ -250,6 +273,24 @@ public class Ap6DelimitedSingleLineRecord {
         public String toString() {
             return name;
         }
+    }
+
+    public static class VendorNumber implements ToStringSerializable {
+      private final String vendorNumber;
+
+      public VendorNumber(Integer i) {
+        this(String.valueOf(i));
+      }
+
+      public VendorNumber(String s) {
+        checkArgument(isAlphanumeric(s), "vendor number must only contain alphanumeric chars");
+        checkArgument(s.length() <= 19, "vendor number must be no more than 19 chars");
+        this.vendorNumber = s;
+      }
+
+      public String toString() {
+        return vendorNumber;
+      }
     }
 
     public static class AddressLine implements ToStringSerializable {
