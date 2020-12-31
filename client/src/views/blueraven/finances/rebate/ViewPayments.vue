@@ -401,6 +401,10 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
             pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase())
           )
         })
+
+        if (this.itemsPerPage > this.filteredPayments.length) {
+          this.itemsPerPage = this.filteredPayments.length;
+        }
       }, 500),
       async exportPayments () {
         this.$store.commit(AppMutations.SET_LOADING, true)
