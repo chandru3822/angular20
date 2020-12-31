@@ -379,7 +379,6 @@
           await this.getStates();
           const {data} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
           this.rebateDetails = data[0];
-          debugger;
           this.rebateDetails.sc = moment(this.rebateDetails.sc).format('MM/DD/YYYY')
           this.rebateDetails.entered_into_system_date = moment(this.rebateDetails.entered_into_system_date).format('MM/DD/YYYY')
 
