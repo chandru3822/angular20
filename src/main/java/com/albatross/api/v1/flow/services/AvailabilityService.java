@@ -356,6 +356,7 @@ public class AvailabilityService {
             params2.put("endTime", currentEventEnd);
             params.put("title", null != rra.getTitle() ? rra.getTitle() : rra.getDescription());
             params.put("description", rra.getDescription());
+            params.put("location", rra.getLocation());
             params2.put("allDay", rra.getAllDay() != null && rra.getAllDay());
             params2.put("companyId", rra.getCompanyId());
             params2.put("createdById", SystemSettings.CRON_USER.getId());
@@ -423,6 +424,7 @@ public class AvailabilityService {
           params.put("endTime", currentEventEnd);
           params.put("title", null != ra.getTitle() ? ra.getTitle() : ra.getDescription());
           params.put("description", ra.getDescription());
+          params.put("location", ra.getLocation());
           params.put("allDay", ra.getAllDay() != null && ra.getAllDay());
           params.put("companyId", user.getCompanyId());
           params.put("createdById", user.getId());
