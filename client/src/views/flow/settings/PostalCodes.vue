@@ -50,6 +50,7 @@
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.zoneName}}</td>
                   <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.distributionTimeFrameDays}}</td>
+                  <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.schedulableFutureDays}}</td>
                   <td class="text-right">
                     <v-btn small text @click="goToPostalCodeZone(item.id)">
                       <v-icon>edit</v-icon>
@@ -131,6 +132,7 @@
         headers: [
           {text: 'Round Robin Name', value: 'zoneName', show: true},
           {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
+          {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
           {text: '', value: 'icons', show: true},
         ]
       }
