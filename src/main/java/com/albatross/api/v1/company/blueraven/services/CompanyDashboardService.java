@@ -218,13 +218,13 @@ public class CompanyDashboardService {
         params.put("companyId", user.getCompanyId());
         params.put("parentCompanyId", user.getHighestParentCompanyId());
 
-        // Appointments Created
+        // First Time Appointments Created
         JSONObject apptCreatedValues = new JSONObject();
-        apptCreatedValues.put(MILESTONE, "Appointments Created");
-        apptCreatedValues.put(ACTUAL_TOTAL, getValueFromSqlKey("dash.getAppointmentsCreatedActualTotal", params));
+        apptCreatedValues.put(MILESTONE, "First Time Appointments Created");
+        apptCreatedValues.put(ACTUAL_TOTAL, getValueFromSqlKey("dash.getFirstTimeAppointmentsCreatedActualTotal", params));
 
         if (isParent) {
-            apptCreatedValues.put(ACTUAL_BRS, getValueFromSqlKey("dash.getAppointmentsCreatedActualBrs", params));
+            apptCreatedValues.put(ACTUAL_BRS, getValueFromSqlKey("dash.getFirstTimeAppointmentsCreatedActualBrs", params));
             apptCreatedValues.put(ACTUAL_PARTNER, "-");
             apptCreatedValues.put(PLANNED_TOTAL, "-");
             apptCreatedValues.put(PLANNED_BRS, "-");
@@ -523,15 +523,15 @@ public class CompanyDashboardService {
 
     private String getDrilldownSqlQuery(String milestone, String column) {
         String sql = "";
-        if (milestone.equals("Appointments Created")) {
+        if (milestone.equals("First Time Appointments Created")) {
             if (column.equals(TOTAL)) {
-                sql = "dash.getAppointmentsCreatedActualTotalDrilldown";
+                sql = "dash.getFirstTimeAppointmentsCreatedActualTotalDrilldown";
             }
             else if (column.equals(BRS)) {
-                sql = "dash.getAppointmentsCreatedActualBrsDrilldown";
+                sql = "dash.getFirstTimeAppointmentsCreatedActualBrsDrilldown";
             }
             else if (column.equals(PARTNER)) {
-                sql = "dash.getAppointmentsCreatedActualPartnerDrilldown";
+                sql = "dash.getFirstTimeAppointmentsCreatedActualPartnerDrilldown";
             }
         }
         else if (milestone.equals("Planned Appointments")) {
