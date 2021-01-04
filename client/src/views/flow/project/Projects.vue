@@ -123,7 +123,6 @@
         } else {
           localStorage.removeItem('projectSearch')
         }
-        console.log('loading')
         vm.getProjects()
       });
     },
