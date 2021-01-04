@@ -2,14 +2,23 @@
   <closerDashboard.getIronmanFdcCounts>
     <![CDATA[
       WITH quarters AS (
-        select (extract('year' from now()) || '-01-01')::date as q1_start,
-               (extract('year' from now()) || '-03-31')::date as q1_end,
-               (extract('year' from now()) || '-04-01')::date as q2_start,
-               (extract('year' from now()) || '-06-30')::date as q2_end,
-               (extract('year' from now()) || '-07-01')::date as q3_start,
-               (extract('year' from now()) || '-09-30')::date as q3_end,
-               (extract('year' from now()) || '-10-01')::date as q4_start,
-               (extract('year' from now()) || '-12-31')::date as q4_end
+--         select (extract('year' from now()) || '-01-01')::date as q1_start,
+--                (extract('year' from now()) || '-03-31')::date as q1_end,
+--                (extract('year' from now()) || '-04-01')::date as q2_start,
+--                (extract('year' from now()) || '-06-30')::date as q2_end,
+--                (extract('year' from now()) || '-07-01')::date as q3_start,
+--                (extract('year' from now()) || '-09-30')::date as q3_end,
+--                (extract('year' from now()) || '-10-01')::date as q4_start,
+--                (extract('year' from now()) || '-12-31')::date as q4_end
+        -- This is just a temp fix until the updated Ironman UI / requirements for 2021 are done (per Judson's request on 1/4/2021)
+        select ('2020-01-01')::date as q1_start,
+               ('2020-03-31')::date as q1_end,
+               ('2020-04-01')::date as q2_start,
+               ('2020-06-30')::date as q2_end,
+               ('2020-07-01')::date as q3_start,
+               ('2020-09-30')::date as q3_end,
+               ('2020-10-01')::date as q4_start,
+               ('2020-12-31')::date as q4_end
       )
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
