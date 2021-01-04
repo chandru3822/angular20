@@ -288,7 +288,7 @@ public class AvailabilityService {
     }
 
     ResourceAppointment appt = getOneResourceAppointment(id);
-    if(null == ra.getId() || ra.getReloadCoordinates()) {
+    if(null != ra.getLocation() && (null == ra.getId() || ra.getReloadCoordinates())) {
       getAppointmentsCoordinates(ra.getLocation(), id);
     }
     return appt;

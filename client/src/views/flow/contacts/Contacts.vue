@@ -167,7 +167,7 @@ export default {
     // },
   },
   beforeRouteEnter(to, from, next) {
-    //if coming to this page from the project details - use the previously used searchQuery
+    //if coming to this page from the contact details - use the previously used search
     next((vm) => {
       if(from?.fullPath.includes('/contact/')) {
         vm.search = localStorage.getItem('contactSearch') || ''

@@ -419,17 +419,33 @@
           return this.textMessage.trim().length
       }
     },
+    beforeRouteEnter(to, from, next) {
+      //if coming to this page from the user details - use the previously used search
+      next((vm) => {
+        let useSavedSearch = false
+        if(from?.fullPath.includes('/user/')) {
+          JSON.parse(localStorage.getItem('store'))
+          if(localStorage.getItem('userFilters') != null) {
+            vm.filters = JSON.parse(localStorage.getItem('userFilters'))
+            useSavedSearch = true
+          }
+        } else {
+          localStorage.removeItem('userFilters')
+        }
+        // getStatuses calls getUsers because we have to know company statuses before we can filter the list
+        vm.getStatuses(useSavedSearch)
+      });
+    },
     watch: {
-      options: {
-        handler () {
-          this.getUsers(false)
-        },
-        deep: true,
-      },
+      // options: {
+      //   handler () {
+      //     this.getUsers(false)
+      //   },
+      //   deep: true,
+      // },
     },
     created () {
-      // getStatuses calls getUsers because we have to know company statuses before we can filter the list
-      this.getStatuses()
+
       this.getPositions()
       this.getOrgFilters(true)
       this.getEmailSenders()
@@ -442,6 +458,7 @@
         this.getUsers(false)
       }, 500),
       async getUsers (selectAll) {
+        localStorage.setItem('userFilters', JSON.stringify(this.filters))
         if (this.filters.statuses && this.filters.statuses.length > 0) {
           this.dataLoading = true
           const { sortBy, sortDesc, page, itemsPerPage } = this.options
@@ -546,11 +563,13 @@
           }
         })
       },
-      async getStatuses () {
+      async getStatuses (useSavedSearch) {
         try {
           const {data} = await getRequest(`/user/statuses`)
           this.statuses = data
-          this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
+          if(!useSavedSearch) {
+            this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
+          }
           await this.getUsers(false)
           // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
