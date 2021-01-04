@@ -22,13 +22,19 @@
       )
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
-                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (select q1_start from quarters) and (extract('year' from now()) || '-01-31')::date
+                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
+                  --(select q1_start from quarters) and (extract('year' from now()) || '-01-31')::date
+                  (select q1_start from quarters) and ('2020-01-31')::date -- temp fix
                   and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                   then 1.5
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
+                  --(extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                  ('2020-03-01')::date and (select q1_end from quarters) -- temp fix
                   and pd.source = 523 --Closer Gen
                   then 3
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
+                  --(extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                  ('2020-03-01')::date and (select q1_end from quarters) -- temp fix
                   and pd.source in (524, 530) --(Referral, Events - Closer Gen)
                   then 2
                 else 1
