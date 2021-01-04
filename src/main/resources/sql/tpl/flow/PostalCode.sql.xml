@@ -4,6 +4,7 @@
            company_id,
            zone_name,
            distribution_time_frame_days,
+           schedulable_future_days,
            archived
     from flow.postal_code_zone
     where company_id = :companyId
