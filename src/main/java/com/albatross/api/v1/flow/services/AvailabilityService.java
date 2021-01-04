@@ -354,7 +354,8 @@ public class AvailabilityService {
             HashMap<String, Object> params2 = new HashMap<>();
             params2.put("startTime", currentEventStart);
             params2.put("endTime", currentEventEnd);
-            params2.put("description", rra.getDescription());
+            params.put("title", null != rra.getTitle() ? rra.getTitle() : rra.getDescription());
+            params.put("description", rra.getDescription());
             params2.put("allDay", rra.getAllDay() != null && rra.getAllDay());
             params2.put("companyId", rra.getCompanyId());
             params2.put("createdById", SystemSettings.CRON_USER.getId());
@@ -420,6 +421,7 @@ public class AvailabilityService {
           HashMap<String, Object> params = new HashMap<>();
           params.put("startTime", currentEventStart);
           params.put("endTime", currentEventEnd);
+          params.put("title", null != ra.getTitle() ? ra.getTitle() : ra.getDescription());
           params.put("description", ra.getDescription());
           params.put("allDay", ra.getAllDay() != null && ra.getAllDay());
           params.put("companyId", user.getCompanyId());
