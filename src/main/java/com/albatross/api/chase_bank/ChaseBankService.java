@@ -32,7 +32,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @Slf4j
 public class ChaseBankService {
     private final static String COURIER_CODE = "USPS",
-                                FORM_CODE = "AP6PLUS",
+                                FORM_CODE = "BPLUSAP6",
                                 CHASE_ACCOUNT_NUM = "370263003";
 
     @Autowired
@@ -85,10 +85,11 @@ public class ChaseBankService {
             Ap6DelimitedSingleLineRecordBuilder builder = Ap6DelimitedSingleLineRecord.builder();
             failures.validate(payment.getAmount(),       Amount::new,        builder::paymentAmount)
                     .validate(payment.getId(),           CheckNumber::new,   builder::checkNumber)
+                    .validate(payment.getProjectId(),    VendorNumber::new,  builder::vendorNumber)
                     .validate(payment.getAmount(),       Amount::new,        builder::netAmount)
                     .validate(payment.getAmount(),       Amount::new,        builder::grossAmount)
                     .validate(payment.getCustomerName(), Name::new,          builder::firstPayeeName)
-                    .validate(payment.getState(),        AddressLine::new,   builder::payeeAddressLine1)
+                    .validate(payment.getStreet1(),      AddressLine::new,   builder::payeeAddressLine1)
                     .validate(payment.getCity(),         City::new,          builder::payeeCity)
                     .validate(payment.getState(),        State::valueOf,     builder::payeeState)
                     .validate(payment.getPostalCode(),   USPostalCode::new,  builder::payeePostalCode)
@@ -99,6 +100,7 @@ public class ChaseBankService {
                     .validate(memo,                      Description::new,   builder::description)
                     .validate(LocalDate.now(),           PaymentDate::new,   builder::paymentDate)
                     .validate(LocalDate.now(),           InvoiceDate::new,   builder::invoiceDate)
+                    .validate(getInvoiceNumber(),        InvoiceNumber::new, builder::invoiceNumber)
                     .validate(payment.getAmount(),       Amount::new,        builder::netAmount);
 
             if (payment.getStreet2().isPresent())
@@ -118,6 +120,10 @@ public class ChaseBankService {
     public List<RebatePayment> getPayments(Long batchId) {
         ImmutableMap<String, Object> params = ImmutableMap.of("batchId", batchId);
         return sqlCache.query("chasebank.getPaymentsInBatch", params, RebatePayment.class);
+    }
+
+    public Integer getInvoiceNumber() {
+      return sqlCache.get("chasebank.getInvoiceNumber", new HashMap<>(), new SingleColumnRowMapper<>(Integer.class)).get();
     }
 
     public Integer getNextCheckNumber(Integer paymentId) {

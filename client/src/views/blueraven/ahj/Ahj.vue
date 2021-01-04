@@ -1,148 +1,150 @@
 <template>
-  <v-row>
-    <v-col cols="12">
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">
-          <v-btn text to="/ahj" color="primaryCustom">
-            AHJ
-          </v-btn>
-          <v-btn text to="/ahjUtility" color="primaryCustom">
-            Utility
-          </v-btn>
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn text @click="addItem" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
-            <v-icon>add</v-icon>
-            <span v-if="!constants.IS_MOBILE">Add New</span>
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-
-      <v-data-table
-        :headers="headers"
-        :items="filteredAhjs"
-        :loading="dataLoading"
-        :items-per-page="100"
-        :mobile-breakpoint="0"
-        fixed-header
-        :footer-props="footerProps"
-        class="elevation-1 ahj-table"
-      >
-        <template #header="{ props: { headers } }">
-          <tr>
-            <th v-for="header in headers" :key="header.text"
-                :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
-            >
-              <div v-if="ahjFilters[header.value]" class="pt-2 table-filter">
-                <v-text-field v-if="ahjFilters[header.value].type === 'text'"
-                              v-model="ahjFilters[header.value].value"
-                              :placeholder="'Enter a ' + header.text.toLowerCase()"
-                              clearable
-                              filled
-                              dense
-                ></v-text-field>
-                <v-select v-else-if="ahjFilters[header.value].type === 'select'"
-                          :items="states"
-                          v-model="ahjFilters[header.value].value"
-                          :placeholder="'Select a ' + header.text.toLowerCase()"
-                          clearable
-                          filled
-                          dense
-                ></v-select>
-              </div>
-            </th>
-          </tr>
-        </template>
-
-        <template #item="{ item, index }" class="table-body">
-          <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-            <td class="text-left">{{ item.name ? item.name : '' }}</td>
-            <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
-            <td class="text-left">{{ item.state ? item.state : '' }}</td>
-            <td class="text-left">
-              <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
-              <span v-else>
-                <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
-                <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
-                <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link">Design</router-link>
-              </span>
-              <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small class="mr-3 ahj-link-icon" @click="editAhj(item)">
-                edit
-              </v-icon>
-              <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small class="ahj-link-icon" @click="deleteItem(item)">
-                delete
-              </v-icon>
-            </td>
-          </tr>
-        </template>
-
-        <template #no-data>
-          <div class="mt-2 mb-4">No records found</div>
-        </template>
-
-        <template #no-results>
-          <div class="mt-2 mb-4">No records found</div>
-        </template>
-      </v-data-table>
-
-      <v-dialog v-model="ahjDialog" max-width="500px">
-        <v-card>
-          <v-card-title>
-            <span class="headline">{{ ahjFormTitle }}</span>
-          </v-card-title>
-
-          <v-card-text>
-            <v-text-field label="Name"
-                          v-model="editedItem.name"
-                          required
-                          filled
-            ></v-text-field>
-            <v-select label="Metro Area"
-                      :items="metroAreas"
-                      v-model="editedItem.metroAreaId"
-                      required
-                      filled
-            ></v-select>
-          </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-            <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
-                   :disabled="!editedItem.name || !editedItem.metroAreaId">
-              {{ ahjBtnTxt }}
+  <v-container id="ahj-container">
+    <v-row>
+      <v-col cols="12">
+        <v-toolbar color="white" class="elevation-1">
+          <v-toolbar-title class="app-title">
+            <v-btn text to="/ahj" color="primaryCustom">
+              AHJ
             </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+            <v-btn text to="/ahjUtility" color="primaryCustom">
+              Utility
+            </v-btn>
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="addItem" color="primaryCustom" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
+              <v-icon>add</v-icon>
+              <span v-if="!constants.IS_MOBILE">Add New</span>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
 
-      <v-dialog v-model="ahjDeleteDialog" max-width="500px">
-        <v-card>
-          <v-card-title>
-            <span class="headline">Confirm</span>
-          </v-card-title>
+        <v-data-table
+          :headers="headers"
+          :items="filteredAhjs"
+          :loading="dataLoading"
+          :items-per-page="100"
+          :mobile-breakpoint="0"
+          fixed-header
+          :footer-props="footerProps"
+          class="elevation-1 ahj-table"
+        >
+          <template #header="{ props: { headers } }">
+            <tr>
+              <th v-for="header in headers" :key="header.text"
+                  :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
+              >
+                <div v-if="ahjFilters[header.value]" class="pt-2 table-filter">
+                  <v-text-field v-if="ahjFilters[header.value].type === 'text'"
+                                v-model="ahjFilters[header.value].value"
+                                :placeholder="'Enter a ' + header.text.toLowerCase()"
+                                clearable
+                                filled
+                                dense
+                                hide-details
+                  ></v-text-field>
+                  <v-select v-else-if="ahjFilters[header.value].type === 'select'"
+                            :items="states"
+                            v-model="ahjFilters[header.value].value"
+                            :placeholder="'Select a ' + header.text.toLowerCase()"
+                            clearable
+                            filled
+                            dense
+                            hide-details
+                  ></v-select>
+                </div>
+              </th>
+            </tr>
+          </template>
 
-          <v-card-text>
-            Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
-          </v-card-text>
+          <template #item="{ item, index }" class="table-body">
+            <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+              <td class="text-left">{{ item.name ? item.name : '' }}</td>
+              <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
+              <td class="text-left">{{ item.state ? item.state : '' }}</td>
+              <td class="text-left">
+                <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
+                <span v-else>
+                  <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
+                  <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
+                  <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+                </span>
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')" small class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                  edit
+                </v-icon>
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'DELETE')" small class="ahj-link-icon" @click="deleteItem(item)">
+                  delete
+                </v-icon>
+              </td>
+            </tr>
+          </template>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-            <v-btn color="brRed" class="white--text" raised
-                   @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-col>
+          <template #no-data>
+            <div class="mt-2 mb-4">No records found</div>
+          </template>
 
-  </v-row>
+          <template #no-results>
+            <div class="mt-2 mb-4">No records found</div>
+          </template>
+        </v-data-table>
+
+        <v-dialog v-model="ahjDialog" max-width="500px">
+          <v-card>
+            <v-card-title>
+              <span class="headline">{{ ahjFormTitle }}</span>
+            </v-card-title>
+
+            <v-card-text>
+              <v-text-field label="Name"
+                            v-model="editedItem.name"
+                            required
+                            filled
+              ></v-text-field>
+              <v-select label="Metro Area"
+                        :items="metroAreas"
+                        v-model="editedItem.metroAreaId"
+                        required
+                        filled
+              ></v-select>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+              <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
+                     :disabled="!editedItem.name || !editedItem.metroAreaId">
+                {{ ahjBtnTxt }}
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="ahjDeleteDialog" max-width="500px">
+          <v-card>
+            <v-card-title>
+              <span class="headline">Confirm</span>
+            </v-card-title>
+
+            <v-card-text>
+              Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+              <v-btn color="brRed" class="white--text" raised
+                     @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
@@ -173,9 +175,9 @@
         }
       ],
       headers: [
-        { text: 'Name', value: 'name', show: true },
-        { text: 'Metro Area', value: 'metroArea', show: true },
-        { text: 'State', value: 'state', show: true },
+        { text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 350, show: true },
+        { text: 'Metro Area', value: 'metroArea', width: constants.IS_MOBILE ? 200 : 350, show: true },
+        { text: 'State', value: 'state', width: constants.IS_MOBILE ? 200 : 300, show: true },
         { text: null, value: null, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
       ],
       ahjs: [],
@@ -369,32 +371,50 @@
 </script>
 
 <style lang="scss" scoped>
+  #ahj-container {
+    overflow: auto;
+  }
+
   .ahj-link {
     color: var(--v-brBlue-base);
     text-decoration: none;
+
     &:hover {
       text-decoration: underline;
       color: var(--v-primaryText-base);
     }
   }
+
   .ahj-link-icon {
     color: var(--v-brBlue-base) !important;
+
     &:hover {
       color: var(--v-primaryText-base) !important;
     }
   }
+
   .ahj-table {
     margin-top: 2px;
   }
+
   .v-data-table ::v-deep .v-data-table__wrapper {
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 240px);
+
+    .table-filter {
+      font-weight: normal;
+      margin-bottom: 10px;
+
+      .v-text-field,
+      .v-select {
+        font-size: 0.875rem;
+        margin-left: 15px;
+      }
+    }
   }
-  .table-filter {
-    font-weight: normal;
-    margin-bottom: -15px;
-    .v-text-field,
-    .v-select {
-      font-size: 1.2em;
+
+  @media (min-width: 769px) {
+    .v-data-table ::v-deep .v-data-table__wrapper {
+      max-height: calc(100vh - 202px);
     }
   }
 </style>

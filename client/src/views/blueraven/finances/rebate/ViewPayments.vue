@@ -9,7 +9,7 @@
                 item-text="text"
                 item-value="value"
                 v-bind:class="status"
-                @change="fetchPayments(status)"
+                @change="fetchPayments()"
       ></v-select>
       <v-text-field
         class="mt-5 pay-search"
@@ -33,7 +33,7 @@
         :search="paymentsSearch"
         :options="pagination"
         :footer-props="footerProps"
-        :items-per-page="50"
+        :items-per-page="itemsPerPage"
         :show-select="showSelect"
         fixed-header
         dense
@@ -67,7 +67,7 @@
             <td class="text-left">
               <router-link :to="`/project/${it.projectId}/details`">{{ it.projectId}}</router-link>
             </td>
-            <td class="text-left">{{ it.sc ? it.sc : '' }}</td>
+            <td class="text-left">{{ it.substantialCompletionDate | formatDate('date') }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>
             <td class="text-left">{{ it.product ? it.product : '' }}</td>
             <td class="text-left">{{ it.totalPromotionAmount || 0 | currency('$', 2) }}</td>
@@ -218,7 +218,7 @@
 
 <script>
 
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import { saveAs } from 'file-saver'
@@ -239,7 +239,7 @@
             headers: [
                 {text: 'Project Name', value: 'projectName', show: true},
                 {text: 'Project ID', value: 'projectId', show: true},
-                {text: 'Substantial Completion', value: 'sc', show: true},
+                {text: 'Substantial Completion', value: 'substantialCompletionDate', show: true},
                 {text: 'Financier', value: 'financier', show: true},
                 {text: 'Product', value: 'product', show: true},
                 {text: 'Total Promotion Amount', value: 'totalPromotionAmount', show: true},
@@ -283,6 +283,7 @@
             pagination: {},
             selectAll: false,
             showSelect: false,
+            itemsPerPage: 50,
             userName: '',
             approveDialog: false,
             passwordDialog: false,
@@ -323,14 +324,14 @@
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       Promise.all([
-        this.fetchPayments(this.status)
+        this.fetchPayments()
       ]).then(() => this.$store.commit(AppMutations.SET_LOADING, false))
     },
     methods: {
-      async fetchPayments(type) {
+      async fetchPayments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if ('approval' === type) {
+          if (this.status === 'approval') {
             const {data} = await getRequest('/rebate/needsApproval', 'blueraven')
             this.showSelect = true;
             // # Of Payments
@@ -350,7 +351,7 @@
             let userData = await getRequest('/user/current')
             this.userName = userData.data.fullName;
             this.$store.commit(AppMutations.SET_LOADING, false)
-          } else if (type === 'pending') {
+          } else if (this.status === 'pending') {
             const {data} = await getRequest('/rebate/pending', 'blueraven')
             this.payments = data;
             this.filteredPayments = data;
@@ -368,7 +369,7 @@
             this.headers[10].show = false;
 
             this.$store.commit(AppMutations.SET_LOADING, false)
-          } else if (type === 'invalid') {
+          } else if (this.status === 'invalid') {
             const {data} = await getRequest('/rebate/unbalancedPayments', 'blueraven')
             this.payments = data;
             this.filteredPayments = data;
@@ -395,14 +396,15 @@
         }
       },
       debounceFilterPayments: debounce( function () {
-        this.filteredPayments = this.payments && this.payments.filter(pay => {
-
+        this.filteredPayments = this.payments.filter(pay => {
           return (pay['projectName'].toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-            pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-            pay['financier'].toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-            (pay['product'] == null ? false : pay['product'].toLowerCase().includes(this.searchQuery.toLowerCase()))
+            pay['projectId'].toString().toLowerCase().includes(this.searchQuery.toLowerCase())
           )
         })
+
+        if (this.itemsPerPage > this.filteredPayments.length) {
+          this.itemsPerPage = this.filteredPayments.length;
+        }
       }, 500),
       async exportPayments () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -456,6 +458,10 @@
         }
       },
       enterPayment (item) {
+        if (item.substantialCompletionDate != null) {
+          item.sc = moment(item.substantialCompletionDate).format('MM/DD/YYYY')
+        }
+
         this.newPayItem = Object.assign({}, item)
         this.newPayDialog = true
       },

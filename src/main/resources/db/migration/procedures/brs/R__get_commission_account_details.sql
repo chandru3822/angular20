@@ -168,7 +168,7 @@ BEGIN
                                                0)  total,
                                        1 as milestone_id
                                 FROM flow.project p1
-                                         inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date <= v_period_end_date
+                                         inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                          inner join brs.project_override po on po.project_id = p1.id
                                          INNER JOIN brs.override_plan_receiving_user opru
                                                     ON opru.override_plan_id = po.override_plan_id
@@ -184,7 +184,7 @@ BEGIN
                                                0)  total,
                                        2 as milestone_id
                                 FROM flow.project p1
-                                         inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date <= v_period_end_date
+                                         inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                          inner join brs.project_override po on po.project_id = p1.id
                                          INNER JOIN brs.override_plan_receiving_user opru
                                                     ON opru.override_plan_id = po.override_plan_id
@@ -247,7 +247,7 @@ BEGIN
                                                                                                                          else 0 end,2),
                                                            0) end total
                                  FROM flow.project p1
-                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date <= v_period_end_date
+                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                           inner join brs.project_commission pc on pc.project_id = p1.id
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
@@ -262,7 +262,7 @@ BEGIN
                                                                                                                         else 0 end,2),
                                                            0) end total
                                  FROM flow.project p1
-                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date <= v_period_end_date
+                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                           inner join brs.project_commission pc on pc.project_id = p1.id
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 2
@@ -275,7 +275,7 @@ BEGIN
                                                                                                      from brs.override_plan_receiving_user opru
                                                                                                      where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
-                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date <= v_period_end_date
+                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
                                           inner join brs.project_override po on po.project_id = p1.id
                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                  WHERE p1.id = p.id),0) + coalesce(
@@ -285,7 +285,7 @@ BEGIN
                                                                                                        from brs.override_plan_receiving_user opru
                                                                                                        where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
-                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date <= v_period_end_date
+                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
                                           inner join brs.project_override po on po.project_id = p1.id
                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                  WHERE p1.id = p.id),0) AS override_earned,
@@ -312,7 +312,7 @@ BEGIN
           )*/
                             AS overrides_paid_to_date
                  FROM flow.project p
-                          inner join milestone1 mop on mop.project_id = p.id
+                         -- inner join milestone1 mop on mop.project_id = p.id
                           inner join brs.project_details pd on pd.project_id = p.id
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.closer_user_id
@@ -324,7 +324,8 @@ BEGIN
                           left join flow.list_of_value lov_proof_of_home  on lov_proof_of_home.id = pd.proof_of_homeowners_insurance_required
                  WHERE  (ec.project_id is null) and
                      CASE WHEN p_project_ids IS NOT NULL
-                              THEN p.id = ANY(p_project_ids) ELSE 1 = 1 END
+                              THEN p.id = ANY(p_project_ids) ELSE
+                         p.id in (select m1.project_id from milestone1 m1) END
                    AND CASE WHEN p_contact_id IS NOT NULL
                                 THEN c.id = p_contact_id ELSE 1 = 1 END
                    AND CASE WHEN p_sales_rep IS NOT NULL

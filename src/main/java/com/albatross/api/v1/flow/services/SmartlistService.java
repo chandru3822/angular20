@@ -319,7 +319,11 @@ public class SmartlistService {
     final String query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
     final List<Map<String, Object>> results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
 
-    return writeCsv(results, fields);
+    if (results.isEmpty()) {
+      return writeEmptyCsv(fields);
+    } else {
+      return writeCsv(results, fields);
+    }
   }
 
   public String buildProjectDetailsSql(Smartlist smartlist) {
@@ -1055,6 +1059,21 @@ public class SmartlistService {
 
     try (SequenceWriter toBuffer = w.writeValues(buffer)) {
       toBuffer.writeAll(data);
+      toBuffer.flush();
+      return buffer.toString(StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  private String writeEmptyCsv(List<SmartlistFieldAssignment> headers) {
+    List<String> preppedHeaders = headers.stream().map(SmartlistFieldAssignment::getName).collect(Collectors.toList());
+    CsvSchema.Builder builder = CsvSchema.builder();
+    CsvSchema schema = builder.build();
+    ObjectWriter w = new CsvMapper().writer(schema);
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    try (SequenceWriter toBuffer = w.writeValues(buffer)) {
+      toBuffer.writeAll(preppedHeaders);
       toBuffer.flush();
       return buffer.toString(StandardCharsets.UTF_8);
     } catch (IOException e) {
