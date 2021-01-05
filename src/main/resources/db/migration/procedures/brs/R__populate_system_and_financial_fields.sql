@@ -263,8 +263,8 @@ BEGIN
                              where cf.field_name = 'Total Cash Down Payment'
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
-                               and cfg.process_step_id = p_process_step_id),( case when (v_loan_type = 'Cash' and pd.loan_amount::numeric is null) then 0.00::numeric
-                                                                                      when (v_loan_type = 'Cash' and pd.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric
+                               and cfg.process_step_id = p_process_step_id),( case when (v_loan_type = 'Cash' and plh.loan_amount::numeric is null) then 0.00::numeric
+                                                                                      when (v_loan_type = 'Cash' and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric
                                                                                       when (v_loan_type != 'Cash' and optional_down_payment::numeric is null) then 0.00::numeric
                                                                                       when (v_loan_type != 'Cash' and optional_down_payment::numeric > 0.00::numeric) then coalesce(round(optional_down_payment::numeric,2),0)::numeric
                                                                                       else 0.00::numeric end)) as me
