@@ -750,21 +750,21 @@ BEGIN
                                      case
                                          when yesterday_day_count = 0 then 0
                                          else cast(cast(today_day_count - yesterday_day_count as numeric(10, 2)) /
-                                                   yesterday_day_count as numeric(6, 2)) * 100
+                                                   yesterday_day_count as numeric(10, 2)) * 100
                                          end as today_percent,
                                      seven_day_count,
                                      prev_seven_day_count,
                                      case
                                          when prev_seven_day_count = 0 then 0
                                          else cast(cast(seven_day_count - prev_seven_day_count as numeric(10, 2)) /
-                                                   prev_seven_day_count as numeric(6, 2)) * 100
+                                                   prev_seven_day_count as numeric(10, 2)) * 100
                                          end as seven_percent,
                                      thirty_day_count,
                                      prev_thirty_day_count,
                                      case
                                          when prev_thirty_day_count = 0 then 0
                                          else cast(cast(thirty_day_count - prev_thirty_day_count as numeric(10, 2)) /
-                                                   prev_thirty_day_count as numeric(6, 2)) * 100
+                                                   prev_thirty_day_count as numeric(10, 2)) * 100
                                          end as thirty_day_percent,
                                      custom_date_range_count
                               from (
@@ -1635,21 +1635,21 @@ BEGIN
                                      case
                                          when yesterday_day_count = 0 then 0
                                          else cast(cast(today_day_count - yesterday_day_count as numeric(10, 2)) /
-                                                   yesterday_day_count as numeric(6, 2)) * 100
+                                                   yesterday_day_count as numeric(10, 2)) * 100
                                          end as today_percent,
                                      seven_day_count,
                                      prev_seven_day_count,
                                      case
                                          when prev_seven_day_count = 0 then 0
                                          else cast(cast(seven_day_count - prev_seven_day_count as numeric(10, 2)) /
-                                                   prev_seven_day_count as numeric(6, 2)) * 100
+                                                   prev_seven_day_count as numeric(10, 2)) * 100
                                          end as seven_percent,
                                      thirty_day_count,
                                      prev_thirty_day_count,
                                      case
                                          when prev_thirty_day_count = 0 then 0
                                          else cast(cast(thirty_day_count - prev_thirty_day_count as numeric(10, 2)) /
-                                                   prev_thirty_day_count as numeric(6, 2)) * 100
+                                                   prev_thirty_day_count as numeric(10, 2)) * 100
                                          end as thirty_day_percent,
                                      custom_date_range_count
                               from (

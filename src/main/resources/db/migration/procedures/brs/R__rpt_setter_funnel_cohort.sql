@@ -671,21 +671,21 @@ BEGIN
                                      case
                                          when yesterday_day_count = 0 then 0
                                          else cast(cast(today_day_count - yesterday_day_count as numeric(10, 2)) /
-                                                   yesterday_day_count as numeric(6, 2)) * 100
+                                                   yesterday_day_count as numeric(10, 2)) * 100
                                          end as today_percent,
                                      seven_day_count,
                                      prev_seven_day_count,
                                      case
                                          when prev_seven_day_count = 0 then 0
                                          else cast(cast(seven_day_count - prev_seven_day_count as numeric(10, 2)) /
-                                                   prev_seven_day_count as numeric(6, 2)) * 100
+                                                   prev_seven_day_count as numeric(10, 2)) * 100
                                          end as seven_percent,
                                      thirty_day_count,
                                      prev_thirty_day_count,
                                      case
                                          when prev_thirty_day_count = 0 then 0
                                          else cast(cast(thirty_day_count - prev_thirty_day_count as numeric(10, 2)) /
-                                                   prev_thirty_day_count as numeric(6, 2)) * 100
+                                                   prev_thirty_day_count as numeric(10, 2)) * 100
                                          end as thirty_day_percent,
                                      custom_date_range_count
                               from (
@@ -706,27 +706,27 @@ BEGIN
                                               case
                                                   when (select today_day_count from setter_funnel_1 limit 1) = 0 then 0
                                                   else cast(cast(
-                                                                        (select today_day_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                        (select today_day_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                             cast(
-                                                                        (select today_day_count from setter_funnel_1 limit 1) as numeric(6, 2)) as numeric(6, 2)) *
+                                                                        (select today_day_count from setter_funnel_1 limit 1) as numeric(10, 2)) as numeric(10, 2)) *
                                                        100
                                                   end            as today_day_count,
                                               null               as yesterday_day_count,
                                               case
                                                   when (select seven_day_count from setter_funnel_1 limit 1) = 0 then 0
                                                   else cast(cast(
-                                                                        (select seven_day_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                        (select seven_day_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                             cast(
-                                                                        (select seven_day_count from setter_funnel_1 limit 1) as numeric(6, 2)) as numeric(6, 2)) *
+                                                                        (select seven_day_count from setter_funnel_1 limit 1) as numeric(10, 2)) as numeric(10, 2)) *
                                                        100
                                                   end            as seven_day_count,
                                               null               as prev_seven_day_count,
                                               case
                                                   when (select thirty_day_count from setter_funnel_1 limit 1) = 0 then 0
                                                   else cast(cast(
-                                                                        (select thirty_day_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                        (select thirty_day_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                             cast(
-                                                                        (select thirty_day_count from setter_funnel_1 limit 1) as numeric(6, 2)) as numeric(6, 2)) *
+                                                                        (select thirty_day_count from setter_funnel_1 limit 1) as numeric(10, 2)) as numeric(10, 2)) *
                                                        100
                                                   end            as thirty_day_count,
                                               null               as prev_thirty_day_count,
@@ -734,10 +734,10 @@ BEGIN
                                                   when (select custom_date_range_count from setter_funnel_1 limit 1) = 0
                                                       then 0
                                                   else cast(cast(
-                                                                        (select custom_date_range_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                        (select custom_date_range_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                             cast(
-                                                                        (select custom_date_range_count from setter_funnel_1 limit 1) as numeric(6, 2)) *
-                                                            100 as numeric(6, 2))
+                                                                        (select custom_date_range_count from setter_funnel_1 limit 1) as numeric(10, 2)) *
+                                                            100 as numeric(10, 2))
                                                   end            as custom_date_range_count
                                    ) as row_counts
                               order by display_order
@@ -1492,21 +1492,21 @@ BEGIN
                                      case
                                          when yesterday_day_count = 0 then 0
                                          else cast(cast(today_day_count - yesterday_day_count as numeric(10, 2)) /
-                                                   yesterday_day_count as numeric(6, 2)) * 100
+                                                   yesterday_day_count as numeric(10, 2)) * 100
                                          end as today_percent,
                                      seven_day_count,
                                      prev_seven_day_count,
                                      case
                                          when prev_seven_day_count = 0 then 0
                                          else cast(cast(seven_day_count - prev_seven_day_count as numeric(10, 2)) /
-                                                   prev_seven_day_count as numeric(6, 2)) * 100
+                                                   prev_seven_day_count as numeric(10, 2)) * 100
                                          end as seven_percent,
                                      thirty_day_count,
                                      prev_thirty_day_count,
                                      case
                                          when prev_thirty_day_count = 0 then 0
                                          else cast(cast(thirty_day_count - prev_thirty_day_count as numeric(10, 2)) /
-                                                   prev_thirty_day_count as numeric(6, 2)) * 100
+                                                   prev_thirty_day_count as numeric(10, 2)) * 100
                                          end as thirty_day_percent,
                                      custom_date_range_count
                               from (select *
@@ -1526,27 +1526,27 @@ BEGIN
                                            case
                                                when (select today_day_count from setter_funnel_1 limit 1) = 0 then 0
                                                else cast(cast(
-                                                                     (select today_day_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                     (select today_day_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                          cast(
-                                                                     (select today_day_count from setter_funnel_1 limit 1) as numeric(6, 2)) as numeric(6, 2)) *
+                                                                     (select today_day_count from setter_funnel_1 limit 1) as numeric(10, 2)) as numeric(10, 2)) *
                                                     100
                                                end            as today_day_count,
                                            null                  yesterday_count,
                                            case
                                                when (select seven_day_count from setter_funnel_1 limit 1) = 0 then 0
                                                else cast(cast(
-                                                                     (select seven_day_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                     (select seven_day_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                          cast(
-                                                                     (select seven_day_count from setter_funnel_1 limit 1) as numeric(6, 2)) as numeric(6, 2)) *
+                                                                     (select seven_day_count from setter_funnel_1 limit 1) as numeric(10, 2)) as numeric(10, 2)) *
                                                     100
                                                end            as seven_day_count,
                                            null                  prev_seven_day_count,
                                            case
                                                when (select thirty_day_count from setter_funnel_1 limit 1) = 0 then 0
                                                else cast(cast(
-                                                                     (select thirty_day_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                     (select thirty_day_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                          cast(
-                                                                     (select thirty_day_count from setter_funnel_1 limit 1) as numeric(6, 2)) as numeric(6, 2)) *
+                                                                     (select thirty_day_count from setter_funnel_1 limit 1) as numeric(10, 2)) as numeric(10, 2)) *
                                                     100
                                                end            as thirty_day_count,
                                            null                  prev_thirty_day_count,
@@ -1554,10 +1554,10 @@ BEGIN
                                                when (select custom_date_range_count from setter_funnel_1 limit 1) = 0
                                                    then 0
                                                else cast(cast(
-                                                                     (select custom_date_range_count from setter_funnel_2 limit 1) as numeric(6, 2)) /
+                                                                     (select custom_date_range_count from setter_funnel_2 limit 1) as numeric(10, 2)) /
                                                          cast(
-                                                                     (select custom_date_range_count from setter_funnel_1 limit 1) as numeric(6, 2)) *
-                                                         100 as numeric(6, 2))
+                                                                     (select custom_date_range_count from setter_funnel_1 limit 1) as numeric(10, 2)) *
+                                                         100 as numeric(10, 2))
                                                end            as custom_date_range_count
                                    ) as row_counts
                               order by display_order
