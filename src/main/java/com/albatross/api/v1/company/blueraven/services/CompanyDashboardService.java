@@ -96,8 +96,8 @@ public class CompanyDashboardService {
                 JSONObject latestTargetsJson = new JSONObject(prevTargets.substring(1, prevTargets.length()-1));
                 params.put("bookingsBrs", latestTargetsJson.isNull("bookings_brs") ? null : latestTargetsJson.get("bookings_brs"));
                 params.put("bookingsPartner", latestTargetsJson.isNull("bookings_partner") ? null : latestTargetsJson.get("bookings_partner"));
-                params.put("finalDesignsApprovedBrs", latestTargetsJson.isNull("final_designs_approved_brs") ? null : latestTargetsJson.get("final_designs_approved_brs"));
-                params.put("finalDesignsApprovedPartner", latestTargetsJson.isNull("final_designs_approved_partner") ? null : latestTargetsJson.get("final_designs_approved_partner"));
+                params.put("finalDesignsCompletedBrs", latestTargetsJson.isNull("final_designs_completed_brs") ? null : latestTargetsJson.get("final_designs_completed_brs"));
+                params.put("finalDesignsCompletedPartner", latestTargetsJson.isNull("final_designs_completed_partner") ? null : latestTargetsJson.get("final_designs_completed_partner"));
                 params.put("substantialCompletionsBrs", latestTargetsJson.isNull("substantial_completions_brs") ? null : latestTargetsJson.get("substantial_completions_brs"));
                 params.put("substantialCompletionsPartner", latestTargetsJson.isNull("substantial_completions_partner") ? null : latestTargetsJson.get("substantial_completions_partner"));
                 params.put("finalCompletionsBrs", latestTargetsJson.isNull("final_completions_partner") ? null : latestTargetsJson.get("final_completions_brs"));
@@ -115,8 +115,8 @@ public class CompanyDashboardService {
             params.put("id", targetValueRow.getId());
             params.put("bookingsBrs", targetValueRow.getBookingsBrs());
             params.put("bookingsPartner", targetValueRow.getBookingsPartner());
-            params.put("finalDesignsApprovedBrs", targetValueRow.getFinalDesignsApprovedBrs());
-            params.put("finalDesignsApprovedPartner", targetValueRow.getFinalDesignsApprovedPartner());
+            params.put("finalDesignsCompletedBrs", targetValueRow.getFinalDesignsCompletedBrs());
+            params.put("finalDesignsCompletedPartner", targetValueRow.getFinalDesignsCompletedPartner());
             params.put("substantialCompletionsBrs", targetValueRow.getSubstantialCompletionsBrs());
             params.put("substantialCompletionsPartner", targetValueRow.getSubstantialCompletionsPartner());
             params.put("finalCompletionsBrs", targetValueRow.getFinalCompletionsBrs());
@@ -195,8 +195,8 @@ public class CompanyDashboardService {
 
                     plannedValuesMap.put("bookingsBrs", plannedValuesMap.get("bookingsBrs") + row.getBookingsBrs() *currentWeight);
                     plannedValuesMap.put("bookingsPartner", plannedValuesMap.get("bookingsPartner") + row.getBookingsPartner() *currentWeight);
-                    plannedValuesMap.put("finalDesignsApprovedBrs", plannedValuesMap.get("finalDesignsApprovedBrs") + row.getFinalDesignsApprovedBrs() *currentWeight);
-                    plannedValuesMap.put("finalDesignsApprovedPartner", plannedValuesMap.get("finalDesignsApprovedPartner") + row.getFinalDesignsApprovedPartner() *currentWeight);
+                    plannedValuesMap.put("finalDesignsCompletedBrs", plannedValuesMap.get("finalDesignsCompletedBrs") + row.getFinalDesignsCompletedBrs() *currentWeight);
+                    plannedValuesMap.put("finalDesignsCompletedPartner", plannedValuesMap.get("finalDesignsCompletedPartner") + row.getFinalDesignsCompletedPartner() *currentWeight);
                     plannedValuesMap.put("substantialCompletionsBrs", plannedValuesMap.get("substantialCompletionsBrs") + row.getSubstantialCompletionsBrs() *currentWeight);
                     plannedValuesMap.put("substantialCompletionsPartner", plannedValuesMap.get("substantialCompletionsPartner") + row.getSubstantialCompletionsPartner() *currentWeight);
                     plannedValuesMap.put("finalCompletionsBrs", plannedValuesMap.get("finalCompletionsBrs") + row.getFinalCompletionsBrs() *currentWeight);
@@ -329,6 +329,20 @@ public class CompanyDashboardService {
             finalDesignsApprovedValues.put(PLANNED_PARTNER, Math.round(plannedValuesMap.get("finalDesignsApprovedPartner")));
         }
         dashValues.put(finalDesignsApprovedValues);
+
+        // Final Designs Completed
+        JSONObject finalDesignsCompletedValues = new JSONObject();
+        finalDesignsCompletedValues.put(MILESTONE, "Final Designs Completed");
+        finalDesignsCompletedValues.put(ACTUAL_TOTAL, getValueFromSqlKey("dash.getFinalDesignsCompletedActualTotal", params));
+
+        if (isParent) {
+            finalDesignsCompletedValues.put(ACTUAL_BRS, getValueFromSqlKey("dash.getFinalDesignsCompletedActualBrs", params));
+            finalDesignsCompletedValues.put(ACTUAL_PARTNER, getValueFromSqlKey("dash.getFinalDesignsCompletedActualPartner", params));
+            finalDesignsCompletedValues.put(PLANNED_TOTAL, Math.round(plannedValuesMap.get("finalDesignsCompletedBrs") + plannedValuesMap.get("finalDesignsCompletedPartner")));
+            finalDesignsCompletedValues.put(PLANNED_BRS, Math.round(plannedValuesMap.get("finalDesignsCompletedBrs")));
+            finalDesignsCompletedValues.put(PLANNED_PARTNER, Math.round(plannedValuesMap.get("finalDesignsCompletedPartner")));
+        }
+        dashValues.put(finalDesignsCompletedValues);
 
         // Plan Sets Created
         JSONObject planSetsCreatedValues = new JSONObject();
@@ -611,6 +625,17 @@ public class CompanyDashboardService {
                 sql = "dash.getFinalDesignsApprovedActualPartnerDrilldown";
             }
         }
+        else if (milestone.equals("Final Designs Completed")) {
+          if (column.equals(TOTAL)) {
+            sql = "dash.getFinalDesignsCompletedActualTotalDrilldown";
+          }
+          else if (column.equals(BRS)) {
+            sql = "dash.getFinalDesignsCompletedActualBrsDrilldown";
+          }
+          else if (column.equals(PARTNER)) {
+            sql = "dash.getFinalDesignsCompletedActualPartnerDrilldown";
+          }
+        }
         else if (milestone.equals("Plan Sets Created")) {
             if (column.equals(TOTAL)) {
                 sql = "dash.getPlanSetsCreatedActualTotalDrilldown";
@@ -765,6 +790,8 @@ public class CompanyDashboardService {
             put("finalDesignsSentPartner", 0.0);
             put("finalDesignsApprovedBrs", 0.0);
             put("finalDesignsApprovedPartner", 0.0);
+            put("finalDesignsCompletedBrs", 0.0);
+            put("finalDesignsCompletedPartner", 0.0);
             put("planSetsCreatedBrs", 0.0);
             put("planSetsCreatedPartner", 0.0);
             put("permitPacksCreatedBrs", 0.0);

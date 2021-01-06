@@ -7,13 +7,13 @@
 
     <dash.insertTargets><![CDATA[
         insert into brs.company_dashboard_targets (
-            target_date, bookings_brs, bookings_partner, final_designs_approved_brs,
-            final_designs_approved_partner, substantial_completions_brs, substantial_completions_partner,
+            target_date, bookings_brs, bookings_partner, final_designs_completed_brs,
+            final_designs_completed_partner, substantial_completions_brs, substantial_completions_partner,
             final_completions_brs,  final_completions_partner
         )
         values (
-            :targetDate, :bookingsBrs, :bookingsPartner, :finalDesignsApprovedBrs,
-            :finalDesignsApprovedPartner, :substantialCompletionsBrs, :substantialCompletionsPartner,
+            :targetDate, :bookingsBrs, :bookingsPartner, :finalDesignsCompletedBrs,
+            :finalDesignsCompletedPartner, :substantialCompletionsBrs, :substantialCompletionsPartner,
             :finalCompletionsBrs, :finalCompletionsPartner
         )
         on conflict do nothing
@@ -23,8 +23,8 @@
         update brs.company_dashboard_targets
         set bookings_brs = :bookingsBrs,
             bookings_partner = :bookingsPartner,
-            final_designs_approved_brs = :finalDesignsApprovedBrs,
-            final_designs_approved_partner = :finalDesignsApprovedPartner,
+            final_designs_completed_brs = :finalDesignsCompletedBrs,
+            final_designs_completed_partner = :finalDesignsCompletedPartner,
             substantial_completions_brs = :substantialCompletionsBrs,
             substantial_completions_partner = :substantialCompletionsPartner,
             final_completions_brs = :finalCompletionsBrs,
@@ -738,6 +738,86 @@
         where pd.final_design_signed_date BETWEEN :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getFinalDesignsApprovedActualPartnerDrilldown>
+
+    <dash.getFinalDesignsCompletedActualTotal><![CDATA[
+        with companies as (
+            select array_agg(id) as ids
+            from flow.company_hierarchy_filter_down(:parentCompanyId::int)
+        )
+        select count(1)
+        from companies, brs.project_details pd
+        where pd.final_design_complete_date BETWEEN :startDate::DATE and :endDate::DATE
+            and case when :isParent
+                then pd.company_id = any(companies.ids)
+                else pd.company_id = :companyId
+                end
+    ]]></dash.getFinalDesignsCompletedActualTotal>
+
+    <dash.getFinalDesignsCompletedActualTotalDrilldown><![CDATA[
+        with companies as (
+            select array_agg(id) as ids
+            from flow.company_hierarchy_filter_down(:parentCompanyId::int)
+        )
+        select concat(c.first_name, ' ', c.last_name) customer_name,
+               pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
+               pd.final_design_complete_date
+        from companies, brs.project_details pd
+            inner join flow.project p on p.id = pd.project_id
+            inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
+        where pd.final_design_complete_date BETWEEN :startDate::DATE and :endDate::DATE
+            and case when :isParent
+                then pd.company_id = any(companies.ids)
+                else pd.company_id = :companyId
+                end
+    ]]></dash.getFinalDesignsCompletedActualTotalDrilldown>
+
+    <dash.getFinalDesignsCompletedActualBrs><![CDATA[
+        select count(1)
+        from brs.project_details pd
+        where pd.final_design_complete_date BETWEEN :startDate::DATE and :endDate::DATE
+            and pd.company_id = 3
+    ]]></dash.getFinalDesignsCompletedActualBrs>
+
+    <dash.getFinalDesignsCompletedActualBrsDrilldown><![CDATA[
+        select concat(c.first_name, ' ', c.last_name) customer_name,
+               pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
+               pd.final_design_complete_date
+        from brs.project_details pd
+            inner join flow.project p on p.id = pd.project_id
+            inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
+        where pd.final_design_complete_date BETWEEN :startDate::DATE and :endDate::DATE
+            and pd.company_id = 3
+    ]]></dash.getFinalDesignsCompletedActualBrsDrilldown>
+
+    <dash.getFinalDesignsCompletedActualPartner><![CDATA[
+        select count(1)
+        from brs.project_details pd
+        where pd.final_design_complete_date BETWEEN :startDate::DATE and :endDate::DATE
+            and pd.company_id != 3
+    ]]></dash.getFinalDesignsCompletedActualPartner>
+
+    <dash.getFinalDesignsCompletedActualPartnerDrilldown><![CDATA[
+        select concat(c.first_name, ' ', c.last_name) customer_name,
+               pd.project_id,
+               s.abbreviation state,
+               pd.source_name,
+               pd.final_design_complete_date
+        from brs.project_details pd
+            inner join flow.project p on p.id = pd.project_id
+            inner join flow.contact c on c.id = p.contact_id
+            left outer join flow.company_state cs on cs.id = c.company_state_id
+            left outer join flow.state s on s.id = cs.state_id
+        where pd.final_design_complete_date BETWEEN :startDate::DATE and :endDate::DATE
+            and pd.company_id != 3
+    ]]></dash.getFinalDesignsCompletedActualPartnerDrilldown>
 
     <dash.getPlanSetsCreatedActualTotal><![CDATA[
         with companies as (
