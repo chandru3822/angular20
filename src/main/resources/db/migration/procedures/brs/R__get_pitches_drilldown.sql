@@ -6,7 +6,9 @@ declare
 	v_end_date date;
     v_year integer;
 BEGIN
-	select extract('year' from now())::integer
+-- 	select extract('year' from now())::integer
+  -- This is just a temp fix until the updated Ironman UI / requirements for 2021 are done (per Judson's request on 1/4/2021)
+  select ('2020')::integer
 	into v_year;
 
 	case when p_quarter = 1 then
