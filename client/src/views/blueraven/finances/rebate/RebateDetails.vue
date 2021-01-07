@@ -190,6 +190,7 @@
                 </td>
                 <td class="text-left" style="color: red">
                   <a v-if="item.payment_state_id === 3" @click="openVoidDialog(item)">Void</a>
+                  <a v-if="item.payment_state_id === 5" @click="openUnvoidDialog(item)">Unvoid</a>
                 </td>
                   <td>
                       <v-btn v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
@@ -277,7 +278,30 @@
                     <v-btn @click="cancelVoidDialog()">Close</v-btn>
                   </v-card-actions>
                 </v-card>
-              </v-dialog>
+            </v-dialog>
+
+            <v-dialog v-model="unvoidDialog" max-width="600px" v-if="userCanEdit">
+                <v-card class="pt-4 pb-2">
+                  <v-card-title class="flex-display justify-space-between pt-0 px-4">
+                    <span class="font-weight-bold">Confirm</span>
+                  </v-card-title>
+
+                  <template>
+                    <v-card-text>
+                      <v-row>
+                        <v-col>
+                          Are you sure you want to unvoid this payment?
+                        </v-col>
+                      </v-row>
+                    </v-card-text>
+                  </template>
+
+                  <v-card-actions class="flex-display justify-end px-4 pt-0">
+                    <v-btn @click="unvoidPayment(notesItem)">Yes</v-btn>
+                    <v-btn @click="cancelUnvoidDialog()">Close</v-btn>
+                  </v-card-actions>
+                </v-card>
+            </v-dialog>
 
         </v-col>
       </v-row>
@@ -356,6 +380,7 @@
         editMailing: false,
         notesDialog: false,
         voidDialog: false,
+        unvoidDialog: false,
         deleteConfirm: false,
         notesItem: {
             void_note: ''
@@ -484,6 +509,10 @@
           this.notesItem = item
           this.voidDialog = true;
       },
+      openUnvoidDialog(item) {
+        this.notesItem = item
+        this.unvoidDialog = true;
+      },
       openDeleteDialog(item) {
         this.deleteItem = item;
         this.deleteConfirm = true;
@@ -497,6 +526,9 @@
         this.voidDialog = false
         this.notesItem.void_note = this.notesValue
         this.notesValue = ''
+      },
+      cancelUnvoidDialog() {
+        this.unvoidDialog = false
       },
       async updateTotalPromotionAmount() {
         this.editTotalPromotionAmount = false
@@ -614,6 +646,22 @@
         }
 
         this.voidDialog = false;
+        await this.fetchPayments();
+      },
+      async unvoidPayment(item) {
+        try {
+          let params = {
+            paymentId: item.id
+          }
+
+          const {data} = await postRequest(`/rebate/unvoidPayment`, params, 'blueraven')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error unvoiding payment')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+
+        this.unvoidDialog = false;
         await this.fetchPayments();
       },
       async getStates () {
