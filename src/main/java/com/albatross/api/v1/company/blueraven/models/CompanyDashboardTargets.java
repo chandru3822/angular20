@@ -8,7 +8,7 @@ import java.util.Date;
 public class CompanyDashboardTargets {
     private Long id;
     private Date targetDate;
-    private Integer bookingsBrs, bookingsPartner, finalDesignsApprovedBrs, finalDesignsApprovedPartner,
+    private Integer bookingsBrs, bookingsPartner, finalDesignsCompletedBrs, finalDesignsCompletedPartner,
                     substantialCompletionsBrs, substantialCompletionsPartner, finalCompletionsBrs,
                     finalCompletionsPartner;
 }

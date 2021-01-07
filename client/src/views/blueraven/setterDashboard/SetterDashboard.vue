@@ -866,7 +866,8 @@
       funnelDataLoaded: false,
       dashboardWasLoaded: false,
       funnelWasLoaded: false,
-      currentQuarter: moment().quarter(),
+      // currentQuarter: moment().quarter(),
+      currentQuarter: 4, // This is just a temp fix until the updated Ironman UI / requirements for 2021 are done (per Judson's request on 1/4/2021)
       pitchCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
       q1_points: 0,
       q2_points: 0,

@@ -2,24 +2,39 @@
   <closerDashboard.getIronmanFdcCounts>
     <![CDATA[
       WITH quarters AS (
-        select (extract('year' from now()) || '-01-01')::date as q1_start,
-               (extract('year' from now()) || '-03-31')::date as q1_end,
-               (extract('year' from now()) || '-04-01')::date as q2_start,
-               (extract('year' from now()) || '-06-30')::date as q2_end,
-               (extract('year' from now()) || '-07-01')::date as q3_start,
-               (extract('year' from now()) || '-09-30')::date as q3_end,
-               (extract('year' from now()) || '-10-01')::date as q4_start,
-               (extract('year' from now()) || '-12-31')::date as q4_end
+--         select (extract('year' from now()) || '-01-01')::date as q1_start,
+--                (extract('year' from now()) || '-03-31')::date as q1_end,
+--                (extract('year' from now()) || '-04-01')::date as q2_start,
+--                (extract('year' from now()) || '-06-30')::date as q2_end,
+--                (extract('year' from now()) || '-07-01')::date as q3_start,
+--                (extract('year' from now()) || '-09-30')::date as q3_end,
+--                (extract('year' from now()) || '-10-01')::date as q4_start,
+--                (extract('year' from now()) || '-12-31')::date as q4_end
+        -- This is just a temp fix until the updated Ironman UI / requirements for 2021 are done (per Judson's request on 1/4/2021)
+        select ('2020-01-01')::date as q1_start,
+               ('2020-03-31')::date as q1_end,
+               ('2020-04-01')::date as q2_start,
+               ('2020-06-30')::date as q2_end,
+               ('2020-07-01')::date as q3_start,
+               ('2020-09-30')::date as q3_end,
+               ('2020-10-01')::date as q4_start,
+               ('2020-12-31')::date as q4_end
       )
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
-                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (select q1_start from quarters) and (extract('year' from now()) || '-01-31')::date
+                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
+                  --(select q1_start from quarters) and (extract('year' from now()) || '-01-31')::date
+                  (select q1_start from quarters) and ('2020-01-31')::date -- temp fix
                   and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
                   then 1.5
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
+                  --(extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                  ('2020-03-01')::date and (select q1_end from quarters) -- temp fix
                   and pd.source = 523 --Closer Gen
                   then 3
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between (extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
+                  --(extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
+                  ('2020-03-01')::date and (select q1_end from quarters) -- temp fix
                   and pd.source in (524, 530) --(Referral, Events - Closer Gen)
                   then 2
                 else 1

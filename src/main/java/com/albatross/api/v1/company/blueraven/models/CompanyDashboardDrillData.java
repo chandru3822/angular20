@@ -8,8 +8,8 @@ import java.util.Date;
 public class CompanyDashboardDrillData {
     private Long projectId;
     private String customerName, state, sourceName, appointmentOutcome;
-    private Date appointmentDate, installationAgreementSignedDate, siteSurveyVerifiedDate,
-                 finalDesignCreatedDate, finalDesignSentToHomeownerDate, finalDesignSignedDate,
+    private Date appointmentCreatedDate, appointmentDate, installationAgreementSignedDate, siteSurveyVerifiedDate,
+                 finalDesignCreatedDate, finalDesignSentToHomeownerDate, finalDesignSignedDate, finalDesignCompleteDate,
                  planSetCreatedDate, permitPackCompleteDate, permitSubmittedDate,
                  permitApprovedDate, installationScheduledDate, installationDate,
                  installationCloseoutDate, substantialCompletionDate, ahjInspectionScheduledDate,
