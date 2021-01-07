@@ -41,8 +41,8 @@
                   <v-text-field dense type="number" min="0" pattern="[0-9]*" v-model="item.bookingsPartner" hide-details></v-text-field>
                 </td>
                 <td>
-                  <v-text-field dense type="number" min="0" pattern="[0-9]*" v-model="item.finalDesignsApprovedBrs" hide-details></v-text-field>
-                  <v-text-field dense type="number" min="0" pattern="[0-9]*" v-model="item.finalDesignsApprovedPartner" hide-details></v-text-field>
+                  <v-text-field dense type="number" min="0" pattern="[0-9]*" v-model="item.finalDesignsCompletedBrs" hide-details></v-text-field>
+                  <v-text-field dense type="number" min="0" pattern="[0-9]*" v-model="item.finalDesignsCompletedPartner" hide-details></v-text-field>
                 </td>
                 <td>
                   <v-text-field dense type="number" min="0" pattern="[0-9]*" v-model="item.substantialCompletionsBrs" hide-details></v-text-field>
@@ -81,7 +81,7 @@
         { text: 'Week of', value: 'targetDate', width: 90, align: 'center', class: 'fixed-col-1' },
         { text: null, width: 50, class: 'fixed-col-2' },
         { text: 'Bookings', width: constants.IS_MOBILE ? 80 : 150, align: 'center' },
-        { text: 'Final Designs Approved', width: constants.IS_MOBILE ? 80 : 150, align: 'center' },
+        { text: 'Final Designs Completed', width: constants.IS_MOBILE ? 80 : 150, align: 'center' },
         { text: 'Substantial Completions', width: constants.IS_MOBILE ? 80 : 150, align: 'center' },
         { text: 'Final Completions', width: constants.IS_MOBILE ? 80 : 150, align: 'center' }
       ],
@@ -101,10 +101,8 @@
       async getTargets () {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-
           const {data} = await getRequest('/companyDashboard/targets', 'blueraven')
           this.targets = cloneDeep(data)
-
           this.isLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
