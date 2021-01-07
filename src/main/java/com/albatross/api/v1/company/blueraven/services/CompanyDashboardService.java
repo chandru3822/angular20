@@ -324,9 +324,9 @@ public class CompanyDashboardService {
         if (isParent) {
             finalDesignsApprovedValues.put(ACTUAL_BRS, getValueFromSqlKey("dash.getFinalDesignsApprovedActualBrs", params));
             finalDesignsApprovedValues.put(ACTUAL_PARTNER, getValueFromSqlKey("dash.getFinalDesignsApprovedActualPartner", params));
-            finalDesignsApprovedValues.put(PLANNED_TOTAL, Math.round(plannedValuesMap.get("finalDesignsApprovedBrs") + plannedValuesMap.get("finalDesignsApprovedPartner")));
-            finalDesignsApprovedValues.put(PLANNED_BRS, Math.round(plannedValuesMap.get("finalDesignsApprovedBrs")));
-            finalDesignsApprovedValues.put(PLANNED_PARTNER, Math.round(plannedValuesMap.get("finalDesignsApprovedPartner")));
+            finalDesignsApprovedValues.put(PLANNED_TOTAL, "-");
+            finalDesignsApprovedValues.put(PLANNED_BRS, "-");
+            finalDesignsApprovedValues.put(PLANNED_PARTNER, "-");
         }
         dashValues.put(finalDesignsApprovedValues);
 
