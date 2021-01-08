@@ -169,7 +169,7 @@ BEGIN
                                                        self_gen +
                                                        ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)
                                           else
-                                            ((lead_gen_num / lead_gen_den) * 10000) + self_gen + ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)  end  as score,
+                                            (lead_gen_num / lead_gen_den::numeric * 10000) + self_gen + ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)  end  as score,
                                           case
                                               when sum(appointment_count_with_interval) over () = 0 then
                                                   0
