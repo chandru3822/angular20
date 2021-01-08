@@ -32,11 +32,17 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                                                 from flow.project_process_step pps
+                                                                          inner join flow.project_process_step_custom_field_value ppscfv
+                                                                                     on ppscfv.project_process_step_id = pps.id
+                                                                          inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                                 where pps.process_step_id = 1
+                                                                   and --Closer Appointment Details
+                                                                     pps.main is false
+                                                                   and ppscfv.custom_field_group_assignment_id = 5
+                                                                   and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
+                                                                       (now() at time zone 'US/Mountain') :: DATE
+                                                                   and pd.company_id = v_company_id )          as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
@@ -117,7 +123,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.closer_appointment_outcome in (59, 61)
+                                               where pd.closer_appointment_outcome in (59, 61,16685)
                                                  and --(No Go, Low TSRF)
                                                        ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                        (now() at time zone 'US/Mountain') :: DATE
@@ -160,15 +166,19 @@ BEGIN
 
                                               null::bigint as checked_in_today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                       (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                                (select count(1)  ---not in (4, 59, 61,16685))
+                                                             from flow.project_process_step pps
+                                                                      inner join flow.project_process_step_custom_field_value ppscfv
+                                                                                 on ppscfv.project_process_step_id = pps.id
+                                                                      inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                             where pps.process_step_id = 1
+                                                               and --Closer Appointment Details
+                                                                 pps.main is false
+                                                               and ppscfv.custom_field_group_assignment_id = 5
+                                                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
+                                                                   (now() at time zone 'US/Mountain') :: DATE
+                                                               and pd.company_id = v_company_id)         as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
@@ -217,9 +227,11 @@ BEGIN
                                                  and --Closer Appointment Details
                                                    pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                                 and ((((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                     (now() at time zone 'US/Mountain') :: DATE )
+                                                 or (((pd.closer_appointment_start  at time zone 'UTC') at time zone 'US/Mountain')::date = (now() at time zone 'US/Mountain') :: DATE
+                                                    and pd.closer_appointment_outcome = 15327))
                                                  and pd.company_id = v_company_id
                                               )            as today_count,
 
@@ -285,8 +297,6 @@ BEGIN
                                                from brs.project_details pd
                                                where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
                                                  and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -363,9 +373,7 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
+                                                     (now() at time zone 'US/Mountain') :: DATe
                                                  and pd.closer_appointment_outcome = 3 --Missed
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -443,8 +451,7 @@ BEGIN
                                                from brs.project_details pd
                                                where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
+
                                                  and pd.closer_appointment_outcome = 58 --Not Pitched: Other
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -522,8 +529,7 @@ BEGIN
                                                from brs.project_details pd
                                                where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
+
                                                  and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
@@ -602,11 +608,11 @@ BEGIN
                                                from brs.project_details pd
                                                where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (pd.closer_appointment_outcome = 60
+                                                 or --Non-Dispositioned
+                                                       (((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
+                                                       (now() at time zone 'US/Mountain')and
+                                                        pd.closer_appointment_outcome is null))
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
@@ -691,7 +697,7 @@ BEGIN
                                                where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
+                                                      pd.closer_appointment_outcome not in (4,59,61,56,3,58,57,60,2,1139,1140,16685))
                                                  and --(Cancelled, No Go, Low TSRF)
                                                        ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
                                                        (now() at time zone 'US/Mountain')
@@ -778,9 +784,7 @@ BEGIN
                                                from brs.project_details pd
                                                where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and  pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
