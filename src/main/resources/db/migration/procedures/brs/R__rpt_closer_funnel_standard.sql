@@ -2392,7 +2392,7 @@ BEGIN
                                                  and pd.closer_user_id is not null
                                                  and (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
-                                                       now() at time zone 'US/Mountain') :: DATE
+                                                  (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
