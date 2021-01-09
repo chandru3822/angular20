@@ -87,7 +87,7 @@ BEGIN
                           left  join flow.project p on p.id = pd.project_id
                  group by rru.user_id),
              self_gen as (
-                 select rru.user_id, count(pd.id) * 2 as self_gen
+                 select rru.user_id, count(pd.id) as self_gen
                  from round_robin_users rru
                       left join brs.project_details pd on rru.user_id = pd.closer_user_id and
                                                           greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
