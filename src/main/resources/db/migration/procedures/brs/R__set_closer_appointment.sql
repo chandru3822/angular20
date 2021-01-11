@@ -24,212 +24,265 @@ declare
     v_user_full_name                             text;
     v_user_email                                 text;
     v_user_position_id                           integer;
+    v_process_step_id                            integer;
 BEGIN
+
+    select process_step_id
+    into v_process_step_id
+    from flow.project_process_step pps
+    where id = p_project_process_step_id;
+
+    if v_process_step_id != 1 then
+        insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
+                                           date_created, created_by_id)
+        values (327, 'Process Step ID does not equal 1 for  ' || p_project_id || '.', 1, now(),
+                99999999);
+        raise exception 'Unable to schedule closer appointment.  Call support to complete.';
+    end if;
 
     if array_length(p_users, 1) < 2 then
         select p_users[1]
         into v_user_id;
         insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
-                                                     distance_from_actual_to_target, appointment_start_date,is_only_user_available,
-                                                     created_date,available_users,created_by_id)
-        values(p_project_id,v_user_id,p_project_process_step_id,0,p_appointment_start_time,true,now(),p_users,p_current_user_id);
+                                                     distance_from_actual_to_target, appointment_start_date,
+                                                     is_only_user_available,
+                                                     created_date, available_users, created_by_id)
+        values (p_project_id, v_user_id, p_project_process_step_id, 0, p_appointment_start_time, true, now(), p_users,
+                p_current_user_id);
     else
-
-     --   select p_users[1]
-     --   into v_user_id;
+        --   select p_users[1]
+        --   into v_user_id;
         insert into brs.set_closer_appointment_audit(project_id, user_id, project_process_step_id,
-                                                      distance_from_actual_to_target, appointment_start_date,
-                                                      total_lead_allocation, actual_lead_allocation, score,
-                                                      lead_gen_num, lead_gen_den, self_gen, total_avail,
-                                                      appointment_count_with_interval, appointment_count,created_date,
-                                                      available_users,created_by_id
-                                                      )
-        (with round_robin_users as (
-            select pczu.user_id, pcz.distribution_time_frame_days
-            from flow.project p
-                     inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
-                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-            where p.id = p_project_id),
-             lead_gen_num as (
-                 select rru.user_id, count(pd.id) as lead_gen_num
-                 from round_robin_users rru
-                     left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                         closer_appointment_start >= now() - interval '90 days'
-                     and pd.source not in (523,524,530)
-                     and final_design_signed_date is not null
-                     and pd.financial_agreement_signed_date is not null
-                     and pd.utility_bill_verified_date is not null
-                     and (pd.proof_of_homeowners_insurance_obtained_date is not null or
-                          proof_of_homeowners_insurance_required = 306)
-                     and case
-                             when pd.primary_financier = 721 then
-                                     pd.first_cash_payment_paid_date is not null and
-                                     greatest(final_design_signed_date, financial_agreement_signed_date,
-                                              first_cash_payment_paid_date, utility_bill_verified_date,
-                                              proof_of_homeowners_insurance_obtained_date)
-                                         between now() - interval '90 days' and now()
-                             else
-                                 greatest(final_design_signed_date, financial_agreement_signed_date,
-                                          proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     between now() - interval '90 days' and now()
-                                                             end
-                     AND ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project p on p.id = pd.project_id
-                          left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
-                 group by rru.user_id),
-             lead_gen_den as (
-                 select rru.user_id, count(pd.id) as lead_gen_den
-                 from round_robin_users rru
-                    left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                        closer_appointment_start >= now() - interval '90 days'
-                     and pd.source not in (523,524,530)
-                          left  join flow.project p on p.id = pd.project_id
-                 group by rru.user_id),
-             self_gen as (
-                 select rru.user_id, count(pd.id) as self_gen
-                 from round_robin_users rru
-                      left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                          greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
-                                                                   utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >=
-                                                          now() - interval '90 days'
-                     and pd.source in (523,524,530)
-                     and final_design_signed_date is not null
-                     and pd.financial_agreement_signed_date is not null
-                     and pd.utility_bill_verified_date is not null
-                     and (pd.proof_of_homeowners_insurance_obtained_date is not null or
-                          proof_of_homeowners_insurance_required = 306)
-                     and case
-                             when pd.primary_financier = 721 then
-                                 pd.first_cash_payment_paid_date is not null
-                             else
-                                     1 = 1
-                                                              end
-                     AND ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project p on p.id = pd.project_id
-                          left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
-                 group by rru.user_id),
-             appointment_count as (
-                 select rru.user_id, count(pd2.id) as appointment_count
-                 from round_robin_users rru
-                      left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 and  closer_appointment_start between now() - interval '21 days' and now() + interval '100 days'
-                 group by rru.user_id),
-             appointment_count_with_interval as (
-                 select rru.user_id, count(pd2.id) as appointment_count_with_interval
-                 from round_robin_users rru
-                 left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 and closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now() + interval '100 days'
-                 and pd2.source not in (523, 524, 530)
-                 group by rru.user_id),
-             total_avail as (
-                 select coalesce(ca.appointment_count,0) as avail, rru.user_id
-                 from round_robin_users rru
-                 left join brs.cached_appointment ca  on rru.user_id = ca.user_id
-                )
-        select p_project_id,foo3.user_id,p_project_process_step_id,
-               foo3.distance_from_actual_to_target,p_appointment_start_time,
-               foo3.total_lead_allocation,foo3.acutal_lead_allocation,foo3.score,
-               foo3.lead_gen_num,foo3.lead_gen_den,foo3.self_gen,foo3.avail,
-               foo3.appointment_count_with_interval,foo3.appointment_count,now(),p_users,p_current_user_id
-        from (
-                 select foo2.user_id, acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target,
-                        foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
-                        foo2.lead_gen_num,
-                        foo2.lead_gen_den,
-                        foo2.self_gen,
-                        foo2.avail,
-                        foo2.appointment_count_with_interval,
-                        foo2.appointment_count
-                 from (
-                          select foo1.user_id,
-                                 case when sum(score) over () = 0 then
-                                     0
-                                     else
-                                 round(score / sum(score) over (), 2) end as total_lead_allocation,
-                                 round(acutal_lead_allocation, 2)     as acutal_lead_allocation,
-                                 foo1.score  as score,
-                                 foo1.lead_gen_num,
-                                 foo1.lead_gen_den,
-                                 foo1.self_gen,
-                                 foo1.avail,
-                                 foo1.appointment_count_with_interval,
-                                 foo1.appointment_count
-
-                          from (
-                                   select foo.user_id,
-                                          case when lead_gen_den is null or lead_gen_den = 0 then
-                                                       (self_gen +
-                                                       ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15))
-                                                           * case when (select count(1) > 0 as count
-                                                                        from flow.user_position up
-                                                                        where up.user_id = foo.user_id and
-                                                                            up.primary_flag is true and
-                                                                                up.position_id = 2) then
-                                                                      1.5
-                                                                  else
-                                                                      1 end
+                                                     distance_from_actual_to_target, appointment_start_date,
+                                                     total_lead_allocation, actual_lead_allocation, score,
+                                                     lead_gen_num, lead_gen_den, self_gen, total_avail,
+                                                     appointment_count_with_interval, appointment_count, created_date,
+                                                     available_users, created_by_id)
+            (with round_robin_users as (
+                select pczu.user_id, pcz.distribution_time_frame_days
+                from flow.project p
+                         inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+                         inner join flow.postal_code_zone pcz
+                                    on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+                         inner join flow.postal_code_zone_user pczu
+                                    on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
+                                       pczu.archived is false
+                where p.id = p_project_id),
+                  lead_gen_num as (
+                      select rru.user_id, count(pd.id) as lead_gen_num
+                      from round_robin_users rru
+                               left join brs.project_details pd on rru.user_id = pd.closer_user_id and
+                                                                   closer_appointment_start >= now() - interval '90 days'
+                          and pd.source not in (523, 524, 530)
+                          and final_design_signed_date is not null
+                          and pd.financial_agreement_signed_date is not null
+                          and pd.utility_bill_verified_date is not null
+                          and (pd.proof_of_homeowners_insurance_obtained_date is not null or
+                               proof_of_homeowners_insurance_required = 306)
+                          and case
+                                  when pd.primary_financier = 721 then
+                                          pd.first_cash_payment_paid_date is not null and
+                                          greatest(final_design_signed_date, financial_agreement_signed_date,
+                                                   first_cash_payment_paid_date, utility_bill_verified_date,
+                                                   proof_of_homeowners_insurance_obtained_date)
+                                              between now() - interval '90 days' and now()
+                                  else
+                                      greatest(final_design_signed_date, financial_agreement_signed_date,
+                                               proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
+                                          between now() - interval '90 days' and now()
+                                                                       end
+                          AND ((pd.cancelled_date is null) or
+                               (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                               left join flow.project p on p.id = pd.project_id
+                               left join flow.project_status_type pst
+                                         on pst.id = p.company_project_status_type_id and pst.id != 3
+                      group by rru.user_id),
+                  lead_gen_den as (
+                      select rru.user_id, count(pd.id) as lead_gen_den
+                      from round_robin_users rru
+                               left join brs.project_details pd on rru.user_id = pd.closer_user_id and
+                                                                   closer_appointment_start >= now() - interval '90 days'
+                          and pd.source not in (523, 524, 530)
+                               left join flow.project p on p.id = pd.project_id
+                      group by rru.user_id),
+                  self_gen as (
+                      select rru.user_id, count(pd.id) as self_gen
+                      from round_robin_users rru
+                               left join brs.project_details pd on rru.user_id = pd.closer_user_id and
+                                                                   greatest(final_design_signed_date,
+                                                                            financial_agreement_signed_date,
+                                                                            first_cash_payment_paid_date,
+                                                                            utility_bill_verified_date,
+                                                                            proof_of_homeowners_insurance_obtained_date) >=
+                                                                   now() - interval '90 days'
+                          and pd.source in (523, 524, 530)
+                          and final_design_signed_date is not null
+                          and pd.financial_agreement_signed_date is not null
+                          and pd.utility_bill_verified_date is not null
+                          and (pd.proof_of_homeowners_insurance_obtained_date is not null or
+                               proof_of_homeowners_insurance_required = 306)
+                          and case
+                                  when pd.primary_financier = 721 then
+                                      pd.first_cash_payment_paid_date is not null
+                                  else
+                                      1 = 1
+                                                                       end
+                          AND ((pd.cancelled_date is null) or
+                               (pd.cancelled_date is not null and pd.cancelled_date > now()))
+                               left join flow.project p on p.id = pd.project_id
+                               left join flow.project_status_type pst
+                                         on pst.id = p.company_project_status_type_id and pst.id != 3
+                      group by rru.user_id),
+                  appointment_count as (
+                      select rru.user_id, count(pd2.id) as appointment_count
+                      from round_robin_users rru
+                               left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
+                          and
+                                                                    closer_appointment_start between now() - interval '21 days' and now() + interval '100 days'
+                      group by rru.user_id),
+                  appointment_count_with_interval as (
+                      select rru.user_id, count(pd2.id) as appointment_count_with_interval
+                      from round_robin_users rru
+                               left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
+                          and
+                                                                    closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now() + interval '100 days'
+                          and pd2.source not in (523, 524, 530)
+                      group by rru.user_id),
+                  total_avail as (
+                      select coalesce(ca.appointment_count, 0) as avail, rru.user_id
+                      from round_robin_users rru
+                               left join brs.cached_appointment ca on rru.user_id = ca.user_id
+                  )
+             select p_project_id,
+                    foo3.user_id,
+                    p_project_process_step_id,
+                    foo3.distance_from_actual_to_target,
+                    p_appointment_start_time,
+                    foo3.total_lead_allocation,
+                    foo3.acutal_lead_allocation,
+                    foo3.score,
+                    foo3.lead_gen_num,
+                    foo3.lead_gen_den,
+                    foo3.self_gen,
+                    foo3.avail,
+                    foo3.appointment_count_with_interval,
+                    foo3.appointment_count,
+                    now(),
+                    p_users,
+                    p_current_user_id
+             from (
+                      select foo2.user_id,
+                             acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target,
+                             foo2.total_lead_allocation,
+                             foo2.acutal_lead_allocation,
+                             foo2.score,
+                             foo2.lead_gen_num,
+                             foo2.lead_gen_den,
+                             foo2.self_gen,
+                             foo2.avail,
+                             foo2.appointment_count_with_interval,
+                             foo2.appointment_count
+                      from (
+                               select foo1.user_id,
+                                      case
+                                          when sum(score) over () = 0 then
+                                              0
                                           else
-                                            ((lead_gen_num / lead_gen_den::numeric * 10000) + self_gen + ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15))
-                                                  * case when (select count(1) > 0 as count
-                                                               from flow.user_position up
-                                                               where up.user_id = foo.user_id and
-                                                                   up.primary_flag is true and
-                                                                       up.position_id = 2) then
-                                                             1.5
-                                                         else
-                                                             1 end end  as score,
-                                          case
-                                              when sum(appointment_count_with_interval) over () = 0 then
-                                                  0
-                                              else appointment_count_with_interval /
-                                                   sum(appointment_count_with_interval) over () end as acutal_lead_allocation,
-                                          foo.lead_gen_num,
-                                          foo.lead_gen_den,
-                                          foo.self_gen,
-                                          foo.avail,
-                                          foo.appointment_count_with_interval,
-                                          foo.appointment_count
-                                   from (
-                                            select pczu.user_id,
-                                                   coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
-                                                   coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
-                                                   coalesce(sg.self_gen, 0)                          as self_gen,
-                                                   ac.appointment_count,
-                                                   coalesce(ta.avail, 0)                             as avail,
-                                                   coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval
-                                            from flow.project p
-                                                     inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
-                                                     inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-                                                     inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                                                     left join lead_gen_num lgn on lgn.user_id = pczu.user_id
-                                                     left join lead_gen_den lgd on lgd.user_id = pczu.user_id
-                                                     left join self_gen sg on sg.user_id = pczu.user_id
-                                                     left join appointment_count ac on ac.user_id = pczu.user_id
-                                                     left join total_avail ta on ta.user_id = pczu.user_id
-                                                     left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
-                                            where p.id = p_project_id
-                                            group by pczu.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
-                                                     ac.appointment_count,
-                                                     pcz.distribution_time_frame_days, ta.avail,
-                                                     acwi.appointment_count_with_interval) as foo
-                                   group by foo.user_id, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
-                                            foo.appointment_count,
-                                            foo.avail, foo.appointment_count_with_interval) as foo1) as foo2
-                 group by foo2.user_id, foo2.acutal_lead_allocation, foo2.total_lead_allocation,
-                          foo2.total_lead_allocation,foo2.acutal_lead_allocation,foo2.score,
-                          foo2.lead_gen_num,
-                          foo2.lead_gen_den,
-                          foo2.self_gen,
-                          foo2.avail,
-                          foo2.appointment_count_with_interval,
-                          foo2.appointment_count) as foo3);
+                                              round(score / sum(score) over (), 2) end as total_lead_allocation,
+                                      round(acutal_lead_allocation, 2)                 as acutal_lead_allocation,
+                                      foo1.score                                       as score,
+                                      foo1.lead_gen_num,
+                                      foo1.lead_gen_den,
+                                      foo1.self_gen,
+                                      foo1.avail,
+                                      foo1.appointment_count_with_interval,
+                                      foo1.appointment_count
+
+                               from (
+                                        select foo.user_id,
+                                               case
+                                                   when lead_gen_den is null or lead_gen_den = 0 then
+                                                           (self_gen +
+                                                            ((appointment_count + avail) / 3) +
+                                                            ((lead_gen_num + self_gen) * 15))
+                                                           * case
+                                                                 when (select count(1) > 0 as count
+                                                                       from flow.user_position up
+                                                                       where up.user_id = foo.user_id
+                                                                         and up.primary_flag is true
+                                                                         and up.position_id = 2) then
+                                                                     1.5
+                                                                 else
+                                                                     1 end
+                                                   else
+                                                           ((lead_gen_num / lead_gen_den::numeric * 10000) + self_gen +
+                                                            ((appointment_count + avail) / 3) +
+                                                            ((lead_gen_num + self_gen) * 15))
+                                                           * case
+                                                                 when (select count(1) > 0 as count
+                                                                       from flow.user_position up
+                                                                       where up.user_id = foo.user_id
+                                                                         and up.primary_flag is true
+                                                                         and up.position_id = 2) then
+                                                                     1.5
+                                                                 else
+                                                                     1 end end                           as score,
+                                               case
+                                                   when sum(appointment_count_with_interval) over () = 0 then
+                                                       0
+                                                   else appointment_count_with_interval /
+                                                        sum(appointment_count_with_interval) over () end as acutal_lead_allocation,
+                                               foo.lead_gen_num,
+                                               foo.lead_gen_den,
+                                               foo.self_gen,
+                                               foo.avail,
+                                               foo.appointment_count_with_interval,
+                                               foo.appointment_count
+                                        from (
+                                                 select pczu.user_id,
+                                                        coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
+                                                        coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
+                                                        coalesce(sg.self_gen, 0)                          as self_gen,
+                                                        ac.appointment_count,
+                                                        coalesce(ta.avail, 0)                             as avail,
+                                                        coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval
+                                                 from flow.project p
+                                                          inner join flow.postal_code pc
+                                                                     on pc.postal_code = p.postal_code and pc.archived is false
+                                                          inner join flow.postal_code_zone pcz
+                                                                     on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+                                                          inner join flow.postal_code_zone_user pczu
+                                                                     on pczu.postal_code_zone_id = pcz.id and
+                                                                        pczu.postal_code_zone_user_type_id = 1 and
+                                                                        pczu.archived is false
+                                                          left join lead_gen_num lgn on lgn.user_id = pczu.user_id
+                                                          left join lead_gen_den lgd on lgd.user_id = pczu.user_id
+                                                          left join self_gen sg on sg.user_id = pczu.user_id
+                                                          left join appointment_count ac on ac.user_id = pczu.user_id
+                                                          left join total_avail ta on ta.user_id = pczu.user_id
+                                                          left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
+                                                 where p.id = p_project_id
+                                                 group by pczu.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
+                                                          ac.appointment_count,
+                                                          pcz.distribution_time_frame_days, ta.avail,
+                                                          acwi.appointment_count_with_interval) as foo
+                                        group by foo.user_id, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
+                                                 foo.appointment_count,
+                                                 foo.avail, foo.appointment_count_with_interval) as foo1) as foo2
+                      group by foo2.user_id, foo2.acutal_lead_allocation, foo2.total_lead_allocation,
+                               foo2.total_lead_allocation, foo2.acutal_lead_allocation, foo2.score,
+                               foo2.lead_gen_num,
+                               foo2.lead_gen_den,
+                               foo2.self_gen,
+                               foo2.avail,
+                               foo2.appointment_count_with_interval,
+                               foo2.appointment_count) as foo3);
 
         select scau.user_id
         into v_user_id
         from brs.set_closer_appointment_audit scau
         where project_process_step_id = p_project_process_step_id
-        and scau.user_id = any(p_users)
+          and scau.user_id = any (p_users)
         order by distance_from_actual_to_target
         limit 1;
     end if;
@@ -237,7 +290,7 @@ BEGIN
     if v_user_id is not null then
 
         select first_name || ' ' || last_name,
-                email
+               email
         into v_user_full_name, v_user_email
         from flow."user"
         where id = v_user_id;
@@ -247,7 +300,7 @@ BEGIN
         from flow.user_position up
         where up.user_id = v_user_id
           and up.primary_flag is true
-          and up.position_id in (1,2,3);
+          and up.position_id in (1, 2, 3);
 
         select count(1)
         into v_user_already_assigned
@@ -278,9 +331,9 @@ BEGIN
 --         raise notice 'this is v_user_idd %',v_user_id;
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
-                set int_value = v_user_position_id,
-                modified_by_id = p_current_user_id,
-                date_modified = now()
+                set int_value      = v_user_position_id,
+                    modified_by_id = p_current_user_id,
+                    date_modified  = now()
                 where id = v_project_process_step_custom_field_value_id;
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
@@ -301,8 +354,8 @@ BEGIN
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
                 set timestamp_value = p_appointment_start_time,
-                    modified_by_id = p_current_user_id,
-                    date_modified = now()
+                    modified_by_id  = p_current_user_id,
+                    date_modified   = now()
                 where id = v_project_process_step_custom_field_value_id;
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
@@ -324,8 +377,8 @@ BEGIN
             if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
                 update flow.project_process_step_custom_field_value
                 set timestamp_value = p_appointment_start_time + (v_default_appointment_length || 'minutes')::interval,
-                    modified_by_id = p_current_user_id,
-                    date_modified = now()
+                    modified_by_id  = p_current_user_id,
+                    date_modified   = now()
                 where id = v_project_process_step_custom_field_value_id;
             else
                 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
@@ -350,7 +403,7 @@ BEGIN
                                 v_user_email;
         elsif v_user_already_assigned > 1 and array_length(p_users, 1) > 1 then
             p_users = array_remove(p_users, v_user_id);
-           -- raise notice 'i am here';
+            -- raise notice 'i am here';
             return query select *
                          from flow.set_closer_appointment(p_project_id,
                                                           p_current_user_id,
