@@ -135,6 +135,17 @@
         ]]>
   </rebate.voidSinglePayment>
 
+  <rebate.unvoidSinglePayment>
+    <![CDATA[
+            update brs.project_rebate_payment
+            set updated_by_user_id = :userId,
+                updated_date = now(),
+                project_rebate_payment_state_id = 3,
+                void_note = ''
+            where id = :paymentId
+        ]]>
+  </rebate.unvoidSinglePayment>
+
   <rebate.updatePaymentNote>
     <![CDATA[
             update brs.project_rebate_payment

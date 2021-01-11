@@ -88,7 +88,7 @@ public class RebateService {
     return getBatchDetails(batchId);
   }
 
-  public void voidSinglePayment(RebatePayment rebatePayment){
+  public void voidSinglePayment(RebatePayment rebatePayment) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -98,6 +98,17 @@ public class RebateService {
 
     //set the payment as void
     sqlCache.update("rebate.voidSinglePayment", params);
+  }
+
+  public void unvoidSinglePayment(RebatePayment rebatePayment) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("paymentId", rebatePayment.getPaymentId());
+    params.put("userId", currentUser.getId());
+
+    //set the payment as void
+    sqlCache.update("rebate.unvoidSinglePayment", params);
   }
 
   public void updatePaymentNote(RebatePayment rebatePayment){

@@ -87,7 +87,7 @@ BEGIN
                           left  join flow.project p on p.id = pd.project_id
                  group by rru.user_id),
              self_gen as (
-                 select rru.user_id, count(pd.id) * 2 as self_gen
+                 select rru.user_id, count(pd.id) as self_gen
                  from round_robin_users rru
                       left join brs.project_details pd on rru.user_id = pd.closer_user_id and
                                                           greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
@@ -148,14 +148,7 @@ BEGIN
                                      else
                                  round(score / sum(score) over (), 2) end as total_lead_allocation,
                                  round(acutal_lead_allocation, 2)     as acutal_lead_allocation,
-                                 case when (select count(1) > 0 as count
-                                            from flow.user_position up
-                                            where up.user_id = foo1.user_id and
-                                                  up.primary_flag is true and
-                                                  up.position_id = 2) then
-                                     foo1.score * 1.5
-                                     else
-                                         foo1.score end as score,
+                                 foo1.score  as score,
                                  foo1.lead_gen_num,
                                  foo1.lead_gen_den,
                                  foo1.self_gen,
@@ -166,10 +159,26 @@ BEGIN
                           from (
                                    select foo.user_id,
                                           case when lead_gen_den is null or lead_gen_den = 0 then
-                                                       self_gen +
-                                                       ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)
+                                                       (self_gen +
+                                                       ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15))
+                                                           * case when (select count(1) > 0 as count
+                                                                        from flow.user_position up
+                                                                        where up.user_id = foo.user_id and
+                                                                            up.primary_flag is true and
+                                                                                up.position_id = 2) then
+                                                                      1.5
+                                                                  else
+                                                                      1 end
                                           else
-                                            ((lead_gen_num / lead_gen_den) * 10000) + self_gen + ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15)  end  as score,
+                                            ((lead_gen_num / lead_gen_den::numeric * 10000) + self_gen + ((appointment_count + avail) / 3) + ((lead_gen_num + self_gen) * 15))
+                                                  * case when (select count(1) > 0 as count
+                                                               from flow.user_position up
+                                                               where up.user_id = foo.user_id and
+                                                                   up.primary_flag is true and
+                                                                       up.position_id = 2) then
+                                                             1.5
+                                                         else
+                                                             1 end end  as score,
                                           case
                                               when sum(appointment_count_with_interval) over () = 0 then
                                                   0

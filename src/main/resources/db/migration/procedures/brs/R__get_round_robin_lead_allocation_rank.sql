@@ -26,7 +26,7 @@ BEGIN
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
                      left join flow.project p on p.id = pd.project_id
                      left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
-                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
+                 where pd.closer_appointment_start  >= now()  - interval '90 days'
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -39,11 +39,11 @@ BEGIN
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               first_cash_payment_paid_date, utility_bill_verified_date,
                                               proof_of_homeowners_insurance_obtained_date)
-                                         >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
+                                         >= now()  - interval '90 days'
                              else
                                      greatest(final_design_signed_date, financial_agreement_signed_date,
                                               proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
+                                     >= now()  - interval '90 days'
                                                                   end
                      and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() AT TIME ZONE 'US/Mountain') :: date))
                      and pd.company_id = 3
@@ -53,7 +53,7 @@ BEGIN
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
                      left join flow.project p on p.id = pd.project_id
-                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - interval '42 days')
+                 where pd.closer_appointment_start >= now()  - interval '90 days'
                      and pd.source not in (523,524,530)
                      and pd.company_id = 3
                  group by rru.user_id),
@@ -63,7 +63,7 @@ BEGIN
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
                      left join flow.project p on p.id = pd.project_id
                      left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
-                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
+                 where pd.closer_appointment_start  >= now()  - (p_time_interval ||'day')::interval
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
                      and pd.financial_agreement_signed_date is not null
@@ -90,12 +90,12 @@ BEGIN
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
                      left join flow.project p on p.id = pd.project_id
-                 where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
+                 where pd.closer_appointment_start  >= now()  - (p_time_interval ||'day')::interval
                      and pd.source not in (523,524,530)
                      and pd.company_id = 3
                  group by rru.user_id),
              self_gen as (
-                 select rru.user_id, count(pd.id) * 2 as self_gen
+                 select rru.user_id, count(pd.id)  as self_gen
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
                      left join flow.project p on p.id = pd.project_id
@@ -152,11 +152,27 @@ BEGIN
         from (
                  select foo.user_id,
                         case when lead_gen_den is null or lead_gen_den = 0 then
-                                     foo.self_gen +
-                                     ((appointment_count + avail) / 3)
+                                     (foo.self_gen +
+                                     ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
+                                     * case when (select count(1) > 0 as count
+                                                  from flow.user_position up
+                                                  where up.user_id = foo.user_id and
+                                                      up.primary_flag is true and
+                                                          up.position_id = 2) then
+                                                1.5
+                                            else
+                                                1 end
                              else
-                                             lead_gen_num / lead_gen_den::numeric * 10000 + foo.self_gen +
-                                             ((appointment_count + avail) / 3)  end                       as score,
+                                             ((foo.lead_gen_num / foo.lead_gen_den::numeric * 10000) + foo.self_gen +
+                                             ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
+                                     * case when (select count(1) > 0 as count
+                                                  from flow.user_position up
+                                                  where up.user_id = foo.user_id and
+                                                      up.primary_flag is true and
+                                                          up.position_id = 2) then
+                                                1.5
+                                            else
+                                                1 end end as score,
                         case
                             when foo.lead_gen_den_fdc is null or foo.lead_gen_den_fdc = 0 then
                                 0

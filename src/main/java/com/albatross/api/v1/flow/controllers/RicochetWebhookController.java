@@ -66,7 +66,8 @@ public class RicochetWebhookController {
                 "state: {}, " +
                 "lead_source: {}, " +
                 "lead_source_detail: {}, " +
-                "hubspot_id: {}",
+                "hubspot_id: {}, " +
+                "contactId: {}",
                 lead.getUniqueIdentifier() != null ? lead.getUniqueIdentifier() : "null",
                 !isBlank(lead.getStatus()) ? lead.getStatus() : "null",
                 !isBlank(lead.getLeadOwner()) ? lead.getLeadOwner() : "null",
@@ -80,7 +81,8 @@ public class RicochetWebhookController {
                 !isBlank(lead.getCustomer().getAddress().getState()) ? lead.getCustomer().getAddress().getState() : "null",
                 !isBlank(lead.getLead_source()) ? lead.getLead_source() : "null",
                 !isBlank(lead.getLead_source_detail()) ? lead.getLead_source_detail() : "null",
-                lead.getHubspot_id() != null ? lead.getHubspot_id() : "null"
+                lead.getHubspot_id() != null ? lead.getHubspot_id() : "null",
+                lead.getContactId() != null ? lead.getContactId() : "null"
         );
 
         return ricochetWebhookService.saveLead(lead);

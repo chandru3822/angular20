@@ -32,30 +32,47 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               from flow.project_process_step pps
+                                                inner join flow.project_process_step_custom_field_value ppscfv
+                                                           on ppscfv.project_process_step_id = pps.id
+                                                inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where pps.process_step_id = 1
+                                                 and --Closer Appointment Details
+                                                   pps.main is false
+                                                 and ppscfv.custom_field_group_assignment_id = 5
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                                ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               from flow.project_process_step pps
+                                                  inner join flow.project_process_step_custom_field_value ppscfv
+                                                             on ppscfv.project_process_step_id = pps.id
+                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 where pps.process_step_id = 1 --Closer Appointment Details
+                                                   and pps.main is false
+                                                   and ppscfv.custom_field_group_assignment_id = 5
+                                                   and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                                   and pd.company_id = v_company_id
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from flow.project_process_step pps
+                                                  inner join flow.project_process_step_custom_field_value ppscfv
+                                                             on ppscfv.project_process_step_id = pps.id
+                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 where pps.process_step_id = 1 --Closer Appointment Details
+                                                   and pps.main is false
+                                                   and ppscfv.custom_field_group_assignment_id = 5
+                                                   and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
+                                                   and pd.company_id = v_company_id
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 14 --Total Planned Appointments
@@ -71,36 +88,43 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome = 4
-                                                 and --(Cancelled)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                       (now() at time zone 'US/Mountain') :: DATE
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome = 4
-                                                 and --(Cancelled)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome = 4
-                                                 and --(Cancelled)
-                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 15 --Cancelled in advance
@@ -116,36 +140,43 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome in (59, 61)
-                                                 and --(No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome in (59, 61)
-                                                 and --(No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome in (59, 61)
-                                                 and --(No Go, Low TSRF)
-                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 16 --Ineligible for solar
@@ -160,40 +191,43 @@ BEGIN
 
                                               null::bigint as checked_in_today_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                               where (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                       (now() at time zone 'US/Mountain') :: DATE
+                                               (select count(1)
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value not in (4, 59, 61,16685)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                                ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value not in (4, 59, 61,16685)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value not in (4, 59, 61,16685)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 17 --Total Eligible Planned Appointments
@@ -210,53 +244,42 @@ BEGIN
 
                                               (select count(1)
                                                from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 25 --Rescheduled
@@ -270,70 +293,75 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
-                                                 and pd.company_id = v_company_id
+                                                  from flow.project_process_step pps
+                                                    left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                    inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                    left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                    inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                  where ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                      and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                      (now() at time zone 'US/Mountain') :: DATE
+                                                      and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -349,70 +377,75 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 3 --Not Pitched: No Show
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -428,70 +461,75 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 58 -- Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 58 -- Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -507,70 +545,75 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -586,79 +629,75 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
                                                  and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -674,80 +713,82 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                                 from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
                                                  and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -763,70 +804,75 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -1544,46 +1590,58 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                        inner join flow.project_process_step_custom_field_value ppscfv
+                                                                   on ppscfv.project_process_step_id = pps.id
+                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                 and pps.process_step_id = 1 --Closer Appointment Details
+                                                 and pps.main is false
+                                                 and ppscfv.custom_field_group_assignment_id = 5
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                                 and pd.company_id = v_company_id )          as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
-                                              (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                               (select count(1)
+                                                from flow.project_process_step pps
+                                                          inner join flow.project_process_step_custom_field_value ppscfv
+                                                                     on ppscfv.project_process_step_id = pps.id
+                                                          inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                 and pps.process_step_id = 1 --Closer Appointment Details
+                                                 and pps.main is false
+                                                 and ppscfv.custom_field_group_assignment_id = 5
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              )              as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                               from flow.project_process_step pps
+                                                          inner join flow.project_process_step_custom_field_value ppscfv
+                                                                     on ppscfv.project_process_step_id = pps.id
+                                                          inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and pps.process_step_id = 1 --Closer Appointment Details
+                                                 and pps.main is false
+                                                 and ppscfv.custom_field_group_assignment_id = 5
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               )            as custom_date_range_count
 
@@ -1601,51 +1659,58 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                               from flow.project_process_step pps
+                                                   left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                   inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                   left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                   inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               where  pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome = 4 --Cancelled
+                                                 and ppscfv1.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                   left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                   inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                   left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                   inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome = 4 --Cancelled
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                                   and pd.closer_user_id = any
+                                                   (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
+                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                   and pd.closer_user_id is not null
+                                                   and ppscfv1.int_value = 4 --(Cancelled)
+                                                   and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                   and pd.company_id = v_company_id
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                   left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                   inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                   left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                   inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.closer_appointment_outcome = 4 --Cancelled
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                                   and pd.closer_user_id = any
+                                                   (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
+                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                   and pd.closer_user_id is not null
+                                                   and ppscfv1.int_value = 4 --(Cancelled)
+                                                   and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                   and pd.company_id = v_company_id
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 15 --Cancelled in advance
@@ -1661,51 +1726,58 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                   left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                   inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                   left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                   inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
+                                                 and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
+                                                 and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                    ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
+                                                 and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 16 --Ineligible for solar
@@ -1721,54 +1793,57 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
+                                                 and ppscfv1.int_value not in (4, 59, 61,16685) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                                 and ppscfv1.int_value not in (4, 59, 61,16685) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
+                                                 and ppscfv1.int_value not in (4, 59, 61,16685) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 17 --Total Eligible Planned Appointments
@@ -1785,71 +1860,57 @@ BEGIN
 
                                               (select count(1)
                                                from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join flow.project p on p.id = pps.project_id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
-                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv1.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
-                                              )            as today_count,
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join flow.project p on p.id = pps.project_id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv1.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                            ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join flow.project p on p.id = pps.project_id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and ppscfv1.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 25 --Rescheduled
@@ -1863,106 +1924,105 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                                 and ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                                 and ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 56  --Not Pitched: No Show
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
+                                                 and ppscfv1.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -1978,106 +2038,105 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
+                                                 and ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                               left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                               inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                               left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                               inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
+                                                 and ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 3 --Missed
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
+                                                 and ppscfv1.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2093,106 +2152,105 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 58 --Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                                 and ppscfv1.int_value = 58 --Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                                 and ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
+                                                 and ppscfv1.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2208,106 +2266,105 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                                 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                                 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
+                                                 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2323,115 +2380,105 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                  (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
                                                  and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value = 60 or ppscfv1.int_value is null) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2447,116 +2494,112 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                       (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
                                                  and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() at time zone 'US/Mountain')
+                                                 and (ppscfv1.int_value is null or
+                                                        ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2572,106 +2615,105 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
+                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
+                                                 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and pd.appointment_check_in is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
+                                               from flow.project_process_step pps
+                                                 left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                 inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                 left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() at time zone 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
