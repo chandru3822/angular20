@@ -81,9 +81,11 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from flow.project_process_step pps
-                                               inner join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id
-                                               inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               from brs.project_details pd
+                                               inner join flow.project_process_step pps on pps.project_id = pd.project_id
+                                               left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                               inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                               left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                where ppscfv1.int_value = 4 --(Cancelled)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                        (now() AT TIME ZONE 'US/Mountain') :: DATE
