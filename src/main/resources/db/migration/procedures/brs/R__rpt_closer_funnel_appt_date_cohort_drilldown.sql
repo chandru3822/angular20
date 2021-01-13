@@ -104,7 +104,7 @@ BEGIN
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ppscfv1.int_value in (59, 61) --(No Go, Low TSRF)
+                               and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value
                          ) as funnel_rows;
@@ -137,7 +137,7 @@ BEGIN
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
-                                    ppscfv1.int_value not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
+                                    ppscfv1.int_value not in (4, 59, 61, 16685)) --(Cancelled, No Go, Low TSRF)
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value
                          ) as funnel_rows;
@@ -171,11 +171,8 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
-                             where pps.process_step_id = 1
-                               and --Closer Appointment Details
-                                 pps.main is false
+                             where pps.process_step_id = 1 --Closer Appointment Details
                                and ppscfv.custom_field_group_assignment_id = 5
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value
@@ -560,7 +557,7 @@ BEGIN
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
-                                    ppscfv1.int_value not in (4, 59, 61))
+                                    ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685))
                                and --(Cancelled, No Go, Low TSRF)
                                      ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')
@@ -596,7 +593,7 @@ BEGIN
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
-                                    ppscfv1.int_value not in (4, 59, 61))
+                                    ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685))
                                and --(Cancelled, No Go, Low TSRF)
                                      ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')
@@ -1254,7 +1251,7 @@ BEGIN
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ppscfv1.int_value in (59, 61) --(No Go, Low TSRF)
+                               and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value
                          ) as funnel_rows;
@@ -1292,7 +1289,7 @@ BEGIN
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
-                                    ppscfv1.int_value not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
+                                    ppscfv1.int_value not in (4, 59, 61, 16685)) --(Cancelled, No Go, Low TSRF)
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value
                          ) as funnel_rows;
@@ -1326,11 +1323,8 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
-                             where pps.process_step_id = 1
-                               and --Closer Appointment Details
-                                 pps.main is false
+                             where pps.process_step_id = 1 --Closer Appointment Details
                                and ppscfv.custom_field_group_assignment_id = 5
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any(p_user_ids)
@@ -1775,7 +1769,7 @@ BEGIN
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
-                                    ppscfv1.int_value not in (4, 59, 61))
+                                    ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685))
                                and --(Cancelled, No Go, Low TSRF)
                                      ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')
@@ -1816,7 +1810,7 @@ BEGIN
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
-                                    ppscfv1.int_value not in (4, 59, 61))
+                                    ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685))
                                and --(Cancelled, No Go, Low TSRF)
                                      ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') >=
                                      (now() AT TIME ZONE 'US/Mountain')

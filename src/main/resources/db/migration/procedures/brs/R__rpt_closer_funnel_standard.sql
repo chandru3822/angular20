@@ -36,9 +36,7 @@ BEGIN
                                                 inner join flow.project_process_step_custom_field_value ppscfv
                                                            on ppscfv.project_process_step_id = pps.id
                                                 inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
+                                               where pps.process_step_id = 1 --Closer Appointment Details
                                                  and ppscfv.custom_field_group_assignment_id = 5
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
@@ -53,7 +51,6 @@ BEGIN
                                                              on ppscfv.project_process_step_id = pps.id
                                                   inner join brs.project_details pd on pd.project_id = pps.project_id
                                                  where pps.process_step_id = 1 --Closer Appointment Details
-                                                   and pps.main is false
                                                    and ppscfv.custom_field_group_assignment_id = 5
                                                    and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
@@ -68,7 +65,6 @@ BEGIN
                                                              on ppscfv.project_process_step_id = pps.id
                                                   inner join brs.project_details pd on pd.project_id = pps.project_id
                                                  where pps.process_step_id = 1 --Closer Appointment Details
-                                                   and pps.main is false
                                                    and ppscfv.custom_field_group_assignment_id = 5
                                                    and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
                                                    and pd.company_id = v_company_id
@@ -197,7 +193,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where ppscfv1.int_value not in (4, 59, 61,16685)
+                                               where ppscfv1.int_value not in (4, 59, 61, 16685)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.company_id = v_company_id
@@ -211,7 +207,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where ppscfv1.int_value not in (4, 59, 61,16685)
+                                               where ppscfv1.int_value not in (4, 59, 61, 16685)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                               ) as week_to_date_count,
@@ -224,7 +220,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where ppscfv1.int_value not in (4, 59, 61,16685)
+                                               where ppscfv1.int_value not in (4, 59, 61, 16685)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1600,7 +1596,6 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 --Closer Appointment Details
-                                                 and pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
@@ -1618,8 +1613,6 @@ BEGIN
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pps.process_step_id = 1 --Closer Appointment Details
-                                                 and pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
@@ -1639,7 +1632,6 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 --Closer Appointment Details
-                                                 and pps.main is false
                                                  and ppscfv.custom_field_group_assignment_id = 5
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.company_id = v_company_id
