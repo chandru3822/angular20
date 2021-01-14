@@ -19,7 +19,7 @@
     "@fullcalendar/resource-timeline": "^4.3.0",
     "@fullcalendar/vue": "^4.3.1",
     "@vue/devtools": "^5.3.3",
-    "axios": "^0.20.0",
+    "axios": "^0.21.1",
     "deepmerge": "^4.2.2",
     "fibers": "^5.0.0",
     "file-saver": "^2.0.2",
