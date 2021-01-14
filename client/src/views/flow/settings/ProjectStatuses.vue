@@ -189,6 +189,7 @@
             this.addNew = false
             this.newType = {}
           }
+          this.selectedStatusTypeId = null
           this.snackbar = getSnackbar('SUCCESS', 'Project Status Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
