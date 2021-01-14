@@ -43,6 +43,8 @@ public class ProjectProcessStepServiceTests {
 
   private ProjectProcessStepService projectProcessStepService;
 
+  private ProjectService projectService;
+
   private final ObjectMapper om;
 
   private final Map<String, String> jsonObjects = new HashMap<>();
@@ -60,7 +62,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, processStepActionService, om));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");

@@ -498,6 +498,16 @@ export default new Router({
                 }
               },
             }, {
+              path: 'projectStatuses',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/ProjectStatuses.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'project',
               name: 'ProjectSettings',
               meta: {title: 'Albatross - Settings'},

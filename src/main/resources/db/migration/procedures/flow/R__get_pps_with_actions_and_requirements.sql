@@ -112,6 +112,7 @@ FROM (
                     psa.action_name as "actionName",
                     psa.action_type_id as "actionTypeId",
                     psa.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                    psa.company_project_status_type_id as "companyProjectStatusTypeId",
                     psa.display_order as "displayOrder",
                     psa.always_enabled as "alwaysEnabled",
                     cpsst.process_step_status_type_id as "processStepStatusTypeId",
@@ -215,6 +216,7 @@ FROM (
                                       ) links), '[]') AS "processStepActionLinks"
                 from flow.process_step_action psa
                          left join flow.company_process_step_status_type cpsst on cpsst.id = psa.company_process_step_status_type_id
+                         left join flow.company_project_status_type cpst on cpst.id = psa.company_project_status_type_id
                          left join flow.project_process_step_action ppsa on ppsa.project_process_step_id = pps.id and ppsa.process_step_action_id = psa.id
                          inner join flow.action_type at on at.id = psa.action_type_id
                 where psa.process_step_id = ps.id and

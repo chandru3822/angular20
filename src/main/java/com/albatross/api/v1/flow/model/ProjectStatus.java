@@ -8,9 +8,7 @@ import lombok.Setter;
 public class ProjectStatus {
 
     private Long id;
-
     private String projectStatusType;
-
     private Boolean archived;
 
 }

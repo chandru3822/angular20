@@ -75,19 +75,26 @@
        pswqt.process_step_id,
        pswqt.modified_by_id,
        wqt.work_queue_type,
+       wqc.work_queue_category,
        pswqt.archived,
        coalesce((
           SELECT array_to_json(array_agg(row_to_json(projectStatuses)))
           FROM (
                    SELECT pswqtpst.id,
                           pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+                          coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType",
                           pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
+                          pswqtpst.project_status_type_id as "projectStatusTypeId",
                           pswqtpst.archived
                    FROM flow.process_step_work_queue_type_project_status_type pswqtpst
+                   left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id
+                   left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
                    WHERE pswqtpst.process_step_work_queue_type_id = pswqt.id AND pswqtpst.archived is not true
+                   order by pst.project_status_type, cpst.project_status_type
                ) projectStatuses), '[]') AS "projectStatuses"
     FROM flow.process_step_work_queue_type pswqt
              inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+             inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
     where pswqt.id = :id
   ]]></workQueueType.getProcessStepWorkQueueType>
 
@@ -108,8 +115,8 @@
 
   <workQueueType.insertProjectStatusType>
     <![CDATA[
-      insert into flow.process_step_work_queue_type_project_status_type(company_project_status_type_id, process_step_work_queue_type_id, created_by_id)
-      values (:companyProjectStatusTypeId, :processStepWorkQueueTypeId, :userId)
+      insert into flow.process_step_work_queue_type_project_status_type(company_project_status_type_id, project_status_type_id, process_step_work_queue_type_id, created_by_id)
+      values (:companyProjectStatusTypeId, :projectStatusTypeId, :processStepWorkQueueTypeId, :userId)
     ]]>
   </workQueueType.insertProjectStatusType>
 
@@ -128,10 +135,15 @@
       SELECT pswqtpst.id,
        pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
        pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
-       pswqtpst.archived
+       pswqtpst.project_status_type_id as "projectStatusTypeId",
+       pswqtpst.archived,
+       coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType"
       FROM flow.process_step_work_queue_type_project_status_type pswqtpst
+        left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id
+        left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
       WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
         AND pswqtpst.archived is not true
+      order by pst.project_status_type, cpst.project_status_type
     ]]>
   </workQueueType.getProjectStatusesForWorkQueueType>
 </sql>
