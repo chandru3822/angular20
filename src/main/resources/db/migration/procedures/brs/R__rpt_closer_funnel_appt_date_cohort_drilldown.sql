@@ -617,10 +617,12 @@ BEGIN
                                       left outer join flow.user u on pd.closer_user_id = u.id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') <
-                                   (now() AT TIME ZONE 'US/Mountain')
-                               and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                      inner join flow.project_process_step pps on pps.project_id = pd.project_id
+                                      left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                      inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                      left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                and pd.company_id = v_company_id
                              order by owner_name, pd.first_appointment
                          ) as funnel_rows;
@@ -647,10 +649,12 @@ BEGIN
                                       left outer join flow.user u on pd.closer_user_id = u.id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') <
-                                   (now() AT TIME ZONE 'US/Mountain')
-                               and pd.closer_appointment_outcome in (2, 1139, 1140)
+                                      inner join flow.project_process_step pps on pps.project_id = pd.project_id
+                                      left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                      inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                      left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                             where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140)
                                and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
@@ -1829,15 +1833,17 @@ BEGIN
                                       left outer join flow.user u on pd.closer_user_id = u.id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
+                                      inner join flow.project_process_step pps on pps.project_id = pd.project_id
+                                      left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                      inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                      left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                               and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') <
-                                   (now() AT TIME ZONE 'US/Mountain')
-                               and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                and pd.company_id = v_company_id
                              order by owner_name, pd.first_appointment
                          ) as funnel_rows;
@@ -1864,15 +1870,17 @@ BEGIN
                                       left outer join flow.user u on pd.closer_user_id = u.id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
+                                      inner join flow.project_process_step pps on pps.project_id = pd.project_id
+                                      left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                      inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                      left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                               and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') <
-                                   (now() AT TIME ZONE 'US/Mountain')
-                               and pd.closer_appointment_outcome in (2, 1139, 1140)
+                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                               and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140)
                                and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                  pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
