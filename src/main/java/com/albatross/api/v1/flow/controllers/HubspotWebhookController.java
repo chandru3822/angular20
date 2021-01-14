@@ -22,7 +22,7 @@ public class HubspotWebhookController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping(value = "/contact")
     public void saveContact(@RequestBody HubspotContact contact) throws Exception {
-        if(ricochetEnabled) {
+        if (ricochetEnabled) {
             log.info(
                 "HUBSPOT: Received new contact information from HubSpot. " +
                     "hubspotId: {}, " +
@@ -72,6 +72,11 @@ public class HubspotWebhookController {
             customer.setAddress(address);
             lead.setCustomer(customer);
 
+            // handles saving lead information to database
+            Long contactId = hubspotWebhookService.saveLead(lead);
+
+            // handles sending lead information to Ricochet
+            lead.setContactId(contactId);
             hubspotWebhookService.postLeadToRicochet(lead);
         } else {
             log.info("RICOCHET: not enabled");

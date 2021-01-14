@@ -83,6 +83,11 @@ public class RebateController {
     rebateService.voidSinglePayment(rebatePayment);
   }
 
+  @PostMapping(value = "/unvoidPayment")
+  public void unvoidPayment(@RequestBody RebatePayment rebatePayment) {
+    rebateService.unvoidSinglePayment(rebatePayment);
+  }
+
   @PostMapping(value = "/updateNote")
   public void updatePaymentNote(@RequestBody RebatePayment rebatePayment) {
     rebateService.updatePaymentNote(rebatePayment);

@@ -114,6 +114,8 @@ public class RicochetWebhookService {
     }
 
     public ResponseEntity saveLead(RicochetLead lead) throws Exception {
+        String msg = "";
+
         try {
             if (lead.getStatus() == null) lead.setStatus("New");
             String mappedLeadStatus = mapLeadStatus(lead.getStatus());
@@ -157,37 +159,45 @@ public class RicochetWebhookService {
             Optional<Integer> companyCountryId = sqlCache.queryForObjectOptional("ricochetWebhook.getCompanyCountryIdByCompanyId", null, Integer.class);
             params.put("companyCountryId", companyCountryId.orElse(null));
 
-            // tries to get a contact ID using the Ricochet Lead ID
-            Optional<String> contactId = getContactIdByRicochetLeadId(lead.getUniqueIdentifier().toString());
+            if (lead.getContactId() == null) {
+              // tries to get a contact ID using the Ricochet Lead ID
+              Optional<String> contactId = getContactIdByRicochetLeadId(lead.getUniqueIdentifier().toString());
 
-            // tries to get a contact ID using the provided contact info, if the previous attempt failed
-            if (contactId.isEmpty()) {
-                contactId = sqlCache.queryForObjectOptional("ricochetWebhook.getContactIdByContactInfo", params, String.class);
-            }
+              // tries to get a contact ID using the provided contact info, if the previous attempt failed
+              if (contactId.isEmpty()) {
+                  contactId = sqlCache.queryForObjectOptional("ricochetWebhook.getContactIdByContactInfo", params, String.class);
+              }
 
-            // if no contact ID was found in either check, creates a new lead/contact
-            if (contactId.isEmpty()) {
-                Long newContactId = sqlCache.updateReturningId("ricochetWebhook.insertLead", params, "id").longValue();
+              // if no contact ID was found in either check, creates a new lead/contact
+              if (contactId.isEmpty()) {
+                  Long newContactId = sqlCache.updateReturningId("ricochetWebhook.insertLead", params, "id").longValue();
 
-                log.info("RICOCHET: Saving for contact CONTACT_ID: {} UNIQUE: {}, LOE: {} LOUI: {} LOUPI: {}", newContactId, lead.getUniqueIdentifier(), lead.getLeadOwner(), leadOwnerUserId, leadOwnerUserPositionId);
-                processCustomFieldValues(lead, newContactId, leadOwnerUserId);
+                  processCustomFieldValues(lead, newContactId, leadOwnerUserId);
 
-                contactId = Optional.of(newContactId.toString());
+                  contactId = Optional.of(newContactId.toString());
+              } else {
+                  params.put("contactId", Long.parseLong(contactId.get()));
+                  Long updatedContactId = sqlCache.updateReturningId("ricochetWebhook.updateLead", params, "id").longValue();
+
+                  processCustomFieldValues(lead, updatedContactId, leadOwnerUserId);
+
+                  contactId = Optional.of(updatedContactId.toString());
+              }
+
+              msg = "RICOCHET: Ricochet lead info has been successfully saved for Contact ID " + contactId.get() + " / Ricochet Lead ID " + lead.getUniqueIdentifier() + ".";
             } else {
-                params.put("contactId", Long.parseLong(contactId.get()));
+                params.put("contactId", lead.getContactId());
                 Long updatedContactId = sqlCache.updateReturningId("ricochetWebhook.updateLead", params, "id").longValue();
 
-                log.info("RICOCHET: Saving for contact CONTACT_ID: {} UNIQUE: {}, LOE: {} LOUI: {} LOUPI: {}", updatedContactId, lead.getUniqueIdentifier(), lead.getLeadOwner(), leadOwnerUserId, leadOwnerUserPositionId);
                 processCustomFieldValues(lead, updatedContactId, leadOwnerUserId);
 
-                contactId = Optional.of(updatedContactId.toString());
+                msg = "RICOCHET: Ricochet lead info has been successfully saved for Contact ID " + updatedContactId + " / Ricochet Lead ID " + lead.getUniqueIdentifier() + ".";
             }
 
-            String msg = "RICOCHET: Ricochet lead info has been successfully saved for Contact ID " + contactId.get() + " / Ricochet Lead ID " + lead.getUniqueIdentifier() + ".";
             log.info(msg);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(msg);
         } catch (Exception e) {
-            String msg = "RICOCHET: Failed to save Ricochet lead info.";
+            msg = "RICOCHET: Failed to save Ricochet lead info.";
             log.error(msg, e);
             throw new Exception(msg, e);
         }
@@ -202,7 +212,7 @@ public class RicochetWebhookService {
         return customFieldDropdownValueId.orElse("null");
     }
 
-    private void processCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
+    public void processCustomFieldValues(RicochetLead lead, Long contactId, Long leadOwnerUserId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("contactId", contactId);
         params.put("leadOwnerUserId", leadOwnerUserId);
@@ -253,7 +263,13 @@ public class RicochetWebhookService {
         // handles saving 'Ricochet Lead ID' custom field
         CustomFieldValue ricochetLeadId = new CustomFieldValue();
         ricochetLeadId.setCustomFieldGroupAssignmentId(398L);
-        ricochetLeadId.setTextValue(lead.getUniqueIdentifier().toString());
+
+        if (lead.getUniqueIdentifier() != null) {
+            ricochetLeadId.setTextValue(lead.getUniqueIdentifier().toString());
+        } else {
+            ricochetLeadId.setTextValue(null);
+        }
+
         saveCustomFieldValue(ricochetLeadId, contactId, leadOwnerUserId);
 
         // handles saving 'Hubspot ID' custom field

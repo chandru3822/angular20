@@ -66,7 +66,7 @@
       offset :offset;
 
   ]]></user.searchUsers>
-  
+
   <user.searchUserCount><![CDATA[
      with t1 as (
         select distinct upv.user_id as id
@@ -109,7 +109,7 @@
      select count(*)
       from t1
   ]]></user.searchUserCount>
-  
+
   <user.updateUser>
     <![CDATA[
       update flow."user"
@@ -127,7 +127,7 @@
         and uc.user_id = :id
     ]]>
   </user.updateUser>
-  
+
   <user.saveUserHomePage>
     <![CDATA[
       update flow.user_company uc
@@ -136,12 +136,12 @@
         and uc.user_id = :userId
     ]]>
   </user.saveUserHomePage>
-  
+
   <user.insertUser><![CDATA[
       insert into flow.user(first_name, last_name, created_by_id, phone_number, email, username, password)
       values(:firstName, :lastName, :createdById, :phone, :email, :email, :defaultPassword);
   ]]></user.insertUser>
-  
+
   <user.getOne><![CDATA[
       select u.id,
              u.phone_number,
@@ -186,7 +186,7 @@
         and uc.company_id = :companyId
         and uc.archived is not true
   ]]></user.getOne>
-  
+
   <user.getOneAlbatross><![CDATA[
       select u.id,
              u.phone_number,
@@ -206,7 +206,7 @@
         and uc.company_id = 1
         and u.archived is not true
   ]]></user.getOneAlbatross>
-  
+
   <user.getSchedulingUsers><![CDATA[
         with t1 as (
           select distinct upv.user_id                            as id,
@@ -264,12 +264,11 @@
                                             inner join flow.org o on o.id = up.org_id
                                             left join flow.company_state cs on cs.id = o.company_state_id
                                    WHERE up.user_id = t1.id
-                                     and up.archived is not true
-                                     and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
+                                     and up.archived is not true) positions), '[]') AS "userPositions"
       from t1
         order by full_name
   ]]></user.getSchedulingUsers>
-  
+
   <user.findByUsernameIgnoreCase><![CDATA[
     select u.id,
        u.first_name,
@@ -344,13 +343,13 @@
       and uc.is_default = true
     limit 1
   ]]></user.findByUsernameIgnoreCase>
-  
+
   <user.updateLoginAttempts><![CDATA[
     update flow."user"
         set login_attempts = :loginAttempts
     where id = :userId
   ]]></user.updateLoginAttempts>
-  
+
   <user.findByUsernameOrEmailIgnoreCase><![CDATA[
     select u.id,
        u.first_name,
@@ -365,7 +364,7 @@
           OR lower(:usernameOrEmail::text) = lower(email)
     limit 1
   ]]></user.findByUsernameOrEmailIgnoreCase>
-  
+
   <user.findUserById><![CDATA[
     select u.id,
            u.first_name,
@@ -407,7 +406,7 @@
       and uc.archived is not true
       and c.archived is not true
   ]]></user.findUserById>
-  
+
   <user.getCompanyUserStatuses><![CDATA[
       select id,
              user_status_type,
@@ -419,7 +418,7 @@
          and archived is not true
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
-  
+
   <user.saveUserStatusType><![CDATA[
       update flow.user_status_type
           set has_access = :hasAccess,
@@ -427,7 +426,7 @@
               date_modified = now()
       where id = :id
   ]]></user.saveUserStatusType>
-  
+
   <user.archiveUserStatus><![CDATA[
     update flow.company_user_status cus
       set archived = true,
@@ -438,7 +437,7 @@
           and cus.user_id = :userId
           and ust.company_id = :companyId
   ]]></user.archiveUserStatus>
-  
+
   <user.upsertUserStatus><![CDATA[
     WITH do_upsert AS (
       update flow.company_user_status cus
@@ -455,7 +454,7 @@
     SELECT :userStatusTypeId, :userId
     WHERE NOT EXISTS (SELECT * FROM do_upsert)
   ]]></user.upsertUserStatus>
-  
+
   <user.updateUserStatus><![CDATA[
     update flow.company_user_status cus
       set user_status_type_id = :userStatusTypeId,
@@ -466,12 +465,12 @@
       and cus.user_id = :userId
       and ust.company_id = :companyId
   ]]></user.updateUserStatus>
-  
+
   <user.insertUserStatus><![CDATA[
     insert into flow.company_user_status(user_id, user_status_type_id, created_by_id)
     values (:userId, :userStatusTypeId, :currentUserId)
   ]]></user.insertUserStatus>
-  
+
   <user.updateDefault><![CDATA[
       update flow.user_company
         set is_default = false
@@ -481,32 +480,32 @@
       where company_id = :companyId
         and user_id = :userId;
   ]]></user.updateDefault>
-  
+
   <user.updateAdminDefault><![CDATA[
       update flow.user
        set default_company_id = :companyId
        where id = :userId
   ]]></user.updateAdminDefault>
-  
+
   <user.insertUserCompany><![CDATA[
       insert into flow.user_company(company_id, user_id, is_default, home_page_company_feature_id)
       values (:companyId, :id, :isDefault, :homePageCompanyFeatureId)
   ]]></user.insertUserCompany>
-  
+
   <user.deleteUserCompany><![CDATA[
       update flow.user_company
         set archived = true
       where user_id = :userId
         and company_id = :companyId
   ]]></user.deleteUserCompany>
-  
+
   <user.upsertUserCompany><![CDATA[
     insert into flow.user_company(company_id, user_id)
     values (:companyId, :userId)
     ON CONFLICT (company_id, user_id)
         DO UPDATE SET archived = false;
   ]]></user.upsertUserCompany>
-  
+
   <user.getUserCompanies><![CDATA[
     select c.id,
           c.company_name as "companyName",
@@ -520,7 +519,7 @@
      and c.archived is not true
      order by c.company_name
   ]]></user.getUserCompanies>
-  
+
   <user.checkEmailExists><![CDATA[
       select id,
          email
@@ -528,7 +527,7 @@
       where lower(trim(email)) = lower(trim(:email))
       and case when :userId::int is not null then :userId::int != id else 1=1 end
   ]]></user.checkEmailExists>
-  
+
   <user.checkUsernameExists><![CDATA[
       select id,
          username
@@ -536,20 +535,20 @@
       where lower(trim(username)) = lower(trim(:username))
       and case when :userId::int is not null then :userId::int != id else 1=1 end
   ]]></user.checkUsernameExists>
-  
+
   <user.saveForgotPasswordFields><![CDATA[
       update flow."user"
       set uuid = :uuid,
           expiry_date = :expiryDate
       where id = :id
   ]]></user.saveForgotPasswordFields>
-  
+
   <user.saveUserPassword><![CDATA[
       update flow."user"
       set password = :password
       where id = :id
   ]]></user.saveUserPassword>
-  
+
   <user.findByUserUuid><![CDATA[
     select u.id,
        u.first_name,

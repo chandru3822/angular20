@@ -156,7 +156,7 @@ BEGIN
                             where cf.field_name = 'Interest Rate'
                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                               and cf.company_id = v_company_id
-                              and cfg.process_step_id = p_process_step_id), plh.interest_rate::numeric,
+                              and cfg.process_step_id = p_process_step_id), plh.interest_rate::numeric*100::numeric,
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
