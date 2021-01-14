@@ -248,6 +248,10 @@
           delivery_fee_amount = :deliveryFeeAmount,
           approval_timeline = :approvalTimeline,
           documents_available = :documentsAvailable,
+          brs_technician_permit_submission_instructions = :brsTechnicianPermitSubmissionInstructions,
+          cancellation_and_refund_instructions = :cancellationAndRefundInstructions,
+          brs_technician_permit_pickup_and_delivery_instructions = :brsTechnicianPermitPickupAndDeliveryInstructions,
+          approval_instructions = :approvalInstructions,
 
           submission_note = :submissionNote,
           revision_note = :revisionNote,
@@ -279,6 +283,10 @@
           delivery_fee_amount = :deliveryFeeAmount,
           approval_timeline = :approvalTimeline,
           documents_available = :documentsAvailable,
+          brs_technician_permit_submission_instructions = :brsTechnicianPermitSubmissionInstructions,
+          cancellation_and_refund_instructions = :cancellationAndRefundInstructions,
+          brs_technician_permit_pickup_and_delivery_instructions = :brsTechnicianPermitPickupAndDeliveryInstructions,
+          approval_instructions = :approvalInstructions,
 
           submission_note = :submissionNote,
           revision_note = :revisionNote,

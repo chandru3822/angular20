@@ -169,6 +169,23 @@
                 </v-menu>
               </v-col>
             </v-row>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                BRS Technician Permit Submission Instructions
+                <v-btn text x-small fab @click="editBrsTechnicianPermitSubmissionInstructions = !editBrsTechnicianPermitSubmissionInstructions">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.brsTechnicianPermitSubmissionInstructions"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editBrsTechnicianPermitSubmissionInstructions"
+                            :disabled="!userCanEdit || !editBrsTechnicianPermitSubmissionInstructions"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjChecklist v-if="dataReady"
                           title="Submission Checklist"
                           :checklistTypeId="1"
@@ -203,7 +220,7 @@
       <!-- SECOND COLUMN -->
       <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- REVISION SUBMISSION DETAILS -->
-        <v-card>
+        <v-card class="mb-3">
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Revision Submission Details
           </v-card-title>
@@ -264,6 +281,60 @@
                 ></v-textarea>
               </v-card-text>
             </v-card>
+          </v-card-text>
+        </v-card>
+        <v-card class="mb-3">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
+            Cancellation and Refund Details
+          </v-card-title>
+          <v-card-text class="mt-4">
+            <div v-for="item in getCustomFieldsForGroup(24)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                        :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                            label="Other Value"
+                            filled
+                            class="other-field"
+              ></v-text-field>
+            </div>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                Cancellation and Refund Instructions
+                <v-btn text x-small fab @click="editCancellationAndRefundInstructions = !editCancellationAndRefundInstructions">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.cancellationAndRefundInstructions"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editCancellationAndRefundInstructions"
+                            :disabled="!userCanEdit || !editCancellationAndRefundInstructions"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
+            <AhjDocument v-if="dataReady"
+                         title="Documents Required for Refund/Cancellation"
+                         :documentTypeId="462"
+                         :user-can-edit="userCanEdit"
+                         :sourceId="ahjPermit.id"
+                         :ahjId="ahjId"
+                         :documents="cancellationDocuments"
+                         :isNested="true"
+            ></AhjDocument>
           </v-card-text>
         </v-card>
       </v-col>
@@ -387,6 +458,23 @@
                           label="When are documents available?"
                           filled
             ></v-text-field>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                Approval Instructions
+                <v-btn text x-small fab @click="editApprovalInstructions = !editApprovalInstructions">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.approvalInstructions"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editApprovalInstructions"
+                            :disabled="!userCanEdit || !editApprovalInstructions"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
           </v-card-text>
         </v-card>
 
@@ -425,6 +513,23 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
+            <v-card flat class="mt-1 pa-0">
+              <v-card-title class="px-0 pb-0">
+                BRS Technician Permit Pick-up and Delivery Instructions
+                <v-btn text x-small fab @click="editBrsTechnicianPermitPickupAndDeliveryInstructions = !editBrsTechnicianPermitPickupAndDeliveryInstructions">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+              </v-card-title>
+              <v-card-text class="pa-0">
+                <v-textarea v-model="ahjPermit.brsTechnicianPermitPickupAndDeliveryInstructions"
+                            @change="dataWasChanged = true"
+                            :readonly="!userCanEdit || !editBrsTechnicianPermitPickupAndDeliveryInstructions"
+                            :disabled="!userCanEdit || !editBrsTechnicianPermitPickupAndDeliveryInstructions"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
             <AhjDocument v-if="dataReady"
                          title="Documents Required for Inspection"
                          :documentTypeId="1"
@@ -461,7 +566,7 @@
     >Links and Contacts</h1>
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-col cols="12" md="4" class="px-1 mb-3">
+      <v-col cols="12" md="6" class="px-1 mb-3">
         <AhjLink v-if="dataReady"
                        title="Submission Links"
                        :linkTypeId="4"
@@ -484,7 +589,7 @@
       </v-col>
 
       <!-- SECOND COLUMN -->
-      <v-col cols="12" md="4" class="px-1 mb-3">
+      <v-col cols="12" md="6" class="px-1 mb-3">
         <AhjLink v-if="dataReady"
                        title="Follow-up and Delivery Links"
                        :linkTypeId="5"
@@ -494,24 +599,6 @@
                        :ahjId="ahjId"
                        :links="ahjPermit.followUpLinks"
         ></AhjLink>
-
-        <AhjContact v-if="dataReady"
-                    title="Print Locations"
-                    :contactTypeId="7"
-                    :user-can-edit="userCanEdit"
-                    :itemId="ahjPermit.id"
-                    :itemType="itemType"
-                    :ahjId="ahjId"
-                    :contacts="ahjPermit.printLocations"
-        ></AhjContact>
-      </v-col>
-
-      <!-- THIRD COLUMN -->
-      <v-col cols="12" md="4" class="px-1 mb-3">
-        <AhjServicingFot v-if="dataReady"
-                         :servicingFots="ahjPermit.servicingFots"
-        ></AhjServicingFot>
-
         <AhjContact v-if="dataReady"
                     title="Follow-up and Delivery Contacts"
                     :contactTypeId="6"
@@ -521,7 +608,24 @@
                     :ahjId="ahjId"
                     :contacts="ahjPermit.followUpContacts"
         ></AhjContact>
+<!--        <AhjContact v-if="dataReady"-->
+<!--                    title="Print Locations"-->
+<!--                    :contactTypeId="7"-->
+<!--                    :user-can-edit="userCanEdit"-->
+<!--                    :itemId="ahjPermit.id"-->
+<!--                    :itemType="itemType"-->
+<!--                    :ahjId="ahjId"-->
+<!--                    :contacts="ahjPermit.printLocations"-->
+<!--        ></AhjContact>-->
       </v-col>
+
+      <!-- THIRD COLUMN -->
+<!--      <v-col cols="12" md="4" class="px-1 mb-3">-->
+<!--        <AhjServicingFot v-if="dataReady"-->
+<!--                         :servicingFots="ahjPermit.servicingFots"-->
+<!--        ></AhjServicingFot>-->
+
+<!--      </v-col>-->
     </v-row>
 
     <v-dialog v-model="saveDialog" max-width="700">
@@ -632,6 +736,10 @@
       editSubmissionInstruction: false,
       editAsBuiltSubmissionInstruction: false,
       editDeliveryInstruction: false,
+      editApprovalInstructions: false,
+      editBrsTechnicianPermitPickupAndDeliveryInstructions: false,
+      editCancellationAndRefundInstructions: false,
+      editBrsTechnicianPermitSubmissionInstructions: false,
       // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
       ahjPermit: {
         submissionChecklist: [],
@@ -644,7 +752,8 @@
         followUpContacts: [],
         servicingFots: []
       },
-      documents: []
+      documents: [],
+      cancellationDocuments: [],
     }),
     methods: {
       reformatDates() {
@@ -721,6 +830,18 @@
           this.reformatDates()
           this.dataReady = true
         })
+      },
+      async getCanellationDocuments() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 462}
+          const {data} = await getRequestWithParams('/attachment', {params})
+          this.cancellationDocuments = cloneDeep(data)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getDocuments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -799,6 +920,7 @@
         this.reformatDates()
         this.getCustomFieldGroupAssignmentsForScreen()
         this.getDocuments()
+        this.getCanellationDocuments()
         this.dataReady = true
       })
     }
