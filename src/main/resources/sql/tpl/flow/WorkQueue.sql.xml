@@ -25,10 +25,12 @@
                   select pswqtpst.company_project_status_type_id
                   from flow.process_step_work_queue_type_project_status_type pswqtpst
                   where pswqtpst.process_step_work_queue_type_id = pswqt.id
+                    and pswqtpst.archived is not true
                 ) OR (cpst.project_status_type_id = any(
                     select pswqtpst.project_status_type_id
                     from flow.process_step_work_queue_type_project_status_type pswqtpst
                     where pswqtpst.process_step_work_queue_type_id = pswqt.id
+                      and pswqtpst.archived is not true
                  )))
            ) as work_queue_count
     from flow.work_queue_type wqt
@@ -151,10 +153,12 @@
             select pswqtpst.company_project_status_type_id
             from flow.process_step_work_queue_type_project_status_type pswqtpst
             where pswqtpst.process_step_work_queue_type_id = pswqt.id
+            and pswqtpst.archived is not true
         ) OR (cpst.project_status_type_id = any(
             select pswqtpst.project_status_type_id
             from flow.process_step_work_queue_type_project_status_type pswqtpst
             where pswqtpst.process_step_work_queue_type_id = pswqt.id
+            and pswqtpst.archived is not true
         )))
     order by pps.date_created
     limit :limit
@@ -187,10 +191,12 @@
             select pswqtpst.company_project_status_type_id
             from flow.process_step_work_queue_type_project_status_type pswqtpst
             where pswqtpst.process_step_work_queue_type_id = pswqt.id
+            and pswqtpst.archived is not true
         ) OR (cpst.project_status_type_id = any(
             select pswqtpst.project_status_type_id
             from flow.process_step_work_queue_type_project_status_type pswqtpst
             where pswqtpst.process_step_work_queue_type_id = pswqt.id
+            and pswqtpst.archived is not true
         )))
   ]]></workQueue.getProcessStepsByTypeIdCount>
 
@@ -332,10 +338,12 @@
             select pswqtpst.company_project_status_type_id
             from flow.process_step_work_queue_type_project_status_type pswqtpst
             where pswqtpst.process_step_work_queue_type_id = pswqt.id
+            and pswqtpst.archived is not true
         ) OR (cpst.project_status_type_id = any(
             select pswqtpst.project_status_type_id
             from flow.process_step_work_queue_type_project_status_type pswqtpst
             where pswqtpst.process_step_work_queue_type_id = pswqt.id
+            and pswqtpst.archived is not true
         )))
       order by coalesce(ppscfv.timestamp_value, ppscfv3.timestamp_value) nulls last
       limit :limit
