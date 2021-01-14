@@ -163,8 +163,24 @@ export default {
         title: 'Links',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/functions',
+        pathMatch: '/settings/function',
+        title: 'Functions',
+        show: this.hasSettingsAccess
+      }, {
+        header: 'Configurations',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/orgTypes',
         title: 'Organization Types',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/statuses',
+        title: 'Process Step Statuses',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/projectStatuses',
+        title: 'Project Statuses',
         show: this.hasSettingsAccess
       }, {
         path: '/settings/eventTypes',
@@ -186,15 +202,6 @@ export default {
         path: '/settings/processSteps',
         pathMatch: '/settings/processStep',
         title: 'Process Steps',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/functions',
-        pathMatch: '/settings/function',
-        title: 'Functions',
-        show: this.hasSettingsAccess
-      }, {
-        path: '/settings/statuses',
-        title: 'Statuses',
         show: this.hasSettingsAccess
       }, {
         header: 'Objects',

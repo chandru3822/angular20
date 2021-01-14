@@ -180,6 +180,7 @@
 <script>
   import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
+  import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
   import ProjectDetails from '@/views/flow/project/ProjectDetails'
   import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
   import ProjectNotes from '@/views/flow/project/ProjectNotes'
@@ -277,11 +278,7 @@
       },
       getStatuses: async function () {
         try {
-          const {data} = await getRequestWithParams('/project/status', {
-            params: {
-              projectId: this.projectId
-            }
-          })
+          const {data} = await getCompanyProjectStatusTypes(this.projectId)
           this.statuses = data
         } catch (e) {
           this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')

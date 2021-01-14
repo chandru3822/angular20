@@ -13,8 +13,8 @@ import java.util.List;
 @Setter
 public class ProcessStepAction {
 
-  private Long id, processStepId, companyProcessStepStatusTypeId, actionTypeId, processStepStatusTypeId, displayOrder;
-  private String actionName, actionType, processStepStatusType;
+  private Long id, processStepId, companyProcessStepStatusTypeId, companyProjectStatusTypeId, projectStatusTypeId, actionTypeId, processStepStatusTypeId, displayOrder;
+  private String actionName, actionType, processStepStatusType, projectStatusType;
   private List<ProcessStepLogic> processStepLogicList;
   private List<ProcessStepActionChildProcess> processStepActionChildProcesses;
   private List<ProcessStepActionChildFunction> processStepActionChildFunctions;
