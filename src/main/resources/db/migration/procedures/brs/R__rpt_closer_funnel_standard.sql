@@ -52,8 +52,8 @@ BEGIN
                                                   inner join brs.project_details pd on pd.project_id = pps.project_id
                                                  where pps.process_step_id = 1 --Closer Appointment Details
                                                    and ppscfv.custom_field_group_assignment_id = 5
-                                                   and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                   and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                            between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                    and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -104,8 +104,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 4 --(Cancelled)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -156,8 +156,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -208,8 +208,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and (ppscfv1.int_value is null or ppscfv1.int_value not in (4, 59, 61, 16685))
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                               ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
@@ -259,8 +259,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 15327
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -320,8 +320,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 56 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -333,8 +333,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 56 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -404,8 +404,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 3 --Missed
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -417,8 +417,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 3 --Missed
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -488,8 +488,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 58 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -501,8 +501,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 58 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -572,8 +572,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -585,8 +585,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -662,8 +662,8 @@ BEGIN
                                                where pps.process_step_id = 1 and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
                                                     ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')   <
                                                        (now() at time zone 'US/Mountain'))) --Non-Dispositioned
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                          between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -677,8 +677,8 @@ BEGIN
                                                where pps.process_step_id = 1 and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
                                                     ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                        (now() at time zone 'US/Mountain'))) --Non-Dispositioned
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -760,8 +760,8 @@ BEGIN
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and (ppscfv1.int_value is null or
                                                         ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
                                                      (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
@@ -776,8 +776,8 @@ BEGIN
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and (ppscfv1.int_value is null or
                                                         ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
                                                      (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
@@ -855,8 +855,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -868,8 +868,8 @@ BEGIN
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
                                                where pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -1905,8 +1905,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 15327
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                            ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -1986,8 +1986,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 56 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2004,8 +2004,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 56 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2100,8 +2100,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 3 --Missed
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2118,8 +2118,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 3 --Missed
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2214,8 +2214,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 58 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2232,8 +2232,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 58 --Not Pitched: No Show
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2328,8 +2328,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2346,8 +2346,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value = 57 --Not Pitched: No Utility Bill
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2448,8 +2448,8 @@ BEGIN
                                                  and pps.process_step_id = 1 and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2468,8 +2468,8 @@ BEGIN
                                                  and pps.process_step_id = 1 and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
@@ -2576,8 +2576,8 @@ BEGIN
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and (ppscfv1.int_value is null or
                                                         ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
                                                        (now() at time zone 'US/Mountain')
                                                  and pd.appointment_check_in is not null
@@ -2597,8 +2597,8 @@ BEGIN
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and (ppscfv1.int_value is null or
                                                         ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
                                                         (now() at time zone 'US/Mountain')
                                                  and pd.company_id = v_company_id
@@ -2699,8 +2699,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2717,8 +2717,8 @@ BEGIN
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
                                                  and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  >=
-                                                        ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                        between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 

@@ -159,14 +159,15 @@ BEGIN
                              from flow.project_process_step pps
                                       inner join flow.project_process_step_custom_field_value ppscfv
                                                  on ppscfv.project_process_step_id = pps.id
+                                      left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                      left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                       inner join brs.project_details pd on pd.project_id = pps.project_id
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-
-                             where pps.process_step_id = 1 --Closer Appointment Details
+                             where pps.process_step_id = 1 and ppscfv1.int_value = 15327 --Closer Appointment Details
                                and ppscfv.custom_field_group_assignment_id = 5
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
                                and pd.company_id = v_company_id
@@ -1338,7 +1339,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
-                             where pps.process_step_id = 1 --Closer Appointment Details
+                             where pps.process_step_id = 1 and ppscfv1.int_value = 15327 --Closer Appointment Details
                                and ppscfv.custom_field_group_assignment_id = 5
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
                                and pd.closer_user_id is not null
