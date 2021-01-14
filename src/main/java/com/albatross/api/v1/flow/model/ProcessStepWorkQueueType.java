@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class ProcessStepWorkQueueType {
     private Long id, processStepId, workQueueTypeId, workQueueCategoryId;
-    private String workQueueType, workQueueCategory;
+    private String workQueueType, workQueueCategory, projectStatusType;
     private Boolean archived;
     private List<WorkQueueTypeProjectStatus> projectStatuses;
 }

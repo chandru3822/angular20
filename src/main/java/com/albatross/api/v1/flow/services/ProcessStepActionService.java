@@ -85,6 +85,7 @@ public class ProcessStepActionService {
     params.put("actionTypeId", action.getActionTypeId());
     params.put("alwaysEnabled", action.getAlwaysEnabled());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
+    params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
@@ -142,6 +143,7 @@ public class ProcessStepActionService {
     params.put("createdById", currentUser.getId());
     params.put("processStepId", action.getProcessStepId());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
+    params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
 
@@ -187,7 +189,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.getId());
     params.put("id", childProcessId);
-    
+
     sqlCache.update("processStepAction.deleteActionChildStep", params);
   }
 

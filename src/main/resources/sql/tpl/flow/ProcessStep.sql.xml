@@ -38,7 +38,7 @@
     order by ps.process_step_name
 
   ]]></processStep.getAllForCompany>
-  
+
   <processStep.get><![CDATA[
       select ps.id,
              ps.process_step_name,
@@ -173,9 +173,14 @@
                                                SELECT pswqtpst.id,
                                                       pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
                                                       pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
-                                                      pswqtpst.archived
+                                                      pswqtpst.project_status_type_id as "projectStatusTypeId",
+                                                      pswqtpst.archived,
+                                                      coalesce(cpst.project_status_type, pst.project_status_type) as "projectStatusType"
                                                FROM flow.process_step_work_queue_type_project_status_type pswqtpst
+                                                left join flow.company_project_status_type cpst on pswqtpst.company_project_status_type_id = cpst.id
+                                                left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
                                                WHERE pswqtpst.process_step_work_queue_type_id = pswqt.id AND pswqtpst.archived is not true
+                                               order by pst.project_status_type, cpst.project_status_type
                                            ) projectStatuses), '[]') AS "projectStatuses"
                               FROM flow.process_step_work_queue_type pswqt
                                 inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
@@ -186,7 +191,7 @@
       from flow.process_step ps
       where ps.id = :id
   ]]></processStep.get>
-  
+
   <processStep.delete><![CDATA[
       update flow.process_step
       set archived = true,
@@ -194,7 +199,7 @@
           date_modified = now()
       where id = :processStepId
   ]]></processStep.delete>
-  
+
   <processStep.update><![CDATA[
       update flow.process_step
       set modified_by_id = :modifiedById,
@@ -203,12 +208,12 @@
           non_admin_add = :nonAdminAdd
       where id = :id;
   ]]></processStep.update>
-  
+
   <processStep.insert><![CDATA[
       insert into flow.process_step (company_id, process_step_name, created_by_id, non_admin_add)
         values (:companyId, :name, :createdById, :nonAdminAdd)
   ]]></processStep.insert>
-  
+
   <processStep.getParentObjects><![CDATA[
     select *
     from flow.process_step
@@ -216,7 +221,7 @@
       and archived is not true
     order by process_step_name
   ]]></processStep.getParentObjects>
-  
+
   <processStep.getParentObjectsIncludingTypes><![CDATA[
     select ps.id,
        ps.process_step_name as name,
@@ -235,7 +240,7 @@
       and cot.archived is not true
     order by name
   ]]></processStep.getParentObjectsIncludingTypes>
-  
+
   <processStep.getProcessStepProcessByCompanyId><![CDATA[
   select
     ps.id,
@@ -252,7 +257,7 @@
     and psp.archived is not true
   order by ps.process_step_name;
 ]]></processStep.getProcessStepProcessByCompanyId>
-  
+
   <processStep.getOwners><![CDATA[
 select * from flow.get_process_step_available_owners(:id::int, :companyId::int, :inParentCompany)
 ]]></processStep.getOwners>

@@ -474,6 +474,13 @@
                       item-text="processStepStatusType"
                       item-value="id"
             ></v-select>
+            <v-select v-model="newAction.companyProjectStatusTypeId"
+                      :items="companyProjectStatusTypes"
+                      :clearable="true"
+                      label="Action changes project status to"
+                      item-text="projectStatusType"
+                      item-value="id"
+            ></v-select>
             <v-checkbox
               dense
               hide-details
@@ -539,6 +546,13 @@
                               :disabled="!userCanEdit"
                               label="Action changes status of parent process step to"
                               item-text="processStepStatusType"
+                              item-value="id"
+                    ></v-select>
+                    <v-select v-model="item.companyProjectStatusTypeId"
+                              :items="companyProjectStatusTypes"
+                              :clearable="true"
+                              label="Action changes project status to"
+                              item-text="projectStatusType"
                               item-value="id"
                     ></v-select>
                     <v-checkbox
@@ -975,6 +989,7 @@
                   <td class="text-left">{{item.actionName}}</td>
                   <td class="text-left">{{item.actionType}}</td>
                   <td class="text-left">{{item.processStepStatusType || 'N/A'}}</td>
+                  <td class="text-left">{{item.projectStatusType || 'N/A'}}</td>
                   <td>
                     <div style="display: flex; float: right;">
                       <v-btn small text @click="[actionExpanded = [item], selectedActionIndex = index]"
@@ -1039,7 +1054,7 @@
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
-
+  import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
   import Sortable from "sortablejs";
@@ -1096,6 +1111,7 @@
           {text: 'Name', value: 'actionName', show: true},
           {text: 'Type', value: 'actionType', show: true},
           {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
+          {text: 'Project Status Change', value: 'projectStatusType', show: true},
           {text: null, value: 'icons', show: true}
         ],
         addNewRequirement: false,
@@ -1129,6 +1145,7 @@
         newAction: {},
         actions: [],
         statusTypes: [],
+        companyProjectStatusTypes: [],
         expanded: [],
         actionExpanded: [],
         //todo: get these from endpoint but i am lazy right now
@@ -1154,6 +1171,7 @@
       this.getRequirements()
       this.getActions()
       this.getStatusTypes()
+      this.getCompanyProjectStatusTypes()
       this.getOperationTypes()
     },
     methods: {
@@ -1570,6 +1588,19 @@
         try {
           const {data} = await getRequest(`/processStep/status`)
           this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCompanyProjectStatusTypes() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getCompanyProjectStatusTypes()
+          this.companyProjectStatusTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
