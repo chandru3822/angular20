@@ -1,17 +1,17 @@
 <template>
-  <v-container id="setter-dash-container">
-    <v-row v-if="showDashboard" id="setter-dash-toolbar-container">
+  <v-container id="setter-dash-container" :class="{'incentive-tab-override': showIncentive}">
+    <v-row id="setter-dash-toolbar-container">
       <v-col cols="12" id="setter-dash-toolbar" class="pt-0 pb-2">
         <v-toolbar id="setter-dash-title-container" class="elevation-1">
           <v-toolbar-title>Setter Dashboard</v-toolbar-title>
         </v-toolbar>
-        <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
+        <v-app-bar v-if="showDashboard" id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-              <v-btn text @click="loadRankingTables('MTD')">MTD</v-btn>
-              <v-btn text @click="loadRankingTables('60 days')" class="text-lowercase">60 days</v-btn>
-              <v-btn text @click="loadRankingTables('90 days')" class="text-lowercase">90 days</v-btn>
-              <v-btn text @click="loadRankingTables('YTD')">YTD</v-btn>
+              <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
+              <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
+              <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
+              <v-btn text @click="setTimeInterval('YTD')">YTD</v-btn>
             </v-btn-toggle>
           </v-toolbar-items>
         </v-app-bar>
@@ -19,362 +19,21 @@
     </v-row>
 
     <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters
-           :class="{'dashboard-tab-max-width': showDashboard, 'funnel-tab-max-width': !showDashboard}">
+           :class="{'funnel-tab-max-width': !showDashboard, 'dashboard-tab-max-width': showDashboard, 'incentive-tab-overrides': showIncentive}">
       <v-col cols="12">
-        <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(1)">
+        <span class="clickable" :class="{'font-weight-bold': showFunnel}" @click="switchTabs(1)">
+          Funnel
+        </span>
+        <div class="tab-separator mx-2"></div>
+        <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(2)">
           Dashboard
         </span>
         <div class="tab-separator mx-2"></div>
-        <span class="clickable" :class="{'font-weight-bold': showFunnel}" @click="switchTabs(2)">
-          Funnel
+        <span class="clickable" :class="{'font-weight-bold': showIncentive}" @click="switchTabs(3)">
+          Incentive
         </span>
       </v-col>
     </v-row>
-
-    <!---------------------------------- DASHBOARD TAB START ---------------------------------->
-    <!-- IRONMAN START -->
-    <v-row v-if="showDashboard" class="mb-6" justify="center" no-gutters>
-      <v-col cols="12" id="ironman-container">
-        <v-card id="ironman-component" class="mb-4 pb-4">
-          <img id="ironman-banner-mobile" src="../../../assets/blueraven/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
-          <img id="ironman-banner" src="../../../assets/blueraven/ironman_banner.png" alt="Desktop version of Ironman competition banner">
-          <div id="milestones-container">
-            <div id="swim-phase" class="milestone" :class="{'active-milestone': is_q1}"
-                 @click="milestoneDrilldown(1)">
-              <span class="milestone-top-label">SWIM</span>
-              <div class="milestone-content mt-1">
-                <div class="milestone-content-labels">
-                  <span class="milestone-left-label" :style="{'letter-spacing': q1_upper_label === '——' ? '0.1em' : ''}">{{ q1_upper_label }}</span>
-                  <span class="milestone-top-right-label">{{ pitchCounts.q1 }} Pitches</span>
-                </div>
-                <div class="milestone-content-labels">
-                  <span class="milestone-bottom-right-label">
-                    {{ q1_points === 1 ? q1_points + ' Point' : q1_points + ' Points' }}
-                  </span>
-                </div>
-                <img src="../../../assets/blueraven/ironman_swim_icon.png" alt="A person swimming">
-              </div>
-              <span v-if="is_q1" class="milestone-bottom-label">{{ q1_lower_label }}</span>
-            </div>
-
-            <div id="bike-phase" class="milestone" :class="{'active-milestone': is_q2}"
-                 @click="milestoneDrilldown(2)">
-              <span class="milestone-top-label">BIKE</span>
-              <div class="milestone-content mt-1">
-                <div class="milestone-content-labels">
-                  <span class="milestone-left-label" :style="{'letter-spacing': q2_upper_label === '——' ? '0.1em' : ''}">{{ q2_upper_label }}</span>
-                  <span v-if="currentQuarter > 1" class="milestone-top-right-label">{{ pitchCounts.q2 }} Pitches</span>
-                </div>
-                <div class="milestone-content-labels">
-                  <span v-if="currentQuarter > 1" class="milestone-bottom-right-label">
-                    {{ q2_points === 1 ? q2_points + ' Point' : q2_points + ' Points' }}
-                  </span>
-                </div>
-                <img src="../../../assets/blueraven/ironman_bike_icon.png" alt="A person riding a bike">
-              </div>
-              <span v-if="is_q2" class="milestone-bottom-label">{{ q2_lower_label }}</span>
-            </div>
-
-            <div id="run-phase" class="milestone" :class="{'active-milestone': is_q3}"
-                 @click="milestoneDrilldown(3)">
-              <span class="milestone-top-label">RUN</span>
-              <div class="milestone-content mt-1">
-                <div class="milestone-content-labels">
-                  <span class="milestone-left-label" :style="{'letter-spacing': q3_upper_label === '——' ? '0.1em' : ''}">{{ q3_upper_label }}</span>
-                  <span v-if="currentQuarter > 2" class="milestone-top-right-label">{{ pitchCounts.q3 }} Pitches</span>
-                </div>
-                <div class="milestone-content-labels">
-                  <span v-if="currentQuarter > 2" class="milestone-bottom-right-label">
-                    {{ q3_points === 1 ? q3_points + ' Point' : q3_points + ' Points' }}
-                  </span>
-                </div>
-                <img src="../../../assets/blueraven/ironman_run_icon.png" alt="A person running">
-              </div>
-              <span v-if="is_q3" class="milestone-bottom-label">{{ q3_lower_label }}</span>
-            </div>
-
-            <div id="finish-phase" class="milestone" :class="{'active-milestone': is_q4}"
-                 @click="milestoneDrilldown(4)">
-              <span class="milestone-top-label">FINISH</span>
-              <div class="milestone-content mt-1">
-                <div class="milestone-content-labels">
-                  <span class="milestone-left-label" :style="{'letter-spacing': q4_upper_label === '——' ? '0.1em' : ''}">{{ q4_upper_label }}</span>
-                  <span v-if="currentQuarter > 3" class="milestone-top-right-label">{{ pitchCounts.q4 }} Pitches</span>
-                </div>
-                <div class="milestone-content-labels">
-                  <span v-if="currentQuarter > 3" class="milestone-bottom-right-label">
-                    {{ q4_points === 1 ? q4_points + ' Point' : q4_points + ' Points' }}
-                  </span>
-                </div>
-                <img src="../../../assets/blueraven/ironman_finish_icon.png" alt="A person crossing a finish line">
-              </div>
-              <span v-if="is_q4" class="milestone-bottom-label">{{ q4_lower_label }}</span>
-            </div>
-          </div>
-
-          <div id="progress-bar-container">
-            <span>Cumulative Point Total</span>
-            <div id="progress-bar">
-              <div id="first-segment" class="progress-bar-segment"></div>
-              <div id="second-segment" class="progress-bar-segment"></div>
-              <div id="third-segment" class="progress-bar-segment"></div>
-              <div id="fourth-segment" class="progress-bar-segment"></div>
-              <div id="fifth-segment" class="progress-bar-segment"></div>
-              <div id="sixth-segment" class="progress-bar-segment"></div>
-              <div id="seventh-segment" class="progress-bar-segment"></div>
-              <div id="eighth-segment" class="progress-bar-segment">
-                <img v-if="!progressBarIsFull" src="../../../assets/blueraven/progress_bar_icon_blue.png"
-                     alt="Blue Raven Solar logo in blue">
-                <img v-if="progressBarIsFull" src="../../../assets/blueraven/progress_bar_icon_white.png"
-                     alt="Blue Raven Solar logo in white">
-              </div>
-              <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '5px' : '5px 0 0 5px'}"></div>
-            </div>
-          </div>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
-      <v-card>
-        <v-card-title class="mb-1">
-          <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
-          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
-        </v-card-title>
-
-        <v-card-text>
-          <v-data-table
-            id="drilldown-table"
-            :headers="headers"
-            :items="milestoneDrilldownData"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            fixed-header
-            dense
-            hide-default-footer
-            class="elevation-1"
-          >
-            <template v-if="milestoneDrilldownData.length > 0" #item="{ item, index }" class="table-body">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
-                <td class="text-left">{{ item.id || '' }}</td>
-                <td class="text-left">{{ item.source || '' }}</td>
-                <td class="text-left">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
-                <td class="text-left">{{ item.appointment_outcome || '' }}</td>
-              </tr>
-            </template>
-
-            <template #no-data>
-              <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3">
-                Data is not yet available for the selected quarter.
-              </div>
-              <div v-else class="my-3">
-                No data is available for the selected quarter.
-              </div>
-            </template>
-          </v-data-table>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
-                 @click="closeMilestoneDialog">
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!-- IRONMAN END -->
-
-    <!-- PERSONAL PERFORMANCE SECTION START -->
-    <div v-if="showDashboard" class="ranking-tables-section-header">
-      Personal Performance
-    </div>
-    <div v-if="showDashboard && performanceDataLoaded" id="personal-performance-boxes-container" class="mb-6">
-      <div class="personal-performance-box">
-        <span class="personal-performance-box-title">Total Appointments</span>
-        <span class="personal-performance-box-number">
-          {{ rankingData.total_appointments ? rankingData.total_appointments : 0 }}
-        </span>
-        <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }} (not cancelled)
-        </span>
-      </div>
-      <div class="personal-performance-box">
-        <span class="personal-performance-box-title">Total Pitches</span>
-        <span class="personal-performance-box-number">
-          {{ rankingData.total_pitches ? rankingData.total_pitches : 0 }}
-        </span>
-        <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-        </span>
-      </div>
-      <div class="personal-performance-box">
-        <span class="personal-performance-box-title">Pitch %</span>
-        <span class="personal-performance-box-number">
-          {{ rankingData.pitch_percentage ? rankingData.pitch_percentage : 0 }}%
-        </span>
-        <span class="personal-performance-box-subtitle">
-          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-        </span>
-      </div>
-      <div id="personal-performance-rank-box">
-        <div id="rank-box-left-side">
-          <span class="personal-performance-box-title">Company Rank</span>
-          <span v-if="isSetterMgr" class="personal-performance-box-number">
-            {{ rankBoxData.current_office_rank ? rankBoxData.current_office_rank : 'TBD' }}
-          </span>
-          <span v-if="!isSetterMgr" class="personal-performance-box-number">
-            {{ rankBoxData.current_user_rank ? rankBoxData.current_user_rank : 'TBD' }}
-          </span>
-          <span class="personal-performance-box-subtitle">
-            {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-          </span>
-        </div>
-        <div id="rank-box-separator"></div>
-        <div id="rank-box-right-side">
-          <span class="personal-performance-box-title">
-            {{ isSetterMgr ? 'Office' : 'Rep' }} to Beat
-          </span>
-          <div id="rank-box-content" :style="{'justify-content': rankBoxData.current_office_rank === '1' || rankBoxData.current_user_rank === '1' ? 'space-around' : 'space-between'}">
-            <span v-if="isSetterMgr" id="office-to-beat-name"
-                  :style="{'font-size': (rankBoxData.setter_office_to_beat_name && rankBoxData.current_office_rank !== '1') ? '10px' : '14px'}">
-              {{ rankBoxData.setter_office_to_beat_name ? rankBoxData.setter_office_to_beat_name : 'TBD' }}
-            </span>
-            <v-icon v-if="isSetterMgr" class="office-to-beat-icon">mdi-office-building</v-icon>
-
-            <span v-if="!isSetterMgr" id="rep-to-beat-name"
-                  :style="{'font-size': (rankBoxData.setter_to_beat_name && rankBoxData.current_user_rank !== '1') ? '10px' : '14px'}">
-              {{ rankBoxData.setter_to_beat_name ? rankBoxData.setter_to_beat_name : 'TBD' }}
-            </span>
-            <img v-if="!isSetterMgr && rankBoxData.imageUrl" class="rep-to-beat-img"
-                 :style="{'width': rankBoxData.current_user_rank !== '1' ? '' : '50px', 'height': rankBoxData.current_user_rank !== '1' ? '' : '50px'}"
-                 :alt="rankBoxData.imageAltText" :src="rankBoxData.imageUrl">
-            <v-icon v-if="!isSetterMgr && !rankBoxData.imageUrl" class="rep-to-beat-icon">mdi-account</v-icon>
-
-            <span v-if="rankBoxData.current_office_rank !== '1' && rankBoxData.current_user_rank !== '1'"
-                  id="rank-box-subtitle">
-              {{ rankBoxData.pitches_to_go ? rankBoxData.pitches_to_go : 0 }} {{ rankBoxData.pitches_to_go === 1 ? 'Pitch' : 'Pitches' }} to beat {{ isSetterMgr ? 'office' : 'rep' }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- PERSONAL PERFORMANCE SECTION END -->
-
-    <!-- RANKING TABLES HEADER START -->
-    <div v-if="showDashboard" class="ranking-tables-section-header">
-      Company Performance
-    </div>
-    <!-- RANKING TABLES HEADER END -->
-
-    <!-- RANKING TABLES SECTION START -->
-    <div v-if="showDashboard" id="setter-ranking-tables-section">
-      <!-- RANKING TABLES LEFT COLUMN START -->
-      <div id="setter-ranking-tables-left-col">
-        <!-- TOP OFFICES -->
-        <div id="setter-ranking-top-offices-table" class="ranking-table">
-          <div class="ranking-table-header">
-            <v-icon class="ranking-table-icon mr-2">mdi-flag-variant</v-icon>
-            <span>Top Offices</span>
-          </div>
-          <table v-if="offices.length > 0">
-            <tr>
-              <th class="center-text">Rank</th>
-              <th class="left-text">Office</th>
-              <th class="center-text">
-                Total Pitched Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-              </th>
-            </tr>
-            <tr v-for="office in offices"
-                :key="office.org_id"
-                :class="{'highlight-user-row': office.org_id === userOfficeId}">
-              <td class="center-text">{{ office.rank }}</td>
-              <td class="left-text">{{ office.name }}</td>
-              <td class="center-text">{{ office.pitches }}</td>
-            </tr>
-          </table>
-          <div v-if="offices.length === 0" class="ranking-tables-no-data">
-            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
-          </div>
-        </div>
-
-        <!-- TOP REPS -->
-        <div class="ranking-table">
-          <div class="ranking-table-header">
-            <v-icon class="mr-2 ranking-table-icon">mdi-account-multiple</v-icon>
-            <span>Top Reps</span>
-          </div>
-          <table v-if="reps.length > 0">
-            <tr>
-              <th class="center-text">Rank</th>
-              <th></th>
-              <th class="left-text">Rep</th>
-              <th class="center-text">
-                Total Pitched Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-              </th>
-            </tr>
-            <tr v-for="rep in reps" :key="rep.user_id"
-                :class="{'highlight-user-row': rep.user_id === currentUserId}">
-              <td class="center-text">{{ rep.rank }}</td>
-              <td class="user-img-col">
-                <img v-if="rep.userImageUrl" class="ranking-table-img"
-                     :src="rep.userImageUrl" :alt="rep.userImageAltText">
-                <img v-else class="placeholder-img"
-                     src="../../../assets/flow/user_img_placeholder.png" :alt="rep.userImageAltText">
-              </td>
-              <td class="left-text">{{ rep.name }}</td>
-              <td class="center-text">{{ rep.pitches }}</td>
-            </tr>
-          </table>
-          <div v-if="reps.length === 0" class="ranking-tables-no-data">
-            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
-          </div>
-        </div>
-      </div>
-      <!-- RANKING TABLES LEFT COLUMN END -->
-
-      <!-- RANKING TABLES RIGHT COLUMN START -->
-      <div id="setter-ranking-tables-right-col">
-        <!-- OFFICE RANKING -->
-        <div class="ranking-table">
-          <div class="ranking-table-header">
-            <v-icon class="mr-2 ranking-table-icon">mdi-office-building</v-icon>
-            <span>Office Ranking</span>
-          </div>
-          <table v-if="officeRankingData.length > 0">
-            <tr>
-              <th class="center-text">Rank</th>
-              <th class="left-text">Office</th>
-              <th class="center-text">
-                Total Appointments<br/>
-                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
-              </th>
-              <th class="center-text">Pitches</th>
-              <th class="center-text">Pitch %</th>
-            </tr>
-            <tr v-for="office in officeRankingData" :key="office.org_id"
-                :class="{'highlight-user-row': office.org_id === userOfficeId}">
-              <td class="center-text">{{ office.rank }}</td>
-              <td class="left-text">{{ office.org }}</td>
-              <td class="center-text">{{ office.total_appointments }}</td>
-              <td class="center-text">{{ office.total_pitches }}</td>
-              <td class="center-text">{{ office.pitch_percentage }}%</td>
-            </tr>
-          </table>
-          <div v-if="officeRankingData.length === 0"
-               class="ranking-tables-no-data">
-            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
-          </div>
-        </div>
-      </div>
-      <!-- RANKING TABLES RIGHT COLUMN END -->
-    </div>
-    <!-- RANKING TABLES SECTION END -->
-    <!---------------------------------- DASHBOARD TAB END ---------------------------------->
 
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- FUNNEL -->
@@ -819,9 +478,365 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!----------------------------------- PIPELINE TAB END ----------------------------------->
+    <!------------------------------------- FUNNEL TAB END ------------------------------------>
 
+    <!---------------------------------- DASHBOARD TAB START ---------------------------------->
+    <!-- PERSONAL PERFORMANCE SECTION START -->
+    <div v-if="showDashboard" class="ranking-tables-section-header">
+      Personal Performance
+    </div>
+    <div v-if="showDashboard" id="personal-performance-boxes-container" class="mb-6">
+      <div class="personal-performance-box">
+        <span class="personal-performance-box-title">Total Appointments</span>
+        <span class="personal-performance-box-number">
+          {{ rankingData.total_appointments ? rankingData.total_appointments : 0 }}
+        </span>
+        <span class="personal-performance-box-subtitle">
+          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }} (not cancelled)
+        </span>
+      </div>
+      <div class="personal-performance-box">
+        <span class="personal-performance-box-title">Total Pitches</span>
+        <span class="personal-performance-box-number">
+          {{ rankingData.total_pitches ? rankingData.total_pitches : 0 }}
+        </span>
+        <span class="personal-performance-box-subtitle">
+          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+        </span>
+      </div>
+      <div class="personal-performance-box">
+        <span class="personal-performance-box-title">Pitch %</span>
+        <span class="personal-performance-box-number">
+          {{ rankingData.pitch_percentage ? rankingData.pitch_percentage : 0 }}%
+        </span>
+        <span class="personal-performance-box-subtitle">
+          {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+        </span>
+      </div>
+      <div id="personal-performance-rank-box">
+        <div id="rank-box-left-side">
+          <span class="personal-performance-box-title">Company Rank</span>
+          <span v-if="isSetterMgr" class="personal-performance-box-number">
+            {{ rankBoxData.current_office_rank ? rankBoxData.current_office_rank : 'TBD' }}
+          </span>
+          <span v-if="!isSetterMgr" class="personal-performance-box-number">
+            {{ rankBoxData.current_user_rank ? rankBoxData.current_user_rank : 'TBD' }}
+          </span>
+          <span class="personal-performance-box-subtitle">
+            {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+          </span>
+        </div>
+        <div id="rank-box-separator"></div>
+        <div id="rank-box-right-side">
+          <span class="personal-performance-box-title">
+            {{ isSetterMgr ? 'Office' : 'Rep' }} to Beat
+          </span>
+          <div id="rank-box-content" :style="{'justify-content': rankBoxData.current_office_rank === '1' || rankBoxData.current_user_rank === '1' ? 'space-around' : 'space-between'}">
+            <span v-if="isSetterMgr" id="office-to-beat-name"
+                  :style="{'font-size': (rankBoxData.setter_office_to_beat_name && rankBoxData.current_office_rank !== '1') ? '10px' : '14px'}">
+              {{ rankBoxData.setter_office_to_beat_name ? rankBoxData.setter_office_to_beat_name : 'TBD' }}
+            </span>
+            <v-icon v-if="isSetterMgr" class="office-to-beat-icon">mdi-office-building</v-icon>
 
+            <span v-if="!isSetterMgr" id="rep-to-beat-name"
+                  :style="{'font-size': (rankBoxData.setter_to_beat_name && rankBoxData.current_user_rank !== '1') ? '10px' : '14px'}">
+              {{ rankBoxData.setter_to_beat_name ? rankBoxData.setter_to_beat_name : 'TBD' }}
+            </span>
+            <img v-if="!isSetterMgr && rankBoxData.imageUrl" class="rep-to-beat-img"
+                 :style="{'width': rankBoxData.current_user_rank !== '1' ? '' : '50px', 'height': rankBoxData.current_user_rank !== '1' ? '' : '50px'}"
+                 :alt="rankBoxData.imageAltText" :src="rankBoxData.imageUrl">
+            <v-icon v-if="!isSetterMgr && !rankBoxData.imageUrl" class="rep-to-beat-icon">mdi-account</v-icon>
+
+            <span v-if="rankBoxData.current_office_rank !== '1' && rankBoxData.current_user_rank !== '1'"
+                  id="rank-box-subtitle">
+              {{ rankBoxData.pitches_to_go ? rankBoxData.pitches_to_go : 0 }} {{ rankBoxData.pitches_to_go === 1 ? 'Pitch' : 'Pitches' }} to beat {{ isSetterMgr ? 'office' : 'rep' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PERSONAL PERFORMANCE SECTION END -->
+
+    <!-- RANKING TABLES HEADER START -->
+    <div v-if="showDashboard" class="ranking-tables-section-header">
+      Company Performance
+    </div>
+    <!-- RANKING TABLES HEADER END -->
+
+    <!-- RANKING TABLES SECTION START -->
+    <div v-if="showDashboard" id="setter-ranking-tables-section">
+      <!-- RANKING TABLES LEFT COLUMN START -->
+      <div id="setter-ranking-tables-left-col">
+        <!-- TOP OFFICES -->
+        <div id="setter-ranking-top-offices-table" class="ranking-table">
+          <div class="ranking-table-header">
+            <v-icon class="ranking-table-icon mr-2">mdi-flag-variant</v-icon>
+            <span>Top Offices</span>
+          </div>
+          <table v-if="offices.length > 0">
+            <tr>
+              <th class="center-text">Rank</th>
+              <th class="left-text">Office</th>
+              <th class="center-text">
+                Total Pitched Appointments<br/>
+                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+              </th>
+            </tr>
+            <tr v-for="office in offices"
+                :key="office.org_id"
+                :class="{'highlight-user-row': office.org_id === userOfficeId}">
+              <td class="center-text">{{ office.rank }}</td>
+              <td class="left-text">{{ office.name }}</td>
+              <td class="center-text">{{ office.pitches }}</td>
+            </tr>
+          </table>
+          <div v-if="offices.length === 0" class="ranking-tables-no-data">
+            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
+          </div>
+        </div>
+
+        <!-- TOP REPS -->
+        <div class="ranking-table">
+          <div class="ranking-table-header">
+            <v-icon class="mr-2 ranking-table-icon">mdi-account-multiple</v-icon>
+            <span>Top Reps</span>
+          </div>
+          <table v-if="reps.length > 0">
+            <tr>
+              <th class="center-text">Rank</th>
+              <th></th>
+              <th class="left-text">Rep</th>
+              <th class="center-text">
+                Total Pitched Appointments<br/>
+                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+              </th>
+            </tr>
+            <tr v-for="rep in reps" :key="rep.user_id"
+                :class="{'highlight-user-row': rep.user_id === currentUserId}">
+              <td class="center-text">{{ rep.rank }}</td>
+              <td class="user-img-col">
+                <img v-if="rep.userImageUrl" class="ranking-table-img"
+                     :src="rep.userImageUrl" :alt="rep.userImageAltText">
+                <img v-else class="placeholder-img"
+                     src="../../../assets/flow/user_img_placeholder.png" :alt="rep.userImageAltText">
+              </td>
+              <td class="left-text">{{ rep.name }}</td>
+              <td class="center-text">{{ rep.pitches }}</td>
+            </tr>
+          </table>
+          <div v-if="reps.length === 0" class="ranking-tables-no-data">
+            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
+          </div>
+        </div>
+      </div>
+      <!-- RANKING TABLES LEFT COLUMN END -->
+
+      <!-- RANKING TABLES RIGHT COLUMN START -->
+      <div id="setter-ranking-tables-right-col">
+        <!-- OFFICE RANKING -->
+        <div class="ranking-table">
+          <div class="ranking-table-header">
+            <v-icon class="mr-2 ranking-table-icon">mdi-office-building</v-icon>
+            <span>Office Ranking</span>
+          </div>
+          <table v-if="officeRankingData.length > 0">
+            <tr>
+              <th class="center-text">Rank</th>
+              <th class="left-text">Office</th>
+              <th class="center-text">
+                Total Appointments<br/>
+                {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
+              </th>
+              <th class="center-text">Pitches</th>
+              <th class="center-text">Pitch %</th>
+            </tr>
+            <tr v-for="office in officeRankingData" :key="office.org_id"
+                :class="{'highlight-user-row': office.org_id === userOfficeId}">
+              <td class="center-text">{{ office.rank }}</td>
+              <td class="left-text">{{ office.org }}</td>
+              <td class="center-text">{{ office.total_appointments }}</td>
+              <td class="center-text">{{ office.total_pitches }}</td>
+              <td class="center-text">{{ office.pitch_percentage }}%</td>
+            </tr>
+          </table>
+          <div v-if="officeRankingData.length === 0"
+               class="ranking-tables-no-data">
+            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
+          </div>
+        </div>
+      </div>
+      <!-- RANKING TABLES RIGHT COLUMN END -->
+    </div>
+    <!-- RANKING TABLES SECTION END -->
+    <!---------------------------------- DASHBOARD TAB END ---------------------------------->
+
+    <!--------------------------------- INCENTIVE TAB START --------------------------------->
+    <v-row v-if="showIncentive" justify="center" no-gutters>
+      <v-col cols="12" id="incentive-container">
+        <img id="incentive-banner" src="../../../assets/blueraven/top_gun_white.svg" alt="incentive competition banner">
+        <div id="milestones-container">
+          <div id="aim-high-phase" class="milestone" :class="{'active-milestone': is_q1}"
+               @click="milestoneDrilldown(1)">
+            <span class="milestone-top-label">Aim High</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q1 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q1_points === 4, 'five-stars-padding-override': q1_points > 4}">
+                  <v-icon v-if="q1_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q1_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q1_points > 2" class="milestone-star"z
+                          :class="{'three-stars-padding-override': q1_points === 3}">star</v-icon>
+                  <v-icon v-if="q1_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q1_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q1_lower_label }}</span>
+          </div>
+
+          <div id="fly-phase" class="milestone" :class="{'active-milestone': is_q2}"
+               @click="milestoneDrilldown(2)">
+            <span class="milestone-top-label">Fly</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q2 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q2_points === 4, 'five-stars-padding-override': q2_points > 4}">
+                  <v-icon v-if="q2_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q2_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q2_points > 2" class="milestone-star"z
+                          :class="{'three-stars-padding-override': q2_points === 3}">star</v-icon>
+                  <v-icon v-if="q2_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q2_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q2_lower_label }}</span>
+          </div>
+
+          <div id="fight-phase" class="milestone" :class="{'active-milestone': is_q3}"
+               @click="milestoneDrilldown(3)">
+            <span class="milestone-top-label">Fight</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q3 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q3_points === 4, 'five-stars-padding-override': q3_points > 4}">
+                  <v-icon v-if="q3_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q3_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q3_points > 2" class="milestone-star"z
+                          :class="{'three-stars-padding-override': q3_points === 3}">star</v-icon>
+                  <v-icon v-if="q3_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q3_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q3_lower_label }}</span>
+          </div>
+
+          <div id="win-phase" class="milestone" :class="{'active-milestone': is_q4}"
+               @click="milestoneDrilldown(4)">
+            <span class="milestone-top-label">Win</span>
+            <div class="milestone-content mt-1">
+              <div class="milestone-content-left-side"></div>
+              <div class="milestone-content-right-side">
+                <span class="milestone-top-right-label">{{ pitchCounts.q4 }} Pitches</span>
+                <div class="milestone-stars-container"
+                     :class="{'four-stars-padding-override': q4_points === 4, 'five-stars-padding-override': q4_points > 4}">
+                  <v-icon v-if="q4_points > 0" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q4_points > 1" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q4_points > 2" class="milestone-star"z
+                          :class="{'three-stars-padding-override': q4_points === 3}">star</v-icon>
+                  <v-icon v-if="q4_points > 3" class="milestone-star">star</v-icon>
+                  <v-icon v-if="q4_points > 4" class="milestone-star">star</v-icon>
+                </div>
+              </div>
+            </div>
+            <span class="milestone-bottom-label">{{ q4_lower_label }}</span>
+          </div>
+        </div>
+
+        <div id="progress-bar-container">
+          <span>Cumulative Point Total</span>
+          <div id="progress-bar">
+            <div id="first-segment" class="progress-bar-segment"></div>
+            <div id="second-segment" class="progress-bar-segment"></div>
+            <div id="third-segment" class="progress-bar-segment"></div>
+            <div id="fourth-segment" class="progress-bar-segment"></div>
+            <div id="fifth-segment" class="progress-bar-segment"></div>
+            <div id="sixth-segment" class="progress-bar-segment"></div>
+            <div id="seventh-segment" class="progress-bar-segment"></div>
+            <div id="eighth-segment" class="progress-bar-segment"></div>
+            <div id="ninth-segment" class="progress-bar-segment"></div>
+            <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '4px' : '4px 0 0 4px'}"></div>
+          </div>
+        </div>
+
+        <div id="milestone-medals-container">
+          <div class="milestone-medal a-10-level"></div>
+          <div class="milestone-medal f-14-level"></div>
+          <div class="milestone-medal fa-18-level"></div>
+          <div class="milestone-medal f-22-level"></div>
+          <div class="milestone-medal f-35-level"></div>
+        </div>
+      </v-col>
+    </v-row>
+
+    <v-dialog v-model="milestoneDialog" max-width="950" @input="closeMilestoneDialog">
+      <v-card>
+        <v-card-title class="mb-1">
+          <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="closeMilestoneDialog">×</a>
+        </v-card-title>
+
+        <v-card-text>
+          <v-data-table
+            id="drilldown-table"
+            :headers="headers"
+            :items="milestoneDrilldownData"
+            :items-per-page="-1"
+            :mobile-breakpoint="0"
+            fixed-header
+            dense
+            hide-default-footer
+            class="elevation-1"
+          >
+            <template v-if="milestoneDrilldownData.length > 0" #item="{ item, index }" class="table-body">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+                <td class="text-left">{{ index + 1 }}</td>
+                <td class="text-left customer-name">{{ item.customer_name || '' }}</td>
+                <td class="text-left">{{ item.id || '' }}</td>
+                <td class="text-left">{{ item.source || '' }}</td>
+                <td class="text-left">{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
+                <td class="text-left">{{ item.appointment_outcome || '' }}</td>
+              </tr>
+            </template>
+
+            <template #no-data>
+              <div v-if="(currentQuarter < 4) && (selectedQuarter > currentQuarter)" class="my-3">
+                Data is not yet available for the selected quarter.
+              </div>
+              <div v-else class="my-3">
+                No data is available for the selected quarter.
+              </div>
+            </template>
+          </v-data-table>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+                 @click="closeMilestoneDialog">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!---------------------------------- INCENTIVE TAB END ---------------------------------->
   </v-container>
 </template>
 
@@ -858,29 +873,26 @@
       timeIntervalBtnGroup: 0,
       timeIntervalString: 'MTD', // MTD is selected by default
       timeInterval: +moment().format('DD') - 1,
-      tabNum: 1, // Dashboard tab is selected by default
-      showDashboard: true,
-      showFunnel: false,
+      tabNum: 1, // Funnel tab is selected by default
+      showFunnel: true,
+      showDashboard: false,
+      showIncentive: false,
+      funnelDataLoaded: false,
       performanceDataLoaded: false,
       rankingTablesLoaded: false,
-      funnelDataLoaded: false,
-      dashboardWasLoaded: false,
+      incentiveDataLoaded: false,
       funnelWasLoaded: false,
-      // currentQuarter: moment().quarter(),
-      currentQuarter: 4, // This is just a temp fix until the updated Ironman UI / requirements for 2021 are done (per Judson's request on 1/4/2021)
+      dashboardWasLoaded: false,
+      currentQuarter: moment().quarter(),
       pitchCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
       q1_points: 0,
       q2_points: 0,
       q3_points: 0,
       q4_points: 0,
-      q1_background: '',
-      q2_background: '',
-      q3_background: '',
-      q4_background: '',
-      q1_upper_label: '——',
-      q2_upper_label: '——',
-      q3_upper_label: '——',
-      q4_upper_label: '——',
+      q1_medal_icon: '',
+      q2_medal_icon: '',
+      q3_medal_icon: '',
+      q4_medal_icon: '',
       q1_lower_label: '',
       q2_lower_label: '',
       q3_lower_label: '',
@@ -1031,7 +1043,7 @@
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
       '$store.state.app.loading': function () {
-        if ((this.showDashboard && !this.performanceDataLoaded || !this.rankingTablesLoaded) || (this.showFunnel && !this.funnelDataLoaded)) {
+        if ((this.showFunnel && !this.funnelDataLoaded) || (this.showDashboard && (!this.performanceDataLoaded || !this.rankingTablesLoaded)) || (this.showIncentive && !this.incentiveDataLoaded)) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
       },
@@ -1050,22 +1062,31 @@
         this.tabNum = tabNum
 
         switch (tabNum) {
-          case 2: // Funnel tab
+          case 2: // Dashboard tab
+            this.showFunnel = false
+            this.showDashboard = true
+            this.showIncentive = false
+
+            if (!this.dashboardWasLoaded) {
+              await this.setTimeInterval('MTD') // MTD is the default
+              this.dashboardWasLoaded = true
+            }
+            break
+          case 3: // Incentive tab
+            this.showFunnel = false
             this.showDashboard = false
+            this.showIncentive = true
+
+            await this.loadIncentive()
+            break
+          default: // Funnel tab
             this.showFunnel = true
+            this.showDashboard = false
+            this.showIncentive = false
+
             if (!this.funnelWasLoaded) {
               await this.loadFunnel()
               this.funnelWasLoaded = true
-            }
-            break
-          default: // Dashboard tab
-            this.showDashboard = true
-            this.showFunnel = false
-            await this.loadIronman()
-
-            if (!this.dashboardWasLoaded) {
-              await this.loadRankingTables('MTD') // MTD is the default
-              this.dashboardWasLoaded = true
             }
         }
       },
@@ -1075,8 +1096,10 @@
         document.getElementsByClassName('v-data-table__wrapper').forEach(table => table.scrollTop = 0)
       },
 
-      /* IRONMAN-RELATED CODE START */
-      async loadIronman () {
+      /* INCENTIVE-RELATED CODE START */
+      async loadIncentive () {
+        this.incentiveDataLoaded = false
+
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {
@@ -1084,8 +1107,8 @@
             setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
           }
 
-          const {data} = await getRequestWithParams('/setterDashboard/getIronmanPitchCounts', {params}, 'blueraven')
-            this.pitchCounts = data
+          getRequestWithParams('/setterDashboard/getIncentivePitchCounts', {params}, 'blueraven').then(res => {
+            this.pitchCounts = res.data
 
             // Calculate points for each quarter
             this.q1_points = this.calcPointsForQuarter(this.pitchCounts.q1)
@@ -1093,32 +1116,17 @@
             this.q3_points = this.calcPointsForQuarter(this.pitchCounts.q3)
             this.q4_points = this.calcPointsForQuarter(this.pitchCounts.q4)
 
-            // Get milestone backgrounds
-            this.q1_background = this.getMilestoneBackground(this.q1_points)
-            this.q2_background = this.getMilestoneBackground(this.q2_points)
-            this.q3_background = this.getMilestoneBackground(this.q3_points)
-            this.q4_background = this.getMilestoneBackground(this.q4_points)
+            // Get milestone medals
+            this.q1_medal_icon = this.getMilestoneMedal(this.q1_points)
+            this.q2_medal_icon = this.getMilestoneMedal(this.q2_points)
+            this.q3_medal_icon = this.getMilestoneMedal(this.q3_points)
+            this.q4_medal_icon = this.getMilestoneMedal(this.q4_points)
 
-            // Set milestone backgrounds
-            $('#swim-phase .milestone-content').addClass(this.q1_background)
-            $('#bike-phase .milestone-content').addClass(this.q2_background)
-            $('#run-phase .milestone-content').addClass(this.q3_background)
-            $('#finish-phase .milestone-content').addClass(this.q4_background)
-
-            // Remove black background for previous quarters where setter has < 48 (or setter mgr has < 225) pitches
-            if (this.is_q2) {
-              $('#swim-phase .milestone-content').addClass('unranked')
-            } else if (this.is_q3) {
-              $('#swim-phase .milestone-content, #bike-phase .milestone-content').addClass('unranked')
-            } else if (this.is_q4) {
-              $('#swim-phase .milestone-content, #bike-phase .milestone-content, #run-phase .milestone-content').addClass('unranked')
-            }
-
-            // Get upper milestone labels
-            this.q1_upper_label = this.getUpperMilestoneLabel(this.pitchCounts.q1)
-            this.q2_upper_label = this.currentQuarter < 2 ? 'April 1' : this.getUpperMilestoneLabel(this.pitchCounts.q2)
-            this.q3_upper_label = this.currentQuarter < 3 ? 'July 1' : this.getUpperMilestoneLabel(this.pitchCounts.q3)
-            this.q4_upper_label = this.currentQuarter < 4 ? 'October 1' : this.getUpperMilestoneLabel(this.pitchCounts.q4)
+            // Set milestone medals
+            $('#aim-high-phase .milestone-content .milestone-content-left-side').addClass(this.q1_medal_icon)
+            $('#fly-phase .milestone-content .milestone-content-left-side').addClass(this.q2_medal_icon)
+            $('#fight-phase .milestone-content .milestone-content-left-side').addClass(this.q3_medal_icon)
+            $('#win-phase .milestone-content .milestone-content-left-side').addClass(this.q4_medal_icon)
 
             // Get lower milestone labels
             this.q1_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q1)
@@ -1127,51 +1135,54 @@
             this.q4_lower_label = this.getLowerMilestoneLabel(this.pitchCounts.q4)
 
             // Fill progress bar based on setter's points for the year
-            this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 8) * 100
+            this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 9) * 100
             this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
             this.progressBarIsFull = this.percentAchieved === 100
             $('#progress-bar-fill').css('width', this.percentAchieved + '%')
 
+            this.incentiveDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
+          })
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving Ironman data')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving incentive data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.incentiveDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 
       checkWindowWidth () {
         if (window.innerWidth < 1135) {
-          $('#swim-phase').css('align-items', 'center')
-          $('#bike-phase').css('align-items', 'center')
-          $('#run-phase').css('align-items', 'center')
-          $('#finish-phase').css('align-items', 'center')
-          $('#swim-phase.active-milestone').css('align-items', 'center')
-          $('#bike-phase.active-milestone').css('align-items', 'center')
-          $('#run-phase.active-milestone').css('align-items', 'center')
-          $('#finish-phase.active-milestone').css('align-items', 'center')
+          $('#aim-high-phase').css('align-items', 'center')
+          $('#fly-phase').css('align-items', 'center')
+          $('#fight-phase').css('align-items', 'center')
+          $('#win-phase').css('align-items', 'center')
+          $('#aim-high-phase.active-milestone').css('align-items', 'center')
+          $('#fly-phase.active-milestone').css('align-items', 'center')
+          $('#fight-phase.active-milestone').css('align-items', 'center')
+          $('#win-phase.active-milestone').css('align-items', 'center')
         } else {
           if (this.is_q1) {
-            $('#swim-phase').css('align-items', 'flex-start')
-            $('#bike-phase').css('align-items', 'flex-end')
-            $('#run-phase').css('align-items', 'flex-end')
-            $('#finish-phase').css('align-items', 'flex-end')
+            $('#aim-high-phase').css('align-items', 'flex-start')
+            $('#fly-phase').css('align-items', 'flex-end')
+            $('#fight-phase').css('align-items', 'flex-end')
+            $('#win-phase').css('align-items', 'flex-end')
           } else if (this.is_q2) {
-            $('#swim-phase').css('align-items', 'flex-start')
-            $('#bike-phase').css('align-items', 'center')
-            $('#run-phase').css('align-items', 'flex-end')
-            $('#finish-phase').css('align-items', 'flex-end')
+            $('#aim-high-phase').css('align-items', 'flex-start')
+            $('#fly-phase').css('align-items', 'center')
+            $('#fight-phase').css('align-items', 'flex-end')
+            $('#win-phase').css('align-items', 'flex-end')
           } else if (this.is_q3) {
-            $('#swim-phase').css('align-items', 'flex-start')
-            $('#bike-phase').css('align-items', 'flex-start')
-            $('#run-phase').css('align-items', 'center')
-            $('#finish-phase').css('align-items', 'flex-end')
+            $('#aim-high-phase').css('align-items', 'flex-start')
+            $('#fly-phase').css('align-items', 'flex-start')
+            $('#fight-phase').css('align-items', 'center')
+            $('#win-phase').css('align-items', 'flex-end')
           } else {
-            $('#swim-phase').css('align-items', 'flex-start')
-            $('#bike-phase').css('align-items', 'flex-start')
-            $('#run-phase').css('align-items', 'flex-start')
-            $('#finish-phase').css('align-items', 'flex-end')
+            $('#aim-high-phase').css('align-items', 'flex-start')
+            $('#fly-phase').css('align-items', 'flex-start')
+            $('#fight-phase').css('align-items', 'flex-start')
+            $('#win-phase').css('align-items', 'flex-end')
           }
         }
       },
@@ -1179,104 +1190,84 @@
       calcPointsForQuarter (pitchCount) {
         if (!this.isSetterMgr) {
           switch (true) {
-            case pitchCount >= 48 && pitchCount < 60:
-              return 1 // Bronze
-            case pitchCount >= 60 && pitchCount < 72:
-              return 2 // Silver
-            case pitchCount >= 72 && pitchCount < 84:
-              return 3 // Gold
-            case pitchCount >= 84:
-              return 4 // Platinum
+            case pitchCount >= 65 && pitchCount < 78:
+              return 1 // A-10
+            case pitchCount >= 78 && pitchCount < 91:
+              return 2 // F-14
+            case pitchCount >= 91 && pitchCount < 104:
+              return 3 // FA-18
+            case pitchCount >= 104 && pitchCount < 130:
+              return 4 // F-22
+            case pitchCount >= 130:
+              return 5 // F-35
             default:
-              return 0 // Unranked
+              return 0 // No medal
           }
         } else {
           switch (true) {
-            case pitchCount >= 225 && pitchCount < 275:
-              return 1 // Bronze
-            case pitchCount >= 275 && pitchCount < 350:
-              return 2 // Silver
-            case pitchCount >= 350 && pitchCount < 425:
-              return 3 // Gold
-            case pitchCount >= 425:
-              return 4 // Platinum
+            case pitchCount >= 325 && pitchCount < 390:
+              return 1 // A-10
+            case pitchCount >= 390 && pitchCount < 455:
+              return 2 // F-14
+            case pitchCount >= 455 && pitchCount < 520:
+              return 3 // FA-18
+            case pitchCount >= 520 && pitchCount < 675:
+              return 4 // F-22
+            case pitchCount >= 675:
+              return 5 // F-35
             default:
-              return 0 // Unranked
+              return 0 // No medal
           }
         }
       },
 
-      getMilestoneBackground (pointsEarned) {
+      getMilestoneMedal (pointsEarned) {
         switch (pointsEarned) {
           case 1:
-            return 'bronze-level'
+            return 'a-10-level'
           case 2:
-            return 'silver-level'
+            return 'f-14-level'
           case 3:
-            return 'gold-level'
+            return 'fa-18-level'
           case 4:
-            return 'platinum-level'
+            return 'f-22-level'
+          case 5:
+            return 'f-35-level'
           default:
-            return 'default'
-        }
-      },
-
-      getUpperMilestoneLabel (pitchCount) {
-        if (!this.isSetterMgr) {
-          switch (true) {
-            case pitchCount >= 48 && pitchCount < 60:
-              return 'BRONZE'
-            case pitchCount >= 60 && pitchCount < 72:
-              return 'SILVER'
-            case pitchCount >= 72 && pitchCount < 84:
-              return 'GOLD'
-            case pitchCount >= 84:
-              return 'PLATINUM'
-            default:
-              return '——'
-          }
-        } else {
-          switch (true) {
-            case pitchCount >= 225 && pitchCount < 275:
-              return 'BRONZE'
-            case pitchCount >= 275 && pitchCount < 350:
-              return 'SILVER'
-            case pitchCount >= 350 && pitchCount < 425:
-              return 'GOLD'
-            case pitchCount >= 425:
-              return 'PLATINUM'
-            default:
-              return '——'
-          }
+            return 'no-medal'
         }
       },
 
       getLowerMilestoneLabel (pitchCount) {
         if (!this.isSetterMgr) {
           switch (true) {
-            case pitchCount >= 48 && pitchCount < 60:
-              return (60 - pitchCount) + ' Pitches to get to Silver'
-            case pitchCount >= 60 && pitchCount < 72:
-              return (72 - pitchCount) + ' Pitches to get to Gold'
-            case pitchCount >= 72 && pitchCount < 84:
-              return (84 - pitchCount) + ' Pitches to get to Platinum'
-            case pitchCount >= 84:
-              return 'Platinum'
+            case pitchCount >= 65 && pitchCount < 78:
+              return (78 - pitchCount) + (78 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Tomcat'
+            case pitchCount >= 78 && pitchCount < 91:
+              return (91 - pitchCount) + (91 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Hornet'
+            case pitchCount >= 91 && pitchCount < 104:
+              return (104 - pitchCount) + (104 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Raptor'
+            case pitchCount >= 104 && pitchCount < 130:
+              return (130 - pitchCount) + (130 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Lightning'
+            case pitchCount >= 130:
+              return 'Lightning Achieved'
             default:
-              return (48 - pitchCount) + ' Pitches to get to Bronze'
+              return (65 - pitchCount) + (65 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Warthog'
           }
         } else {
           switch (true) {
-            case pitchCount >= 225 && pitchCount < 275:
-              return (275 - pitchCount) + ' Pitches to get to Silver'
-            case pitchCount >= 275 && pitchCount < 350:
-              return (350 - pitchCount) + ' Pitches to get to Gold'
-            case pitchCount >= 350 && pitchCount < 425:
-              return (425 - pitchCount) + ' Pitches to get to Platinum'
-            case pitchCount >= 425:
-              return 'Platinum'
+            case pitchCount >= 325 && pitchCount < 390:
+              return (390 - pitchCount) + (390 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Tomcat'
+            case pitchCount >= 390 && pitchCount < 455:
+              return (455 - pitchCount) + (455 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Hornet'
+            case pitchCount >= 455 && pitchCount < 520:
+              return (520 - pitchCount) + (520 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Raptor'
+            case pitchCount >= 520 && pitchCount < 675:
+              return (675 - pitchCount) + (675 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Lightning'
+            case pitchCount >= 675:
+              return 'Lightning Achieved'
             default:
-              return (225 - pitchCount) + ' Pitches to get to Bronze'
+              return (325 - pitchCount) + (325 - pitchCount === 1 ? ' Pitch' : ' Pitches') + ' to get to Warthog'
           }
         }
       },
@@ -1318,14 +1309,14 @@
         this.milestoneDialog = false
         this.resetScrollBarPosition()
       },
-      /* IRONMAN-RELATED CODE END */
+      /* INCENTIVE-RELATED CODE END */
 
       /* PERSONAL PERFORMANCE-RELATED CODE START */
       async loadPersonalPerformance () {
+        this.performanceDataLoaded = false
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          this.performanceDataLoaded = false
           let startDate = moment().subtract(this.timeInterval, 'd').format('YYYY-MM-DD')
           let endDate = moment().format('YYYY-MM-DD')
 
@@ -1434,6 +1425,7 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving personal performance data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.performanceDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -1568,7 +1560,7 @@
         }
       },
 
-      async loadRankingTables (timeIntervalString) {
+      async setTimeInterval (timeIntervalString) {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
@@ -1845,17 +1837,16 @@
           this.repModel.forEach(rep => reps.push(rep.user_id))
         }
 
-        const requestBody = {
-          targetInstallations: targetInstallations,
-          users: reps,
-          orgs: orgs,
-          start: moment(start).format('YYYY-MM-DD'),
-          end: moment(end).format('YYYY-MM-DD')
-        }
-
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
+          const requestBody = {
+            targetInstallations: targetInstallations,
+            users: reps,
+            orgs: orgs,
+            start: moment(start).format('YYYY-MM-DD'),
+            end: moment(end).format('YYYY-MM-DD')
+          }
+
           await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
             data.forEach(row => {
               // EXPECTATION column
@@ -2180,7 +2171,6 @@
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-
         try {
           await postRequest(`/setterDashboard/funnelDrilldown/${this.viewSelect}`, requestBody, 'blueraven').then(({data}) => {
             this.funnelDrilldownData = data?.length > 0 ? data : []
@@ -2268,6 +2258,18 @@
     overflow: auto;
   }
 
+  #setter-dash-container.incentive-tab-override {
+    padding: 0 !important;
+
+    #setter-dash-toolbar-container {
+      margin: 0 !important;
+
+      #setter-dash-toolbar {
+        padding: 0 !important;
+      }
+    }
+  }
+
   #setter-dash-toolbar-container {
     #setter-dash-toolbar {
       header {
@@ -2348,25 +2350,31 @@
     }
   }
 
-  #ironman-container {
+  #setter-dash-tabs.incentive-tab-overrides {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    margin-bottom: -30px !important;
+    padding-top: 10px;
+    width: 95%;
+
+    .tab-separator {
+      border-color: #fff;
+    }
+  }
+
+  #incentive-container {
+    background: black url("../../../assets/blueraven/title_pilot.jpg") no-repeat fixed center;
+    background-size: cover;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
-  }
 
-  #ironman-component {
-    background: linear-gradient(to bottom, #000000 -50%, #464646 50%);
-    border-radius: 4px;
-    width: 100%;
-
-    #ironman-banner-mobile {
-      margin-top: 10px;
-      margin-bottom: 5px;
+    #incentive-banner {
+      padding-top: 15px;
+      margin-bottom: -50px;
       width: 100%;
-    }
-
-    #ironman-banner {
-      display: none;
+      max-width: 350px;
     }
   }
 
@@ -2388,111 +2396,135 @@
         display: inline-block;
         text-align: center;
         color: #fff;
-        font-size: 11px;
-        letter-spacing: 0.03em;
-        width: 100%;
-      }
-
-      .milestone-content {
-        background: linear-gradient(to right, #282828, #151515);
-        border: 1px solid black;
-        width: 270px;
-        height: 150px;
-        position: relative;
-        text-align: center;
-        display: flex;
-        flex-flow: column nowrap;
-        cursor: pointer;
-
-        .milestone-content-labels {
-          display: flex;
-          justify-content: space-between;
-
-          .milestone-left-label {
-            color: #fff;
-            text-align: left;
-            font-size: 0.7em;
-            margin-top: 2px;
-            margin-left: 5px;
-          }
-
-          .milestone-top-right-label {
-            color: #C6C6C6;
-            text-align: right;
-            font-size: 0.7em;
-            margin-top: 2px;
-            margin-right: 5px;
-          }
-
-          .milestone-bottom-right-label {
-            color: #C6C6C6;
-            text-align: right;
-            font-size: 0.7em;
-            margin-right: 5px;
-            width: 100%;
-          }
-        }
-
-        img {
-          position: absolute;
-        }
+        font-size: 12px;
+        font-weight: bold;
+        width: 220px;
       }
 
       .milestone-bottom-label {
         display: inline-block;
         text-align: center;
         color: #fff;
-        font-size: 12px;
-        letter-spacing: 0.03em;
-        width: 100%;
+        font-size: 10px;
         margin-top: 3px;
+        width: 220px;
       }
-    }
 
-    #swim-phase img {
-      max-width: 190px;
-      max-height: 98px;
-      top: 27px;
-      left: 40px;
-    }
+      .milestone-content {
+        cursor: pointer;
+        border: 3px solid white;
+        display: flex;
+        flex-flow: row nowrap;
+        padding: 5px;
+        width: 220px;
+        height: 110px;
 
-    #bike-phase img {
-      max-width: 200px;
-      max-height: 90px;
-      top: 33px;
-      left: 35px;
-    }
+        .milestone-content-left-side {
+          align-self: center;
+          width: 50%;
+          height: 80%;
+        }
 
-    #run-phase img {
-      max-width: 200px;
-      max-height: 97px;
-      top: 28px;
-      left: 57px;
-    }
+        .milestone-content-right-side {
+          display: flex;
+          flex-flow: column nowrap;
+          width: 50%;
 
-    #finish-phase img {
-      max-width: 240px;
-      max-height: 117px;
-      top: 15px;
-      left: 85px;
+          .milestone-top-right-label {
+            color: white;
+            text-align: right;
+            font-size: 10px;
+          }
+
+          .milestone-stars-container {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+            width: 100%;
+            height: 70%;
+
+            .milestone-star {
+              font-size: 22px;
+              color: rgba(255, 255, 255, 0.3) !important;
+              text-shadow: 0 0 0 rgba(255, 255, 255, 0.5);
+              background: #222 -webkit-gradient(linear, left top, right top, from(#222), to(#222), color-stop(0.5, #fff)) 0 0 no-repeat;
+              background-size: 25px;
+              -webkit-background-clip: text;
+              animation-name: shine;
+              animation-duration: 5s;
+              animation-iteration-count: infinite;
+            }
+
+            @keyframes shine {
+              0% {
+                background-position-x: -50px;
+              }
+              100% {
+                background-position-x: 50px;
+              }
+            }
+
+            .three-stars-padding-override {
+              padding: 0 20px;
+            }
+          }
+
+          .four-stars-padding-override {
+            padding: 0 20px;
+          }
+
+          .five-stars-padding-override {
+            padding: 0 10px;
+          }
+        }
+      }
     }
 
     .active-milestone {
       .milestone-top-label,
       .milestone-bottom-label {
+        width: 260px;
+      }
+
+      .milestone-top-label {
+        font-size: 13px;
+      }
+
+      .milestone-bottom-label {
         font-weight: bold;
-        width: 250px;
+        font-size: 11px;
       }
 
       .milestone-content {
-        background: none;
-        border: 1px solid white;
-        font-size: 1em;
-        width: 300px;
-        height: 170px;
+        border: 3px solid white;
+        width: 260px;
+        height: 130px;
 
-        .milestone-content-labels span {
-          font-weight: bold;
+        .milestone-content-right-side {
+          .milestone-top-right-label {
+            font-weight: bold;
+            font-size: 11px;
+          }
+
+          .milestone-stars-container {
+            .milestone-star {
+              font-size: 28px;
+            }
+
+            .three-stars-padding-override {
+              padding: 0 20px;
+            }
+          }
+
+          .four-stars-padding-override {
+            padding: 0 20px;
+          }
+
+          .five-stars-padding-override {
+            padding: 0 10px;
+          }
         }
       }
     }
@@ -2524,38 +2556,36 @@
       top: 13px;
       left: 80px;
     }
+  }
 
-    .unranked {
-      background: none !important;
-    }
+  .no-medal {
+    background: url('../../../assets/blueraven/no_medal_icon_white.svg') no-repeat scroll center;
+    background-size: contain;
+  }
 
-    .bronze-level {
-      background: linear-gradient(60deg, #8D4C22 60%, #472611 95%) !important;
-    }
+  .a-10-level {
+    background: url('../../../assets/blueraven/a10_warthog.png') no-repeat scroll center;
+    background-size: contain;
+  }
 
-    .silver-level {
-      background: linear-gradient(60deg, #9AA5AA 60%, #6B777D 95%) !important;
-    }
+  .f-14-level {
+    background: url('../../../assets/blueraven/f14_tomcat.png') no-repeat scroll center;
+    background-size: contain;
+  }
 
-    .gold-level {
-      background: linear-gradient(60deg, #FFCD3E 10%, #584200 95%) !important;
-    }
+  .fa-18-level {
+    background: url('../../../assets/blueraven/fa18_hornet.png') no-repeat scroll center;
+    background-size: contain;
+  }
 
-    .platinum-level {
-      background: linear-gradient(60deg, #FFFFFF 50%, #787A7A 95%) !important;
-    }
+  .f-22-level {
+    background: url('../../../assets/blueraven/f22_raptor.png') no-repeat scroll center;
+    background-size: contain;
+  }
 
-    .bronze-level .milestone-content-labels span,
-    .silver-level .milestone-content-labels span {
-      letter-spacing: 0.03em;
-      color: #C6C6C6;
-    }
-
-    .gold-level .milestone-content-labels span,
-    .platinum-level .milestone-content-labels span {
-      letter-spacing: 0.03em;
-      color: #212121 !important;
-    }
+  .f-35-level {
+    background: url('../../../assets/blueraven/f35_lightning.png') no-repeat scroll center;
+    background-size: contain;
   }
 
   #progress-bar-container {
@@ -2563,16 +2593,14 @@
     flex-flow: column nowrap;
     justify-content: space-between;
     margin: 30px auto;
-    width: 100%;
-    max-width: calc(100% - 50px);
+    width: calc(100% - 50px);
     height: 37px;
 
     span {
       display: inline-block;
       text-align: left;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
-      letter-spacing: 0.02em;
       color: #fff;
     }
 
@@ -2600,7 +2628,7 @@
     .progress-bar-segment {
       background-color: #D8D8D8;
       border: 0.02em solid black;
-      width: 12.5%;
+      width: 11.11%;
     }
 
     #first-segment {
@@ -2608,17 +2636,25 @@
       border: 0.03em solid black;
     }
 
-    #eighth-segment {
+    #ninth-segment {
       text-align: center;
       border-radius: 0 4px 4px 0;
       border: 0.03em solid black;
     }
+  }
 
-    #eighth-segment img {
-      position: relative;
-      z-index: 2;
-      max-width: 20px;
-      top: -6px;
+  #milestone-medals-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    width: 60%;
+    height: 50px;
+
+    .milestone-medal {
+      width: 18%;
+      min-height: 100%;
     }
   }
 
@@ -3288,11 +3324,6 @@
       #progress-bar-fill {
         height: 16px;
       }
-
-      #eighth-segment img {
-        max-width: 22px;
-        top: -4px;
-      }
     }
 
     #funnel-drilldown {
@@ -3354,27 +3385,26 @@
       max-width: calc(100% - 50px);
     }
 
-    #ironman-component {
-      box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
-      max-width: calc(100% - 50px);
-      padding: 20px 0;
+    #setter-dash-tabs.incentive-tab-overrides {
+      margin-bottom: -41px !important;
+      padding-top: 15px;
+      width: 90%;
+    }
 
-      #ironman-banner-mobile {
-        display: none;
-      }
+    #incentive-container {
+      background: black url("../../../assets/blueraven/title_pilot.jpg") no-repeat scroll center -50px;
+      background-size: cover;
 
-      #ironman-banner {
-        display: block;
-        width: 100%;
-        margin-top: -10px;
-        margin-bottom: 20px;
+      #incentive-banner {
+        margin-bottom: -80px;
+        max-width: 673px;
       }
     }
 
     #milestones-container {
       flex-flow: row wrap;
       margin: 0 auto;
-      max-width: calc(100% - 110px);
+      width: calc(100% - 110px);
 
       .milestone {
         margin-top: 0;
@@ -3383,79 +3413,99 @@
 
         .milestone-top-label,
         .milestone-bottom-label {
-          font-size: 12px;
-          width: 220px;
+          width: 200px;
+        }
+
+        .milestone-top-label {
+          font-size: 14px;
+        }
+
+        .milestone-bottom-label {
+          font-size: 13px;
         }
 
         .milestone-content {
-          width: 220px;
-          height: 100px;
+          width: 200px;
+          height: 130px;
+
+          .milestone-content-right-side {
+            .milestone-top-right-label {
+              font-size: 12px;
+            }
+
+            .milestone-stars-container {
+              .milestone-star {
+                font-size: 26px;
+              }
+
+              .three-stars-padding-override {
+                padding: 0 10px;
+              }
+            }
+
+            .four-stars-padding-override {
+              padding: 0 10px;
+            }
+
+            .five-stars-padding-override {
+              padding: 0;
+            }
+          }
         }
       }
 
-      #swim-phase img {
-        max-width: 140px;
-        max-height: 79px;
-        top: 12px;
-        left: 25px;
-      }
+      .active-milestone {
+        .milestone-top-label,
+        .milestone-bottom-label {
+          width: 240px;
+        }
 
-      #bike-phase img {
-        max-width: 150px;
-        max-height: 75px;
-        top: 18px;
-        left: 25px;
-      }
+        .milestone-top-label {
+          font-size: 15px;
+        }
 
-      #run-phase img {
-        max-width: 150px;
-        max-height: 80px;
-        top: 10px;
-        left: 45px;
-      }
+        .milestone-bottom-label {
+          font-size: 14px;
+        }
 
-      #finish-phase img {
-        max-width: 178px;
-        max-height: 93px;
-        top: 2px;
-        left: 65px;
-      }
+        .milestone-content {
+          width: 240px;
+          height: 160px;
 
-      .active-milestone .milestone-content {
-        width: 250px;
-        height: 140px;
-      }
+          .milestone-content-left-side {
+            height: 100%;
+          }
 
-      #swim-phase.active-milestone img {
-        max-width: 180px;
-        max-height: 158px;
-        top: 20px;
-        left: 20px;
-      }
+          .milestone-content-right-side {
+            .milestone-top-right-label {
+              font-size: 13px;
+            }
 
-      #bike-phase.active-milestone img {
-        max-width: 200px;
-        max-height: 176px;
-        top: 25px;
-        left: 25px;
-      }
+            .milestone-stars-container {
+              .milestone-star {
+                font-size: 32px;
+              }
 
-      #run-phase.active-milestone img {
-        max-width: 190px;
-        max-height: 102px;
-        top: 18px;
-        left: 45px;
-      }
+              .three-stars-padding-override {
+                padding: 0 10px;
+              }
+            }
 
-      #finish-phase.active-milestone img {
-        max-width: 220px;
-        max-height: 116px;
-        top: 10px;
-        left: 65px;
+            .four-stars-padding-override {
+              padding: 0 10px;
+            }
+
+            .five-stars-padding-override {
+              padding: 0;
+            }
+          }
+        }
       }
     }
 
     #progress-bar-container {
+      width: calc(100% - 110px);
+
       #progress-bar {
         height: 20px;
       }
@@ -3463,11 +3513,11 @@
       #progress-bar-fill {
         height: 19px;
       }
+    }
 
-      #eighth-segment img {
-        max-width: 25px;
-        top: -2px;
-      }
+    #milestone-medals-container {
+      width: 50%;
+      height: 60px;
     }
 
     #drilldown-title {
@@ -3876,25 +3926,26 @@
     }
 
     #milestones-container {
-      max-width: calc(100% - 161px);
+      width: 65%;
 
       .milestone {
         margin-bottom: 0;
-
-        .milestone-top-label,
-        .milestone-bottom-label {
-          font-size: 13px;
-        }
       }
 
-      #swim-phase,
-      #bike-phase {
+      #aim-high-phase,
+      #fly-phase {
         margin-bottom: 20px;
       }
     }
 
     #progress-bar-container {
+      width: 65%;
       height: 42px;
+    }
+
+    #milestone-medals-container {
+      width: 45%;
+      max-width: 650px;
     }
 
     #drilldown-title {
@@ -4183,18 +4234,53 @@
       max-width: 1130px;
     }
 
-    #ironman-component {
-      max-width: 1130px;
+    #incentive-container {
+      #incentive-banner {
+        margin-top: -29px;
+        margin-bottom: -90px;
+      }
     }
 
     #milestones-container {
-      max-width: calc(100% - 60px);
       flex-flow: row nowrap;
+      width: 75%;
+      max-width: 1000px;
 
-      #swim-phase,
-      #bike-phase {
+      #aim-high-phase,
+      #fly-phase {
         margin-bottom: 0;
       }
+
+      .milestone {
+        width: 250px;
+
+        .milestone-top-label,
+        .milestone-bottom-label {
+          width: 185px;
+        }
+
+        .milestone-content {
+          width: 185px;
+          height: 120px;
+        }
+      }
+
+      .active-milestone {
+        .milestone-top-label,
+        .milestone-bottom-label {
+          width: 210px;
+        }
+
+        .milestone-content {
+          width: 210px;
+          height: 140px;
+        }
+      }
+    }
+
+    #progress-bar-container {
+      width: 75%;
+      max-width: 1000px;
     }
 
     #personal-performance-boxes-container {
@@ -4301,6 +4387,17 @@
             font-size: 16px !important;
           }
         }
+      }
+    }
+  }
+
+  @media(min-width: 1410px) {
+    #incentive-container {
+      height: calc(100vh - 106px);
+
+      #incentive-banner {
+        margin-top: -29px;
+        margin-bottom: -90px;
       }
     }
   }

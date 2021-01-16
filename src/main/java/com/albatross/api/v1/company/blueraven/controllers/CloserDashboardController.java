@@ -21,9 +21,9 @@ public class CloserDashboardController {
   @Autowired
   private CloserDashboardService closerDashboardService;
 
-  @GetMapping(value = "/getIronmanFdcCounts")
-  public IronmanCounts getIronmanFdcCounts() {
-    return closerDashboardService.getIronmanFdcCounts();
+  @GetMapping(value = "/getIncentiveFdcCounts")
+  public IncentiveCounts getIncentiveFdcCounts() {
+    return closerDashboardService.getIncentiveFdcCounts();
   }
 
   @GetMapping(value = "/finalDesignsCompletedDrilldown")
