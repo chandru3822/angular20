@@ -2181,22 +2181,23 @@
         if (useRepDataInstead) {
           this.repData.forEach((rep, index) => {
             reps.push(rep.user_id)
-            if (index === this.repData.length - 1) {
-              this.districtModel = []
-              this.regionModel = []
-              this.officeModel = []
-              this.repModel = [
-                {user_id: -1, name: 'All Reps', active: true}
-              ]
-              this.repData = [
-                {user_id: -1, name: 'All Reps', active: true}
-              ]
-            }
+            // if (index === this.repData.length - 1) {
+            //   this.districtModel = []
+            //   this.regionModel = []
+            //   this.officeModel = []
+            //   this.repModel = [
+            //     {user_id: -1, name: 'All Reps', active: true}
+            //   ]
+            //   this.repData = [
+            //     {user_id: -1, name: 'All Reps', active: true}
+            //   ]
+            // }
           })
         } else {
           this.repModel.forEach(rep => reps.push(rep.user_id))
         }
 
+        debugger
         const requestBody = {
           users: reps,
           orgs: orgs,
@@ -2781,6 +2782,7 @@
               this.repModel = cloneDeep(this.repData)
               this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
             } else {
+              this.repModel = cloneDeep(this.repData)
               this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
             }
           }
