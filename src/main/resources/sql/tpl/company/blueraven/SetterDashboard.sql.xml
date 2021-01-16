@@ -1,29 +1,20 @@
 <sql>
-  <setterDashboard.getIronmanPitchCounts>
+  <setterDashboard.getIncentivePitchCounts>
     <![CDATA[
       WITH "quarters" AS (
---         select (extract('year' from now()) || '-01-01')::date as "q1_start",
---                (extract('year' from now()) || '-03-31')::date as "q1_end",
---                (extract('year' from now()) || '-04-01')::date as "q2_start",
---                (extract('year' from now()) || '-06-30')::date as "q2_end",
---                (extract('year' from now()) || '-07-01')::date as "q3_start",
---                (extract('year' from now()) || '-09-30')::date as "q3_end",
---                (extract('year' from now()) || '-10-01')::date as "q4_start",
---                (extract('year' from now()) || '-12-31')::date as "q4_end"
-        -- This is just a temp fix until the updated Ironman UI / requirements for 2021 are done (per Judson's request on 1/4/2021)
-        select ('2020-01-01')::date as q1_start,
-               ('2020-03-31')::date as q1_end,
-               ('2020-04-01')::date as q2_start,
-               ('2020-06-30')::date as q2_end,
-               ('2020-07-01')::date as q3_start,
-               ('2020-09-30')::date as q3_end,
-               ('2020-10-01')::date as q4_start,
-               ('2020-12-31')::date as q4_end
+        select (extract('year' from now()) || '-01-01')::date as "q1_start",
+               (extract('year' from now()) || '-03-31')::date as "q1_end",
+               (extract('year' from now()) || '-04-01')::date as "q2_start",
+               (extract('year' from now()) || '-06-30')::date as "q2_end",
+               (extract('year' from now()) || '-07-01')::date as "q3_start",
+               (extract('year' from now()) || '-09-30')::date as "q3_end",
+               (extract('year' from now()) || '-10-01')::date as "q4_start",
+               (extract('year' from now()) || '-12-31')::date as "q4_end"
       )
       SELECT (select count(1)
               from flow.project p
-                inner join brs.project_details pd on pd.project_id = p.id
-                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
               where (((case when pd.first_appointment_pitched is not null
                            then pd.first_appointment_pitched
                        when pd.first_appointment_pitched is null
@@ -45,8 +36,8 @@
              ) as "q1",
              (select count(1)
               from flow.project p
-                inner join brs.project_details pd on pd.project_id = p.id
-                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
               where (((case when pd.first_appointment_pitched is not null
                            then pd.first_appointment_pitched
                        when pd.first_appointment_pitched is null
@@ -68,8 +59,8 @@
              ) as "q2",
              (select count(1)
               from flow.project p
-                inner join brs.project_details pd on pd.project_id = p.id
-                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
               where (((case when pd.first_appointment_pitched is not null
                            then pd.first_appointment_pitched
                        when pd.first_appointment_pitched is null
@@ -91,8 +82,8 @@
              ) as "q3",
              (select count(1)
               from flow.project p
-                inner join brs.project_details pd on pd.project_id = p.id
-                inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                  inner join brs.project_details pd on pd.project_id = p.id
+                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
               where (((case when pd.first_appointment_pitched is not null
                            then pd.first_appointment_pitched
                        when pd.first_appointment_pitched is null
@@ -113,5 +104,5 @@
                     end
              ) as "q4"
       ]]>
-    </setterDashboard.getIronmanPitchCounts>
+    </setterDashboard.getIncentivePitchCounts>
 </sql>
