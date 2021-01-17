@@ -5,7 +5,6 @@ declare
 	v_start_date date;
 	v_end_date date;
 	v_year integer;
-	v_quarter_qualification_met boolean;
 BEGIN
 	select extract('year' from now())::integer
 	into v_year;
@@ -23,19 +22,6 @@ BEGIN
     v_start_date := (v_year || '-10-01')::date;
 		v_end_date := (v_year || '-12-31')::date;
 	end case;
-
-  select case when count(1) > 0 then true else false end
-  from brs.project_details pd
-    inner join flow.project p on p.id = pd.project_id
-    inner join flow.user u on u.id = pd.closer_user_id
-  where pd.final_design_complete_date is not null
-    and pd.final_design_complete_date::date between v_start_date and v_end_date
-    and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
-    and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > v_end_date))
-    and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-    and u.id = p_user_id
-    and pd.company_id = 3
-	into v_quarter_qualification_met;
 
   RETURN QUERY select array_to_json(array_agg(row_to_json(sub_rows)))
     from (

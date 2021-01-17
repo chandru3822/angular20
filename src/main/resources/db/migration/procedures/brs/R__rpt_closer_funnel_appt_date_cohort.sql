@@ -1363,127 +1363,55 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -3458,21 +3386,9 @@ BEGIN
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
+                                                 and pd.final_design_complete_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
@@ -3485,21 +3401,9 @@ BEGIN
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
+                                                 and pd.final_design_complete_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as today_count,
 
                                               (select count(1)
@@ -3511,23 +3415,11 @@ BEGIN
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
+                                                 and pd.final_design_complete_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
@@ -3540,23 +3432,11 @@ BEGIN
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
+                                                 and pd.final_design_complete_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as week_to_date_count,
 
                                               (select count(1)
@@ -3568,20 +3448,8 @@ BEGIN
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
+                                                 and pd.final_design_complete_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
@@ -3594,20 +3462,8 @@ BEGIN
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
+                                                 and pd.final_design_complete_date is not null
                                                  and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as custom_date_range_count
 
                                        from brs.funnel

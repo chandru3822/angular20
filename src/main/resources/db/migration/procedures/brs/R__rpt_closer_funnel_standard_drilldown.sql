@@ -1039,45 +1039,17 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.final_design_signed_date,
-                                    pd.financial_agreement_signed_date,
-                                    pd.proof_of_homeowners_insurance_obtained_date,
-                                    pd.first_cash_payment_paid_date                            cash_down_payment,
-                                    pd.utility_bill_verified_date
+                                    pd.final_design_complete_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where pd.final_design_signed_date is not null
-                               and pd.financial_agreement_signed_date is not null
-                               and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                     pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                 or
-                                    (pd.proof_of_homeowners_insurance_required is null or
-                                     pd.proof_of_homeowners_insurance_required = 306))
-                               and --No
-                                 pd.utility_bill_verified_date is not null
-                               and case
-                                       when pd.primary_financier = 721 --Cash
-                                           then pd.first_cash_payment_paid_date is not null and
-                                                greatest(
-                                                        pd.first_cash_payment_paid_date :: DATE,
-                                                        pd.final_design_signed_date :: DATE,
-                                                        pd.financial_agreement_signed_date :: DATE,
-                                                        pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                        pd.utility_bill_verified_date :: DATE
-                                                    ) between p_start_date and p_end_date
-                                       else greatest(
-                                               pd.final_design_signed_date :: DATE,
-                                               pd.financial_agreement_signed_date :: DATE,
-                                               pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                               pd.utility_bill_verified_date :: DATE
-                                           ) between p_start_date and p_end_date
-                                 end
+                             where pd.final_design_complete_date is not null
+                               and pd.final_design_complete_date :: DATE between p_start_date and p_end_date
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.final_design_signed_date
+                             order by owner_name, pd.final_design_complete_date
                          ) as funnel_rows;
 
             --Final Designs Completed (checked-in)
@@ -1095,46 +1067,18 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.final_design_signed_date,
-                                    pd.financial_agreement_signed_date,
-                                    pd.proof_of_homeowners_insurance_obtained_date,
-                                    pd.first_cash_payment_paid_date                            cash_down_payment,
-                                    pd.utility_bill_verified_date
+                                    pd.final_design_complete_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
-                             where pd.final_design_signed_date is not null
-                               and pd.financial_agreement_signed_date is not null
-                               and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                     pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                 or
-                                    (pd.proof_of_homeowners_insurance_required is null or
-                                     pd.proof_of_homeowners_insurance_required = 306))
-                               and --No
-                                 pd.utility_bill_verified_date is not null
-                               and case
-                                       when pd.primary_financier = 721 --Cash
-                                           then pd.first_cash_payment_paid_date is not null and
-                                                greatest(
-                                                        pd.first_cash_payment_paid_date :: DATE,
-                                                        pd.final_design_signed_date :: DATE,
-                                                        pd.financial_agreement_signed_date :: DATE,
-                                                        pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                        pd.utility_bill_verified_date :: DATE
-                                                    ) between p_start_date and p_end_date
-                                       else greatest(
-                                               pd.final_design_signed_date :: DATE,
-                                               pd.financial_agreement_signed_date :: DATE,
-                                               pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                               pd.utility_bill_verified_date :: DATE
-                                           ) between p_start_date and p_end_date
-                                 end
+                             where pd.final_design_complete_date is not null
+                               and pd.final_design_complete_date :: DATE between p_start_date and p_end_date
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.final_design_signed_date
+                             order by owner_name, pd.final_design_complete_date
                          ) as funnel_rows;
 
             --Installations Completed
@@ -2350,11 +2294,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.final_design_signed_date,
-                                    pd.financial_agreement_signed_date,
-                                    pd.proof_of_homeowners_insurance_obtained_date,
-                                    pd.first_cash_payment_paid_date                            cash_down_payment,
-                                    pd.utility_bill_verified_date
+                                    pd.final_design_complete_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -2363,37 +2303,13 @@ BEGIN
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
-                               and pd.final_design_signed_date is not null
-                               and pd.financial_agreement_signed_date is not null
-                               and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                     pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                 or
-                                    (pd.proof_of_homeowners_insurance_required is null or
-                                     pd.proof_of_homeowners_insurance_required = 306))
-                               and --No
-                                 pd.utility_bill_verified_date is not null
+                               and pd.final_design_complete_date is not null
+                               and pd.final_design_complete_date :: DATE between p_start_date and p_end_date
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                               and case
-                                       when pd.primary_financier = 721 --Cash
-                                           then pd.first_cash_payment_paid_date is not null and
-                                                greatest(
-                                                        pd.first_cash_payment_paid_date :: DATE,
-                                                        pd.final_design_signed_date :: DATE,
-                                                        pd.financial_agreement_signed_date :: DATE,
-                                                        pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                        pd.utility_bill_verified_date :: DATE
-                                                    ) between p_start_date and p_end_date
-                                       else greatest(
-                                               pd.final_design_signed_date :: DATE,
-                                               pd.financial_agreement_signed_date :: DATE,
-                                               pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                               pd.utility_bill_verified_date :: DATE
-                                           ) between p_start_date and p_end_date
-                                 end
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.final_design_signed_date
+                             order by owner_name, pd.final_design_complete_date
                          ) as funnel_rows;
 
             --Final Designs Completed (checked-in)
@@ -2411,11 +2327,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.final_design_signed_date,
-                                    pd.financial_agreement_signed_date,
-                                    pd.proof_of_homeowners_insurance_obtained_date,
-                                    pd.first_cash_payment_paid_date                            cash_down_payment,
-                                    pd.utility_bill_verified_date
+                                    pd.final_design_complete_date
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -2424,38 +2336,14 @@ BEGIN
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.closer_user_id = any (p_user_ids)
                                and pd.closer_user_id is not null
-                               and pd.final_design_signed_date is not null
-                               and pd.financial_agreement_signed_date is not null
-                               and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                     pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                 or
-                                    (pd.proof_of_homeowners_insurance_required is null or
-                                     pd.proof_of_homeowners_insurance_required = 306))
-                               and --No
-                                 pd.utility_bill_verified_date is not null
+                               and pd.final_design_complete_date is not null
+                               and pd.final_design_complete_date :: DATE between p_start_date and p_end_date
                                and pd.closer_user_id = any
                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                  ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                               and case
-                                       when pd.primary_financier = 721 --Cash
-                                           then pd.first_cash_payment_paid_date is not null and
-                                                greatest(
-                                                        pd.first_cash_payment_paid_date :: DATE,
-                                                        pd.final_design_signed_date :: DATE,
-                                                        pd.financial_agreement_signed_date :: DATE,
-                                                        pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                        pd.utility_bill_verified_date :: DATE
-                                                    ) between p_start_date and p_end_date
-                                       else greatest(
-                                               pd.final_design_signed_date :: DATE,
-                                               pd.financial_agreement_signed_date :: DATE,
-                                               pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                               pd.utility_bill_verified_date :: DATE
-                                           ) between p_start_date and p_end_date
-                                 end
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
-                             order by owner_name, pd.final_design_signed_date
+                             order by owner_name, pd.final_design_complete_date
                          ) as funnel_rows;
 
             --Installations Completed

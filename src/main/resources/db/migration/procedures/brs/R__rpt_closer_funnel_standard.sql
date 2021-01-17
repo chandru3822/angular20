@@ -1302,221 +1302,49 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) = (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) = (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                               where pd.company_id = v_company_id
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
-                                                 and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) = (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) = (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                               where pd.company_id = v_company_id
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
-                                                 and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) >=
-                                                                  ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) >=
-                                                              ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                              greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                               where pd.company_id = v_company_id
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.final_design_complete_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
-                                                 and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) >=
-                                                                  ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) >=
-                                                              ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                              greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                               where pd.company_id = v_company_id
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.final_design_complete_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
-                                                 and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) between p_custom_start_date and p_custom_end_date
-                                                         else greatest(
-                                                                 pd.final_design_signed_date :: DATE,
-                                                                 pd.financial_agreement_signed_date :: DATE,
-                                                                 pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                 pd.utility_bill_verified_date :: DATE
-                                                             ) between p_custom_start_date and p_custom_end_date
-                                                   end
+                                               where pd.company_id = v_company_id
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
-                                                 and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) between p_custom_start_date and p_custom_end_date
-                                                         else greatest(
-                                                                 pd.final_design_signed_date :: DATE,
-                                                                 pd.financial_agreement_signed_date :: DATE,
-                                                                 pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                 pd.utility_bill_verified_date :: DATE
-                                                             ) between p_custom_start_date and p_custom_end_date
-                                                   end
+                                               where pd.company_id = v_company_id
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE between p_custom_start_date and p_custom_end_date
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -1614,6 +1442,7 @@ BEGIN
                                                         inner join flow.project_process_step_custom_field_value ppscfv
                                                                    on ppscfv.project_process_step_id = pps.id
                                                         inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                        inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1632,6 +1461,7 @@ BEGIN
                                                           inner join flow.project_process_step_custom_field_value ppscfv
                                                                      on ppscfv.project_process_step_id = pps.id
                                                           inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                          inner join flow.project p on p.id = pd.project_id
                                                  where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1650,6 +1480,7 @@ BEGIN
                                                           inner join flow.project_process_step_custom_field_value ppscfv
                                                                      on ppscfv.project_process_step_id = pps.id
                                                           inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                          inner join flow.project p on p.id = pd.project_id
                                                  where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1680,6 +1511,7 @@ BEGIN
                                                    inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                    left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                    inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                   inner join flow.project p on p.id = pd.project_id
                                                where  pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1699,6 +1531,7 @@ BEGIN
                                                    inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                    left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                    inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                   inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                    and pd.closer_user_id = any
                                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1718,6 +1551,7 @@ BEGIN
                                                    inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                    left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                    inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                   inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                    and pd.closer_user_id = any
                                                    (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1747,6 +1581,7 @@ BEGIN
                                                    inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                    left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                    inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                   inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1766,6 +1601,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1785,6 +1621,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1814,6 +1651,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1833,6 +1671,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1851,6 +1690,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1880,6 +1720,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1899,6 +1740,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1918,6 +1760,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1945,6 +1788,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1963,6 +1807,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1980,6 +1825,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -1998,6 +1844,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2015,6 +1862,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2032,6 +1880,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2059,6 +1908,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2077,6 +1927,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2094,6 +1945,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2112,6 +1964,7 @@ BEGIN
                                                inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                inner join brs.project_details pd on pd.project_id = pps.project_id
+                                               inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2129,6 +1982,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2146,6 +2000,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2173,6 +2028,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2191,6 +2047,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2208,6 +2065,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2226,6 +2084,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2243,6 +2102,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2260,6 +2120,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2287,6 +2148,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2305,6 +2167,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2322,6 +2185,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2340,6 +2204,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2357,6 +2222,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2374,6 +2240,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2401,6 +2268,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2421,6 +2289,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2440,6 +2309,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2460,6 +2330,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2479,6 +2350,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2498,6 +2370,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2527,6 +2400,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2548,6 +2422,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2569,6 +2444,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2590,6 +2466,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2610,6 +2487,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2629,6 +2507,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2658,6 +2537,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2676,6 +2556,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2693,6 +2574,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2711,6 +2593,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2728,6 +2611,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -2745,6 +2629,7 @@ BEGIN
                                                  inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                                  left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                                                  inner join brs.project_details pd on pd.project_id = pps.project_id
+                                                 inner join flow.project p on p.id = pd.project_id
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
@@ -3384,32 +3269,8 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) = (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) = (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
@@ -3422,32 +3283,8 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) = (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) = (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
@@ -3459,47 +3296,9 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) >=
-                                                                  ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) >=
-                                                              ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                              greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.final_design_complete_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
@@ -3512,47 +3311,9 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) >=
-                                                                  ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) >=
-                                                              ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                              greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.final_design_complete_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
@@ -3564,32 +3325,8 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) between p_custom_start_date and p_custom_end_date
-                                                         else greatest(
-                                                                 pd.final_design_signed_date :: DATE,
-                                                                 pd.financial_agreement_signed_date :: DATE,
-                                                                 pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                 pd.utility_bill_verified_date :: DATE
-                                                             ) between p_custom_start_date and p_custom_end_date
-                                                   end
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
@@ -3602,32 +3339,8 @@ BEGIN
                                                where pd.closer_user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
                                                  and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) between p_custom_start_date and p_custom_end_date
-                                                         else greatest(
-                                                                 pd.final_design_signed_date :: DATE,
-                                                                 pd.financial_agreement_signed_date :: DATE,
-                                                                 pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                 pd.utility_bill_verified_date :: DATE
-                                                             ) between p_custom_start_date and p_custom_end_date
-                                                   end
+                                                 and pd.final_design_complete_date is not null
+                                                 and pd.final_design_complete_date :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.closer_user_id = any
                                                      (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
                                                                                    ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
