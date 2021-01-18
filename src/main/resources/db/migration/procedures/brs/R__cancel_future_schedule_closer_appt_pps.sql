@@ -31,7 +31,7 @@ BEGIN
                  inner join flow.project_process_step_custom_field_value cfv on pps.id = cfv.project_process_step_id
                  -- only return the start time
                  inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id and cfga.schedule_field_type_id = 1
-        where ps.process_step_name = 'Schedule Closer Appointment'
+        where ps.parent_process_step_id = 3260
           -- completed = 2   ...not active(1) or already cancelled(3)
           and cpsst.process_step_status_type_id = 2
           and cfv.timestamp_value > now()

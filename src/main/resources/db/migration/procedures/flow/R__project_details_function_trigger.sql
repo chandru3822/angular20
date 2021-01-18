@@ -15,8 +15,8 @@ declare
     v_closer_name                varchar;
     v_pd_closer_user_position_id integer;
     v_project_creator            varchar;
-    v_new_project_status_type    varchar;
-    v_old_project_status_type    varchar;
+    v_new_project_status_type_id    integer;
+    v_old_project_status_type_id    integer;
     v_cancelled_date             timestamp;
     v_on_hold_date               timestamp;
     v_off_hold_date              timestamp;
@@ -57,14 +57,14 @@ BEGIN
              inner join flow.state s on cs.state_id = s.id
     where cs.id = new.company_state_id;
 
-    select pst.project_status_type
-    into v_new_project_status_type
+    select pst.id
+    into v_new_project_status_type_id
     from flow.project_status_type pst
              inner join flow.company_project_status_type cpst on pst.id = cpst.project_status_type_id
     where cpst.id = new.company_project_status_type_id;
 
-    select pst.project_status_type
-    into v_old_project_status_type
+    select pst.id
+    into v_old_project_status_type_id
     from flow.project_status_type pst
              inner join flow.company_project_status_type cpst on pst.id = cpst.project_status_type_id
     where cpst.id = old.company_project_status_type_id;
@@ -74,18 +74,46 @@ BEGIN
     from brs.project_details
     where project_id = new.id;
 
-    if v_new_project_status_type != 'Cancelled' and v_old_project_status_type = 'Cancelled' then
+    if v_new_project_status_type_id = 1 and v_old_project_status_type_id = 2 then
         v_cancelled_date = null;
-    end if;
-    if v_new_project_status_type = 'Cancelled' and v_old_project_status_type != 'Cancelled'  then
-        v_cancelled_date = now();
-    end if;
-    if v_new_project_status_type = 'On Hold' and v_old_project_status_type != 'On Hold' then
-        v_on_hold_date = now();
-        v_off_hold_date = null;
-    end if;
-    if v_new_project_status_type != 'On Hold' and v_old_project_status_type = 'On Hold' then
+        if v_on_hold_date is not null and v_off_hold_date is null then
+            v_off_hold_date = now();
+        end if;
+    elsif v_new_project_status_type_id = 1 and v_old_project_status_type_id = 3 then
         v_off_hold_date = now();
+    elsif v_new_project_status_type_id = 2 and v_old_project_status_type_id = 1 then
+        v_cancelled_date = now();
+        insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+        select 99999999,
+               concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
+               (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
+               (select u.phone_number from flow.user_position up
+                                               inner join flow."user" u on up.user_id = u.id
+                where up.id = p.user_position_id),
+               now(), 1
+        from flow.project p
+                 inner join flow.company_state cs on cs.id = p.company_state_id
+                 inner join flow.state s on cs.state_id = s.id
+        where p.id = new.id;
+    elsif v_new_project_status_type_id = 2 and v_old_project_status_type_id = 3 then
+        v_cancelled_date = now();
+        insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+        select 99999999,
+               concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
+               (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
+               (select u.phone_number from flow.user_position up
+                                               inner join flow."user" u on up.user_id = u.id
+                where up.id = p.user_position_id),
+               now(), 1
+        from flow.project p
+                 inner join flow.company_state cs on cs.id = p.company_state_id
+                 inner join flow.state s on cs.state_id = s.id
+        where p.id = new.id;
+    elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 1 then
+        v_on_hold_date = now();
+    elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 2 then
+        v_on_hold_date = now();
+        v_cancelled_date = null;
     end if;
 
     IF (TG_OP = 'INSERT') THEN
@@ -154,6 +182,7 @@ declare
     v_timestamp_value                timestamp;
     v_project_id1                    integer;
     v_field_name                     varchar;
+    v_parent_custom_field_id         integer;
 BEGIN
 
     select pps.project_id
@@ -167,8 +196,8 @@ BEGIN
     from flow.project_process_step pps
     where pps.id = new.project_process_step_id;
 
-    select cf.field_name
-    into v_field_name
+    select cf.field_name,cf.parent_custom_field_id
+    into v_field_name,v_parent_custom_field_id
     from flow.custom_field_group_assignment cfga
              inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.archived is false
              inner join flow.custom_field cf on cfga.custom_field_id = cf.id and cf.archived is false
@@ -176,7 +205,7 @@ BEGIN
       and cfga.archived is false;
 
 
-    if v_field_name = 'Closer Appointment Outcome' then
+    if v_parent_custom_field_id = 10541 then
         select pps2.parent_project_process_step_id
         into v_parent_project_process_step_id
         from flow.project_process_step pps2
@@ -225,48 +254,6 @@ BEGIN
             where project_id = v_project_id1
               and first_appointment_not_pitched_or_missed is null;
         end if;
-    elsif v_field_name = 'Closer Appointment Start Time' and
-          new.timestamp_value is not null then
-        update brs.project_details
-        set first_appointment = new.timestamp_value
-        where project_id = v_project_id1
-          and first_appointment is null;
-    elsif v_field_name = 'Installation Agreement Signed' and
-          new.date_value is not null then
-        update brs.project_details
-        set installation_agreement_signed_date = new.date_value
-        where project_id = v_project_id1
-          and installation_agreement_signed_date is null;
-    elsif v_field_name = 'Final Design Signed' and
-          new.date_value is not null then
-        update brs.project_details
-        set final_design_signed_date = new.date_value
-        where project_id = v_project_id1
-          and final_design_signed_date is null;
-    elsif v_field_name = 'Final Design Complete' and
-          new.date_value is not null then
-        update brs.project_details
-        set final_design_complete_date = new.date_value
-        where project_id = v_project_id1
-          and final_design_complete_date is null;
-    elsif v_field_name = 'Substantial Completion' and
-          new.date_value is not null then
-        update brs.project_details
-        set substantial_completion_date = new.date_value
-        where project_id = v_project_id1
-          and substantial_completion_date is null;
-    elsif v_field_name = 'Final Completion Submitted' and
-          new.date_value is not null then
-        update brs.project_details
-        set final_completion_submitted_date = new.date_value
-        where project_id = v_project_id1
-          and final_completion_submitted_date is null;
-    elsif v_field_name = 'Final Completion Approved' and
-          new.date_value is not null then
-        update brs.project_details
-        set final_completion_approved_date = new.date_value
-        where project_id = v_project_id1
-          and final_completion_approved_date is null;
     end if;
 
 
@@ -276,19 +263,16 @@ BEGIN
                data_type_id,
                pdc.second_field_to_update,
                pdc.second_data_type_id,
-               cf.list_of_value_id
+               cf.list_of_value_id,
+               pdc.update_first_value_only
         from brs.project_details_config pdc
                  inner join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
         where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
-          and cf.field_name not in ('Installation Agreement Signed', 'Final Design Signed',
-                                    'Final Design Complete', 'Substantial Completion',
-                                    'Final Completion Submitted', 'Final Completion Approved')
         loop
 
-
             if v_record.id is not null and v_record.data_type_id in (1, 2, 3, 4, 5, 6, 7) and
-               v_project_id is not null then
+               (v_project_id is not null or v_record.update_first_value_only is true) then
                 if v_record.data_type_id = 1 then
                     case when new.date_value is null then select 'null' into v_value; else select quote_literal(new.date_value) into v_value; end case;
                     v_value = v_value || '::date';
@@ -316,7 +300,9 @@ BEGIN
                 end if;
 
                 v_sql = $$update brs.project_details set $$ || v_record.field_to_update || $$ = $$ || v_value || $$
-           where project_id = $$ || v_project_id;
+           where project_id = coalesce($$ || v_project_id||$$,$$||v_project_id1||$$) and
+            case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.field_to_update||
+                        $$ is null else 1=1 end $$;
                 begin
                     execute v_sql;
                 exception
@@ -382,7 +368,9 @@ BEGIN
                     end if;
                     v_sql = $$update brs.project_details set $$ || v_record.second_field_to_update || $$ = $$ ||
                             v_value || $$
-                            where project_id = $$ || v_project_id;
+                            where project_id = coalesce($$ || v_project_id||$$,$$||v_project_id1||$$) and
+                    case when $$||v_record.update_first_value_only|| $$ is true then $$ ||v_record.second_field_to_update||
+                            $$ is null else 1=1 end $$;
                     begin
                         execute v_sql;
                     exception
@@ -600,9 +588,9 @@ EXECUTE PROCEDURE flow.update_contact_details_project_details();
 --               and cf.archived is false
 --               and cfg.archived is false
 --               and cfga.archived is false
---               and cf.field_name not in ('Installation Agreement Signed', 'Final Design Signed',
---                                         'Final Design Complete', 'Substantial Completion',
---                                         'Final Completion Submitted', 'Final Completion Approved')
+--               and cf.parent_custom_field_id not in (10283, 10248,
+--                                                 10057, 10118,
+--                                                 10243, 10242)
 --             loop
 --                 v_count = v_count + 1;
 --                 if v_record.second_field_to_update is not null then
