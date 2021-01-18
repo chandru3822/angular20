@@ -18,7 +18,7 @@ BEGIN
       and pps.process_step_id = (select ps2.id
                                  from flow.process_step ps2
                                  where ps2.company_id = ps.company_id
-                                   and ps2.process_step_name = 'Pending Design and Financial Agreement Approval'
+                                   and ps2.parent_process_step_id = 3169
                                    and ps2.archived is not true);
 
     select ppscfv.timestamp_value::date
@@ -32,7 +32,7 @@ BEGIN
       and pps.process_step_id = (select ps2.id
                                  from flow.process_step ps2
                                  where ps2.company_id = ps.company_id
-                                   and ps2.process_step_name = 'Needs a Redesign'
+                                   and ps2.parent_process_step_id = 3165
                                    and ps2.archived is not true);
     return v_final_design_signed > v_final_design_created;
 END

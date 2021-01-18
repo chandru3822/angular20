@@ -18,8 +18,7 @@
       </v-col>
     </v-row>
 
-    <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters
-           :class="{'funnel-tab-max-width': !showDashboard, 'dashboard-tab-max-width': showDashboard, 'incentive-tab-overrides': showIncentive}">
+    <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters :class="{'incentive-tab-overrides': showIncentive}">
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showFunnels}" @click="switchTabs(1)">
           Funnel
@@ -661,8 +660,12 @@
                     v-if="funnelDrilldownHeaders[22].show">
                   {{ item.cash_down_payment | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
-                <td :class="item.substantial_completion_date_class"
+                <td :class="item.final_design_complete_date_class"
                     v-if="funnelDrilldownHeaders[23].show">
+                  {{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}
+                </td>
+                <td :class="item.substantial_completion_date_class"
+                    v-if="funnelDrilldownHeaders[24].show">
                   {{ item.substantial_completion_date | formatDate('date', 'MM/DD/YYYY') }}
                 </td>
               </tr>
@@ -1159,7 +1162,12 @@
         funnelsWereLoaded: false,
         dashboardWasLoaded: false,
         currentQuarter: moment().quarter(),
-        fdcCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
+        fdcCounts: {
+          q1: 0, q1QualificationMet: false,
+          q2: 0, q2QualificationMet: false,
+          q3: 0, q3QualificationMet: false,
+          q4: 0, q4QualificationMet: false
+        },
         q1_points: 0,
         q2_points: 0,
         q3_points: 0,
@@ -1255,22 +1263,23 @@
           { text: 'Source', value: 'source_name', show: true, width: 85, optional: false }, // 5
           { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false }, // 6
           { text: 'Financier', value: 'financier', show: true, width: 95, optional: false }, // 7
-          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145, optional: false }, // 8
-          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130, optional: false }, // 9
+          { text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false }, // 8
+          { text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false }, // 9
           { text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true }, // 10
           { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true }, // 11
-          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160, optional: true }, // 12
+          { text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true }, // 12
           { text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true }, // 13
           { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 235, optional: true }, // 14
-          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 160, optional: true }, // 15
-          { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155, optional: true }, // 16
-          { text: 'FD Sent to Homeowner Date', value: 'final_design_sent_to_homeowner_date_formatted', show: false, width: 200, optional: true }, // 17
-          { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 165, optional: true }, // 18
-          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200, optional: true }, // 19
-          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175, optional: true }, // 20
-          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195, optional: true }, // 21
-          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160, optional: true }, // 22
-          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175, optional: true } // 23
+          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date', show: false, width: 160, optional: true }, // 15
+          { text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true }, // 16
+          { text: 'FD Sent to Homeowner Date', value: 'final_design_sent_to_homeowner_date', show: false, width: 200, optional: true }, // 17
+          { text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true }, // 18
+          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date', show: false, width: 200, optional: true }, // 19
+          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: false, width: 175, optional: true }, // 20
+          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date', show: false, width: 195, optional: true }, // 21
+          { text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true }, // 22
+          { text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true }, // 23
+          { text: 'Substantial Completion Date', value: 'substantial_completion_date', show: false, width: 175, optional: true } // 24
         ],
         funnelDrilldownData: [],
         funnelDrilldownLoading: false,
@@ -1510,10 +1519,10 @@
             this.fdcCounts = res.data
 
             // Calculate points for each quarter
-            this.q1_points = this.calcPointsForQuarter(this.fdcCounts.q1)
-            this.q2_points = this.calcPointsForQuarter(this.fdcCounts.q2)
-            this.q3_points = this.calcPointsForQuarter(this.fdcCounts.q3)
-            this.q4_points = this.calcPointsForQuarter(this.fdcCounts.q4)
+            this.q1_points = this.calcPointsForQuarter(this.fdcCounts.q1, this.fdcCounts.q1QualificationMet)
+            this.q2_points = this.calcPointsForQuarter(this.fdcCounts.q2, this.fdcCounts.q2QualificationMet)
+            this.q3_points = this.calcPointsForQuarter(this.fdcCounts.q3, this.fdcCounts.q3QualificationMet)
+            this.q4_points = this.calcPointsForQuarter(this.fdcCounts.q4, this.fdcCounts.q4QualificationMet)
 
             // Get milestone medals
             this.q1_medal_icon = this.getMilestoneMedal(this.q1_points)
@@ -1586,20 +1595,24 @@
         }
       },
 
-      calcPointsForQuarter (fdcCount) {
-        switch (true) {
-          case fdcCount >= 10 && fdcCount < 12:
-            return 1 // A-10
-          case fdcCount >= 12 && fdcCount < 15:
-            return 2 // F-14
-          case fdcCount >= 15 && fdcCount < 18:
-            return 3 // FA-18
-          case fdcCount >= 18 && fdcCount < 24:
-            return 4 // F-22
-          case fdcCount >= 24:
-            return 5 // F-35
-          default:
-            return 0 // No medal
+      calcPointsForQuarter (fdcCount, qualificationMetForQuarter) {
+        if (qualificationMetForQuarter) {
+          switch (true) {
+            case fdcCount >= 10 && fdcCount < 12:
+              return 1 // A-10
+            case fdcCount >= 12 && fdcCount < 15:
+              return 2 // F-14
+            case fdcCount >= 15 && fdcCount < 18:
+              return 3 // FA-18
+            case fdcCount >= 18 && fdcCount < 24:
+              return 4 // F-22
+            case fdcCount >= 24:
+              return 5 // F-35
+            default:
+              return 0 // No medal
+          }
+        } else {
+          return 0 // No medal
         }
       },
 
@@ -2183,7 +2196,6 @@
           this.repModel.forEach(rep => reps.push(rep.user_id))
         }
 
-        debugger
         const requestBody = {
           users: reps,
           orgs: orgs,
@@ -2583,14 +2595,10 @@
             this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
             break
           case 21: // Final Designs Completed
-            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
-            this.funnelDrilldownHeaders[21].show = true // financial_agreement_signed_date
-            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
-            this.funnelDrilldownHeaders[22].show = true // cash_down_payment
-            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
+            this.funnelDrilldownHeaders[23].show = true // final_design_complete_date
             break
           case 8: // Installations Completed
-            this.funnelDrilldownHeaders[23].show = true // substantial_completion_date
+            this.funnelDrilldownHeaders[24].show = true // substantial_completion_date
             break
         }
 
@@ -2931,8 +2939,8 @@
     z-index: 1;
     color: #fff;
     margin-bottom: -30px !important;
-    padding-top: 10px;
-    width: 95%;
+    padding-top: 8px;
+    padding-right: 15px;
 
     .tab-separator {
       border-color: #fff;
@@ -4155,15 +4163,8 @@
       }
     }
 
-    .dashboard-tab-max-width,
-    .funnel-tab-max-width {
-      max-width: calc(100% - 50px);
-    }
-
     #closer-dash-tabs.incentive-tab-overrides {
       margin-bottom: -41px !important;
-      padding-top: 15px;
-      width: 90%;
     }
 
     #incentive-container {
@@ -5194,10 +5195,6 @@
   }
 
   @media (min-width: 1135px) {
-    .dashboard-tab-max-width {
-      max-width: 1130px;
-    }
-
     #incentive-container {
       #incentive-banner {
         margin-top: -29px;
@@ -5499,7 +5496,7 @@
 
   @media (min-width: 1410px) {
     #incentive-container {
-      height: calc(100vh - 106px);
+      height: calc(100vh - 99px);
 
       #incentive-banner {
         margin-top: -29px;
