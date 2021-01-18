@@ -28,30 +28,80 @@
           :headers="headers"
           :items="filterProjectStatuses()"
           :fixed-header="true"
+          :expanded.sync="expanded"
+          single-expand
           :items-per-page="-1"
           hide-default-footer
+          :sort-by="['displayOrder']"
+          :sort-desc="[false]"
           class="elevation-1"
         >
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
+              <h3 class="mb-3">Edit Status Type</h3>
+              <v-text-field v-model="item.projectStatusType"
+                            label="Status Type"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+              ></v-text-field>
+              <v-autocomplete
+                        :items="rootStatusTypes"
+                        v-model="item.projectStatusTypeId"
+                        item-value="id"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
+                        label="Select a Category"
+                        item-text="projectStatusType"></v-autocomplete>
+              <div class="my-2" v-if="item.icon && item.icon.id != null">
+                <label>Status Type Icon</label>
+                <div class="flex-display ma-2">
+                  <img class="status-icon" :src="item.icon.presignedUrl">
+                  <v-btn x-small text @click="deleteAttachment(item)">
+                    <v-icon>close</v-icon>
+                  </v-btn>
+                </div>
+              </div>
+              <div class="my-2" v-else>
+                <label>Status Type Icon</label>
+                <form enctype="multipart/form-data" novalidate>
+                  <input
+                    type="file"
+                    :accept="acceptedFileTypes"
+                    class="file-input clickable"
+                    :disabled="savingTypeLogo"
+                    @change="uploadFile(item, $event.target.files, attachmentTypeId, item.id, 1048576)"
+                    name="avatar"
+                  >
+                  <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+                </form>
+              </div>
+              <v-btn color="primaryCustom" dark class="white--text"
+                     :disabled="!item.projectStatusType || !item.projectStatusTypeId"
+                     @click="saveType(item, false)">Save</v-btn>
+            </td>
+          </template>
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">
-                <v-text-field v-if="selectedStatusTypeId === item.id" v-model="item.projectStatusType">
-                </v-text-field>
-                <div v-else>{{item.projectStatusType}}</div>
+              <td style="width: 50px">
+                <v-btn text icon small class="handle" v-if="userCanEdit">
+                  <v-icon>drag_handle</v-icon>
+                </v-btn>
               </td>
               <td class="text-left">
-                <v-select v-if="selectedStatusTypeId === item.id"
-                          single-line
-                          :items="rootStatusTypes"
-                          v-model="item.projectStatusTypeId"
-                          item-value="id"
-                          label="Select a Category"
-                          item-text="projectStatusType"></v-select>
-                <div v-else>{{item.rootProjectStatusType}}</div>
+                {{item.projectStatusType}}
+              </td>
+              <td class="text-left">
+                {{item.rootProjectStatusType}}
+              </td>
+              <td class="text-left">
+                <img v-if="item.icon && item.icon.presignedUrl"
+                     class="status-icon-grid" :src="item.icon.presignedUrl">
               </td>
               <td class="text-right">
-                <v-icon v-if="selectedStatusTypeId === item.id && userCanEdit" @click="saveType(item, false)">save</v-icon>
-                <v-icon v-else-if="userCanEdit" @click="selectedStatusTypeId = item.id">edit</v-icon>
+                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
                 <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                           v-model="item.deleteConfirm" width="500">
                   <template #activator="{ on }">
@@ -101,8 +151,12 @@
 
 
 <script>
+  import { Actions } from '@/store'
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
+  import draggable from 'vuedraggable'
+  import cloneDeep from 'lodash.clonedeep'
+  import Sortable from 'sortablejs'
 
   import orderBy from 'lodash.orderby'
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
@@ -112,16 +166,25 @@
   export default {
     name: 'ProjectStatuses',
     mixins: [Vue2Filters.mixin],
-
+    components: {
+      draggable,
+    },
     data () {
       return {
         snackbar: {},
         constants,
         statusTypes: [],
+        expanded: [],
         rootStatusTypes: [],
+        acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
+        savingTypeLogo: false,
+        //463 = project status type attachment
+        attachmentTypeId: 463,
         headers: [
+          { text: null, value: 'draggable', width: '50px', show: true },
           {text: 'Project Status', value: 'projectStatusType', show: true},
           {text: 'Category', value: 'rootProjectStatusType', show: true},
+          {text: 'Icon', value: 'icon', show: true},
           {text: '', value: 'icons', show: true},
         ],
         addNew: false,
@@ -132,9 +195,88 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       }
     },
+    mounted() {
+      let table = document.querySelector('tbody')
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({ newIndex, oldIndex }) {
+          const rowSelected = _self.statusTypes.splice(oldIndex, 1)[0]
+          _self.statusTypes.splice(newIndex, 0, rowSelected)
+          let statusTypesClone = cloneDeep(_self.statusTypes)
+          statusTypesClone.forEach((g, idx) => {
+            g.displayOrder = idx
+          })
+          _self.saveOrderChanges(statusTypesClone)
+        }
+      })
+    },
     computed: {
     },
     methods: {
+      async saveOrderChanges (types) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/project/companyStatuses`, types)
+          this.snackbar = getSnackbar('SUCCESS', 'Status Types Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Status Type Changes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async uploadFile (item, files, attachmentTypeId, sourceId, sizeLimit) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await this.$store.dispatch(Actions.FILE_UPLOAD, {
+            file: files[0],
+            sizeLimit,
+            attachmentTypeId,
+            sourceId,
+            callback: async (img, error) => {
+              if(error?.error) {
+                this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              } else {
+                item.icon = img
+
+                this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              }
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteAttachment (item) {
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await this.$store.dispatch(Actions.FILE_DELETE, {
+            id: item.icon.id,
+            callback: async (status) => {
+              item.icon = {}
+              // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
+              this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getCompanyStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -212,5 +354,15 @@
 </script>
 
 <style scoped lang="scss">
+  .status-icon {
+    margin-top: 15px;
+    max-width: 50px;
+    height: auto;
+  }
 
+  .status-icon-grid {
+    margin-top: 5px;
+    max-width: 40px;
+    height: auto;
+  }
 </style>
