@@ -43,11 +43,11 @@ public class CloserDashboardService {
   @Autowired
   private NamedParameterJdbcTemplate jdbc;
 
-  public IronmanCounts getIronmanFdcCounts() {
+  public IncentiveCounts getIncentiveFdcCounts() {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", securityService.getCurrentUser().getId());
 
-    return sqlCache.query("closerDashboard.getIronmanFdcCounts", params, IronmanCounts.class).get(0);
+    return sqlCache.query("closerDashboard.getIncentiveFdcCounts", params, IncentiveCounts.class).get(0);
   }
 
   public String finalDesignsCompletedDrilldown(int quarter) {

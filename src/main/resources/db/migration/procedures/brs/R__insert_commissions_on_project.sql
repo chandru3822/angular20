@@ -96,8 +96,8 @@ BEGIN
              inner join flow.custom_field_group cfg on ps.id = cfg.process_step_id and cfg.archived is false
              left join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
              left join flow.custom_field cf on cf.id = cfga.custom_field_id
-    where ps.process_step_name = 'Final Design Completion'
-      and cf.field_name = 'Final Design Complete'
+    where ps.parent_process_step_id = 3241
+      and cf.parent_custom_field_id = 10057
       and cf.company_id = v_company_id;
 
     perform flow.set_pps_cfv(p_project_id, 99999999, v_custom_field_group_assignment_id, (now() at time zone 'US/Mountain')::text);

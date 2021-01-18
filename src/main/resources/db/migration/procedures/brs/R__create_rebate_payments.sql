@@ -23,7 +23,7 @@ BEGIN
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
              inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
              inner join flow.data_type dt on dt.id = cdt.data_type_id
-    where cfga.custom_field_id = (select id from flow.custom_field where field_name='Total Promotion Amount'
+    where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id= 10430
                                     and company_id = (select company_id from brs.project_details where project_id = p_project_id))
       and p.id = p_project_id);
 
@@ -41,7 +41,7 @@ BEGIN
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
              inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
              inner join flow.data_type dt on dt.id = cdt.data_type_id
-    where cfga.custom_field_id = (select id from flow.custom_field where field_name='Number of Promotion Payments'
+    where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id= 10324
                                     and company_id = (select company_id from brs.project_details where project_id = p_project_id))
       and p.id = p_project_id);
 
