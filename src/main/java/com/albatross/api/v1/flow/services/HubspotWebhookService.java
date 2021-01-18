@@ -101,6 +101,7 @@ public class HubspotWebhookService {
         params.put("lastName", lead.getCustomer().getLastName());
         params.put("phoneNumber", lead.getCustomer().getPhone1());
         params.put("postalCode", lead.getCustomer().getAddress().getZip());
+        params.put("email", lead.getCustomer().getEmail());
 
         Long contactId = sqlCache.updateReturningId("hubspotWebhook.saveLead", params, "id").longValue();
 
