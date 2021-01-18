@@ -300,19 +300,21 @@
     select
         cpst.id,
         cpst.project_status_type,
+        cpst.display_order,
         pst.id as "projectStatusTypeId",
         cpst.archived,
         pst.project_status_type as "rootProjectStatusType"
     from flow.company_project_status_type cpst
     inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where cpst.company_id = :companyId and cpst.archived is not true
-    order by cpst.project_status_type
+    order by cpst.display_order
 ]]></project.getCompanyStatuses>
 
   <project.getOneCompanyStatus><![CDATA[
     select
         cpst.id,
         cpst.project_status_type,
+        cpst.display_order,
         pst.id as "projectStatusTypeId",
         cpst.archived,
         pst.project_status_type as "rootProjectStatusType"
@@ -335,6 +337,7 @@
     update flow.company_project_status_type
     set project_status_type = :projectStatusType,
         modified_by_id = :currentUserId,
+        display_order = :displayOrder,
         date_modified = now()
     where id = :id
 ]]></project.updateCompanyStatus>
@@ -348,8 +351,8 @@
 ]]></project.deleteCompanyStatus>
 
   <project.insertCompanyStatus><![CDATA[
-    insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, created_by_id)
-    values (:rootProjectStatusTypeId, :projectStatusType, :companyId, :currentUserId)
+    insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, created_by_id, display_order)
+    values (:rootProjectStatusTypeId, :projectStatusType, :companyId, :currentUserId, (select coalesce(max(display_order) + 1, 0) from flow.company_project_status_type where company_id = :companyId and archived is not true))
 ]]></project.insertCompanyStatus>
 
 <project.updateStatus><![CDATA[

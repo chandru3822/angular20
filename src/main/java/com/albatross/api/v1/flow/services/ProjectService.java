@@ -316,12 +316,23 @@ public class ProjectService {
     List<CompanyProjectStatus> results = sqlCache.query("project.getCompanyStatuses",
       ImmutableMap.of("companyId", companyId), CompanyProjectStatus.class);
 
+    for(CompanyProjectStatus c : results) {
+      // set the icon for the status
+      Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
+      c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+    }
+
     return results;
   }
 
   public Optional<CompanyProjectStatus> getOneCompanyProjectStatusType(Long id) {
     Optional<CompanyProjectStatus> result = sqlCache.get("project.getOneCompanyStatus",
       ImmutableMap.of("id", id), CompanyProjectStatus.class);
+
+    if(result.isPresent()) {
+      Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
+      result.get().setIcon(null != a && null != a.getId() ? a : new Attachment());
+    }
 
     return result;
   }
@@ -338,12 +349,21 @@ public class ProjectService {
     if(null != status.getId()) {
       id = status.getId();
       params.put("id", id);
+      params.put("displayOrder", status.getDisplayOrder());
       sqlCache.update("project.updateCompanyStatus", params);
     } else {
       id = sqlCache.updateReturningId("project.insertCompanyStatus", params, "id").longValue();
     }
 
+    //handle attachment
+
     return getOneCompanyProjectStatusType(id);
+  }
+
+  public void saveCompanyProjectStatuses(List<CompanyProjectStatus> statuses) {
+    for(CompanyProjectStatus s : statuses) {
+      saveCompanyProjectStatus(s);
+    }
   }
 
   public void deleteCompanyProjectStatus(Long id) {

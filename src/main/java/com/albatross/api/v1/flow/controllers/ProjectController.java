@@ -93,6 +93,11 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.saveCompanyProjectStatus(status), HttpStatus.OK);
   }
 
+  @PutMapping(value = "/companyStatuses", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveCompanyProjectStatuses(@RequestBody List<CompanyProjectStatus> statuses) {
+    projectService.saveCompanyProjectStatuses(statuses);
+  }
+
   @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteCompanyProjectStatus(@PathVariable Long id) {
     projectService.deleteCompanyProjectStatus(id);
