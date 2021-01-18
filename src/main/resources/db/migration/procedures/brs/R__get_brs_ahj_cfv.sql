@@ -23,7 +23,7 @@ BEGIN
                                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                       where cf.id = (select cf.id
                                      from flow.custom_field cf
-                                     where cf.field_name = 'AHJ'
+                                     where cf.parent_custom_field_id = 10124
                                        and cf.company_id = (
                                          select cp.company_id
                                          from flow.project p
@@ -48,7 +48,7 @@ BEGIN
                                                               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                                      where cf.id = (select cf.id
                                                                     from flow.custom_field cf
-                                                                    where cf.field_name = 'AHJ'
+                                                                    where cf.parent_custom_field_id = 10124
                                                                       and cf.company_id = (
                                                                         select cp.company_id
                                                                         from flow.project p
@@ -72,7 +72,7 @@ BEGIN
                                                               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                                      where cf.id = (select cf.id
                                                                     from flow.custom_field cf
-                                                                    where cf.field_name = 'AHJ'
+                                                                    where cf.parent_custom_field_id = 10124
                                                                       and cf.company_id = (
                                                                         select cp.company_id
                                                                         from flow.project p
@@ -95,7 +95,7 @@ BEGIN
                                                                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                                         where cf.id = (select cf.id
                                                                        from flow.custom_field cf
-                                                                       where cf.field_name = 'Utility Company'
+                                                                       where cf.parent_custom_field_id = 10137
                                                                          and cf.company_id = (
                                                                            select cp.company_id
                                                                            from flow.project p

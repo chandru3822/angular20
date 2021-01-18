@@ -4,7 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
-import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
+import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -28,14 +28,14 @@ public class SetterDashboardService {
   @Autowired
   private NamedParameterJdbcTemplate jdbc;
 
-  public IronmanCounts getIronmanPitchCounts(Boolean isSetterMgr, Integer setterMgrOfficeId) {
+  public IncentiveCounts getIncentivePitchCounts(Boolean isSetterMgr, Integer setterMgrOfficeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", securityService.getCurrentUser().getId());
     params.put("isSetterMgr", isSetterMgr);
     params.put("setterMgrOfficeId", setterMgrOfficeId);
 
-    IronmanCounts ironmanCounts = sqlCache.query("setterDashboard.getIronmanPitchCounts", params, IronmanCounts.class).get(0);
-    return ironmanCounts;
+    IncentiveCounts incentiveCounts = sqlCache.query("setterDashboard.getIncentivePitchCounts", params, IncentiveCounts.class).get(0);
+    return incentiveCounts;
   }
 
   public String pitchesDrilldown(int quarter, Boolean isSetterMgr, Integer setterMgrOfficeId) {

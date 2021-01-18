@@ -135,6 +135,17 @@
         ]]>
   </rebate.voidSinglePayment>
 
+  <rebate.unvoidSinglePayment>
+    <![CDATA[
+            update brs.project_rebate_payment
+            set updated_by_user_id = :userId,
+                updated_date = now(),
+                project_rebate_payment_state_id = 3,
+                void_note = ''
+            where id = :paymentId
+        ]]>
+  </rebate.unvoidSinglePayment>
+
   <rebate.updatePaymentNote>
     <![CDATA[
             update brs.project_rebate_payment
@@ -177,7 +188,7 @@
     <![CDATA[
             select * from (
                   select p.id project_id,
-                         pd.contact_name project_name,
+                         p.project_name project_name,
                          (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy) as createdBy,
                          pd.substantial_completion_date substantialCompletionDate,
                          pd.primary_financier_name as financier,
@@ -208,7 +219,7 @@
     <![CDATA[
             select prp.id payment_id,
             p.id project_id,
-            pd.contact_name project_name,
+            p.project_name project_name,
 			      pd.substantial_completion_date substantialCompletionDate,
             (select batch_date::date
              from brs.project_rebate_payment prp1
@@ -241,7 +252,7 @@
     <![CDATA[
        select * from (
          select p.id project_id,
-         pd.contact_name project_name,
+         p.project_name project_name,
          pd.substantial_completion_date substantialCompletionDate,
          sum(prp.payment_amount) payment_amount,
          coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
@@ -273,7 +284,7 @@
       select array_to_json(array_agg(row_to_json(results)))
       from (
       select p.id project_id,
-      pd.contact_name project_name,
+      p.project_name project_name,
       pd.substantial_completion_date substantialCompletionDate,
       (total_promotion_amount)/(num_of_promotion_payments)::numeric as payment_amount,
       c.id as contact_id,

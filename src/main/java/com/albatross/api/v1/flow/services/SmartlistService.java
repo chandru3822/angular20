@@ -614,7 +614,7 @@ public class SmartlistService {
     query.deleteCharAt(query.length() - 1);
 
     query.append(" flow.project.id as project_id,");
-    query.append(" flow.project.contact_id as contact_id");
+    query.append(" flow.contact.id as contact_id");
 
     final String companySubquery = String.format("select id from flow.company where id = %s or parent_company_id = %s", companyId, companyId);
 
@@ -663,7 +663,7 @@ public class SmartlistService {
         if (f.getObjectTypeId() == 1 || f.getObjectTypeId() == 2) {
 
           final String joinField = (f.getObjectTypeId() == 1) ? "project_id" : "contact_id";
-          final String joinedField = (f.getObjectTypeId() == 1) ? "id" : "contact_id";
+          final String joinedTable = (f.getObjectTypeId() == 1) ? "project" : "contact";
 
           if ((f.getHasListValues() != null && f.getHasListValues()) || f.getCustomFieldSqlKey() != null) {
 
@@ -672,7 +672,7 @@ public class SmartlistService {
             }
             final String valueTable = f.getValueReferenceTable();
 
-            query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), valueTable, valueTable, joinField, joinedField, valueTable, f.getCustomFieldGroupAssignmentId()));
+            query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.%s.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), valueTable, valueTable, joinField, joinedTable, valueTable, f.getCustomFieldGroupAssignmentId()));
 
             if (f.getCustomFieldSqlKey() != null) {
               //custom value sql
@@ -684,7 +684,7 @@ public class SmartlistService {
             if (f.getJoinTable() != null && f.getJoinColumn() != null) {
               query.append(String.format(" left join %s \"%s\" on \"%s\".id = %s.%s", f.getReferenceTable(), joinAlias, joinAlias, f.getJoinTable(), f.getJoinColumn()));
             } else {
-              query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), joinAlias, joinAlias, joinField, joinedField, joinAlias, f.getCustomFieldGroupAssignmentId()));
+              query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.%s.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(f.getObjectTypeId()), joinAlias, joinAlias, joinField, joinedTable, joinAlias, f.getCustomFieldGroupAssignmentId()));
             }
           }
         } else if (f.getObjectTypeId() == 4) {
@@ -884,9 +884,9 @@ public class SmartlistService {
                           referenceLocation = "\"" + customSqlUuid + "\".id";
                       } else {
                         final String joinField = (r.getObjectTypeId() == 1) ? "project_id" : "contact_id";
-                        final String joinedField = (r.getObjectTypeId() == 1) ? "id" : "contact_id";
+                        final String joinedTable = (r.getObjectTypeId() == 1) ? "project" : "contact";
 
-                        query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.project.%s and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, joinField, joinedField, valueUuid, r.getCustomFieldGroupAssignmentId()));
+                        query.append(String.format(" left join %s \"%s\" on \"%s\".%s = flow.%s.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, joinField, joinedTable, valueUuid, r.getCustomFieldGroupAssignmentId()));
                         referenceLocation = "\"" + valueUuid + "\"." + referenceColumn;
                       }
                   }

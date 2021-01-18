@@ -14,7 +14,7 @@ BEGIN
              inner join flow.custom_field_group_assignment cfga on cfv.custom_field_group_assignment_id = cfga.id
              inner join flow.custom_field cf on cfga.custom_field_id = cf.id
              where cfv.project_process_step_id = p_project_process_step_id
-               and cf.field_name = 'Closer Appointment Resource'
+               and cf.parent_custom_field_id = 9959
          ) as ppscfv(project_id, int_value)
     where ppscfv.project_id = p.id;
 

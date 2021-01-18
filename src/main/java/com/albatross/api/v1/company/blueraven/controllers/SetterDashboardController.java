@@ -2,7 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
-import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
+import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
 import com.albatross.api.v1.company.blueraven.services.SetterDashboardService;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +18,10 @@ public class SetterDashboardController {
   @Autowired
   private SetterDashboardService setterDashboardService;
 
-  @GetMapping(value = "/getIronmanPitchCounts")
-  public IronmanCounts getIronmanPitchCounts(@RequestParam Boolean isSetterMgr,
+  @GetMapping(value = "/getIncentivePitchCounts")
+  public IncentiveCounts getIncentivePitchCounts(@RequestParam Boolean isSetterMgr,
                                              @RequestParam (required = false) Integer setterMgrOfficeId) {
-    return setterDashboardService.getIronmanPitchCounts(isSetterMgr, setterMgrOfficeId);
+    return setterDashboardService.getIncentivePitchCounts(isSetterMgr, setterMgrOfficeId);
   }
 
   @GetMapping(value = "/pitchesDrilldown")

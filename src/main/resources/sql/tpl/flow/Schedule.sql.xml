@@ -117,7 +117,7 @@
            case when rs.org_id is not null then 1 else 2 end as system_list_type_id
     from dates d
              inner join flow.resource_schedule_availability rsa on rsa.day_of_week_id = d.day_of_week_id
-             inner join flow.resource_schedule rs on rs.id = rsa.resource_schedule_id and d.date between rs.start_date and rs.end_date
+             inner join flow.resource_schedule rs on rs.id = rsa.resource_schedule_id and ((d.date between rs.start_date and rs.end_date) OR (d.date > rs.start_date and rs.end_date is null))
     where rs.archived is not true
       and rsa.archived is not true
       and ( rs.org_id = any (array[ :orgIds ]::int[])

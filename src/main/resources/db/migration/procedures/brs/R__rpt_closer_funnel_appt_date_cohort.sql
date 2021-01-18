@@ -25,6 +25,17 @@ BEGIN
                                      checked_in_custom_date_range_count,
                                      custom_date_range_count
                               from (
+                                       with project_data as(
+                                           select ppscfv1.int_value,ppscfv.timestamp_value,ppscfv2.timestamp_value as checked_in_time
+                                           from flow.project_process_step pps
+                                                    left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                                    inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                                    left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                                    left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
+                                                    inner join brs.project_details pd on pd.project_id = pps.project_id
+                                           where pps.process_step_id = 1
+                                             and pd.company_id = v_company_id
+                                             and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
                                        select id,
                                               name,
                                               display_order,
@@ -32,30 +43,28 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                               from project_data ppscfv
+                                               where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from project_data ppscfv
+                                               where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
+
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 14 --Total Planned Appointments
@@ -71,36 +80,31 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome = 4
-                                                 and --(Cancelled)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                       (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome = 4
-                                                 and --(Cancelled)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome = 4
-                                                 and --(Cancelled)
-                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 15 --Cancelled in advance
@@ -116,36 +120,31 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome in (59, 61)
-                                                 and --(No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                       (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome in (59, 61)
-                                                 and --(No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where pd.closer_appointment_outcome in (59, 61)
-                                                 and --(No Go, Low TSRF)
-                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 16 --Ineligible for solar
@@ -161,39 +160,30 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                       (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                               from project_data ppscfv
+                                               where  (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                   ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 17 --Total Eligible Planned Appointments
@@ -209,54 +199,31 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 15327
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 25 --Rescheduled
@@ -270,71 +237,52 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -349,71 +297,52 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 3 --Not Pitched: No Show
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -428,71 +357,52 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 58 -- Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 58 -- Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -507,71 +417,52 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -586,80 +477,64 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                (now() at time zone 'US/Mountain')))
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')   <
+                                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                 ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')   <
+                                                                                 (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -674,81 +549,71 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value is null or
+                                                      ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  (ppscfv.int_value is null or
+                                                       ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+
                                               ) as today_count,
 
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value is null or
+                                                      ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value is null or
+                                                      ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value is null or
+                                                      ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,2, 1139, 1140,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where (ppscfv.int_value is null or
+                                                      ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -763,71 +628,52 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -843,7 +689,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.appointment_check_in is not null
@@ -852,7 +698,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.company_id = v_company_id
@@ -860,9 +706,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.appointment_check_in is not null
@@ -871,9 +717,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.company_id = v_company_id
@@ -881,7 +727,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
@@ -889,7 +735,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -907,7 +753,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
@@ -918,7 +764,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82 --Pass
@@ -927,9 +773,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
@@ -940,9 +786,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82 --Pass
@@ -951,7 +797,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
                                                  and --Pass
@@ -961,7 +807,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82 --Pass
                                                  and pd.company_id = v_company_id
@@ -980,7 +826,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.appointment_check_in is not null
@@ -989,7 +835,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.company_id = v_company_id
@@ -997,9 +843,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1008,9 +854,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.company_id = v_company_id
@@ -1018,7 +864,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
@@ -1026,7 +872,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.installation_agreement_signed_date is not null
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1044,7 +890,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1053,7 +899,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.company_id = v_company_id
@@ -1061,9 +907,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1072,9 +918,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.company_id = v_company_id
@@ -1082,7 +928,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
@@ -1090,7 +936,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.site_survey_verified_date is not null
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1108,7 +954,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1117,7 +963,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.company_id = v_company_id
@@ -1125,9 +971,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1136,9 +982,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.company_id = v_company_id
@@ -1146,7 +992,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
@@ -1154,7 +1000,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1172,7 +1018,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1181,7 +1027,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
                                                  and pd.company_id = v_company_id
@@ -1189,9 +1035,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1200,9 +1046,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
                                                  and pd.company_id = v_company_id
@@ -1210,7 +1056,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_signed_date is not null
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
@@ -1218,7 +1064,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_signed_date is not null
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1236,127 +1082,55 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where pd.final_design_signed_date is not null
+                                               where pd.final_design_complete_date is not null
                                                  and pd.company_id = v_company_id
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -1372,7 +1146,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1381,7 +1155,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
                                                  and pd.company_id = v_company_id
@@ -1389,9 +1163,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
                                                  and pd.appointment_check_in is not null
@@ -1400,9 +1174,9 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
                                                  and pd.company_id = v_company_id
@@ -1410,7 +1184,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.substantial_completion_date is not null
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
@@ -1418,7 +1192,7 @@ BEGIN
 
                                               (select count(1)
                                                from brs.project_details pd
-                                               where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                               where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.substantial_completion_date is not null
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
@@ -1433,6 +1207,20 @@ BEGIN
     else
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                      from (
+                              with project_data as(
+                                  select ppscfv1.int_value,ppscfv.timestamp_value,ppscfv2.timestamp_value as checked_in_time,o.id as org_id,up.user_id
+                                  from flow.project_process_step pps
+                                           inner join flow.project p on p.id = pps.project_id
+                                           inner join flow.user_position up on up.id = p.user_position_id
+                                           inner join flow.org o on o.id = up.org_id
+                                           left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
+                                           inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
+                                           left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                           left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
+                                           inner join brs.project_details pd on pd.project_id = pps.project_id
+                                  where pps.process_step_id = 1
+                                    and pd.company_id = v_company_id
+                                    and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')::date between p_custom_start_date and p_custom_end_date)
                               select id,
                                      name,
                                      display_order,
@@ -1450,47 +1238,30 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                              )          as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               from  project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              )              as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
                                               )            as custom_date_range_count
 
                                        from brs.funnel
@@ -1507,51 +1278,31 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome = 4 --Cancelled
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome = 4 --Cancelled
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.closer_appointment_outcome = 4 --Cancelled
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 4 --(Cancelled)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 15 --Cancelled in advance
@@ -1567,51 +1318,31 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.closer_appointment_outcome in (59, 61) --(No Go, Low TSRF)
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 16 --Ineligible for solar
@@ -1627,54 +1358,33 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61)) --(Cancelled, No Go, Low TSRF)
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 17 --Total Eligible Planned Appointments
@@ -1690,72 +1400,34 @@ BEGIN
                                               null::bigint as checked_in_today_count,
 
                                               (select count(1)
-                                               from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join flow.project p on p.id = pps.project_id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as today_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
+                                              ) as today_count,
 
                                               null::bigint as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join flow.project p on p.id = pps.project_id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and pd.company_id = v_company_id
-                                              )            as week_to_date_count,
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 15327
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
+                                              ) as week_to_date_count,
 
                                               null::bigint as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from flow.project_process_step pps
-                                                        inner join flow.project_process_step_custom_field_value ppscfv
-                                                                   on ppscfv.project_process_step_id = pps.id
-                                                        inner join flow.project p on p.id = pps.project_id
-                                                        inner join brs.project_details pd on pd.project_id = pps.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pps.process_step_id = 1
-                                                 and --Closer Appointment Details
-                                                   pps.main is false
-                                                 and ppscfv.custom_field_group_assignment_id = 5
-                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') < ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain')
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 15327
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and pd.company_id = v_company_id
-                                              )            as custom_date_range_count
+
+                                              ) as custom_date_range_count
 
                                        from brs.funnel
                                        where id = 25 --Rescheduled
@@ -1769,107 +1441,58 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56
-                                                 and --Not Pitched: No Show
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56  --Not Pitched: No Show
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 56 --Not Pitched: No Show
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -1884,107 +1507,58 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3
-                                                 and --Missed
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 3 --Missed
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -1999,107 +1573,58 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: Other
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58
-                                                 and --Not Pitched: Other
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 58 --Not Pitched: Other
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -2114,107 +1639,58 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57
-                                                 and --Not Pitched: No Utility Bill
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome = 57 --Not Pitched: No Utility Bill
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -2229,116 +1705,70 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                                                   ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                                                   (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                                                   ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                                                   (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                                                   ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                                                   (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                                                   ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                                                   (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                                                   ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                                                   (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome = 60)
-                                                 and --Non-Dispositioned
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                                                                                   ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
+                                                                                                                   (now() at time zone 'US/Mountain'))) --Non-Dispositioned
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -2353,115 +1783,75 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+
                                               ) as today_count,
 
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  >
+                                                     (now() at time zone 'US/Mountain')
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  > (now() at time zone 'US/Mountain')
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and (pd.closer_appointment_outcome is null or
-                                                      pd.closer_appointment_outcome not in (4, 59, 61))
-                                                 and --(Cancelled, No Go, Low TSRF)
-                                                       ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') >=
-                                                       (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids)and (ppscfv.int_value is null or
+                                                                                        ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  > (now() at time zone 'US/Mountain')
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -2476,107 +1866,58 @@ BEGIN
                                               display_order,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                     (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
+                                                     (now() at time zone 'US/Mountain') :: DATE
+
                                               ) as today_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+                                                 and ppscfv.checked_in_time is not null
+
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
-                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
-                                                     (now() at time zone 'US/Mountain') :: DATE
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
+                                                   between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
+
                                               ) as week_to_date_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140)
-                                                 and --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                   pd.appointment_check_in is not null
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ppscfv.checked_in_time is not null
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
-                                               from brs.project_details pd
-                                                        inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') <
-                                                     (now() AT TIME ZONE 'US/Mountain')
-                                                 and pd.closer_appointment_outcome in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
-                                                 and pd.company_id = v_company_id
+                                               from project_data ppscfv
+                                               where  ppscfv.user_id = any (p_user_ids)
+                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -2593,14 +1934,13 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2608,30 +1948,28 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2639,29 +1977,28 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2669,13 +2006,12 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2693,16 +2029,14 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and --Pass
-                                                       pd.closer_user_id = any
-                                                       (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2710,34 +2044,31 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and --Pass
-                                                       pd.closer_user_id = any
-                                                       (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and --Pass
-                                                       pd.closer_user_id = any
-                                                       (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2745,33 +2076,29 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and --Pass
-                                                       pd.closer_user_id = any
-                                                       (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and --Pass
-                                                       pd.closer_user_id = any
-                                                       (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2779,15 +2106,13 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.credit_decision_date is not null
                                                  and pd.credit_check = 82
-                                                 and --Pass
-                                                       pd.closer_user_id = any
-                                                       (brs.limit_by_org_for_closers(Array [pd.closer_user_id],
-                                                                                     p_org_ids, ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                  and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2805,14 +2130,13 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2820,30 +2144,28 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2851,29 +2173,27 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2881,13 +2201,12 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.installation_agreement_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -2905,14 +2224,13 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -2920,30 +2238,28 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -2951,29 +2267,27 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.site_survey_verified_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.site_survey_verified_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -2981,13 +2295,12 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.site_survey_verified_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -3005,14 +2318,13 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -3020,30 +2332,28 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -3051,29 +2361,27 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -3081,13 +2389,12 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_sent_to_homeowner_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -3105,14 +2412,13 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -3120,30 +2426,28 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -3151,29 +2455,27 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.final_design_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -3181,13 +2483,12 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.final_design_signed_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 
@@ -3205,162 +2506,95 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                 and o.id = any(p_org_ids)
+                                                 and pd.final_design_complete_date is not null
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                 and o.id = any(p_org_ids)
+
+                                                 and pd.final_design_complete_date is not null
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                 and o.id = any(p_org_ids)
+
+                                                 and pd.final_design_complete_date is not null
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                 and o.id = any(p_org_ids)
+
+                                                 and pd.final_design_complete_date is not null
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
+                                                 and o.id = any(p_org_ids)
+
+                                                 and pd.final_design_complete_date is not null
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
-                                                 and pd.closer_user_id is not null
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null
-                                                         else 1 = 1 end
+                                                 and o.id = any(p_org_ids)
+
+                                                 and pd.final_design_complete_date is not null
+
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                               ) as custom_date_range_count
 
                                        from brs.funnel
@@ -3377,14 +2611,13 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_today_count,
@@ -3392,30 +2625,28 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date =
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date =
                                                      (now() AT TIME ZONE 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as today_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_week_to_date_count,
@@ -3423,29 +2654,27 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >=
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date <=
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date <=
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.substantial_completion_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.substantial_completion_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and pd.company_id = v_company_id
                                               ) as checked_in_custom_date_range_count,
@@ -3453,13 +2682,12 @@ BEGIN
                                               (select count(1)
                                                from brs.project_details pd
                                                         inner join flow.project p on p.id = pd.project_id
-                                               where pd.closer_user_id = any (p_user_ids)
-                                                 and pd.closer_user_id is not null
-                                                 and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                        inner join flow.user_position up on up.id = p.user_position_id
+                                                        inner join flow.org o on o.id = up.org_id
+                                               where up.user_id = any (p_user_ids)
+                                                 and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and pd.substantial_completion_date is not null
-                                                 and pd.closer_user_id = any
-                                                     (brs.limit_by_org_for_closers(Array [pd.closer_user_id], p_org_ids,
-                                                                                   ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date))
+                                                 and o.id = any(p_org_ids)
                                                  and pd.company_id = v_company_id
                                               ) as custom_date_range_count
 

@@ -82,6 +82,10 @@ public class AhjPermitService {
     params.put("deliveryFeeAmount", permit.getDeliveryFeeAmount());
     params.put("approvalTimeline", permit.getApprovalTimeline());
     params.put("documentsAvailable", permit.getDocumentsAvailable());
+    params.put("brsTechnicianPermitSubmissionInstructions", permit.getBrsTechnicianPermitSubmissionInstructions());
+    params.put("cancellationAndRefundInstructions", permit.getCancellationAndRefundInstructions());
+    params.put("brsTechnicianPermitPickupAndDeliveryInstructions", permit.getBrsTechnicianPermitPickupAndDeliveryInstructions());
+    params.put("approvalInstructions", permit.getApprovalInstructions());
 
     // NOTES
     params.put("submissionNote", permit.getSubmissionNote());

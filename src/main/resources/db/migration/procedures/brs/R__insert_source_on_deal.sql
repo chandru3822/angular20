@@ -32,7 +32,7 @@ BEGIN
              inner join flow.list_of_value lov1 on lov1.parent_id = lov.id
     where c.id = v_contact_id
       and cf.company_id = v_company_id
-      and field_name = 'Lead Source'
+      and cf.parent_custom_field_id = 10035
       and ccfv.int_value = lov1.id;
 
     if v_source is not null then
@@ -43,7 +43,7 @@ BEGIN
                  inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
                  inner join flow.object_type ot on ot.id = cot.object_type_id and ot.id = 1
-                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id and field_name = 'Lead Source' and
+                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id and cf.parent_custom_field_id = 10035 and
                                                     cf.company_id = v_company_id
                  inner join flow.list_of_value lov on lov.id = cf.list_of_value_id and lov.name = 'Lead Source'
                  inner join flow.list_of_value lov1 on lov1.parent_id = lov.id

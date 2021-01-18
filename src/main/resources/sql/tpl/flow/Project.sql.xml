@@ -296,16 +296,61 @@
       project_status_type_id = 1
   ]]></project.getActiveProjectStatusTypeByCompanyId>
 
-<project.getStatuses><![CDATA[
+<project.getCompanyStatuses><![CDATA[
     select
         cpst.id,
         cpst.project_status_type,
-        pst.id as "projectStatusTypeId"
+        pst.id as "projectStatusTypeId",
+        cpst.archived,
+        pst.project_status_type as "rootProjectStatusType"
     from flow.company_project_status_type cpst
     inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where cpst.company_id = :companyId and cpst.archived is not true
     order by cpst.project_status_type
+]]></project.getCompanyStatuses>
+
+  <project.getOneCompanyStatus><![CDATA[
+    select
+        cpst.id,
+        cpst.project_status_type,
+        pst.id as "projectStatusTypeId",
+        cpst.archived,
+        pst.project_status_type as "rootProjectStatusType"
+    from flow.company_project_status_type cpst
+    inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+    where cpst.id = :id
+]]></project.getOneCompanyStatus>
+
+  <project.getStatuses><![CDATA[
+    select
+        pst.id,
+        pst.project_status_type,
+        pst.archived
+    from flow.project_status_type pst
+    where pst.archived is not true
+    order by pst.project_status_type
 ]]></project.getStatuses>
+
+  <project.updateCompanyStatus><![CDATA[
+    update flow.company_project_status_type
+    set project_status_type = :projectStatusType,
+        modified_by_id = :currentUserId,
+        date_modified = now()
+    where id = :id
+]]></project.updateCompanyStatus>
+
+  <project.deleteCompanyStatus><![CDATA[
+    update flow.company_project_status_type
+    set archived = true,
+        modified_by_id = :currentUserId,
+        date_modified = now()
+    where id = :id
+]]></project.deleteCompanyStatus>
+
+  <project.insertCompanyStatus><![CDATA[
+    insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, created_by_id)
+    values (:rootProjectStatusTypeId, :projectStatusType, :companyId, :currentUserId)
+]]></project.insertCompanyStatus>
 
 <project.updateStatus><![CDATA[
     update flow.project

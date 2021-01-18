@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.RicochetLead;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -27,6 +29,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class HubspotWebhookService {
     private final RequestConfig requestConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
     private final CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
+
+    @Autowired
+    private SqlCache sqlCache;
+
+    private final RicochetWebhookService ricochetWebhookService;
 
     @Value(value = "${ricochet.api.token}")
     private String token;
@@ -38,6 +45,7 @@ public class HubspotWebhookService {
 
             JSONObject contact = new JSONObject();
             contact.put("hubspot_id", lead.getHubspot_id());
+            contact.put("contactId", lead.getContactId());
             contact.put("lead_source", lead.getLead_source());
             contact.put("status", lead.getStatus());
             contact.put("leadOwner", lead.getLeadOwner());
@@ -59,8 +67,8 @@ public class HubspotWebhookService {
             req.setHeader("Accept", "application/json");
             req.setHeader("Content-type", "application/json");
 
-            log.info("HUBSPOT: Preview of lead information that will be sent: {}", contact.toString());
-            log.info("HUBSPOT: Sending HTTP POST request to Ricochet with HubSpot contact / lead information...");
+            log.info("HUBSPOT: Preview of contact information that will be sent: {}", contact.toString());
+            log.info("HUBSPOT: Sending HTTP POST request to Ricochet with HubSpot contact information...");
 
             try (CloseableHttpResponse resp = client.execute(req)) {
                 if (resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
@@ -77,11 +85,29 @@ public class HubspotWebhookService {
                     throw new Exception(msg);
                 }
             }
-            log.info("HUBSPOT: HTTP POST request made to Ricochet with HubSpot contact / lead information was successful.");
+            log.info("HUBSPOT: HTTP POST request made to Ricochet with HubSpot contact information was successful.");
         } catch (Exception e) {
-            String msg = "HUBSPOT: Failed to post HubSpot contact / lead information to Ricochet.";
+            String msg = "HUBSPOT: Failed to post HubSpot contact information to Ricochet.";
             log.error(msg, e);
             throw new Exception(msg, e);
         }
+    }
+
+    public Long saveLead(RicochetLead lead) {
+        log.info("HUBSPOT: Saving new HubSpot contact information to database...");
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("firstName", lead.getCustomer().getFirstName());
+        params.put("lastName", lead.getCustomer().getLastName());
+        params.put("phoneNumber", lead.getCustomer().getPhone1());
+        params.put("postalCode", lead.getCustomer().getAddress().getZip());
+
+        Long contactId = sqlCache.updateReturningId("hubspotWebhook.saveLead", params, "id").longValue();
+
+        // saves 'Lead Status', 'Lead Source', 'Lead Source Detail', and 'Hubspot ID'
+        ricochetWebhookService.processCustomFieldValues(lead, contactId, 2371412L);
+
+        log.info("HUBSPOT: New HubSpot contact information was successfully saved to database for Contact ID " + contactId + " / Hubspot ID " + lead.getHubspot_id());
+        return contactId;
     }
 }

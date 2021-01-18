@@ -39,10 +39,10 @@ BEGIN
                  inner join user_ids ui on ppscfv1.int_value = any(ui.user_position_ids)
                  inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                  inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-            and psst.process_step_status_type in ('ACTIVE','COMPLETE')
+            and psst.id in (1,2)
                  inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
                  inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
-            and pst4.project_status_type in ('Active','Complete')
+            and pst4.id in (1,4)
         where ppscfv.timestamp_value >= p_start_time
           and ppscfv2.timestamp_value <= p_end_time
         union all

@@ -301,7 +301,7 @@ public class ProjectService {
       new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
-  public List<ProjectStatus> getStatuses(Long projectId) {
+  public List<CompanyProjectStatus> getCompanyProjectStatuses(Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
 
@@ -313,8 +313,50 @@ public class ProjectService {
     }
 
     // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
-    List<ProjectStatus> results = sqlCache.query("project.getStatuses",
-      ImmutableMap.of("companyId", companyId), ProjectStatus.class);
+    List<CompanyProjectStatus> results = sqlCache.query("project.getCompanyStatuses",
+      ImmutableMap.of("companyId", companyId), CompanyProjectStatus.class);
+
+    return results;
+  }
+
+  public Optional<CompanyProjectStatus> getOneCompanyProjectStatusType(Long id) {
+    Optional<CompanyProjectStatus> result = sqlCache.get("project.getOneCompanyStatus",
+      ImmutableMap.of("id", id), CompanyProjectStatus.class);
+
+    return result;
+  }
+
+  public Optional<CompanyProjectStatus> saveCompanyProjectStatus(CompanyProjectStatus status) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", currentUser.getId());
+    params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
+    params.put("projectStatusType", status.getProjectStatusType());
+    params.put("companyId", currentUser.getCompanyId());
+    Long id;
+
+    if(null != status.getId()) {
+      id = status.getId();
+      params.put("id", id);
+      sqlCache.update("project.updateCompanyStatus", params);
+    } else {
+      id = sqlCache.updateReturningId("project.insertCompanyStatus", params, "id").longValue();
+    }
+
+    return getOneCompanyProjectStatusType(id);
+  }
+
+  public void deleteCompanyProjectStatus(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", currentUser.getId());
+    params.put("id", id);
+
+    sqlCache.update("project.deleteCompanyStatus", params);
+  }
+
+  public List<CompanyProjectStatus> getProjectStatuses() {
+    List<CompanyProjectStatus> results = sqlCache.query("project.getStatuses", Collections.emptyMap(), CompanyProjectStatus.class);
 
     return results;
   }

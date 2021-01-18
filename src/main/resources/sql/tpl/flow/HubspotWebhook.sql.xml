@@ -1,0 +1,7 @@
+<sql>
+  <hubspotWebhook.saveLead><![CDATA[
+    insert into flow.contact (contact_type_id, first_name, last_name, phone, postal_code, created_by_id, owner_user_position_id, company_id, company_country_id)
+    values (2, :firstName, :lastName, :phoneNumber, :postalCode, 2371412, 9016, 3, 1)
+    returning id
+  ]]></hubspotWebhook.saveLead>
+</sql>

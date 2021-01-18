@@ -118,6 +118,10 @@ public class WorkQueueTypeService {
         "workQueueTypeId", wqt.getWorkQueueTypeId(),
         "processStepId", wqt.getProcessStepId()), "id").longValue();
 
+    //handle pst on new wqt
+    wqt.setId(id);
+    saveProjectStatusTypesToWorkQueueType(wqt);
+
     return getProcessStepWorkQueueType(id);
   }
 
@@ -144,6 +148,7 @@ public class WorkQueueTypeService {
         sqlCache.update("workQueueType.updateProjectStatusType", params);
       } else if (null == ps.getId()) {
         params.put("companyProjectStatusTypeId", ps.getCompanyProjectStatusTypeId());
+        params.put("projectStatusTypeId", ps.getProjectStatusTypeId());
         sqlCache.update("workQueueType.insertProjectStatusType", params);
       }
     }

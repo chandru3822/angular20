@@ -56,6 +56,8 @@ public class ProjectProcessStepService {
 
   private final SecurityService securityService;
 
+  private final ProjectService projectService;
+
   private final AttachmentService attachmentService;
 
   private final AmazonS3 s3;
@@ -151,6 +153,23 @@ public class ProjectProcessStepService {
     if(runAutoTriggers && processStepStatusTypeId == 1) {
       performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
     }
+  }
+
+  public void setProjectStatus(Long projectId, Long companyProjectStatusTypeId, boolean runAutoTriggers) {
+    Optional<Project> prj = projectService.getProject(projectId);
+
+    if (prj.isEmpty()) {
+      throw new RuntimeException("The given project does not exist");
+    }
+
+    // project status is already set to the desired status
+    if (prj.get().getCompanyProjectStatusTypeId().equals(companyProjectStatusTypeId)) {
+      return;
+    }
+
+    // set the project status to the desired status
+    projectService.updateStatus(projectId, companyProjectStatusTypeId);
+
   }
 
   public ResponseEntity updateOwner(Long projectProcessStepId, Owner owner, Boolean blockOverride) {
@@ -367,6 +386,11 @@ public class ProjectProcessStepService {
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
       this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), false);
+    }
+
+    //update project status if needed
+    if (action.getCompanyProjectStatusTypeId() != null) {
+      this.setProjectStatus(pps.getProjectId(), action.getCompanyProjectStatusTypeId(), false);
     }
 
     performChildFunctions(action.getId(), pps.getProjectProcessStepId(), pps.getProcessStepId());

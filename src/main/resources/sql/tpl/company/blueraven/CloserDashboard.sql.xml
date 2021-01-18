@@ -1,128 +1,114 @@
 <sql>
-  <closerDashboard.getIronmanFdcCounts>
+  <closerDashboard.getIncentiveFdcCounts>
     <![CDATA[
       WITH quarters AS (
---         select (extract('year' from now()) || '-01-01')::date as q1_start,
---                (extract('year' from now()) || '-03-31')::date as q1_end,
---                (extract('year' from now()) || '-04-01')::date as q2_start,
---                (extract('year' from now()) || '-06-30')::date as q2_end,
---                (extract('year' from now()) || '-07-01')::date as q3_start,
---                (extract('year' from now()) || '-09-30')::date as q3_end,
---                (extract('year' from now()) || '-10-01')::date as q4_start,
---                (extract('year' from now()) || '-12-31')::date as q4_end
-        -- This is just a temp fix until the updated Ironman UI / requirements for 2021 are done (per Judson's request on 1/4/2021)
-        select ('2020-01-01')::date as q1_start,
-               ('2020-03-31')::date as q1_end,
-               ('2020-04-01')::date as q2_start,
-               ('2020-06-30')::date as q2_end,
-               ('2020-07-01')::date as q3_start,
-               ('2020-09-30')::date as q3_end,
-               ('2020-10-01')::date as q4_start,
-               ('2020-12-31')::date as q4_end
+        select (extract('year' from now()) || '-01-01')::date as q1_start,
+               (extract('year' from now()) || '-03-31')::date as q1_end,
+               (extract('year' from now()) || '-04-01')::date as q2_start,
+               (extract('year' from now()) || '-06-30')::date as q2_end,
+               (extract('year' from now()) || '-07-01')::date as q3_start,
+               (extract('year' from now()) || '-09-30')::date as q3_end,
+               (extract('year' from now()) || '-10-01')::date as q4_start,
+               (extract('year' from now()) || '-12-31')::date as q4_end
+      ), q1_self_gen AS (
+        select case when count(1) > 0 then true else false end qualification_met
+        from brs.project_details pd
+          inner join flow.project p on p.id = pd.project_id
+          inner join flow.user u on u.id = pd.closer_user_id
+        where pd.final_design_complete_date is not null
+          and pd.final_design_complete_date::date between (select q1_start from quarters) and (select q1_end from quarters)
+          and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
+          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+          and u.id = :currentUserId
+          and pd.company_id = 3
+      ), q2_self_gen AS (
+        select case when count(1) > 0 then true else false end qualification_met
+        from brs.project_details pd
+          inner join flow.project p on p.id = pd.project_id
+          inner join flow.user u on u.id = pd.closer_user_id
+        where pd.final_design_complete_date is not null
+          and pd.final_design_complete_date::date between (select q2_start from quarters) and (select q2_end from quarters)
+          and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
+          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+          and u.id = :currentUserId
+          and pd.company_id = 3
+      ), q3_self_gen AS (
+        select case when count(1) > 0 then true else false end qualification_met
+        from brs.project_details pd
+          inner join flow.project p on p.id = pd.project_id
+          inner join flow.user u on u.id = pd.closer_user_id
+        where pd.final_design_complete_date is not null
+          and pd.final_design_complete_date::date between (select q3_start from quarters) and (select q3_end from quarters)
+          and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
+          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+          and u.id = :currentUserId
+          and pd.company_id = 3
+      ), q4_self_gen AS (
+        select case when count(1) > 0 then true else false end qualification_met
+        from brs.project_details pd
+          inner join flow.project p on p.id = pd.project_id
+          inner join flow.user u on u.id = pd.closer_user_id
+        where pd.final_design_complete_date is not null
+          and pd.final_design_complete_date::date between (select q4_start from quarters) and (select q4_end from quarters)
+          and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen) (these are all self-gen sources)
+          and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
+          and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+          and u.id = :currentUserId
+          and pd.company_id = 3
       )
-      SELECT (select coalesce(sum(q1points), 0)
-              from (select count(1) *
-                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
-                  --(select q1_start from quarters) and (extract('year' from now()) || '-01-31')::date
-                  (select q1_start from quarters) and ('2020-01-31')::date -- temp fix
-                  and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
-                  then 1.5
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
-                  --(extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
-                  ('2020-03-01')::date and (select q1_end from quarters) -- temp fix
-                  and pd.source = 523 --Closer Gen
-                  then 3
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between
-                  --(extract('year' from now()) || '-03-01')::date and (select q1_end from quarters)
-                  ('2020-03-01')::date and (select q1_end from quarters) -- temp fix
-                  and pd.source in (524, 530) --(Referral, Events - Closer Gen)
-                  then 2
-                else 1
-                end as q1points
-              from brs.project_details pd
-                inner join flow.project p on p.id = pd.project_id
-                inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_signed_date is not null
-                and pd.financial_agreement_signed_date is not null
-                and case when pd.primary_financier = 721 --Cash
-                  then pd.first_cash_payment_paid_date is not null
-                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                  between (select q1_start from quarters) and (select q1_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                  between (select q1_start from quarters) and (select q1_end from quarters)
-                end
-                and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
-                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
-                and u.id = :currentUserId
-                and pd.company_id = 3
-              group by pd.first_cash_payment_paid_date, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.source) t
-             ) as "q1",
+      SELECT (select qualification_met from q1_self_gen) q1_qualification_met,
              (select count(1)
               from brs.project_details pd
                 inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_signed_date is not null
-                and pd.financial_agreement_signed_date is not null
-                and case when pd.primary_financier = 721 --Cash
-                  then pd.first_cash_payment_paid_date is not null
-                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                  between (select q2_start from quarters) and (select q2_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                  between (select q2_start from quarters) and (select q2_end from quarters)
-                end
+              where pd.final_design_complete_date is not null
+                and pd.final_design_complete_date::date between (select q1_start from quarters) and (select q1_end from quarters)
+                and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
+                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
+                and u.id = :currentUserId
+                and pd.company_id = 3
+             ) as "q1",
+             (select qualification_met from q2_self_gen) q2_qualification_met,
+             (select count(1)
+              from brs.project_details pd
+                inner join flow.project p on p.id = pd.project_id
+                inner join flow.user u on u.id = pd.closer_user_id
+              where pd.final_design_complete_date is not null
+                and pd.final_design_complete_date::date between (select q2_start from quarters) and (select q2_end from quarters)
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
                 and pd.company_id = 3
              ) as "q2",
+             (select qualification_met from q3_self_gen) q3_qualification_met,
              (select count(1)
               from brs.project_details pd
                 inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_signed_date is not null
-                and pd.financial_agreement_signed_date is not null
-                and pd.utility_bill_verified_date is not null
-                and case when pd.primary_financier = 721 --Cash
-                  then pd.first_cash_payment_paid_date is not null
-                    and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
-                      between (select q3_start from quarters) and (select q3_end from quarters)
-                    and not greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                      between (select q1_start from quarters) and (select q2_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
-                  between (select q3_start from quarters) and (select q3_end from quarters)
-                    and not greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                      between (select q1_start from quarters) and (select q2_end from quarters)
-                end
+              where pd.final_design_complete_date is not null
+                and pd.final_design_complete_date::date between (select q3_start from quarters) and (select q3_end from quarters)
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
                 and pd.company_id = 3
              ) as "q3",
+             (select qualification_met from q4_self_gen) q4_qualification_met,
              (select count(1)
               from brs.project_details pd
                 inner join flow.project p on p.id = pd.project_id
                 inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_signed_date is not null
-                and pd.financial_agreement_signed_date is not null
-                and pd.utility_bill_verified_date is not null
-                and case when pd.primary_financier = 721 --Cash
-                  then pd.first_cash_payment_paid_date is not null
-                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
-                  between (select q4_start from quarters) and (select q4_end from quarters)
-                and not greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                  between (select q1_start from quarters) and (select q2_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
-                  between (select q4_start from quarters) and (select q4_end from quarters)
-                  and not greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                    between (select q1_start from quarters) and (select q2_end from quarters)
-                end
+              where pd.final_design_complete_date is not null
+                and pd.final_design_complete_date::date between (select q4_start from quarters) and (select q4_end from quarters)
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
                 and pd.company_id = 3
              ) as "q4"
     ]]>
-  </closerDashboard.getIronmanFdcCounts>
+  </closerDashboard.getIncentiveFdcCounts>
 
   <closerDashboard.getAllRoundRobins>
     <![CDATA[
@@ -218,22 +204,7 @@
              count(
                case when ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date >= ((now() at time zone 'US/Mountain')::date - :timeInterval)
                  and pd.source not in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
-                 and pd.final_design_signed_date is not null
-                 and pd.financial_agreement_signed_date is not null
-                 and pd.utility_bill_verified_date is not null
-                 and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
-                 and case
-                   when pd.primary_financier = 721 then --Cash
-                     pd.first_cash_payment_paid_date is not null and
-                     greatest(final_design_signed_date, financial_agreement_signed_date,
-                              first_cash_payment_paid_date, utility_bill_verified_date,
-                              proof_of_homeowners_insurance_obtained_date)
-                       >= (now() at time zone 'US/Mountain')::date - :timeInterval
-                     else
-                       greatest(final_design_signed_date, financial_agreement_signed_date,
-                                proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                         >= (now() at time zone 'US/Mountain')::date - :timeInterval
-                     end
+                 and pd.final_design_complete_date is not null
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                  and p.company_project_status_type_id != 3
                  and pd.company_id = 3
@@ -247,19 +218,9 @@
                end
              ) as leadGenFdcPercentageDenominator,
              count(
-               case when greatest(final_design_signed_date, financial_agreement_signed_date,
-                                  first_cash_payment_paid_date, utility_bill_verified_date,
-                                  proof_of_homeowners_insurance_obtained_date)
-                           >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               case when pd.final_design_complete_date::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
                  and pd.source in (523, 524, 530) --(Closer Gen, Referral, Events - Closer Gen)
-                 and pd.final_design_signed_date is not null
-                 and pd.financial_agreement_signed_date is not null
-                 and pd.utility_bill_verified_date is not null
-                 and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
-                 and case when pd.primary_financier = 721 --Cash
-                   then pd.first_cash_payment_paid_date is not null
-                   else 1=1
-                   end
+                 and pd.final_design_complete_date is not null
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                  and p.company_project_status_type_id != 3
                  and pd.company_id = 3
@@ -267,17 +228,8 @@
                end
              ) as selfGenFdc,
              count(
-               case when greatest(final_design_signed_date, financial_agreement_signed_date,
-                                  first_cash_payment_paid_date)
-                           >= (now() at time zone 'US/Mountain')::date - :timeInterval
-                 and pd.final_design_signed_date is not null
-                 and pd.financial_agreement_signed_date is not null
-                 and pd.utility_bill_verified_date is not null
-                 and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
-                 and case when pd.primary_financier = 721 --Cash
-                   then pd.first_cash_payment_paid_date is not null
-                   else 1=1
-                   end
+               case when pd.final_design_complete_date::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+                 and pd.final_design_complete_date is not null
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() at time zone 'US/Mountain')::date))
                  and p.company_project_status_type_id != 3
                  and pd.company_id = 3
