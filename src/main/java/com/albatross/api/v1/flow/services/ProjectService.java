@@ -119,7 +119,13 @@ public class ProjectService {
     String searchSqlKey = viewAll ? "project.countsByStatus" : "project.countsByStatusByUser";
 
     List<ProjectStatusCount> results = sqlCache.query(searchSqlKey, params, ProjectStatusCount.class);
-//    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
+
+    for(ProjectStatusCount c : results) {
+      // set the icon for the status
+      Attachment a = attachmentService.getOneBySourceIdAndType(c.getCompanyProjectStatusTypeId(), 463L);
+      c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+    }
+
     return results;
   }
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 public class ProjectStatusCount {
 
   private Long companyProjectStatusTypeId, projectStatusCount;
+  private Attachment icon;
   private String companyProjectStatus;
 
 }
