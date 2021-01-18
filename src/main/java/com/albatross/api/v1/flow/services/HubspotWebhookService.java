@@ -45,7 +45,11 @@ public class HubspotWebhookService {
 
             JSONObject contact = new JSONObject();
             contact.put("hubspot_id", lead.getHubspot_id());
-            contact.put("contactId", lead.getContactId());
+
+            if (lead.getContactId() != null) {
+              contact.put("contactId", lead.getContactId());
+            }
+
             contact.put("lead_source", lead.getLead_source());
             contact.put("status", lead.getStatus());
             contact.put("leadOwner", lead.getLeadOwner());
@@ -101,6 +105,7 @@ public class HubspotWebhookService {
         params.put("lastName", lead.getCustomer().getLastName());
         params.put("phoneNumber", lead.getCustomer().getPhone1());
         params.put("postalCode", lead.getCustomer().getAddress().getZip());
+        params.put("email", lead.getCustomer().getEmail());
 
         Long contactId = sqlCache.updateReturningId("hubspotWebhook.saveLead", params, "id").longValue();
 
