@@ -53,6 +53,7 @@
     data() {
       return {
         hideHeader: this.$store.state.user.hideHeader || false,
+        hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
         noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword'],
         showMobileBanner: false,
         dismissMobileToolbar: false
@@ -63,7 +64,8 @@
         'swUpdated', this.showRefreshUI, { once: true }
       );
       let userAgent = window.navigator.userAgent
-      if(userAgent &&  ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))){
+      if(!this.hideMobileBanner && userAgent &&  ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))){
+        //the hideMobileBanner prop is used so that the mobile app can disable the mobile banner when displaying web views inside the app
         this.showMobileBanner = true
       }
     },
