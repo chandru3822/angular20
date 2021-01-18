@@ -1084,7 +1084,7 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.company_id = v_company_id
                                                  and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.final_design_complete_date  :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
 
@@ -1099,8 +1099,8 @@ BEGIN
                                                from brs.project_details pd
                                                where pd.company_id = v_company_id
                                                  and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_complete_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_week_to_date_count,
 
@@ -1109,14 +1109,14 @@ BEGIN
                                                where pd.company_id = v_company_id
                                                  and pd.final_design_complete_date is not null
                                                  and pd.final_design_complete_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_complete_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                               ) as week_to_date_count,
 
                                               (select count(1)
                                                from brs.project_details pd
                                                where pd.company_id = v_company_id
                                                  and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
 
@@ -2541,7 +2541,7 @@ BEGIN
                                                  and pd.company_id = v_company_id
 
                                                  and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.final_design_complete_date  :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                                  and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_today_count,
@@ -2552,34 +2552,9 @@ BEGIN
                                                         inner join flow.user_position up on up.id = p.user_position_id
                                                         inner join flow.org o on o.id = up.org_id
                                                where up.user_id = any (p_user_ids)
-                                                 and pd.company_id = v_company_id
+                                                 and pd.company_id = v_company_id and
 
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) = (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) = (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                                   pd.final_design_complete_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
                                                  and o.id = any(p_org_ids)
                                               ) as today_count,
 
@@ -2591,47 +2566,9 @@ BEGIN
                                                where up.user_id = any (p_user_ids)
                                                  and pd.company_id = v_company_id
 
-                                                 and pd.final_design_signed_date is not null
-                                                 and pd.financial_agreement_signed_date is not null
-                                                 and ((pd.proof_of_homeowners_insurance_required = 305 and --Yes
-                                                       pd.proof_of_homeowners_insurance_obtained_date is not null)
-                                                   or
-                                                      (pd.proof_of_homeowners_insurance_required is null or
-                                                       pd.proof_of_homeowners_insurance_required = 306))
-                                                 and --No
-                                                   pd.utility_bill_verified_date is not null
-                                                 and case
-                                                         when pd.primary_financier = 721 --Cash
-                                                             then pd.first_cash_payment_paid_date is not null and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) >=
-                                                                  ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                                  greatest(
-                                                                          pd.first_cash_payment_paid_date :: DATE,
-                                                                          pd.final_design_signed_date :: DATE,
-                                                                          pd.financial_agreement_signed_date :: DATE,
-                                                                          pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                          pd.utility_bill_verified_date :: DATE
-                                                                      ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                         else greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) >=
-                                                              ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and
-                                                              greatest(
-                                                                      pd.final_design_signed_date :: DATE,
-                                                                      pd.financial_agreement_signed_date :: DATE,
-                                                                      pd.proof_of_homeowners_insurance_obtained_date :: DATE,
-                                                                      pd.utility_bill_verified_date :: DATE
-                                                                  ) <= (now() at time zone 'US/Mountain') :: DATE
-                                                   end
+                                                 and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
+
                                                  and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                                  and o.id = any(p_org_ids)
@@ -2646,8 +2583,8 @@ BEGIN
                                                  and pd.company_id = v_company_id
                                                  and pd.closer_user_id is not null
                                                  and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
-                                                 and pd.final_design_complete_date :: DATE <= (now() at time zone 'US/Mountain') :: DATE
+                                                 and pd.final_design_complete_date  :: DATE >= ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
+                                                 and pd.final_design_complete_date  :: DATE <= (now() at time zone 'US/Mountain') :: DATE
                                                  and o.id = any(p_org_ids)
                                               ) as week_to_date_count,
 
@@ -2660,7 +2597,7 @@ BEGIN
                                                  and pd.company_id = v_company_id
 
                                                  and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
                                                  and o.id = any(p_org_ids)
                                                  and pd.appointment_check_in is not null
                                               ) as checked_in_custom_date_range_count,
@@ -2674,7 +2611,7 @@ BEGIN
                                                  and pd.company_id = v_company_id
 
                                                  and pd.final_design_complete_date is not null
-                                                 and pd.final_design_complete_date :: DATE between p_custom_start_date and p_custom_end_date
+                                                 and pd.final_design_complete_date  :: DATE between p_custom_start_date and p_custom_end_date
                                                  and o.id = any(p_org_ids)
                                               ) as custom_date_range_count
 
