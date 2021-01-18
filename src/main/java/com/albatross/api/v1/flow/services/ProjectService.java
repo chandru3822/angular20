@@ -73,7 +73,7 @@ public class ProjectService {
     return projectId;
   }
 
-  public Page<Project> searchProjects(String query, Pageable pageable) {
+  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
@@ -86,6 +86,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
+    params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("userId", user.getId());
@@ -99,6 +100,27 @@ public class ProjectService {
 //    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     Integer total = 10000;
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
+  }
+
+  public List<ProjectStatusCount> projectCountsByStatus() {
+    User user = securityService.getCurrentUser();
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
+    Boolean viewDownline = false;
+
+    if(!viewAll) {
+      viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
+    }
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+    params.put("viewDownline", viewDownline);
+
+    String searchSqlKey = viewAll ? "project.countsByStatus" : "project.countsByStatusByUser";
+
+    List<ProjectStatusCount> results = sqlCache.query(searchSqlKey, params, ProjectStatusCount.class);
+//    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
+    return results;
   }
 
   //i tried to genericize this but it is still pretty specific to only brs.

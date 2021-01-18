@@ -52,6 +52,7 @@
                                                             :limit::int, :offset::int)
   ]]></project.searchDownline>
 
+
   <project.searchDownlineCount><![CDATA[
       select *
       from flow.search_projects_with_down_line_count(:query::character varying, :companyId::int,
@@ -78,6 +79,18 @@
   <project.searchByOwnerCount><![CDATA[
     select * from flow.search_projects_by_user_count(:query::character varying, :companyId::int, :userId::int, :isParent::boolean)
   ]]></project.searchByOwnerCount>
+
+  <project.countsByStatus><![CDATA[
+    select *
+    from flow.project_count_by_company_status(:companyId::int)
+  ]]></project.countsByStatus>
+
+  <project.countsByStatusByUser><![CDATA[
+    select *
+    from flow.project_count_by_company_status_by_user(:companyId::int,
+                                                            :userId::int,
+                                                            :viewDownline::boolean)
+  ]]></project.countsByStatusByUser>
 
   <project.generateReport><![CDATA[
     select

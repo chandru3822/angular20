@@ -177,7 +177,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+        where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -193,13 +193,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start appointment_date
+               pd.first_appointment appointment_date
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+        where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -209,7 +209,7 @@
     <dash.getPlannedAppointmentsActualBrs><![CDATA[
         select count(1)
         from brs.project_details pd
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+        where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlannedAppointmentsActualBrs>
 
@@ -218,20 +218,20 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start appointment_date
+               pd.first_appointment appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+        where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id = 3
     ]]></dash.getPlannedAppointmentsActualBrsDrilldown>
 
     <dash.getPlannedAppointmentsActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+        where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlannedAppointmentsActualPartner>
 
@@ -240,13 +240,13 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start appointment_date
+               pd.first_appointment appointment_date
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
+        where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and pd.company_id != 3
     ]]></dash.getPlannedAppointmentsActualPartnerDrilldown>
 
@@ -257,8 +257,7 @@
         )
         select count(1)
         from companies, brs.project_details pd
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+        where ((pd.first_appointment_pitched at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -274,15 +273,14 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start appointment_date,
+               pd.first_appointment_pitched appointment_date,
                pd.closer_appointment_outcome_name appointment_outcome
         from companies, brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
-        where ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+        where ((pd.first_appointment_pitched at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
             and case when :isParent
                 then pd.company_id = any(companies.ids)
                 else pd.company_id = :companyId
@@ -293,8 +291,7 @@
         select count(1)
         from brs.project_details pd
         where pd.company_id = 3
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+            and ((pd.first_appointment_pitched at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
     ]]></dash.getPitchedActualBrs>
 
     <dash.getPitchedActualBrsDrilldown><![CDATA[
@@ -302,24 +299,23 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start appointment_date,
-               pd.closer_appointment_outcome_name appointment_outcome
+               pd.first_appointment_pitched appointment_date,
+               lov.name appointment_outcome
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            inner join flow.list_of_value lov on lov.id = pd.first_appointment_pitched_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
         where pd.company_id = 3
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+            and ((pd.first_appointment_pitched at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
     ]]></dash.getPitchedActualBrsDrilldown>
 
     <dash.getPitchedActualPartner><![CDATA[
         select count(1)
         from brs.project_details pd
         where pd.company_id != 3
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+            and ((pd.first_appointment_pitched at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
     ]]></dash.getPitchedActualPartner>
 
     <dash.getPitchedActualPartnerDrilldown><![CDATA[
@@ -327,16 +323,16 @@
                pd.project_id,
                s.abbreviation state,
                pd.source_name,
-               pd.closer_appointment_start appointment_date,
-               pd.closer_appointment_outcome_name appointment_outcome
+               pd.first_appointment_pitched appointment_date,
+               lov.name appointment_outcome
         from brs.project_details pd
             inner join flow.project p on p.id = pd.project_id
             inner join flow.contact c on c.id = p.contact_id
+            inner join flow.list_of_value lov on lov.id = pd.first_appointment_pitched_id
             left outer join flow.company_state cs on cs.id = c.company_state_id
             left outer join flow.state s on s.id = cs.state_id
         where pd.company_id != 3
-            and ((pd.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
-            and pd.closer_appointment_outcome in (2,1139,1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+            and ((pd.first_appointment_pitched at time zone 'UTC') at time zone 'US/Mountain') :: date between :startDate::DATE and :endDate::DATE
     ]]></dash.getPitchedActualPartnerDrilldown>
 
     <dash.getBookingsActualTotal><![CDATA[
