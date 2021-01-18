@@ -73,7 +73,7 @@ public class ProjectService {
     return projectId;
   }
 
-  public Page<Project> searchProjects(String query, Pageable pageable) {
+  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
@@ -86,6 +86,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
+    params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     params.put("userId", user.getId());
@@ -99,6 +100,33 @@ public class ProjectService {
 //    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     Integer total = 10000;
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
+  }
+
+  public List<ProjectStatusCount> projectCountsByStatus() {
+    User user = securityService.getCurrentUser();
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
+    Boolean viewDownline = false;
+
+    if(!viewAll) {
+      viewDownline = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_DOWNLINE"));
+    }
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", user.getId());
+    params.put("viewDownline", viewDownline);
+
+    String searchSqlKey = viewAll ? "project.countsByStatus" : "project.countsByStatusByUser";
+
+    List<ProjectStatusCount> results = sqlCache.query(searchSqlKey, params, ProjectStatusCount.class);
+
+    for(ProjectStatusCount c : results) {
+      // set the icon for the status
+      Attachment a = attachmentService.getOneBySourceIdAndType(c.getCompanyProjectStatusTypeId(), 463L);
+      c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+    }
+
+    return results;
   }
 
   //i tried to genericize this but it is still pretty specific to only brs.
@@ -316,12 +344,23 @@ public class ProjectService {
     List<CompanyProjectStatus> results = sqlCache.query("project.getCompanyStatuses",
       ImmutableMap.of("companyId", companyId), CompanyProjectStatus.class);
 
+    for(CompanyProjectStatus c : results) {
+      // set the icon for the status
+      Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
+      c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+    }
+
     return results;
   }
 
   public Optional<CompanyProjectStatus> getOneCompanyProjectStatusType(Long id) {
     Optional<CompanyProjectStatus> result = sqlCache.get("project.getOneCompanyStatus",
       ImmutableMap.of("id", id), CompanyProjectStatus.class);
+
+    if(result.isPresent()) {
+      Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
+      result.get().setIcon(null != a && null != a.getId() ? a : new Attachment());
+    }
 
     return result;
   }
@@ -338,12 +377,21 @@ public class ProjectService {
     if(null != status.getId()) {
       id = status.getId();
       params.put("id", id);
+      params.put("displayOrder", status.getDisplayOrder());
       sqlCache.update("project.updateCompanyStatus", params);
     } else {
       id = sqlCache.updateReturningId("project.insertCompanyStatus", params, "id").longValue();
     }
 
+    //handle attachment
+
     return getOneCompanyProjectStatusType(id);
+  }
+
+  public void saveCompanyProjectStatuses(List<CompanyProjectStatus> statuses) {
+    for(CompanyProjectStatus s : statuses) {
+      saveCompanyProjectStatus(s);
+    }
   }
 
   public void deleteCompanyProjectStatus(Long id) {

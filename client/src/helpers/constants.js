@@ -48,8 +48,8 @@ constants.SNACKBARS = {
     y: 'top',
     x: null,
     mode: '',
-    // timeout: 5000,
-    timeout: 5000000,
+    timeout: 5000,
+    // timeout: 5000000,
     text: '',
     color: 'brGreen',
     fontClass: 'secondary--text'

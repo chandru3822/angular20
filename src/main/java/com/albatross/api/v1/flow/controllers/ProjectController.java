@@ -29,8 +29,15 @@ public class ProjectController {
   }
 
   @GetMapping(value= "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Page<Project>> searchProjects(@RequestParam String query, Pageable pageable) {
-    return new ResponseEntity<>(projectService.searchProjects(query, pageable), HttpStatus.OK);
+  public ResponseEntity<Page<Project>> searchProjects(@RequestParam String query,
+                                                      @RequestParam(required = false) Long companyProjectStatusTypeId,
+                                                      Pageable pageable) {
+    return new ResponseEntity<>(projectService.searchProjects(query, companyProjectStatusTypeId, pageable), HttpStatus.OK);
+  }
+
+  @GetMapping(value= "/countsByStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectStatusCount>> projectCountsByStatus() {
+    return new ResponseEntity<List<ProjectStatusCount>>(projectService.projectCountsByStatus(), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -91,6 +98,11 @@ public class ProjectController {
   @PutMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Optional<CompanyProjectStatus>> saveCompanyProjectStatus(@RequestBody CompanyProjectStatus status) {
     return new ResponseEntity<>(projectService.saveCompanyProjectStatus(status), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/companyStatuses", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveCompanyProjectStatuses(@RequestBody List<CompanyProjectStatus> statuses) {
+    projectService.saveCompanyProjectStatuses(statuses);
   }
 
   @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
