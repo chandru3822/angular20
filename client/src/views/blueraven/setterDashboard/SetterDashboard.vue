@@ -18,8 +18,7 @@
       </v-col>
     </v-row>
 
-    <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters
-           :class="{'funnel-tab-max-width': !showDashboard, 'dashboard-tab-max-width': showDashboard, 'incentive-tab-overrides': showIncentive}">
+    <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters :class="{'incentive-tab-overrides': showIncentive}">
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showFunnel}" @click="switchTabs(1)">
           Funnel
@@ -2355,8 +2354,8 @@
     z-index: 1;
     color: #fff;
     margin-bottom: -30px !important;
-    padding-top: 10px;
-    width: 95%;
+    padding-top: 8px;
+    padding-right: 15px;
 
     .tab-separator {
       border-color: #fff;
@@ -3380,15 +3379,8 @@
       }
     }
 
-    .dashboard-tab-max-width,
-    .funnel-tab-max-width {
-      max-width: calc(100% - 50px);
-    }
-
     #setter-dash-tabs.incentive-tab-overrides {
       margin-bottom: -41px !important;
-      padding-top: 15px;
-      width: 90%;
     }
 
     #incentive-container {
@@ -4230,10 +4222,6 @@
   }
 
   @media (min-width: 1135px) {
-    .dashboard-tab-max-width {
-      max-width: 1130px;
-    }
-
     #incentive-container {
       #incentive-banner {
         margin-top: -29px;

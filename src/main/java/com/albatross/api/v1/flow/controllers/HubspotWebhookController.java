@@ -75,8 +75,11 @@ public class HubspotWebhookController {
             // handles saving lead information to database
             Long contactId = hubspotWebhookService.saveLead(lead);
 
+            if (contactId != null) {
+              lead.setContactId(contactId);
+            }
+
             // handles sending lead information to Ricochet
-            lead.setContactId(contactId);
             hubspotWebhookService.postLeadToRicochet(lead);
         } else {
             log.info("RICOCHET: not enabled");
