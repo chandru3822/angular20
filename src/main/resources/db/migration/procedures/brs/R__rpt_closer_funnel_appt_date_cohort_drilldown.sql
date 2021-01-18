@@ -611,7 +611,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    pd.first_appointment                                appointment_date,
+                                    ppscfv.timestamp_value                          appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
@@ -643,7 +643,7 @@ BEGIN
                                     pd.source_name,
                                     pd.system_size,
                                     pd.primary_financier_name                                  financier,
-                                    pd.first_appointment                                appointment_date,
+                                    ppscfv.timestamp_value          appointment_date,
                                     pd.cancelled_date,
                                     pd.closer_appointment_outcome_name                         appointment_outcome
                              from brs.project_details pd
