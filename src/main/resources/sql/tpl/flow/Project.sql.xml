@@ -49,7 +49,8 @@
     from flow.search_projects_with_down_line(:query::character varying, :companyId::int,
                                                             :userId::int,
                                                             :isParent::boolean,
-                                                            :limit::int, :offset::int)
+                                                            :limit::int, :offset::int,
+                                                            :companyProjectStatusTypeId::int)
   ]]></project.searchDownline>
 
 
@@ -57,27 +58,32 @@
       select *
       from flow.search_projects_with_down_line_count(:query::character varying, :companyId::int,
                                                               :userId::int,
-                                                              :isParent::boolean)
+                                                              :isParent::boolean,
+                                                            :companyProjectStatusTypeId::int)
     ]]></project.searchDownlineCount>
 
   <project.search><![CDATA[
     select *
     from flow.search_all_projects(:query::character varying, :companyId::int,
-                              :isParent::boolean,:limit::int, :offset::int)
+                              :isParent::boolean,:limit::int, :offset::int,
+                                                            :companyProjectStatusTypeId::int)
   ]]></project.search>
 
   <project.searchCount><![CDATA[
-    select * from flow.search_all_projects_count(:query::character varying, :companyId::int, :isParent::boolean)
+    select * from flow.search_all_projects_count(:query::character varying, :companyId::int, :isParent::boolean,
+                                                            :companyProjectStatusTypeId::int)
   ]]></project.searchCount>
 
   <project.searchByOwner><![CDATA[
     select *
     from flow.search_projects_by_user(:query::character varying, :companyId::int,
-                                 :userId::int,  :isParent::boolean,:limit::int, :offset::int)
+                                 :userId::int,  :isParent::boolean,:limit::int, :offset::int,
+                                                            :companyProjectStatusTypeId::int)
   ]]></project.searchByOwner>
 
   <project.searchByOwnerCount><![CDATA[
-    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::int, :userId::int, :isParent::boolean)
+    select * from flow.search_projects_by_user_count(:query::character varying, :companyId::int, :userId::int, :isParent::boolean,
+                                                            :companyProjectStatusTypeId::int)
   ]]></project.searchByOwnerCount>
 
   <project.countsByStatus><![CDATA[

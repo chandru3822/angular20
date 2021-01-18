@@ -2,7 +2,8 @@ CREATE OR REPLACE FUNCTION flow.search_projects_with_down_line(p_searchterm char
                                                                p_user_id integer,
                                                                p_is_parent boolean,
                                                                p_limit integer,
-                                                               p_offset integer)
+                                                               p_offset integer,
+                                                               p_company_project_status_type_id integer default null)
     RETURNS TABLE
             (
                 id                             integer,
