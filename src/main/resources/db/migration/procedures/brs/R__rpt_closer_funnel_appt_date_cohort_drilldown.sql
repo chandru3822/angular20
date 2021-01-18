@@ -341,8 +341,7 @@ BEGIN
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
-                                   (now() AT TIME ZONE 'US/Mountain')
+
                                and pps.process_step_id = 1 and ppscfv1.int_value = 58 --Not Pitched: Other
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value
@@ -1493,8 +1492,7 @@ BEGIN
 
                                and o.id = any(p_org_ids)
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
-                               and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
-                                   (now() AT TIME ZONE 'US/Mountain')
+
                                and pps.process_step_id = 1 and ppscfv1.int_value = 58 --Not Pitched: Other
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value

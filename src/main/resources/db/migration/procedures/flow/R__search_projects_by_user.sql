@@ -1,7 +1,9 @@
 CREATE OR REPLACE FUNCTION flow.search_projects_by_user(p_searchterm character varying, p_company_id integer,
                                                         p_user_id integer,
                                                         p_is_parent boolean,
-                                                        p_limit integer default null, p_offset integer default null)
+                                                        p_limit integer default null,
+                                                        p_offset integer default null,
+                                                        p_company_project_status_type_id integer default null)
     RETURNS TABLE
             (
                 id                             integer,
