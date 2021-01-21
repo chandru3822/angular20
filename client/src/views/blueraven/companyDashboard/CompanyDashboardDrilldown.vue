@@ -9,7 +9,7 @@
     <v-card-text>
       <v-data-table
         id="drilldown-table"
-        :headers="visibleDrilldownHeaders"
+        :headers="filteredHeaders()"
         :items="drilldownData"
         :footer-props="footerProps"
         :items-per-page="500"
@@ -22,6 +22,7 @@
         <template #header.additionalFieldValue="{}">
           <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].additional_field_label }}</span>
         </template>
+
 
         <template #header.dateValue="{}">
           <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].date_label }}</span>
@@ -81,11 +82,6 @@
       startDate: String,
       endDate: String
     },
-    computed: {
-      visibleDrilldownHeaders () {
-        return this.drilldownHeaders.filter(header => header.show === true)
-      }
-    },
     created() {
       if (this.$store?.state?.user?.details?.timezone?.value) {
         this.timezone = this.$store.state.user.details.timezone.value
@@ -120,7 +116,9 @@
       }
     },
     methods: {
-
+      filteredHeaders () {
+        return this.drilldownHeaders.filter(header => header.show === true)
+      }
     }
 
   }
