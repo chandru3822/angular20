@@ -85,28 +85,33 @@
                   <td v-if="isBrCorporateUser"
                       class="data-col-td clickable" @click="openDrilldown(item, true)">{{ item.partner_count }}</td>
                   <td v-if="isBrCorporateUser" class="data-col-td total-col-td">
-                    <span v-if="item.show_targets && targetTypeId != null">{{ item.brs_target + item.partner_target }}</span>
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ ((item.brs_target + item.partner_target) / dividerForSingleDayTargets) | currency('', 1) }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target + item.partner_target }}</span>
                     <span v-else>-</span>
                   </td>
                   <td v-if="isBrCorporateUser" class="data-col-td">
-                    <span v-if="item.show_targets && targetTypeId != null">{{ item.brs_target || 0 }}</span>
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ item.brs_target / dividerForSingleDayTargets | currency('', 1) }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target || 0 }}</span>
                     <span v-else>-</span>
                   </td>
                   <td v-if="isBrCorporateUser" class="data-col-td">
-                    <span v-if="item.show_targets && targetTypeId != null">{{ item.partner_target || 0 }}</span>
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ (item.partner_target / dividerForSingleDayTargets) | currency('', 1) }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_target || 0 }}</span>
                     <span v-else>-</span>
                   </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td"
-                      :class="((item.company_count + item.partner_count) - (item.brs_target + item.partner_target)) ? 'pos_diff' : 'neg_diff'">
-                    <span v-if="item.show_targets && targetTypeId != null">{{ (item.company_count + item.partner_count) - (item.brs_target + item.partner_target) }}</span>
+                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="getClass((item.company_count + item.partner_count) - (item.brs_target + item.partner_target))">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{((item.company_count + item.partner_count) - (item.brs_target + item.partner_target)) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ (item.company_count + item.partner_count) - (item.brs_target + item.partner_target) }}</span>
                     <span v-else>-</span>
                   </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.company_count - item.brs_target >= 0) ? 'pos_diff' : 'neg_diff'">
-                    <span v-if="item.show_targets && targetTypeId != null">{{ item.company_count - item.brs_target }}</span>
+                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.company_count - item.brs_target)">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.company_count - item.brs_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.company_count - item.brs_target }}</span>
                     <span v-else>-</span>
                   </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.company_count - item.brs_target >= 0) ? 'pos_diff' : 'neg_diff'">
-                    <span v-if="item.show_targets && targetTypeId != null">{{ item.company_count - item.brs_target }}</span>
+                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.partner_count - item.partner_target)">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.partner_count - item.partner_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_count - item.partner_target }}</span>
                     <span v-else>-</span>
                   </td>
                 </tr>
@@ -156,6 +161,7 @@
         showDrilldown: false,
         selectedMilestone: {},
         loadPartners: false,
+        dividerForSingleDayTargets: 6,
         isBrCorporateUser: this.$store.state.user.details.companyId === 2,
         is7oaksAdmin: this.$store.getters.isFullAdmin,
         headers: [],
@@ -202,6 +208,10 @@
       }
     },
     methods: {
+      getClass(total) {
+        let calcTotal = this.singleDateRange ? total / this.dividerForSingleDayTargets : total
+        return calcTotal < 0 ? 'neg_diff' : 'pos_diff'
+      },
       closeDrilldown() {
         this.selectedMilestone = {}
         this.drilldownData = []
@@ -215,6 +225,7 @@
         this.showDrilldown = true
       },
       async getDrilldownData() {
+        //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
@@ -306,7 +317,8 @@
           if (this.selectedDateRange === 'Custom') return // wait for the user to enter a custom date
         }
 
-        this.targetTypeId = this.singleDateRanges.includes(this.selectedDateRange) ? 1 :
+        this.singleDateRange = this.singleDateRanges.includes(this.selectedDateRange)
+        this.targetTypeId = this.singleDateRange ? 1 :
           this.loadTargetsRanges.includes(this.selectedDateRange) ? 2 : null
 
         try {
@@ -502,11 +514,11 @@
         font-size: 10px;
       }
 
-      .pos_diff {
+      .pos_diff > span {
         color: var(--v-primaryText-base);
       }
 
-      .neg_diff {
+      .neg_diff > span {
         color: red;
       }
     }
