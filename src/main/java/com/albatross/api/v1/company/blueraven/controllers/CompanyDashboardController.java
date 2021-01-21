@@ -1,6 +1,5 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.models.CompanyDashboardDrillData;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.services.CompanyDashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +25,16 @@ public class CompanyDashboardController {
 
   @GetMapping(value = "/dashboardValues")
   public String getDashboardValues(@RequestParam String startDate,
-                                   @RequestParam String endDate) {
-    return companyDashboardService.getDashboardValues(startDate, endDate);
+                                   @RequestParam String endDate,
+                                   @RequestParam(required = false) Long targetTypeId) {
+    return companyDashboardService.getDashboardValues(startDate, endDate, targetTypeId);
   }
 
   @GetMapping(value = "/drilldownData")
-  public List<CompanyDashboardDrillData> getDrilldownData(@RequestParam String startDate,
-                                                          @RequestParam String endDate,
-                                                          @RequestParam String milestone,
-                                                          @RequestParam String column) {
-    return companyDashboardService.getDrilldownData(startDate, endDate, milestone, column);
+  public String getDrilldownValues(@RequestParam String startDate,
+                                                            @RequestParam String endDate,
+                                                            @RequestParam Long milestoneTypeId,
+                                                            @RequestParam Boolean loadPartners) {
+    return companyDashboardService.getDrilldownValues(startDate, endDate, milestoneTypeId, loadPartners);
   }
 }
