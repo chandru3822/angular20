@@ -189,11 +189,6 @@ export default {
         const {data} = await postRequest(`/contact`, this.contact)
         if(data && data.id) {
           await postRequest(`/customFieldValues/contact/${data.id}`, this.dirtyCfvs)
-          // Save BlueRaven Solar Contacts to Genesys
-          if (this.companyId == 3) {
-            await postRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
-          }
-
           this.$router.push({name: 'contact', params: {id: data.id}})
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
