@@ -254,6 +254,12 @@ BEGIN
             where project_id = v_project_id1
               and first_appointment_not_pitched_or_missed is null;
         end if;
+    elsif v_parent_custom_field_id = 9958 and
+          new.timestamp_value is not null then
+        update brs.project_details
+        set first_appointment = new.timestamp_value
+        where project_id = v_project_id1
+          and first_appointment is null;
     end if;
 
 

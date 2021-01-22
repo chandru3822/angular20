@@ -142,6 +142,9 @@ BEGIN
                               left join flow.state s on s.id = cs.state_id
                      where cp.company_id = any (v_company_ids)
                        and p.archived is not true
+                       and case when p_company_project_status_type_id is not null then
+                                        cpst.id = p_company_project_status_type_id
+                                else 1=1 end
                      order by p.date_created desc
                      limit p_limit offset p_offset
                  ) as limited_projects;
@@ -294,6 +297,9 @@ BEGIN
                                   left join flow.state s on s.id = cs.state_id
                          where cp.company_id = any (v_company_ids)
                            and p.archived is not true
+                           and case when p_company_project_status_type_id is not null then
+                                            cpst.id = p_company_project_status_type_id
+                                    else 1=1 end
                          order by p.date_created desc
                          limit p_limit offset p_offset
                      ) as limited_projects;

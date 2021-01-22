@@ -1,6 +1,6 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-row no-gutters>
+  <v-row no-gutters id="ahj-permit">
     <v-col class="ahj-form-btns py-1" cols="12">
       <a v-if="dataWasChanged"
          @click="resetForm"
@@ -183,6 +183,7 @@
                             :disabled="!userCanEdit || !editBrsTechnicianPermitSubmissionInstructions"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -210,6 +211,7 @@
                             :disabled="!userCanEdit || !editSubmissionInstruction"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -278,6 +280,7 @@
                             :disabled="!userCanEdit || !editRevisionSubmissionInstruction"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -323,6 +326,7 @@
                             :disabled="!userCanEdit || !editCancellationAndRefundInstructions"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -400,6 +404,7 @@
                             :disabled="!userCanEdit || !editAsBuiltSubmissionInstruction"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -472,6 +477,7 @@
                             :disabled="!userCanEdit || !editApprovalInstructions"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -527,6 +533,7 @@
                             :disabled="!userCanEdit || !editBrsTechnicianPermitPickupAndDeliveryInstructions"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -553,6 +560,7 @@
                             :disabled="!userCanEdit || !editDeliveryInstruction"
                             filled
                             auto-grow
+                            class="override-readonly-font-color"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -926,6 +934,12 @@
     }
   }
 </script>
+
+<style lang="scss">
+  .override-readonly-font-color textarea {
+    color: var(--v-primaryText-base) !important;
+  }
+</style>
 
 <style scoped lang="scss">
   .padded-sides {
