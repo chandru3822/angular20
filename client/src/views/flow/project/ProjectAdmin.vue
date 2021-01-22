@@ -173,7 +173,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
-
+import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
@@ -268,10 +268,7 @@ export default {
     },
     async getAvailableStatuses () {
       try {
-        let params = {
-          projectId: parseInt(this.projectId)
-        }
-        const {data} = await getRequestWithParams(`/processStep/status`, { params })
+        const {data} = await getCompanyStatusTypes(parseInt(this.projectId))
         this.availableProcessStepStatuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')

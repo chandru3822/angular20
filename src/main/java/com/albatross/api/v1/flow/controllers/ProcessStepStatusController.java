@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.StatusType;
+import com.albatross.api.v1.flow.model.ProcessStepStatusType;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,11 @@ public class ProcessStepStatusController {
   private ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepStatusType> getStatusTypes () {
+    return processStepStatusService.getStatusTypes();
+  }
+
+  @GetMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyProcessStepStatusType> getStatusTypesForCompany (@RequestParam(required = false) Long projectId,
                                                                       @RequestParam(required = false) Long projectProcessStepId) {
     return processStepStatusService.getStatusTypesForCompany(projectId, projectProcessStepId);
@@ -36,13 +41,18 @@ public class ProcessStepStatusController {
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateProcess(@RequestBody CompanyProcessStepStatusType type) {
+  public void updateProcessStepStatusType(@RequestBody CompanyProcessStepStatusType type) {
     processStepStatusService.updateType(type);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<CompanyProcessStepStatusType> insertProcess(@RequestBody StatusType type) {
+  public Optional<CompanyProcessStepStatusType> insertProcessStepStatusType(@RequestBody CompanyProcessStepStatusType type) {
     return processStepStatusService.insertType(type);
+  }
+
+  @PutMapping(value = "/initial/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveInitialProcessStepStatusType(@PathVariable Long id) {
+    processStepStatusService.saveInitialProcessStepStatusType(id);
   }
 
 }
