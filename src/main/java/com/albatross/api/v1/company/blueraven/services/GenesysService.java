@@ -70,12 +70,10 @@ public class GenesysService {
     return result.orElse(null);
   }
 
-  public JSONObject getContactUrlByPhone(String phoneNumber) {
-    JSONObject contactJson = new JSONObject();
+  public String getContactUrlByPhone(String phoneNumber) {
     Contact contact = getContactByPhone(phoneNumber);
     if (contact != null) {
-      contactJson.put("contactUrl", homeUrl + "/contact/" + contact.getId());
-      return contactJson;
+      return homeUrl + "/contact/" + contact.getId();
     }
     else {
       return null;
