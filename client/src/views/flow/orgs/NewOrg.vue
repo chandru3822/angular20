@@ -16,12 +16,13 @@
                             label="Organization Name"
                             :rules="requiredRules"
                             v-model="org.orgName"></v-text-field>
-              <v-select v-model="org.orgTypeId"
+              <v-select v-model="selectedOrgType"
                         :items="orgTypes"
                         label="Organization Type"
                         :rules="requiredRules"
                         item-text="orgType"
                         item-value="id"
+                        return-object
                         @input="getOrgsByType()"
               ></v-select>
               <v-select v-model="org.parentOrgId"
@@ -75,6 +76,7 @@
     data () {
       return {
         snackbar: {},
+        selectedOrgType: {},
         org: {},
         orgTypes: [],
         parents: [],
@@ -86,10 +88,6 @@
       }
     },
     created () {
-      //todo: use only for testing
-      if(VUE_APP_ENV === 'local') {
-        this.setFakeOrg()
-      }
       this.getCustomFieldGroups()
       this.getOrgTypes()
     },
@@ -113,6 +111,7 @@
         }
       },
       async saveOrg () {
+        this.org.orgTypeId = this.selectedOrgType.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.org.customFieldGroups = this.customFieldGroups
         try {
@@ -140,16 +139,21 @@
         }
       },
       async getOrgsByType () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getOrgsByType(this.org.orgTypeId)
-          this.parents = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        // this gets the available parents
+        if(this.selectedOrgType.orgParentTypeId) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getOrgsByType(this.selectedOrgType.orgParentTypeId)
+            this.parents = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.parents = []
         }
       },
       populateDirtyCfvs (field) {
@@ -160,12 +164,6 @@
       },
       getReadOnly: function (field) {
         return getCustomFieldReadOnly(this.$store, field)
-      },
-      setFakeOrg () {
-        this.org = {
-          orgName: 'Randa Test',
-          orgTypeId: 1
-        }
       }
     }
 
