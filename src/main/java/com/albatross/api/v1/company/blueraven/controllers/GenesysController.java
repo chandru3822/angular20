@@ -5,7 +5,6 @@ import com.albatross.api.v1.flow.model.CustomFieldValue;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +19,10 @@ public class GenesysController {
   private GenesysService genesysService;
 
   @GetMapping(value = "/outboundCall/{phoneNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> getContactUrlByPhone(@PathVariable String phoneNumber) {
-    String URL = genesysService.getContactUrlByPhone(phoneNumber);
-    if (URL != null) {
-      return new ResponseEntity<>(URL, HttpStatus.OK);
+  public ResponseEntity getContactUrlByPhone(@PathVariable String phoneNumber) {
+    JSONObject contactJson = genesysService.getContactUrlByPhone(phoneNumber);
+    if (contactJson != null) {
+      return ResponseEntity.ok(contactJson.toString());
     }
     else {
       return ResponseEntity.badRequest().body("No contact found");
@@ -37,8 +36,9 @@ public class GenesysController {
       if (contactJson != null) {
         return ResponseEntity.ok(contactJson.toString());
       }
-
-      return ResponseEntity.badRequest().body("No contact found");
+      else {
+        return ResponseEntity.badRequest().body("No contact found");
+      }
     } catch (Exception e) {
       String msg = "GENE: Error getting contact by phone number";
       log.error(msg, e);
@@ -49,12 +49,15 @@ public class GenesysController {
   @PutMapping(value = "/inboundCall/{phoneNumber}/{agentId}")
   public ResponseEntity updateAgentId(@PathVariable String phoneNumber, @PathVariable String agentId) {
     try {
+      JSONObject contactJson = new JSONObject();
       boolean success = genesysService.updateAgentId(phoneNumber, agentId);
       if (success) {
-        return ResponseEntity.ok("Contact successfully updated.");
+        contactJson.put("success", true);
+        return ResponseEntity.ok(contactJson.toString());
       }
-
-      return ResponseEntity.badRequest().body("Error updating contact Agent ID: No contact found for phone number");
+      else {
+        return ResponseEntity.badRequest().body("Error updating contact Agent ID: No contact found for phone number");
+      }
     } catch (Exception e) {
       String msg = "GENE: Error updating contacts";
       log.error(msg, e);
