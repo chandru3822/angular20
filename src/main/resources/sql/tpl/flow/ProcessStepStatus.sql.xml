@@ -1,21 +1,22 @@
 <sql>
-  <processStepStatus.getTypesForCompany><![CDATA[
+  <processStepStatus.getTypes><![CDATA[
     select *
-    from flow.company_process_step_status_type
+    from flow.process_step_status_type
     where archived is not true
+    order by process_step_status_type
+  ]]></processStepStatus.getTypes>
+
+  <processStepStatus.getTypesForCompany><![CDATA[
+    select cpsst.*,
+           psst.process_step_status_type as root_process_step_status_type
+    from flow.company_process_step_status_type cpsst
+    inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+    where cpsst.archived is not true
     and case when (:isParent and not :parentOverride)
         then company_id = :parentCompanyId
         else company_id = :companyId end
-    order by process_step_status_type
+    order by cpsst.process_step_status_type
   ]]></processStepStatus.getTypesForCompany>
-
-  <processStepStatus.getActiveTypeForCompany><![CDATA[
-      select *
-      from flow.company_process_step_status_type
-      where archived is not true and
-            company_id = :companyId and
-            process_step_status_type_id = 1
-  ]]></processStepStatus.getActiveTypeForCompany>
 
   <processStepStatus.getCancelledTypeForCompany><![CDATA[
       select *
@@ -27,12 +28,15 @@
 
    <processStepStatus.getType>
     <![CDATA[
-      select id,
-             process_step_status_type,
-             process_step_status_type_id,
-             archived
-      from flow.company_process_step_status_type st
-      where id = :typeId
+      select cpsst.id,
+             cpsst.process_step_status_type,
+             cpsst.process_step_status_type_id,
+             cpsst.is_default,
+             cpsst.archived,
+             psst.process_step_status_type as root_process_step_status_type
+      from flow.company_process_step_status_type cpsst
+      inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+      where cpsst.id = :typeId
     ]]>
   </processStepStatus.getType>
   <processStepStatus.deleteType>
@@ -47,7 +51,8 @@
   <processStepStatus.updateType>
     <![CDATA[
       update flow.company_process_step_status_type
-        set process_step_status_type = :statusType,
+        set process_step_status_type = :processStepStatusType,
+            process_step_status_type_id = :processStepStatusTypeId,
             modified_by_id = :modifiedById,
             date_modified = now()
       where id = :id
@@ -55,9 +60,20 @@
   </processStepStatus.updateType>
   <processStepStatus.insertType>
     <![CDATA[
-      insert into flow.company_process_step_status_type(process_step_status_type, created_by_id, company_id, date_created)
-        values (:statusType, :createdById, :companyId, now())
+      insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id, created_by_id, company_id, date_created)
+        values (:processStepStatusType, :processStepStatusTypeId, :createdById, :companyId, now())
       returning id;
     ]]>
   </processStepStatus.insertType>
+
+  <processStepStatus.saveInitialProcessStepStatusType>
+    <![CDATA[
+      update flow.company_process_step_status_type
+      set is_default = false
+      where company_id = :companyId;
+      update flow.company_process_step_status_type
+      set is_default = true
+      where id = :id;
+    ]]>
+  </processStepStatus.saveInitialProcessStepStatusType>
 </sql>

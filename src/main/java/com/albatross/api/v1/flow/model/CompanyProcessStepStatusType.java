@@ -12,7 +12,7 @@ import lombok.Setter;
 public class CompanyProcessStepStatusType {
 
   private Long id, companyId, processStepStatusTypeId, createdById, modifiedById;
-  private String processStepStatusType;
-  private Boolean archived;
+  private String processStepStatusType, rootProcessStepStatusType;
+  private Boolean archived, isDefault;
 }
 
