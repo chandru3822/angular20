@@ -187,6 +187,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
+import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import cloneDeep from 'lodash.clonedeep'
 
 import {getStatusTypes} from '@/services/processStepStatusTypeService'
@@ -380,7 +381,7 @@ export default {
     async getStatusTypes () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getStatusTypes()
+        const {data} = await getCompanyStatusTypes()
         this.processStepStatusTypes = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
