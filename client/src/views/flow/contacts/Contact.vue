@@ -327,11 +327,6 @@ export default {
       // save contact
         const {data} = await postRequest(`/contact`, this.contact)
         this.contact.projects = data.projects
-        // Save BlueRaven Solar Contacts to Genesys
-        if (this.companyId == 3) {
-          await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
-        }
-
         await this.saveCustomFieldValues()
       } catch (e) {
         console.error('*** ERROR ***', e)

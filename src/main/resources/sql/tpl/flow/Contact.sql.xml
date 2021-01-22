@@ -112,6 +112,37 @@
             and c.archived is not true
   ]]></contact.getByProjectId>
 
+  <contact.getContactByPhone><![CDATA[
+    select
+      c.id,
+      c.first_name,
+      c.last_name,
+      c.date_created,
+      concat(c.first_name, ' ', c.last_name) as full_name,
+      c.email,
+      c.phone,
+      c.mobile,
+      c.contact_type_id,
+      c.company_id,
+      c.street1,
+      c.city,
+      c.company_state_id,
+      s.state,
+      c.company_country_id,
+      ct.country
+    from flow.contact c
+      inner join flow.project p on p.contact_id = c.id
+      left outer join flow.company_state cs on cs.id = c.company_state_id
+      left outer join flow.state s on s.id = cs.state_id
+      inner join flow.company_country cc on cc.id = c.company_country_id
+      inner join flow.country ct on ct.id = cc.country_id
+    where c.phone = :phone
+     and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else c.company_id = :companyId end
+            and c.archived is not true
+  ]]></contact.getContactByPhone>
+
   <contact.updateContact><![CDATA[
     update flow.contact set
            contact_type_id = :contactTypeId,
