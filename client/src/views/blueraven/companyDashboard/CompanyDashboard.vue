@@ -75,28 +75,44 @@
                 </thead>
               </template>
               <template #item="{ item, index }" class="table-body">
-                <tr :class="[{'light-blue-row': !(index % 2) && item.milestone !== 'Substantial Completions'}, {'blue-row': ['Bookings','Final Designs Completed','Substantial Completions','Final Completions'].indexOf(item.milestone) !== -1}]"
+                <tr :class="[{'light-blue-row': !(index % 2)}, {'blue-row': item.show_targets}]"
                     :style="{'background-color': index === 0 ? '#e9f2ff' : ''}">
-                  <td class="milestone-col-td">{{ item.milestone }}</td>
+                  <td class="milestone-col-td">{{ item.name }}</td>
                   <td class="data-col-td total-col-td clickable"
-                      @click="getDrilldownData(item.milestone, 'Total')">{{ item.actualTotal }}</td>
+                      @click="openDrilldown(item, false)">{{ item.company_count + item.partner_count }}</td>
                   <td v-if="isBrCorporateUser" class="data-col-td clickable"
-                      @click="getDrilldownData(item.milestone, 'BRS')">{{ item.actualBrs }}</td>
-                  <td v-if="isBrCorporateUser && ['First Time Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) === -1"
-                      class="data-col-td clickable" @click="getDrilldownData(item.milestone, 'Partner')">{{ item.actualPartner }}</td>
-                  <td v-else-if="isBrCorporateUser && ['First Time Appointments Created', 'Planned Appointments', 'Pitches'].indexOf(item.milestone) !== -1"
-                      class="data-col-td">{{ item.actualPartner }}</td>
-                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td">{{ item.plannedTotal }}</td>
-                  <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedBrs }}</td>
-                  <td v-if="isBrCorporateUser" class="data-col-td">{{ item.plannedPartner }}</td>
-                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="(item.differenceTotal >= 0 || item.plannedTotal === '-') ? 'pos_diff' : 'neg_diff'">
-                    {{ item.differenceTotal }}
+                      @click="openDrilldown(item, false)">{{ item.company_count }}</td>
+                  <td v-if="isBrCorporateUser"
+                      class="data-col-td clickable" @click="openDrilldown(item, true)">{{ item.partner_count }}</td>
+                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ ((item.brs_target + item.partner_target) / dividerForSingleDayTargets) | currency('', 1) }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target + item.partner_target }}</span>
+                    <span v-else>-</span>
                   </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differenceBrs >= 0 || item.plannedBrs === '-') ? 'pos_diff' : 'neg_diff'">
-                    {{ item.differenceBrs }}
+                  <td v-if="isBrCorporateUser" class="data-col-td">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ item.brs_target / dividerForSingleDayTargets | currency('', 1) }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target || 0 }}</span>
+                    <span v-else>-</span>
                   </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td" :class="(item.differencePartner >= 0 || item.plannedPartner === '-') ? 'pos_diff' : 'neg_diff'">
-                    {{ item.differencePartner }}
+                  <td v-if="isBrCorporateUser" class="data-col-td">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ (item.partner_target / dividerForSingleDayTargets) | currency('', 1) }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_target || 0 }}</span>
+                    <span v-else>-</span>
+                  </td>
+                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="getClass((item.company_count + item.partner_count) - (item.brs_target + item.partner_target))">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{((item.company_count + item.partner_count) - (item.brs_target + item.partner_target)) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ (item.company_count + item.partner_count) - (item.brs_target + item.partner_target) }}</span>
+                    <span v-else>-</span>
+                  </td>
+                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.company_count - item.brs_target)">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.company_count - item.brs_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.company_count - item.brs_target }}</span>
+                    <span v-else>-</span>
+                  </td>
+                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.partner_count - item.partner_target)">
+                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.partner_count - item.partner_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
+                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_count - item.partner_target }}</span>
+                    <span v-else>-</span>
                   </td>
                 </tr>
               </template>
@@ -107,125 +123,15 @@
           </v-col>
         </v-row>
       </v-col>
-      <v-dialog v-model="drilldownDialog" :content-class="constants.IS_MOBILE ? 'drilldown-dialog' : ''" @input="close">
-        <v-card>
-          <v-card-title class="mb-1">
-            <span v-if="startDate === endDate" class="drilldown-title">{{ drilldownTitle }} on {{ startDate | formatDate('date', 'MM/DD/YYYY') }}</span>
-            <span v-else class="drilldown-title">{{ drilldownTitle }} {{ startDate | formatDate('date', 'MM/DD/YYYY') }} - {{ endDate | formatDate('date', 'MM/DD/YYYY') }}</span>
-            <a class="close-modal-x pb-3" title="Close" @click="close">×</a>
-          </v-card-title>
+      <v-dialog v-model="showDrilldown">
+        <CompanyDashboardDrilldown :milestone="selectedMilestone"
+                                   :load-partners="loadPartners"
+                                   :drilldown-data="drilldownData"
+                                   :start-date="startDate"
+                                   :end-date="endDate"
+                                   :close-callback="closeDrilldown">
 
-          <v-card-text>
-            <v-data-table
-              id="drilldown-table"
-              :headers="visibleDrilldownHeaders"
-              :items="drilldownData"
-              :footer-props="footerProps"
-              :items-per-page="500"
-              :mobile-breakpoint="0"
-              fixed-header
-              dense
-              class="elevation-1"
-            >
-              <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
-                <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                  <td class="text-left">{{ index + 1 }}</td>
-                  <td class="text-left">{{ item.projectId ? item.projectId : '' }}</td>
-                  <td class="text-left customer-name">{{ item.customerName ? item.customerName : '' }}</td>
-                  <td class="text-left">{{ item.state ? item.state : '' }}</td>
-                  <td class="text-left">{{ item.sourceName ? item.sourceName : '' }}</td>
-                  <td v-if="drilldownHeaders[5].show" class="text-left">
-                    {{ item.appointmentCreatedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[6].show" class="text-left">
-                    {{ item.appointmentDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[7].show" class="text-left">
-                    {{ item.appointmentOutcome ? item.appointmentOutcome : '' }}
-                  </td>
-                  <td v-if="drilldownHeaders[8].show" class="text-left">
-                    {{ item.installationAgreementSignedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[9].show" class="text-left">
-                    {{ item.siteSurveyVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[10].show" class="text-left">
-                    {{ item.finalDesignCreatedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[11].show" class="text-left">
-                    {{ item.finalDesignSentToHomeownerDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[12].show" class="text-left">
-                    {{ item.finalDesignSignedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[13].show" class="text-left">
-                    {{ item.finalDesignCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[14].show" class="text-left">
-                    {{ item.planSetCreatedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[15].show" class="text-left">
-                    {{ item.permitPackCompleteDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[16].show" class="text-left">
-                    {{ item.permitSubmittedDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[17].show" class="text-left">
-                    {{ item.permitApprovedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[18].show" class="text-left">
-                    {{ item.installationScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[19].show" class="text-left">
-                    {{ item.installationDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[20].show" class="text-left">
-                    {{ item.installationCloseoutDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[21].show" class="text-left">
-                    {{ item.substantialCompletionDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[22].show" class="text-left">
-                    {{ item.ahjInspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[23].show" class="text-left">
-                    {{ item.ahjReinspectionScheduledDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[24].show" class="text-left">
-                    {{ item.ahjInspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[25].show" class="text-left">
-                    {{ item.ahjReinspectionDate | formatDate('timestamp', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[26].show" class="text-left">
-                    {{ item.ahjFinalInspectionVerifiedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[27].show" class="text-left">
-                    {{ item.verifiedInspectionApprovalReceivedByUtilityDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[28].show" class="text-left">
-                    {{ item.ahjInspectionApprovalSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                  <td v-if="drilldownHeaders[29].show" class="text-left">
-                    {{ item.finalCompletionSubmittedDate | formatDate('date', 'MM/DD/YYYY') }}
-                  </td>
-                </tr>
-              </template>
-
-              <template #no-data>
-                <div class="my-3">
-                  No data was found for the specified date range.
-                </div>
-              </template>
-            </v-data-table>
-          </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn id="drilldown-close-btn" class="white--text text-capitalize mr-4 mb-2"
-                   color="primaryButton" @click="close">Close</v-btn>
-          </v-card-actions>
-        </v-card>
+        </CompanyDashboardDrilldown>
       </v-dialog>
       <Snackbar :snackbar="snackbar"></Snackbar>
     </v-row>
@@ -233,12 +139,11 @@
 </template>
 
 <script>
-  import cloneDeep from 'lodash.clonedeep'
-  import orderBy from "lodash.orderby"
   import constants from '@/helpers/constants'
   import moment from 'moment'
   import DatetimePickerInput from "@/components/DatetimePickerInput"
   import Snackbar from '@/components/Snackbar.vue'
+  import CompanyDashboardDrilldown from './CompanyDashboardDrilldown.vue'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 
@@ -246,13 +151,18 @@
     name: 'companyDashboard',
     components: {
       DatetimePickerInput,
+      CompanyDashboardDrilldown,
       Snackbar
     },
     data () {
       return {
         snackbar: {},
         constants,
-        isBrCorporateUser: false,
+        showDrilldown: false,
+        selectedMilestone: {},
+        loadPartners: false,
+        dividerForSingleDayTargets: 6,
+        isBrCorporateUser: this.$store.state.user.details.companyId === 2,
         is7oaksAdmin: this.$store.getters.isFullAdmin,
         headers: [],
         timezone: 'US/Mountain',
@@ -264,41 +174,10 @@
         dateRanges: ['Yesterday', 'Today', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
         isLoading: true,
         dashValues: [],
-        drilldownDialog: false,
-        drilldownTitle: '',
-        drilldownHeaders: [
-          {text: '', value: '', show: true, sortable: false}, // 0
-          {text: 'Project ID', value: 'projectId', show: true}, // 1
-          {text: 'Customer Name', value: 'customerName', show: true}, // 2
-          {text: 'State', value: 'state', show: true}, // 3
-          {text: 'Source', value: 'sourceName', show: true}, // 4
-          {text: 'Appointment Created Date', value: 'appointmentCreatedDate', show: false}, // 5
-          {text: 'Appointment Date', value: 'appointmentDate', show: false}, // 6
-          {text: 'Appointment Outcome', value: 'appointmentOutcome', show: false}, // 7
-          {text: 'Installation Agreement Signed Date', value: 'installationAgreementSignedDate', show: false}, // 8
-          {text: 'Site Survey Verified Date', value: 'siteSurveyVerifiedDate', show: false}, // 9
-          {text: 'Final Design Created Date', value: 'finalDesignCreatedDate', show: false}, // 10
-          {text: 'Final Design Sent to Homeowner Date', value: 'finalDesignSentToHomeownerDate', show: false}, // 11
-          {text: 'Final Design Approved Date', value: 'finalDesignSignedDate', show: false}, // 12
-          {text: 'Final Design Completed Date', value: 'finalDesignCompleteDate', show: false}, // 13
-          {text: 'Plan Set Created Date', value: 'planSetCreatedDate', show: false}, // 14
-          {text: 'Permit Pack Complete Date', value: 'permitPackCompleteDate', show: false}, // 15
-          {text: 'Permit Submitted Date', value: 'permitSubmittedDate', show: false}, // 16
-          {text: 'Permit Approved Date', value: 'permitApprovedDate', show: false}, // 17
-          {text: 'Installation Scheduled Date', value: 'installationScheduledDate', show: false}, // 18
-          {text: 'Installation Date', value: 'installationDate', show: false}, // 19
-          {text: 'Installation Closeout Date', value: 'installationCloseoutDate', show: false}, // 20
-          {text: 'Substantial Completion Date', value: 'substantialCompletionDate', show: false}, // 21
-          {text: 'AHJ Inspection Scheduled Date', value: 'ahjInspectionScheduledDate', show: false}, // 22
-          {text: 'AHJ Reinspection Scheduled', value: 'ahjReinspectionScheduledDate', show: false}, // 23
-          {text: 'AHJ Inspection Date', value: 'ahjInspectionDate', show: false}, // 24
-          {text: 'AHJ Reinspection Date', value: 'ahjReinspectionDate', show: false}, // 25
-          {text: 'AHJ Final Inspection Verified Date', value: 'ahjFinalInspectionVerifiedDate', show: false}, // 26
-          {text: 'Verified Inspection Approval Received by Utility Date', value: 'verifiedInspectionApprovalReceivedByUtilityDate', show: false}, // 27
-          {text: 'AHJ Inspection Approval Submitted Date', value: 'ahjInspectionApprovalSubmittedDate', show: false}, // 28
-          {text: 'Final Completion Submitted Date', value: 'finalCompletionSubmittedDate', show: false} // 29
-        ],
         drilldownData: [],
+        singleDateRange: false,
+        singleDateRanges: ['Yesterday', 'Today'],
+        loadTargetsRanges:  ['Yesterday', 'Today', 'Current Week', 'Last Week'],
         footerProps: {
           showFirstLastPage: !constants.IS_MOBILE,
           firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
@@ -326,17 +205,49 @@
       },
       endOfWeek () {
         return moment(this.momentStartOfPeriod).clone().add((this.weekNum - 1), 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
-      },
-      visibleDrilldownHeaders () {
-        return this.drilldownHeaders.filter(header => header.show === true)
-      }
-    },
-    watch: {
-      drilldownDialog (val) {
-        val || this.close()
       }
     },
     methods: {
+      getClass(total) {
+        let calcTotal = this.singleDateRange ? total / this.dividerForSingleDayTargets : total
+        return calcTotal < 0 ? 'neg_diff' : 'pos_diff'
+      },
+      closeDrilldown() {
+        this.selectedMilestone = {}
+        this.drilldownData = []
+        this.loadPartners = false
+        this.showDrilldown = false
+      },
+      async openDrilldown(item, loadPartners) {
+        this.selectedMilestone = item
+        this.loadPartners = loadPartners
+        await this.getDrilldownData()
+        this.showDrilldown = true
+      },
+      async getDrilldownData() {
+        //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          const params = {
+            startDate: this.startDate,
+            endDate: this.endDate,
+            milestoneTypeId: this.selectedMilestone.milestone_type_id,
+            loadPartners: this.loadPartners
+          }
+
+          const {data} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven')
+          this.drilldownData = data
+
+          this.isLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.isLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       getWeekNum () {
         for (let i = 0; i <= 3; i++) {
           let startOfWeek = moment(this.momentStartOfPeriod).clone().add(i, 'weeks').startOf('isoWeek').valueOf()
@@ -406,42 +317,21 @@
           if (this.selectedDateRange === 'Custom') return // wait for the user to enter a custom date
         }
 
+        this.singleDateRange = this.singleDateRanges.includes(this.selectedDateRange)
+        this.targetTypeId = this.singleDateRange ? 1 :
+          this.loadTargetsRanges.includes(this.selectedDateRange) ? 2 : null
+
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
 
           const params = {
             startDate: this.startDate,
-            endDate: this.endDate
+            endDate: this.endDate,
+            targetTypeId: this.targetTypeId
           }
 
           const {data} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven')
-          this.dashValues = cloneDeep(data)
-
-          if (this.isBrCorporateUser) {
-            this.dashValues.forEach(row => {
-              if (['Yesterday', 'Today'].includes(this.selectedDateRange)) {
-                row.plannedTotal = row.plannedTotal !== '-' ? Math.round((row.plannedTotal / 6) * 10) / 10 : '-'
-                row.plannedBrs = row.plannedBrs !== '-' ? Math.round((row.plannedBrs / 6) * 10) / 10 : '-'
-                row.plannedPartner = row.plannedPartner !== '-' ? Math.round((row.plannedPartner / 6) * 10) / 10 : '-'
-
-                row.differenceTotal = row.plannedTotal !== '-' ? this.$filters.currency(row.actualTotal - row.plannedTotal, '', 1) : '-'
-                row.differenceBrs = row.plannedBrs !== '-' ? this.$filters.currency(row.actualBrs - row.plannedBrs, '', 1) : '-'
-                row.differencePartner = row.plannedPartner !== '-' ? this.$filters.currency(row.actualPartner - row.plannedPartner, '', 1) : '-'
-              } else if (['Current Week', 'Last Week'].includes(this.selectedDateRange)) {
-                row.differenceTotal = row.plannedTotal !== '-' ? row.actualTotal - row.plannedTotal : '-'
-                row.differenceBrs = row.plannedBrs !== '-' ? row.actualBrs - row.plannedBrs : '-'
-                row.differencePartner = row.plannedPartner !== '-' ? row.actualPartner - row.plannedPartner : '-'
-              } else {
-                // it doesn't make sense to calculate the values for the other date ranges
-                row.plannedTotal = '-'
-                row.plannedBrs = '-'
-                row.plannedPartner = '-'
-                row.differenceTotal = '-'
-                row.differenceBrs = '-'
-                row.differencePartner = '-'
-              }
-            })
-          }
+          this.dashValues = data
 
           this.isLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -452,129 +342,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-
-      async getDrilldownData (milestone, column) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        try {
-          this.getColumnHeaders(milestone)
-
-          const params = {
-            startDate: this.startDate,
-            endDate: this.endDate,
-            milestone,
-            column
-          }
-
-          const {data} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven')
-          this.drilldownData = cloneDeep(data)
-
-          if (this.drilldownData?.length > 0) {
-            this.drilldownData.forEach(row => row.customerName = row.customerName.toLowerCase())
-            this.drilldownData = orderBy(this.drilldownData, row => row.customerName)
-          }
-
-          this.drilldownTitle = milestone
-          this.drilldownDialog = true
-          this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-          this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-
-      getColumnHeaders (milestone) {
-        switch (milestone) {
-          case 'First Time Appointments Created':
-            this.drilldownHeaders[5].show = true // Appointment Created Date
-            break
-          case 'Planned Appointments':
-            this.drilldownHeaders[6].show = true // Appointment Date
-            break
-          case 'Pitches':
-            this.drilldownHeaders[6].show = true // Appointment Date
-            this.drilldownHeaders[7].show = true // Appointment Outcome
-            break
-          case 'Bookings':
-            this.drilldownHeaders[8].show = true // Installation Agreement Signed Date
-            break
-          case 'Site Surveys Verified':
-            this.drilldownHeaders[9].show = true // Site Survey Verified Date
-            break
-          case 'Final Designs Created':
-            this.drilldownHeaders[10].show = true // Final Design Created Date
-            break
-          case 'Final Designs Sent':
-            this.drilldownHeaders[11].show = true // Final Design Sent to Customer Date
-            break
-          case 'Final Designs Approved':
-            this.drilldownHeaders[12].show = true // Final Design Approved Date
-            break
-          case 'Final Designs Completed':
-            this.drilldownHeaders[13].show = true // Final Design Completed Date
-            break
-          case 'Plan Sets Created':
-            this.drilldownHeaders[14].show = true // Plan Set Created Date
-            break
-          case 'Permit Packs Created':
-            this.drilldownHeaders[15].show = true // Permit Pack Complete
-            break
-          case 'Permits Submitted':
-            this.drilldownHeaders[16].show = true // Permit Submitted Date
-            break
-          case 'Permits Approved':
-            this.drilldownHeaders[17].show = true // Permit Approved Date
-            break
-          case 'Installations Scheduled':
-            this.drilldownHeaders[18].show = true // Scheduled Installation Date
-            break
-          case 'Planned Installations':
-            this.drilldownHeaders[19].show = true // Installation Date
-            this.drilldownHeaders[20].show = true // Installation Closeout Date
-            break
-          case 'Substantial Completions':
-            this.drilldownHeaders[21].show = true // Substantial Completion Date
-            break
-          case 'Inspections Scheduled':
-            this.drilldownHeaders[22].show = true // AHJ Inspection Scheduled Date
-            this.drilldownHeaders[23].show = true // AHJ Reinspection Scheduled
-            break
-          case 'Planned Inspections':
-            this.drilldownHeaders[24].show = true // AHJ Inspection Date
-            this.drilldownHeaders[25].show = true // AHJ Reinspection Date
-            break
-          case 'Inspections Passed':
-            this.drilldownHeaders[26].show = true // AHJ Inspection Passed Date
-            break
-          case 'Inspection Results Submitted':
-            this.drilldownHeaders[27].show = true // Verified Inspection Approval Received by Utility Date
-            this.drilldownHeaders[28].show = true // AHJ Inspection Approval Submitted Date
-            break
-          case 'Final Completions':
-            this.drilldownHeaders[29].show = true // Final Completion Submitted Date
-            break
-        }
-      },
-
-      close () {
-        this.drilldownDialog = false
-
-        // reset column header visibility
-        for (let i = 5; i < this.drilldownHeaders.length; i++) {
-          this.drilldownHeaders[i].show = false
-        }
-
-        // reset scroll bar positioning to top -- index 0 is the main table, index 1 is the table in the v-dialog
-        document.getElementsByClassName('v-data-table__wrapper')[1].scrollTop = 0
-      },
     },
     created () {
-      this.isBrCorporateUser = this.$store.state.user.details.companyId === 2
-
-      // populating headers here instead of in "data" b/c I can't seem to check the companyId there
       this.headers = [
         { text: null, value: 'milestone', sortable: false, class: 'milestone-col-th', show: true },
         { text: null, value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
@@ -598,18 +367,6 @@
     }
   }
 </script>
-
-<style lang="scss">
-#drilldown-table .v-data-table__wrapper {
-  height: calc(100vh - 330px);
-  min-height: 300px;
-}
-.drilldown-dialog {
-  //this is changed if media width > 450
-  min-width: 100% !important;
-}
-
-</style>
 
 <style lang="scss" scoped>
   #company-dash-container {
@@ -757,11 +514,11 @@
         font-size: 10px;
       }
 
-      .pos_diff {
+      .pos_diff > span {
         color: var(--v-primaryText-base);
       }
 
-      .neg_diff {
+      .neg_diff > span {
         color: red;
       }
     }
@@ -774,39 +531,7 @@
     align-items: center;
   }
 
-  .drilldown-title {
-    font-family: "Roboto Condensed", sans-serif;
-    font-size: 14px;
-  }
-
-  .close-modal-x {
-    font-size: 20px;
-
-    &:hover {
-      font-weight: bolder;
-    }
-  }
-
-  #drilldown-table {
-    th, td {
-      font-family: "Roboto Condensed", sans-serif;
-      font-size: 10px;
-    }
-
-    .customer-name {
-      text-transform: capitalize;
-    }
-  }
-
-  #drilldown-close-btn {
-    font-size: 10px;
-    height: 25px;
-  }
-
   @media (min-width: 450px) {
-    .drilldown-dialog {
-      min-width: 379px;
-    }
     #company-dash-toolbar-container {
       #company-dash-toolbar {
         ::v-deep {
@@ -952,26 +677,6 @@
       }
     }
 
-    .drilldown-title {
-      font-size: 18px;
-    }
-
-    #drilldown-table {
-      th, td {
-        font-size: 12px;
-      }
-
-      ::v-deep {
-        .v-data-footer {
-          padding: initial;
-        }
-      }
-    }
-
-    #drilldown-close-btn {
-      font-size: 14px;
-      height: 35px;
-    }
   }
 
   @media (min-width: 1070px) {

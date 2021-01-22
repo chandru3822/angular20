@@ -156,9 +156,9 @@ BEGIN
                                      ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
                                      * case when (select count(1) > 0 as count
                                                   from flow.user_position up
-                                                  where up.user_id = foo.user_id and
-                                                      up.primary_flag is true and
-                                                          up.position_id = 2) then
+                                                  where ((up.user_id = foo.user_id
+                                                      and up.primary_flag is true
+                                                      and up.position_id = 2) or (foo.user_id in (2392516,2394370)))) then
                                                 1.5
                                             else
                                                 1 end
@@ -167,9 +167,9 @@ BEGIN
                                              ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
                                      * case when (select count(1) > 0 as count
                                                   from flow.user_position up
-                                                  where up.user_id = foo.user_id and
-                                                      up.primary_flag is true and
-                                                          up.position_id = 2) then
+                                                  where ((up.user_id = foo.user_id
+                                                      and up.primary_flag is true
+                                                      and up.position_id = 2) or (foo.user_id in (2392516,2394370)))) then
                                                 1.5
                                             else
                                                 1 end end as score,

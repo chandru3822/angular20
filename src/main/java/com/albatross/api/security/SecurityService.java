@@ -95,10 +95,15 @@ public class SecurityService implements UserDetailsService {
       } else if (p instanceof UserAccountDetails) {
         UserAccountDetails details = (UserAccountDetails) p;
 
-        // This is a special system user used for crons
-        if (details.getId() == SystemSettings.CRON_USER.getId()) {
+        // @TODO: humes, this is temporary until we have bandwidth to develop a legit 3rd party API access feature
+        if (details.getId().equals(SystemSettings.CRON_USER.getId())) {
           user = new User();
           user.setCompanyId(details.getCompanyId());
+          user.setId(details.getId());
+        } else if (details.getId().equals(SystemSettings.BR_SYSTEM_USER.getId())) {
+          user = new User();
+          user.setCompanyId(3L);
+          user.setParentCompanyId(2L);
           user.setId(details.getId());
         } else {
           user = userService.findUserById(details.getId());

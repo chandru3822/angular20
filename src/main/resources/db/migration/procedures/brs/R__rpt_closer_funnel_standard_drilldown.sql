@@ -60,7 +60,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -71,6 +71,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and ppscfv1.int_value = 4 --Cancelled
                                and pd.company_id = v_company_id
@@ -92,7 +93,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -103,6 +104,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                and pd.company_id = v_company_id
@@ -124,7 +126,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -135,6 +137,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and (ppscfv1.int_value is null or ppscfv1.int_value not in (4, 59, 61, 16685))
                                and pd.company_id = v_company_id
@@ -156,12 +159,13 @@ BEGIN
                                     pd.primary_financier_name                             financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                    appointment_outcome
+                                    lov.name                    appointment_outcome
                              from flow.project_process_step pps
                                       inner join flow.project_process_step_custom_field_value ppscfv
                                                  on ppscfv.project_process_step_id = pps.id
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       inner join brs.project_details pd on pd.project_id = pps.project_id
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -191,7 +195,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -202,6 +206,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
@@ -225,7 +230,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -236,6 +241,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and ppscfv1.int_value = 56
@@ -260,7 +266,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -271,6 +277,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
@@ -294,7 +301,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -305,6 +312,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
@@ -330,7 +338,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -341,6 +349,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
@@ -364,7 +373,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -375,6 +384,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
@@ -400,7 +410,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -411,6 +421,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
@@ -434,7 +445,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -445,6 +456,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
@@ -470,7 +482,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -481,6 +493,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
@@ -504,7 +517,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -515,6 +528,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
@@ -540,7 +554,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -551,6 +565,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327))
@@ -575,7 +590,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -586,6 +601,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and (ppscfv1.int_value is null or
@@ -612,7 +628,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value     appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -623,6 +639,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                and pd.company_id = v_company_id
@@ -644,7 +661,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
@@ -655,6 +672,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1 and ppscfv1.int_value in (2, 1139, 1140)
@@ -1166,7 +1184,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1179,6 +1197,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
                                and o.id = any(p_org_ids)
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
@@ -1202,7 +1221,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1215,6 +1234,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1239,7 +1259,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1252,6 +1272,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1276,7 +1297,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1289,6 +1310,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where pps.process_step_id = 1 and ppscfv1.int_value = 15327 --Closer Appointment Details
                                and ppscfv.custom_field_group_assignment_id = 5
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
@@ -1314,7 +1336,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1327,6 +1349,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1353,7 +1376,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1366,6 +1389,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
@@ -1394,7 +1418,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1407,6 +1431,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1433,7 +1458,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1446,6 +1471,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
@@ -1474,7 +1500,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1487,6 +1513,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1513,7 +1540,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1526,6 +1553,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
@@ -1554,7 +1582,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1567,6 +1595,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1593,7 +1622,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1606,6 +1635,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
@@ -1634,7 +1664,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1647,6 +1677,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1673,7 +1704,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1686,6 +1717,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
@@ -1714,7 +1746,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1727,6 +1759,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
                                and o.id = any(p_org_ids)
@@ -1754,7 +1787,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     ppscfv.timestamp_value                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1767,6 +1800,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
@@ -1796,7 +1830,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1809,6 +1843,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
                                and o.id = any(p_org_ids)
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
@@ -1832,7 +1867,7 @@ BEGIN
                                     pd.primary_financier_name                                  financier,
                                     pd.closer_appointment_start                                appointment_date,
                                     pd.cancelled_date,
-                                    pd.closer_appointment_outcome_name                         appointment_outcome
+                                    lov.name                         appointment_outcome
                              from brs.project_details pd
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.user_position up on up.id = p.user_position_id
@@ -1845,6 +1880,7 @@ BEGIN
                                       left join flow.project_process_step pps2 on pps.id = pps2.parent_project_process_step_id and pps2.process_step_id = 2
                                       inner join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and ppscfv.custom_field_group_assignment_id = 5
                                       left join flow.project_process_step_custom_field_value ppscfv1 on pps2.id = ppscfv1.project_process_step_id and ppscfv1.custom_field_group_assignment_id = 4
+                                      left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                                       left join flow.project_process_step_custom_field_value ppscfv2 on pps2.id = ppscfv2.project_process_step_id and ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
                                and o.id = any(p_org_ids)
