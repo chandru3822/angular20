@@ -1057,6 +1057,7 @@
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
+  import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import Sortable from "sortablejs";
 
   export default {
@@ -1586,7 +1587,7 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/status`)
+          const {data} = await getCompanyStatusTypes()
           this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

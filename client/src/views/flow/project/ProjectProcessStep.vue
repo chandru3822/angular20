@@ -281,7 +281,7 @@
   import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
   import ActionButton from './ActionButton'
   import {AppMutations} from '@/stores/AppStore'
-
+  import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
   import Links from '@/views/flow/components/Links'
   // import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
@@ -356,10 +356,7 @@
       },
       async getAvailableStatuses() {
         try {
-          let params = {
-            projectId: parseInt(this.projectId)
-          }
-          const {data} = await getRequestWithParams(`/processStep/status`, {params})
+          const {data} = await getCompanyStatusTypes(parseInt(this.projectId))
           // const {data} = await getRequest(`/processStep/status`)
           this.availableProcessStepStatuses = data
         } catch (e) {

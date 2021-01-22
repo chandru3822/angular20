@@ -57,7 +57,8 @@
                   :key="item.title"
                   @click="setTitle"
                   :to="item.path"
-                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                  :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
+                                          : item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -175,7 +176,7 @@ export default {
         title: 'Organization Types',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/statuses',
+        path: '/settings/processStepStatuses',
         title: 'Process Step Statuses',
         show: this.hasSettingsAccess
       }, {
@@ -201,6 +202,7 @@ export default {
       }, {
         path: '/settings/processSteps',
         pathMatch: '/settings/processStep',
+        pathMatchExclude: '/settings/processStepStatuses',
         title: 'Process Steps',
         show: this.hasSettingsAccess
       }, {

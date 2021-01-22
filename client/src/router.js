@@ -488,11 +488,11 @@ export default new Router({
                 }
               ]
             }, {
-              path: 'statuses',
+              path: 'processStepStatuses',
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')
+                  return import (/* webpackChunkName: "statuses" */ './views/flow/settings/ProcessStepStatuses.vue')
                 } else {
                   return accessDenied()
                 }

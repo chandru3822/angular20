@@ -280,7 +280,7 @@
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
   import constants from "@/helpers/constants";
@@ -481,7 +481,7 @@
       async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStatusTypes()
+          const {data} = await getCompanyStatusTypes()
           //only show active and complete
           this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
           this.$store.commit(AppMutations.SET_LOADING, false)

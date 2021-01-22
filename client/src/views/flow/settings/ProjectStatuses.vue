@@ -16,12 +16,12 @@
           <h3>Add Project Status</h3>
           <v-text-field label="Project Status" v-model="newType.projectStatusType">
           </v-text-field>
-          <v-select single-line
+          <v-autocomplete single-line
                     :items="rootStatusTypes"
                     v-model="newType.projectStatusTypeId"
                     item-value="id"
                     label="Select a Category"
-                    item-text="projectStatusType"></v-select>
+                    item-text="projectStatusType"></v-autocomplete>
           <v-btn :disabled="!newType.projectStatusTypeId || !newType.projectStatusType" @click="saveType(newType, true)">Save</v-btn>
         </v-card>
         <v-data-table
@@ -331,6 +331,7 @@
             this.addNew = false
             this.newType = {}
           }
+          this.expanded = []
           this.selectedStatusTypeId = null
           this.snackbar = getSnackbar('SUCCESS', 'Project Status Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
