@@ -3,7 +3,6 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
-import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.model.*;
@@ -31,8 +30,6 @@ import java.util.Optional;
 public class ContactService {
 
   private final SqlCache sqlCache;
-
-  private final LocationUtils locationUtils;
 
   private final SecurityService securityService;
 
@@ -98,18 +95,6 @@ public class ContactService {
     params.put("isParent", isParent);
     params.put("companyId", user.getCompanyId());
     Optional<Contact> result = sqlCache.get("contact.getByProjectId", params, new ContactMapper<>(Contact.class, om));
-    return result.orElse(null);
-  }
-
-  public Contact getContactByPhone(String phoneNumber) {
-    User user = securityService.getCurrentUser();
-    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("phone", phoneNumber);
-    params.put("parentCompanyId", user.getHighestParentCompanyId());
-    params.put("isParent", isParent);
-    params.put("companyId", user.getCompanyId());
-    Optional<Contact> result = sqlCache.get("contact.getContactByPhone", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
