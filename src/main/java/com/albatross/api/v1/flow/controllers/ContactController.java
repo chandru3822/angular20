@@ -9,7 +9,6 @@ import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -27,9 +26,6 @@ import java.util.List;
 public class ContactController {
 
     private final ContactService contactService;
-
-    @Value("${app.home_url}")
-    private String homeUrl;
 
     @GetMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<Contact>> searchContacts(@RequestParam String query, Pageable pageable) {
@@ -88,17 +84,5 @@ public class ContactController {
                                   @RequestBody CompanyProcess process) {
         // need to return the project so the frontend can navigate to /project/{id}
         return contactService.convertToContact(contactId, process);
-    }
-
-    @GetMapping(value = "/phone/{phoneNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getContactByPhone(@PathVariable String phoneNumber) {
-        Contact contact = contactService.getContactByPhone(phoneNumber);
-        if (contact != null) {
-            String URL = homeUrl + "/contact/" + contact.getId();
-            return new ResponseEntity<>(URL, HttpStatus.OK);
-        }
-        else {
-            return ResponseEntity.badRequest().body("No contact found");
-        }
     }
 }

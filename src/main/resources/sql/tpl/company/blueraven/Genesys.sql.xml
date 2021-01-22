@@ -1,0 +1,77 @@
+<sql>
+  <genesys.getAgentIdByContactId><![CDATA[
+    select text_value
+    from flow.contact_custom_field_value
+    where contact_id = :contactId
+      and custom_field_group_assignment_id = 19331
+      and archived is false
+    limit 1
+  ]]></genesys.getAgentIdByContactId>
+
+  <genesys.getGenesysContactIdByContactId><![CDATA[
+    select text_value
+    from flow.contact_custom_field_value
+    where contact_id = :contactId
+      and custom_field_group_assignment_id = 19357
+      and archived is false
+    limit 1
+  ]]></genesys.getGenesysContactIdByContactId>
+
+  <genesys.getContactByPhone><![CDATA[
+    select
+      c.id,
+      c.first_name,
+      c.last_name,
+      c.date_created,
+      concat(c.first_name, ' ', c.last_name) as full_name,
+      c.email,
+      c.phone,
+      c.mobile,
+      c.contact_type_id,
+      c.company_id,
+      c.street1,
+      c.city,
+      c.company_state_id,
+      s.state,
+      c.company_country_id,
+      ct.country
+    from flow.contact c
+      inner join flow.project p on p.contact_id = c.id
+        inner join brs.project_details pd on p.id = pd.project_id
+      left outer join flow.company_state cs on cs.id = c.company_state_id
+      left outer join flow.state s on s.id = cs.state_id
+      inner join flow.company_country cc on cc.id = c.company_country_id
+      inner join flow.country ct on ct.id = cc.country_id
+    where c.phone = :phone
+     and case when :isParent then c.company_id = any (select id
+                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+            else c.company_id = :companyId end
+            and c.archived is not true
+  ]]></genesys.getContactByPhone>
+
+  <genesys.getContactAppointments><![CDATA[
+    SELECT coalesce(array_to_json(array_agg(row_to_json(appt))), '[]')
+    FROM (select
+          pd.first_appointment_pitched,
+          pd.first_appointment,
+          pd.closer_appointment_start > now() as future_appointment
+        from flow.contact c
+        inner join flow.project p on p.contact_id = c.id
+        inner join brs.project_details pd on p.id = pd.project_id
+        where c.id = :contactId
+         and case when :isParent then c.company_id = any (select id
+                                         from flow.company_hierarchy_filter_down(:parentCompanyId::int))
+        else c.company_id = :companyId end
+        and c.archived is not true) as appt;
+    ]]></genesys.getContactAppointments>
+
+  <genesys.upsertCustomFieldValue><![CDATA[
+    insert into flow.contact_custom_field_value (contact_id, custom_field_group_assignment_id, text_value, created_by_id)
+    values (:contactId, :customFieldGroupAssignmentId, :textValue, :leadOwnerUserId)
+    on conflict (contact_id, custom_field_group_assignment_id)
+    do update
+        set text_value = :textValue,
+            modified_by_id = :leadOwnerUserId,
+            date_modified = now()
+  ]]></genesys.upsertCustomFieldValue>
+</sql>

@@ -33,7 +33,7 @@ public class CustomFieldValueController {
 
   private final ProjectProcessStepService projectProcessStepService;
 
-    private final ProjectService projectService;
+  private final ProjectService projectService;
 
   private final SecurityService securityService;
 
