@@ -126,21 +126,16 @@
         }
       },
       async getOrgTypes () {
-        // this gets the available parents
-        if(this.selectedOrgType.orgParentTypeId) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data} = await getOrgsByType(this.selectedOrgType.orgParentTypeId)
-            this.parents = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        } else {
-          this.parents = []
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getOrgTypes()
+          this.orgTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getOrgsByType () {
