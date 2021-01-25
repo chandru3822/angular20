@@ -44,9 +44,11 @@
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-show="apptsCreatedPipelineData.length > 0"
-             id="appts-created-pipeline-funnel-background"></div>
-        <table class="funnel-table">
+        <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
+          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+        </div>
+        <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"></div>
+        <table class="funnel-table" v-if="apptsCreatedPipelineData.length > 0">
           <tr class="funnel-tr">
             <th class="funnel-th"></th>
             <th class="funnel-th">SOURCE</th>
@@ -187,6 +189,7 @@
         <!-- DROPDOWNS -->
         <div id="pipeline-header-right-side">
           <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          ref="districtSelect"
                           v-model="districtModel"
                           :items="districtData"
                           item-text="org_name"
@@ -197,8 +200,7 @@
                           multiple
                           dense
                           hide-details
-                          return-object
-                          @input="regionLoad(false)">
+                          return-object>
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ districtModel.length }} Checked
@@ -240,7 +242,7 @@
                           dense
                           hide-details
                           return-object
-                          @input="officeLoad(false)">
+                          ref="regionSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ regionModel.length }} Checked
@@ -282,7 +284,7 @@
                           dense
                           hide-details
                           return-object
-                          @input="repLoad(false)">
+                          ref="officeSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ officeModel.length }} Checked
@@ -324,8 +326,7 @@
                           dense
                           hide-details
                           return-object
-                          @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2, false)"
-                          :menu-props="{closeOnContentClick: true}">
+                          ref="repSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ repModel.length }} Checked
@@ -1122,10 +1123,14 @@
   import constants from '@/helpers/constants'
   import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
+  import SpinnerInline from '@/components/SpinnerInline'
   import { getCloserDistricts, getCloserRegions, getCloserOffices, getCloserReps } from '@/services/dashboardService'
 
   export default {
     name: 'closerDashboard',
+    components: {
+      SpinnerInline,
+    },
     data () {
       return {
         snackbar: {},
@@ -1196,6 +1201,7 @@
         userRow: [],
         userRowIndex: -1,
         numOffices: 0,
+        apptsCreatedPipelineDataLoading: true,
         apptsCreatedPipelineData: [],
         apptsToFdcPipelineData: [],
         apptsCreatedPipelineCustomSelectorIsOpen: false,
@@ -2141,7 +2147,7 @@
           end: moment(end).format('YYYY-MM-DD')
         }
 
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.apptsCreatedPipelineDataLoading = true
         try {
           await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven').then(res => {
             this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
@@ -2150,18 +2156,18 @@
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             if (this.apptsToFdcPipelineData.length > 0) {
               this.apptsCreatedPipelineLoaded = true
-              this.$store.commit(AppMutations.SET_LOADING, false)
+              this.apptsCreatedPipelineDataLoading = false
             }
           } else {
             this.apptsCreatedPipelineLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.apptsCreatedPipelineDataLoading = false
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments Created Pipeline data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.apptsCreatedPipelineLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.apptsCreatedPipelineDataLoading = false
         }
       },
 
@@ -2729,7 +2735,7 @@
           } else {
             this.districtModel = cloneDeep(this.districtData)
             this.repModel = [] // in case the user previously clicked the 'All Reps' button
-            this.regionLoad(false)
+            // this.regionLoad(false)
           }
         })
       },
@@ -2745,7 +2751,7 @@
             this.apptsToFdcPipelineData = []
           } else {
             this.regionModel = cloneDeep(this.regionData)
-            this.officeLoad(false)
+            // this.officeLoad(false)
           }
         })
       },
@@ -2759,7 +2765,7 @@
             this.apptsToFdcPipelineData = []
           } else {
             this.officeModel = cloneDeep(this.officeData)
-            this.repLoad(false)
+            // this.repLoad(false)
           }
         })
       },
@@ -2769,16 +2775,6 @@
           if (this.selectAllReps) {
             this.repModel = []
             this.apptsToFdcPipelineData = []
-          } else {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-
-            if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
-              this.repModel = cloneDeep(this.repData)
-              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
-            } else {
-              this.repModel = cloneDeep(this.repData)
-              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
-            }
           }
         })
       },
@@ -2829,6 +2825,48 @@
       this.checkWindowWidth()
       $(window).bind('resize', this.fixApptsCreatedFunnelTopMargin)
       $(window).bind('resize', this.fixApptsToFdcFunnelTopMargin)
+
+      //vuetify selects/autocompletes have a bug with the select all feature being used at the same time as the @blur event
+      //the @blur event should only be called when the menu is closed, but in a select all it is called when the select all button is clicked. wreaks havoc.
+      //this sucks but fixes that issue re: https://github.com/vuetifyjs/vuetify/issues/11488
+      this.myDynamicDistrictWatcher = this.$watch(
+        () => this.$refs.districtSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val && this.districtModel.length > 0) {
+            this.regionLoad(false)
+          }
+        })
+      this.myDynamicRegionWatcher = this.$watch(
+        () => this.$refs.regionSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val && this.regionModel.length > 0) {
+            this.officeLoad(false)
+          }
+        })
+      this.myDynamicOfficeWatcher = this.$watch(
+        () => this.$refs.officeSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val && this.officeModel.length > 0) {
+            this.repLoad(false)
+          }
+        })
+      this.myDynamicRepWatcher = this.$watch(
+        () => this.$refs.repSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val && this.repModel.length > 0) {
+            this.repModel = cloneDeep(this.repData)
+            if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+            } else {
+              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+            }
+          }
+
+        })
     },
     beforeDestroy () {
       $(window).unbind('resize')
@@ -2841,6 +2879,10 @@
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
     overflow: auto;
+  }
+
+  .pipeline-data-loading-container {
+    height: 225px;
   }
 
   #closer-dash-container.incentive-tab-override {
