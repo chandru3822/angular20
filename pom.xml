@@ -223,6 +223,18 @@
       <artifactId>freemarker</artifactId>
       <version>2.3.30</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.mypurecloud</groupId>
+      <artifactId>platform-client-v2</artifactId>
+      <version>114.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.okio</groupId>
+      <artifactId>okio</artifactId>
+      <version>2.10.0</version>
+    </dependency>
   </dependencies>
 
   <build>

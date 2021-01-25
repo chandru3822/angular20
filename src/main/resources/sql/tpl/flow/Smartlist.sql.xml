@@ -215,8 +215,44 @@ where ot.id = :objectTypeId and
       cfga.ancillary_custom_field_group_assignment_id is null and
       cfga.archived is not true and
       cfg.archived is not true
+union
+select null as "smartlistFieldId",
+       null as "smartlistSystemListId",
+       cfga.id as "customFieldGroupAssignmentId",
+       null as "name",
+       null as "customFieldSqlKey",
+       null as "companySystemListId",
+       null as "systemListOptionIds",
+       ps.id as "processStepId",
+       ps.process_step_name as "processStepName",
+       null as "dataTypeId",
+       null as "hasListValues",
+       null as "allowMultiple",
+       null as "listOfValues"
+from flow.custom_field_group_assignment cfga
+inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+inner join flow.process_step ps on ps.id = cfg.process_step_id
+where cot.object_type_id = :objectTypeId and
+      cot.company_id = :companyId and
+      cfga.ancillary_custom_field_group_assignment_id is not null and
+      cfga.archived is not true and
+      cfg.archived is not true and
+      not exists (
+        select ps1.id
+         from  flow.custom_field_group_assignment cfga1
+         inner join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
+         inner join flow.company_object_type cot1 on cot1.id = cfg1.company_object_type_id
+         inner join flow.process_step ps1 on ps1.id = cfg1.process_step_id
+         where cot1.object_type_id = :objectTypeId and
+               cot1.company_id = :companyId and
+               cfga1.ancillary_custom_field_group_assignment_id is null and
+               cfga1.archived is not true and
+               cfg1.archived is not true and
+               ps1.id = ps.id
+    )
 order by name,
-         "processStepName";
+         "processStepName"
 ]]></smartlist.getAvailableFields>
 
 <smartlist.getAvailableProjectDetailsFields><![CDATA[
