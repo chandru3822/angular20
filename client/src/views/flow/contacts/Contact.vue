@@ -442,6 +442,7 @@ export default {
         }
         const {data} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
+        this.selectedProcess = data?.length === 1 ? data[0] : {}
 
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
