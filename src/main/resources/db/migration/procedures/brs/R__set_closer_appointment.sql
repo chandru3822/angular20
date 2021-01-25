@@ -210,7 +210,7 @@ BEGIN
                                                                        from flow.user_position up
                                                                        where ((up.user_id = foo.user_id
                                                                          and up.primary_flag is true
-                                                                         and up.position_id = 2) or (foo.user_id in (2392516,2394370)))) then
+                                                                         and up.position_id = 2) or (foo.user_id in (2392516,2394370,2402401)))) then
                                                                      1.5
                                                                  else
                                                                      1 end
@@ -223,7 +223,7 @@ BEGIN
                                                                        from flow.user_position up
                                                                        where ((up.user_id = foo.user_id
                                                                            and up.primary_flag is true
-                                                                           and up.position_id = 2) or (foo.user_id in (2392516,2394370)))) then
+                                                                           and up.position_id = 2) or (foo.user_id in (2392516,2394370,2402401)))) then
                                                                      1.5
                                                                  else
                                                                      1 end end                           as score,
