@@ -95,6 +95,11 @@ public class ProjectController {
       return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
   }
 
+  @PutMapping(value = "/companyStatus/initial/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveInitialProjectStatusType(@PathVariable Long id) {
+    projectService.saveInitialProjectStatusType(id);
+  }
+
   @PutMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Optional<CompanyProjectStatus>> saveCompanyProjectStatus(@RequestBody CompanyProjectStatus status) {
     return new ResponseEntity<>(projectService.saveCompanyProjectStatus(status), HttpStatus.OK);

@@ -216,7 +216,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
 
     // Get active company project status type so new projects can have an active status
-    CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(contact.getCompanyId());
+    CompanyProjectStatusType companyStatusType = this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
     Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
     HashMap<String, Object> params = new HashMap<>();
@@ -314,8 +314,8 @@ public class ProjectService {
       sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
   }
 
-  private CompanyProjectStatusType getActiveCompanyProjectStatusType(Long companyId) {
-    return sqlCache.get("project.getActiveProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
+  private CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
+    return sqlCache.get("project.getDefaultProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
@@ -363,6 +363,17 @@ public class ProjectService {
     }
 
     return result;
+  }
+
+  public void saveInitialProjectStatusType(Long companyProjectStatusTypeId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", companyProjectStatusTypeId);
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("project.saveInitialProjectStatusType", params);
   }
 
   public Optional<CompanyProjectStatus> saveCompanyProjectStatus(CompanyProjectStatus status) {

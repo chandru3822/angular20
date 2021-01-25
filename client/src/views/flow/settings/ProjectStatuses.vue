@@ -52,6 +52,44 @@
                         :disabled="!userCanEdit"
                         label="Select a Category"
                         item-text="projectStatusType"></v-autocomplete>
+              <div  v-if="!item.isDefault" class="mb-3">
+                <v-dialog
+                  v-model="item.setInitialConfirm"
+                  width="500">
+                  <template #activator="{ on }">
+                    <v-btn v-on="on">
+                      Set as Initial
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title>
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text class="pt-4">
+                      Setting this Project Status Type as default will unset the other initial status. Are you sure you want to continue?
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="item.setInitialConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primaryCustom"
+                        text
+                        @click="setAsInitial(item)">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </div>
               <div class="my-2" v-if="item.icon && item.icon.id != null">
                 <label>Status Type Icon</label>
                 <div class="flex-display ma-2">
@@ -92,6 +130,9 @@
               </td>
               <td class="text-left">
                 {{item.rootProjectStatusType}}
+              </td>
+              <td class="text-left">
+                <input v-if="item.isDefault" type="checkbox" v-model="item.isDefault" disabled readonly>
               </td>
               <td class="text-left">
                 <img v-if="item.icon && item.icon.presignedUrl"
@@ -184,6 +225,7 @@
           { text: null, value: 'draggable', width: '50px', show: true },
           {text: 'Project Status', value: 'projectStatusType', show: true},
           {text: 'Category', value: 'rootProjectStatusType', show: true},
+          {text: 'Initial', value: 'initial', show: true},
           {text: 'Icon', value: 'icon', show: true},
           {text: '', value: 'icons', show: true},
         ],
@@ -345,6 +387,25 @@
       },
       filterProjectStatuses () {
         return this.statusTypes.filter(s => { return !s.archived})
+      },
+      async setAsInitial (item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/project/companyStatus/initial/${item.id}`, )
+          this.statusTypes.forEach(st => {
+            st.isDefault = false
+          })
+          item.isDefault = true
+          this.expanded = []
+          this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
     },
     async created () {
