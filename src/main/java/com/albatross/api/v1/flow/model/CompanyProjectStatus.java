@@ -13,6 +13,6 @@ public class CompanyProjectStatus {
     private String projectStatusType, rootProjectStatusType;
     private Attachment icon;
 
-    private Boolean archived;
+    private Boolean archived, isDefault;
 
 }

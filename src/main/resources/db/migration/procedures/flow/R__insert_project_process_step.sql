@@ -49,7 +49,7 @@ with cpsst as (
     from flow.company_process_step_status_type
     where
         company_id = p_company_id and
-        process_step_status_type_id = 1
+        is_default = true
 )
 insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, created_by_id, main, user_position_id, parent_project_process_step_id)
 select
