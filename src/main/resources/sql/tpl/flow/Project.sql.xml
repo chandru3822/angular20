@@ -298,7 +298,7 @@
     order by u.first_name, u.last_name
   ]]></project.getOwners>
 
-  <project.getActiveProjectStatusTypeByCompanyId><![CDATA[
+  <project.getDefaultProjectStatusTypeByCompanyId><![CDATA[
     select
       id,
       project_status_type_id,
@@ -310,16 +310,17 @@
       modified_by_id,
       company_id
     from flow.company_project_status_type cpst
-    where
-      company_id = :companyId and
-      project_status_type_id = 1
-  ]]></project.getActiveProjectStatusTypeByCompanyId>
+    where company_id = :companyId
+      and is_default is true
+      and archived is not true
+  ]]></project.getDefaultProjectStatusTypeByCompanyId>
 
 <project.getCompanyStatuses><![CDATA[
     select
         cpst.id,
         cpst.project_status_type,
         cpst.display_order,
+        cpst.is_default,
         pst.id as "projectStatusTypeId",
         cpst.archived,
         pst.project_status_type as "rootProjectStatusType"
@@ -334,6 +335,7 @@
         cpst.id,
         cpst.project_status_type,
         cpst.display_order,
+        cpst.is_default,
         pst.id as "projectStatusTypeId",
         cpst.archived,
         pst.project_status_type as "rootProjectStatusType"
@@ -368,6 +370,17 @@
         date_modified = now()
     where id = :id
 ]]></project.deleteCompanyStatus>
+
+  <project.saveInitialProjectStatusType>
+    <![CDATA[
+      update flow.company_project_status_type
+      set is_default = false
+      where company_id = :companyId;
+      update flow.company_project_status_type
+      set is_default = true
+      where id = :id;
+    ]]>
+  </project.saveInitialProjectStatusType>
 
   <project.insertCompanyStatus><![CDATA[
     insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, created_by_id, display_order)

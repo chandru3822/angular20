@@ -328,6 +328,10 @@ export default {
         const {data} = await postRequest(`/contact`, this.contact)
         this.contact.projects = data.projects
         await this.saveCustomFieldValues()
+        // Save BlueRaven Solar Contacts to Genesys
+        if (this.companyId == 3) {
+          await putRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
@@ -442,6 +446,7 @@ export default {
         }
         const {data} = await getRequestWithParams(`/processes`, {params})
         this.availableProcesses = data
+        this.selectedProcess = data?.length === 1 ? data[0] : {}
 
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
