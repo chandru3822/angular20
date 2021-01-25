@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -147,6 +148,11 @@ public class GenesysService {
   }
 
   public void addContact(Long contactId, List<CustomFieldValue> values) throws IOException, ApiException {
+    // Only add contacts if we are in Prod
+    if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
+      return;
+    }
+
     Contact contact = contactService.getContact(contactId);
     WritableDialerContact wdc = new WritableDialerContact();
     Calendar calendar = Calendar.getInstance();
@@ -217,6 +223,11 @@ public class GenesysService {
   }
 
   public void updateContact(Long contactId, List<CustomFieldValue> values) throws IOException, ApiException {
+    // Only update contacts if we are in Prod
+    if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
+      return;
+    }
+
     Contact contact = contactService.getContact(contactId);
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");

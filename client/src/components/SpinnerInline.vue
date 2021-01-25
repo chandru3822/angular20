@@ -1,5 +1,5 @@
 <template>
-  <v-col class="spinner-container">
+  <v-col class="spinner-container" :class="{'transparent': transparent, 'centered': centered}">
     <v-progress-circular
         indeterminate
         :size="size"
@@ -13,7 +13,9 @@ export default {
   name: 'Spinner',
   props: {
     spinnerColor: String,
-    size: Number
+    size: Number,
+    transparent: Boolean,
+    centered: Boolean
   }
 }
 </script>
@@ -23,5 +25,13 @@ export default {
   z-index: 1;
   background-color: var(--v-secondary-base);
   opacity: .5;
+}
+
+.transparent {
+  background-color: transparent;
+}
+
+.centered {
+  text-align: center;
 }
 </style>
