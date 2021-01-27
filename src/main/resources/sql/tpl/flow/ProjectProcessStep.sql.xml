@@ -1,6 +1,6 @@
 <sql>
 <projectProcessStep.insertProjectProcessStep><![CDATA[
-select insert_project_process_step as id from flow.insert_project_process_step(:projectId::integer, :processStepId::integer, :userPositionId::integer, :userId::integer, :companyId::integer, :parentProjectProcessStepId::integer)
+select insert_project_process_step as id from flow.insert_project_process_step(:projectId::integer, :processStepId::integer, :userPositionId::integer, :userId::integer, :companyId::integer, :parentProjectProcessStepId::integer, :companyProcessStepStatusTypeId::integer)
 ]]></projectProcessStep.insertProjectProcessStep>
 
   <projectProcessStep.delete><![CDATA[
@@ -34,7 +34,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
   ]]></projectProcessStep.addAttachment>
 
   <projectProcessStep.setStatus><![CDATA[
-  select from flow.update_project_process_step_status(:projectId::integer, :processStepId::integer, :projectProcessStepId::integer, :companyProcessStepStatusTypeId::integer, :processStepStatusTypeId::integer, :userId::integer)
+  select from flow.update_project_process_step_status(:projectId::integer, :processStepId::integer, :projectProcessStepId::integer, :companyProcessStepStatusTypeId::integer, :processStepStatusTypeId::integer, :userId::integer, :cancelledStatusTypeId::integer)
   ]]></projectProcessStep.setStatus>
 
   <projectProcessStep.getOwners><![CDATA[
@@ -95,8 +95,8 @@ where
 ]]></projectProcessStep.getActiveByProjectId>
 
 <projectProcessStep.insertPerformedAction><![CDATA[
-insert into flow.project_process_step_action (project_process_step_id, process_step_action_id, triggered_automatically, created_by_id)
-values (:ppsId, :psaId, :autoTriggered, :createdById)
+insert into flow.project_process_step_action (project_process_step_id, process_step_action_id, triggered_automatically, created_by_id, allow_multiple_uses)
+values (:ppsId, :psaId, :autoTriggered, :createdById, :allowMultipleUses)
 ]]></projectProcessStep.insertPerformedAction>
 
 <projectProcessStep.getIdsByAutoTriggerActionsAndReqs><![CDATA[

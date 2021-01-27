@@ -35,6 +35,12 @@ public class ProcessStepStatusController {
     return processStepStatusService.getStatusTypesForCompany(projectId, projectProcessStepId);
   }
 
+  @GetMapping(value = "/company/cancelled", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyProcessStepStatusType> getCancelledCompanyStatusTypesForCompany (@RequestParam(required = false) Long projectId,
+                                                                                      @RequestParam(required = false) Long projectProcessStepId) {
+    return processStepStatusService.getCancelledCompanyStatusTypesForCompany(projectId, projectProcessStepId);
+  }
+
   @DeleteMapping(value = "/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
     processStepStatusService.deleteType(typeId);

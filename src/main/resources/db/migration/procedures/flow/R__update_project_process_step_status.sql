@@ -1,13 +1,13 @@
 -- drop function if exists flow.update_project_process_step_status(integer, integer, integer, integer, integer, integer);
 
-CREATE OR REPLACE FUNCTION flow.update_project_process_step_status(p_project_id integer, p_process_step_id integer, p_project_process_step_id integer, p_company_process_step_status_typeId integer, p_process_step_status_type_id integer, p_user_id integer)
+CREATE OR REPLACE FUNCTION flow.update_project_process_step_status(p_project_id integer, p_process_step_id integer, p_project_process_step_id integer,
+                    p_company_process_step_status_typeId integer, p_process_step_status_type_id integer, p_user_id integer, p_cancelled_company_status_id integer)
 RETURNS void
 LANGUAGE plpgsql AS
 $$
 DECLARE
     v_count integer;
     v_company_id integer;
-    v_company_cancelled_status_id integer;
 BEGIN
 
 -- Get count of active PPS other than the one we're updating
@@ -28,15 +28,16 @@ IF v_count > 0 and p_process_step_status_type_id = 1
 THEN
 
 -- Grab the cancelled status for this company
-select id into v_company_cancelled_status_id
-from flow.company_process_step_status_type
-where
-    company_id = v_company_id and
-    process_step_status_type_id = 3;
 
+-- cancel existing pps using the param passed in for p_cancelled_company_status_id -- unless called from an action updating itself which can only happen on active pps so this shouldn't matter
 update flow.project_process_step
 set
-    company_process_step_status_type_id = v_company_cancelled_status_id,
+    company_process_step_status_type_id = case when p_cancelled_company_status_id is not null then p_cancelled_company_status_id else
+        ( select status.id
+            from flow.company_process_step_status_type status
+            where status.company_id = v_company_id
+              and status.process_step_status_type_id = 3
+            limit 1) end, --just in case,
     date_modified = now(),
     modified_by_id = p_user_id
 where

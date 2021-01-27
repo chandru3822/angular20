@@ -105,17 +105,65 @@
             <td class="text-left">{{getOwnerName(projectProcessStep)}}</td>
             <td class="text-left">{{projectProcessStep.lastUpdated}}</td>
             <td class="text-left">
-              <v-select
-                v-model="projectProcessStep.selectedProcessStepStatusType"
-                :items="availableProcessStepStatuses"
-                item-text="processStepStatusType"
-                item-value="companyProcessStepStatusTypeId"
-                @change="updateStatus(projectProcessStep.projectProcessStepId)"
-                return-object
-                solo
-                flat
-                hide-details
-              />
+              <div>
+                {{ projectProcessStep.processStepStatusType }}
+                <v-dialog
+                  v-model="projectProcessStep.editConfirm"
+                  width="500">
+                  <template v-slot:activator="{ on }">
+                    <v-btn text color="primaryCustom" v-on="on" @click="getCancelledStatuses()">
+                      <v-icon>edit</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title
+                    >
+                      Change Process Step Status
+                    </v-card-title>
+
+                    <v-card-text class="mt-2">
+                      <v-autocomplete
+                        v-model="projectProcessStep.newStatusToUse"
+                        :items="availableProcessStepStatuses"
+                        item-text="processStepStatusType"
+                        item-value="companyProcessStepStatusTypeId"
+                        label="Status To Change To"
+                        return-object
+                        class="mt-2"
+                      />
+                      <div v-if="projectProcessStep.newStatusToUse.processStepStatusTypeId === 1">
+                        When setting a process step to an ACTIVE status. You must select what to do with all existing Active steps of the same type.
+                        <v-autocomplete
+                          v-model="projectProcessStep.cancelledCompanyStatusTypeId"
+                          :items="cancelledCompanyStatuses"
+                          label="Status To Use For Existing"
+                          item-text="processStepStatusType"
+                          item-value="id"
+                        />
+                      </div>
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="projectProcessStep.editConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        :disabled="!projectProcessStep.newStatusToUse || (projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 && !projectProcessStep.cancelledCompanyStatusTypeId)"
+                        color="primaryCustom"
+                        text
+                        @click="[projectProcessStep.editConfirm = true, updateStatus(projectProcessStep)]">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </div>
             </td>
             <td class="text-left">
               <v-dialog
@@ -173,7 +221,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
-import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+import {getCompanyStatusTypes, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
@@ -191,6 +239,7 @@ export default {
       displayDropdown: false,
       displayChangeOwner: false,
       availableOwners: [],
+      cancelledCompanyStatuses: [],
       availableProcessStepStatuses: [],
       isProjectProcessStepsLoading: false,
       selectedNewProjectProcessStep: null,
@@ -234,6 +283,7 @@ export default {
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
         this.projectProcessSteps = data.map(step => {
           step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.id === step.companyProcessStepStatusTypeId)
+          step.newStatusToUse = {}
           return step
         })
       } catch (e) {
@@ -276,6 +326,18 @@ export default {
         logError(e)
       }
     },
+    async getCancelledStatuses() {
+      if (this.cancelledCompanyStatuses?.length === 0) {
+        try {
+          const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+          this.cancelledCompanyStatuses = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
+    },
     getOwnerName: projectProcessStep => projectProcessStep.owner?.fullName ?? '',
     updateOwner: async function () {
       this.displayChangeOwner = false
@@ -290,11 +352,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    updateStatus: async function (projectProcessStepId) {
+    updateStatus: async function (pps) {
       const selectedStep = this.projectProcessSteps.find(step => step.projectProcessStepId === projectProcessStepId)
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, selectedStep.selectedProcessStepStatusType)
+        await postRequest(`/projectProcessStep/${projectProcessStepId}/status/${pps.newStatusToUse.id}`, selectedStep.newStatusToUse)
         await this.getProjectProcessSteps()
       } catch (e) {
         logError(e)

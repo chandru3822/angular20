@@ -88,6 +88,7 @@ public class ProcessStepActionService {
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
+    params.put("multipleUses", action.getMultipleUses() != null && action.getMultipleUses());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
 
@@ -144,6 +145,7 @@ public class ProcessStepActionService {
     params.put("processStepId", action.getProcessStepId());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
+    params.put("multipleUses", action.getMultipleUses() != null && action.getMultipleUses());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
 
@@ -160,6 +162,8 @@ public class ProcessStepActionService {
     params.put("actionId", actionId);
 
     List<ProcessStep> results = sqlCache.query("processStepAction.getChildProcessStepsForAction", params, ProcessStep.class);
+//    rn add this back to the old query if i broke things by taking it out: ps.id != :stepId
+
     return results;
   }
 
@@ -170,8 +174,21 @@ public class ProcessStepActionService {
     params.put("processStepActionId", actionId);
     params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.getId());
+    params.put("companyProcessStepStatusTypeId", child.getCompanyProcessStepStatusTypeId());
 
     Long id = sqlCache.updateReturningId("processStepAction.addChildStepToAction", params, "id").longValue();
+    return getActionChildStep(id);
+  }
+
+  public ProcessStepActionChildProcess saveChildProcessCancelledStatus(Long actionId, Long childProcessStepId, ProcessStepActionChildProcess child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("childProcessStepId", childProcessStepId);
+    params.put("processStepActionId", actionId);
+    params.put("companyProcessStepStatusTypeId", child.getCompanyProcessStepStatusTypeId());
+    params.put("modifiedById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("processStepAction.saveChildProcessCancelledStatus", params, "id").longValue();
     return getActionChildStep(id);
   }
 
@@ -200,6 +217,7 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
+    params.put("companyProcessStepStatusTypeId", child.getCompanyProcessStepStatusTypeId());
     sqlCache.update("processStepAction.updateActionChildStep", params);
   }
 
