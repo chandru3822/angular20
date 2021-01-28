@@ -415,6 +415,7 @@
              user_status_type,
              company_id,
              has_access,
+             new_user_default,
              archived
       from flow.user_status_type
         where company_id = :companyId
