@@ -27,7 +27,7 @@
               <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="[newWorkQueueType = { selectedStatuses: [], projectStatuses: [], processStepStatuses: [] }, getWorkQueueTypesForStep(), prepTempStatuses(newWorkQueueType), prepTempProcessStepStatuses(newWorkQueueType)]" v-if="userCanAdd">
+                <v-btn text @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }, getWorkQueueTypesForStep(), prepTempStatuses(newWorkQueueType), prepTempProcessStepStatuses(newWorkQueueType)]" v-if="userCanAdd">
                   <v-icon v-if="!addNewWorkQueueType">add</v-icon>
                   {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}
                 </v-btn>
@@ -250,50 +250,52 @@
                           <span :class="{'bold': pss.processStepStatusTypeId != null}">{{ pss.processStepStatusType }}</span>
                         </span>
                       </td>
-                      <td class="text-right flex-display">
-                        <v-btn text @click="[expanded = [item], prepTempStatuses(item), prepTempProcessStepStatuses(item)]" v-if="!expanded.includes(item)">
-                          <v-icon>edit</v-icon>
-                        </v-btn>
-                        <v-btn text @click="expanded = []" v-else>cancel
-                        </v-btn>
-                        <v-dialog
-                          v-if="userCanEdit"
-                          v-model="item.deleteConfirm"
-                          width="500">
-                          <template v-slot:activator="{ on }">
-                            <v-btn text v-on="on">
-                              <v-icon>delete</v-icon>
-                            </v-btn>
-                          </template>
-                          <v-card>
-                            <v-card-title
-                              class="headline grey lighten-2"
-                              primary-title
-                            >
-                              Confirm
-                            </v-card-title>
-
-                            <v-card-text>
-                              Are you sure you want to delete <strong>{{ item.workQueueType }}</strong>?
-                            </v-card-text>
-
-                            <v-divider></v-divider>
-
-                            <v-card-actions>
-                              <v-spacer></v-spacer>
-                              <v-btn
-                                @click="item.deleteConfirm = false">
-                                No
+                      <td class="text-right">
+                        <div class="flex-display">
+                          <v-btn text @click="[expanded = [item], prepTempStatuses(item), prepTempProcessStepStatuses(item)]" v-if="!expanded.includes(item)">
+                            <v-icon>edit</v-icon>
+                          </v-btn>
+                          <v-btn text @click="expanded = []" v-else>cancel
+                          </v-btn>
+                          <v-dialog
+                            v-if="userCanEdit"
+                            v-model="item.deleteConfirm"
+                            width="500">
+                            <template v-slot:activator="{ on }">
+                              <v-btn text v-on="on">
+                                <v-icon>delete</v-icon>
                               </v-btn>
-                              <v-btn
-                                color="primaryCustom"
-                                text
-                                @click="deleteWorkQueueTypeFromStep(item)">
-                                Yes
-                              </v-btn>
-                            </v-card-actions>
-                          </v-card>
-                        </v-dialog>
+                            </template>
+                            <v-card>
+                              <v-card-title
+                                class="headline grey lighten-2"
+                                primary-title
+                              >
+                                Confirm
+                              </v-card-title>
+
+                              <v-card-text>
+                                Are you sure you want to delete <strong>{{ item.workQueueType }}</strong>?
+                              </v-card-text>
+
+                              <v-divider></v-divider>
+
+                              <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn
+                                  @click="item.deleteConfirm = false">
+                                  No
+                                </v-btn>
+                                <v-btn
+                                  color="primaryCustom"
+                                  text
+                                  @click="deleteWorkQueueTypeFromStep(item)">
+                                  Yes
+                                </v-btn>
+                              </v-card-actions>
+                            </v-card>
+                          </v-dialog>
+                        </div>
                       </td>
                     </tr>
                   </template>
@@ -526,7 +528,6 @@ export default {
       newWorkQueueType: {
         processStepStatuses: [],
         projectStatuses: [],
-        selectedStatuses: []
       },
       addNewWorkQueueType: false,
       checkedIds: [],
@@ -933,7 +934,7 @@ export default {
         this.processStep.workQueueTypes.push(data)
         // reset fields
         this.addNewWorkQueueType = false
-        this.newWorkQueueType = { projectStatuses: []}
+        this.newWorkQueueType = { projectStatuses: [], processStepStatuses: [] }
         this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -948,15 +949,16 @@ export default {
       //todo: fix this to save both things
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/workQueueType/saveProjectStatusTypesToWorkQueueType`, item)
-        item.projectStatuses = data
+        const {data} = await putRequest(`/workQueueType/saveStatusTypesToWorkQueueType`, item)
+        item.projectStatuses = data.projectStatuses
+        item.processStepStatuses = data.processStepStatuses
         this.expanded = []
-        this.snackbar = getSnackbar('SUCCESS', 'Project Status Types Saved')
+        this.snackbar = getSnackbar('SUCCESS', 'Status Types Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Project Status Types')
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Status Types')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
