@@ -248,7 +248,7 @@
         </v-toolbar>
         <v-col v-for="action in processStep.actions" :key="action.id" class="pt-0">
           <ActionButton
-            v-if="action.actionTypeId === 2"
+            v-if="action.actionTypeId === 2 && !action.hidden"
             :actionId="action.id"
             :projectProcessStepId="parseInt(projectProcessStepId)"
             :label="action.actionName"
