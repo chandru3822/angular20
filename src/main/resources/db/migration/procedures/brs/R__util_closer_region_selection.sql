@@ -27,11 +27,14 @@ BEGIN
                        o.active_flag as active
                 from flow.user_positions_vw upv
                     inner join flow.org o on o.id = upv.org_id
+                    inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 2
                     left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
                 where upv.org_id is not null
-                    and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
+                    and  case when p_district_ids::text != '[]'::text then
+                                o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
                                             FROM json_array_elements(p_district_ids) elem)
+                        else 1= 1 end
                 group by upv.org_id, o.org_name, lov.name, o.active_flag
                 order by o.active_flag desc, o.org_name, lov.name
             ) as sub_rows;
@@ -46,11 +49,14 @@ BEGIN
                        o.active_flag as active
                 from flow.user_positions_vw upv
                     inner join flow.org o on o.id = upv.org_id
+                    inner join flow.org_type ot on o.org_type_id = ot.id and ot.id = 2
                     left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
                 where upv.org_id is not null
-                    and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
-                                            FROM json_array_elements(p_district_ids) elem)
+                    and  case when p_district_ids::text != '[]'::text then
+                                      o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
+                                                          FROM json_array_elements(p_district_ids) elem)
+                              else 1= 1 end
                     and upv.user_id = p_platform_user_id
                 group by upv.org_id, o.org_name, lov.name, o.active_flag
                 order by o.active_flag desc, o.org_name, lov.name
