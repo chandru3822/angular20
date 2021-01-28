@@ -612,6 +612,7 @@
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
                 </td>
                 <td>{{ item.owner_name || '' }}</td>
+                <td>{{ item.office || '' }}</td>
                 <td>{{ item.state || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
@@ -1282,6 +1283,7 @@
         funnelDrilldownHeaders: [
           { text: '', value: '', show: true, sortable: false, width: 25, optional: false }, // 0
           { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false }, // 1
+          { text: 'Office', value: 'office', show: true, width: 75, optional: false }, // 2
           { text: 'State', value: 'state', show: true, width: 75, optional: false }, // 2
           { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false }, // 3
           { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false }, // 4
