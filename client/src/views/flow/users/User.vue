@@ -40,6 +40,7 @@
               <br/><span>* Cannot exceed 2MB</span>
             </form>
           {{user.firstName}} {{user.lastName}}
+          <span v-if="null != user.primaryPosition" class="ml-1"> - {{ user.primaryPosition}}</span>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs background-color="transparent">
