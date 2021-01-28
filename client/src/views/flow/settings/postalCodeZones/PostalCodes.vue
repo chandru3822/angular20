@@ -1,5 +1,5 @@
 <template>
-  <v-container class="custom-field-group-container">
+  <v-container id="postal-codes" class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -26,7 +26,7 @@
             <v-btn :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
-          <v-card>
+          <v-card class="square-card">
             <v-card-title class="pt-0">
               <v-text-field
                 v-model="search"
@@ -44,7 +44,7 @@
               disable-sort
               :search="search"
               hide-default-footer
-              class="elevation-1"
+              class="elevation-1 round-robin-table"
             >
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
@@ -144,7 +144,7 @@
         return this.postalCodeZones.filter(pcz => { return !pcz.archived})
       },
       goToPostalCodeZone(zoneId) {
-        this.$router.push({path: `/settings/postalCode/${zoneId}`})
+        this.$router.push({path: `/settings/postalCode/${zoneId}/scheduleTo`})
       },
       async getPostalCodeZones () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -177,7 +177,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/postalCode/zone`, this.newZone)
-          this.$router.push({path: `/settings/postalCode/${data.id}`})
+          this.$router.push({path: `/settings/postalCode/${data.id}/scheduleTo`})
           this.snackbar = getSnackbar('SUCCESS', 'Zone Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -194,6 +194,14 @@
     }
   }
 </script>
+
+<style lang="scss">
+  #postal-codes .v-data-table__wrapper {
+    height: calc(100vh - 300px);
+    min-height: 300px;
+    border-top: solid 1px #E0E0E0;
+  }
+</style>
 
 <style scoped lang="scss">
 
