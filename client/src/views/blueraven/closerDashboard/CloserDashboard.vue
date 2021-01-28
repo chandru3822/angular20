@@ -36,6 +36,14 @@
 
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
+<!--    1: {{this.showFunnels}}-->
+<!--    2: {{this.apptsCreatedPipelineLoaded}}-->
+<!--    3: {{this.apptsToFdcPipelineLoaded}}-->
+<!--    4: {{this.showDashboard}}-->
+<!--    5: {{this.rankingTablesLoaded}}-->
+<!--    6: {{this.showIncentive}}-->
+<!--    7: {{this.incentiveDataLoaded}}-->
+
     <div v-show="showFunnels" id="appts-created-pipeline-container" class="mb-8">
       <div class="pipeline-header-container">
         <v-icon class="pipeline-icon">mdi-poll</v-icon>
@@ -200,6 +208,7 @@
                           multiple
                           dense
                           hide-details
+                          @input="districtValuesChanged = true"
                           return-object>
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
@@ -208,7 +217,7 @@
             </template>
             <template v-if="districtData.length > 0" v-slot:prepend-item>
               <v-list-item @click="toggleSelectAllDistricts">
-                <v-list-item-action>
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ districtSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -218,7 +227,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -240,6 +249,7 @@
                           outlined
                           multiple
                           dense
+                          @input="regionValuesChanged = true"
                           hide-details
                           return-object
                           ref="regionSelect">
@@ -250,7 +260,7 @@
             </template>
             <template v-if="regionData.length > 0" v-slot:prepend-item>
               <v-list-item @click="toggleSelectAllRegions">
-                <v-list-item-action>
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ regionSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -260,7 +270,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -282,6 +292,7 @@
                           outlined
                           multiple
                           dense
+                          @input="officeValuesChanged = true"
                           hide-details
                           return-object
                           ref="officeSelect">
@@ -292,7 +303,7 @@
             </template>
             <template v-if="officeData.length > 0" v-slot:prepend-item>
               <v-list-item @click="toggleSelectAllOffices">
-                <v-list-item-action>
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ officeSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -302,7 +313,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -324,6 +335,7 @@
                           outlined
                           multiple
                           dense
+                          @input="repValuesChanged = true"
                           hide-details
                           return-object
                           ref="repSelect">
@@ -334,7 +346,7 @@
             </template>
             <template v-if="repData.length > 0" v-slot:prepend-item>
               <v-list-item @click="toggleSelectAllReps()">
-                <v-list-item-action>
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ repSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -344,7 +356,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -1244,6 +1256,13 @@
           { label: 'Year to Date', value: 'YTD' },
           { label: 'Custom', value: 'Custom' }
         ],
+        //if we allow users to "Select All" when there are more than this the UI slows to a halt
+        maxRepLimit: 1000,
+        //without these the ui keeps reloading the dropdowns when nothing has changed
+        districtValuesChanged: false,
+        regionValuesChanged: false,
+        officeValuesChanged: false,
+        repValuesChanged: false,
         apptsToFdcPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
         showApptsToFdcPipelineCustomDates: false,
         viewSelect: 'standard',
@@ -2071,16 +2090,22 @@
         return moment(date, 'M/D/YY').format('YYYY-MM-DD')
       },
 
-      loadFunnels () {
+      async loadFunnels () {
         if (this.apptsCreatedPipelineData?.length === 0) {
           this.loadSources()
         }
 
         if (this.apptsToFdcPipelineData?.length === 0) {
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
-            this.districtLoad(true)
+            await this.districtLoad(true)
+            await this.regionLoad(true, true)
+            await this.officeLoad(true, true)
+            this.repLoad(true)
           } else {
-            this.districtLoad(false)
+            await this.districtLoad(false)
+            await this.regionLoad(false, true)
+            await this.officeLoad(false, true)
+            this.repLoad(false)
           }
         }
       },
@@ -2111,7 +2136,6 @@
             getRequest('/closerDashboard/getSelfGenSources', 'blueraven').then(res => {
               this.selfGenSourceData = res.data
               this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
-
               this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
             })
           })
@@ -2156,8 +2180,8 @@
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             if (this.apptsToFdcPipelineData.length > 0) {
               this.apptsCreatedPipelineLoaded = true
-              this.apptsCreatedPipelineDataLoading = false
             }
+            this.apptsCreatedPipelineDataLoading = false
           } else {
             this.apptsCreatedPipelineLoaded = true
             this.apptsCreatedPipelineDataLoading = false
@@ -2186,17 +2210,19 @@
         if (useRepDataInstead) {
           this.repData.forEach((rep, index) => {
             reps.push(rep.user_id)
-            // if (index === this.repData.length - 1) {
+            if (index === this.repData.length - 1) {
             //   this.districtModel = []
             //   this.regionModel = []
             //   this.officeModel = []
-            //   this.repModel = [
-            //     {user_id: -1, name: 'All Reps', active: true}
-            //   ]
-            //   this.repData = [
-            //     {user_id: -1, name: 'All Reps', active: true}
-            //   ]
-            // }
+              if (this.districtModel?.length === 0 && this.regionModel?.length === 0 && this.officeModel?.length === 0 || this.repData?.length > this.maxRepLimit) {
+                this.repModel = [
+                  {user_id: -1, name: 'All Reps', active: true}
+                ]
+                this.repData = [
+                  {user_id: -1, name: 'All Reps', active: true}
+                ]
+              }
+            }
           })
         } else {
           this.repModel.forEach(rep => reps.push(rep.user_id))
@@ -2257,10 +2283,8 @@
             this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
             this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
-            if (this.apptsCreatedPipelineData.length > 0) {
-              this.apptsToFdcPipelineLoaded = true
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
+            this.apptsToFdcPipelineLoaded = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
           })
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -2292,17 +2316,25 @@
             this.districtModel = cloneDeep(this.districtData)
           }
 
-          if (this.districtModel.length > 0) {
-            this.regionLoad(preSelectLists)
+          // reset these values when the districts change
+          this.regionModel = []
+          this.officeModel = []
+          this.repModel = []
+
+          if (this.districtModel.length === 0) {
+            this.regionLoad(preSelectLists, true)
+            this.officeLoad(preSelectLists, true)
+            this.repLoad(preSelectLists, true)
           }
         })
+
 
         this.apptsToFdcPipelineData = []
         this.apptsToFdcPipelineLoaded = true
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
-      async regionLoad (preSelectLists) {
+      async regionLoad (preSelectLists, loadedFromHigher) {
         if (!this.currentUserId) return
 
         let districts = this.districtModel.map(function (district) {
@@ -2311,30 +2343,35 @@
           }
         })
 
-        if (!this.selectAllDistricts) {
-          this.regionModel = []
-          this.regionData = []
-          this.officeModel = []
-          this.officeData = []
-          this.repModel = []
-          this.repData = []
-          this.apptsToFdcPipelineData = []
+        // if (!this.selectAllDistricts) {
+        //   this.regionModel = []
+        //   this.regionData = []
+        //   this.officeModel = []
+        //   this.officeData = []
+        //   this.repModel = []
+        //   this.repData = []
+        //   this.apptsToFdcPipelineData = []
+        //
+        //   // if (districts?.length === 0) return
+        // }
 
-          if (districts?.length === 0) return
-        }
+        // reset these values when the regions change
+        this.officeModel = []
+        this.repModel = []
 
-        this.repModel = [] // in case the user previously clicked the 'All Reps' button
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getCloserRegions(this.currentUserId, JSON.stringify(districts), false).then(res => {
           this.regionData = res
 
+
           if (preSelectLists) {
             this.regionModel = cloneDeep(this.regionData)
           }
 
-          if (this.regionModel.length > 0) {
-            this.officeLoad(preSelectLists)
+          if (this.regionModel.length === 0 && !loadedFromHigher) {
+            this.officeLoad(preSelectLists, true)
+            this.repLoad(preSelectLists, true)
           }
         })
 
@@ -2342,8 +2379,14 @@
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
-      async officeLoad (preSelectLists) {
+      async officeLoad (preSelectLists, loadedFromHigher) {
         if (!this.currentUserId) return
+
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.org_id
+          }
+        })
 
         let regions = this.regionModel.map(function (region) {
           return {
@@ -2351,37 +2394,46 @@
           }
         })
 
-        if (!this.selectAllRegions) {
-          this.officeModel = []
-          this.officeData = []
-          this.repModel = []
-          this.repData = []
-          this.apptsToFdcPipelineData = []
+        // if (!this.selectAllRegions) {
+        //   this.officeModel = []
+        //   this.officeData = []
+        //   this.repModel = []
+        //   this.repData = []
+        //   this.apptsToFdcPipelineData = []
+        //
+        //   // if (regions?.length === 0) return
+        // }
 
-          if (regions?.length === 0) return
-        }
+        // reset these values when the offices change
+        this.repModel = []
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserOffices(this.currentUserId, JSON.stringify(regions), false).then(res => {
+        await getCloserOffices(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), false).then(res => {
           this.officeData = res
 
           if (preSelectLists) {
             this.officeModel = cloneDeep(this.officeData)
           }
 
-          if (this.officeModel.length > 0) {
+          if (this.officeModel.length > 0 && !loadedFromHigher) {
             this.repLoad(preSelectLists)
           }
         })
 
         this.apptsToFdcPipelineData = []
-        this.repData = []
+        // this.repData = []
         this.repModel = []
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       async repLoad (preSelectLists) {
         if (!this.currentUserId) return
+
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.org_id
+          }
+        })
 
         let regions = this.regionModel.map(function (region) {
           return {
@@ -2395,16 +2447,16 @@
           }
         })
 
-        if (!this.selectAllOffices) {
-          this.repModel = []
-          this.repData = []
-          this.apptsToFdcPipelineData = []
-
-          if (offices?.length === 0) return
-        }
+        // if (!this.selectAllOffices) {
+        //   this.repModel = []
+        //   this.repData = []
+        //   this.apptsToFdcPipelineData = []
+        //
+        //   // if (offices?.length === 0) return
+        // }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
+        await getCloserReps(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), JSON.stringify(offices)).then(res => {
           this.repData = res
 
           if (preSelectLists) {
@@ -2416,6 +2468,7 @@
           if (this.repModel.length > 0) {
             this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
           }
+          this.$store.commit(AppMutations.SET_LOADING, false)
         })
 
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -2775,6 +2828,14 @@
           if (this.selectAllReps) {
             this.repModel = []
             this.apptsToFdcPipelineData = []
+          }  else {
+            if ((this.districtModel?.length === 0 && this.regionModel?.length === 0 && this.officeModel?.length === 0) || this.repData?.length > this.maxRepLimit) {
+              this.repModel = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+            } else {
+              this.repModel = cloneDeep(this.repData)
+            }
           }
         })
       },
@@ -2834,7 +2895,16 @@
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
           if(!val && this.districtModel.length > 0) {
-            this.regionLoad(false)
+            if(this.districtValuesChanged) {
+              // reset these values when the districts change
+              this.regionModel = []
+              this.officeModel = []
+              this.repModel = []
+              this.regionLoad(false)
+              this.officeLoad(false)
+              this.repLoad(false)
+              this.districtValuesChanged = false
+            }
           }
         })
       this.myDynamicRegionWatcher = this.$watch(
@@ -2842,7 +2912,14 @@
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
           if(!val && this.regionModel.length > 0) {
-            this.officeLoad(false)
+            if(this.regionValuesChanged) {
+              // reset these values when the regions change
+              this.officeModel = []
+              this.repModel = []
+              this.officeLoad(false)
+              this.repLoad(false)
+              this.regionValuesChanged = false
+            }
           }
         })
       this.myDynamicOfficeWatcher = this.$watch(
@@ -2850,7 +2927,12 @@
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
           if(!val && this.officeModel.length > 0) {
-            this.repLoad(false)
+            if(this.officeValuesChanged) {
+              // reset these values when the offices change
+              this.repModel = []
+              this.repLoad(false)
+              this.officeValuesChanged = false
+            }
           }
         })
       this.myDynamicRepWatcher = this.$watch(
@@ -2858,11 +2940,14 @@
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
           if(!val && this.repModel.length > 0) {
-            this.repModel = cloneDeep(this.repData)
-            if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
-              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
-            } else {
-              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+            if(this.repValuesChanged) {
+              // this.repModel = cloneDeep(this.repData)
+              if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+                this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+              } else {
+                this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+              }
+              this.repValuesChanged = false
             }
           }
 
