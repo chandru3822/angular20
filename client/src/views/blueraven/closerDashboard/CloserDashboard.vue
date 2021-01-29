@@ -329,7 +329,7 @@
                           v-model="repModel"
                           :items="repData"
                           item-text="name"
-                          item-value="user_id"
+                          item-key="user_position_id"
                           label="Rep"
                           no-data-text="No reps available"
                           outlined
@@ -1259,6 +1259,7 @@
           { label: 'Year to Date', value: 'YTD' },
           { label: 'Custom', value: 'Custom' }
         ],
+        initialPageLoad: true,
         //if we allow users to "Select All" when there are more than this the UI slows to a halt
         maxRepLimit: 1000,
         //without these the ui keeps reloading the dropdowns when nothing has changed
@@ -2115,7 +2116,6 @@
       },
 
       funnelAllReps () {
-        console.log('FUNNEL HAPPENED!')
         this.districtModel = []
         this.regionModel = []
         this.officeModel = []
@@ -2326,10 +2326,10 @@
           this.officeModel = []
           this.repModel = []
 
-          if (this.districtModel.length === 0) {
+          if (!this.initialPageLoad) {
             this.regionLoad(preSelectLists, true)
-            this.officeLoad(preSelectLists, true)
-            this.repLoad(preSelectLists, true)
+            // this.officeLoad(preSelectLists, true)
+            // this.repLoad(preSelectLists, true)
           }
         })
 
@@ -2373,10 +2373,9 @@
           if (preSelectLists) {
             this.regionModel = cloneDeep(this.regionData)
           }
-
-          if (this.regionModel.length === 0 && !loadedFromHigher) {
+          if (!this.initialPageLoad) {
             this.officeLoad(preSelectLists, true)
-            this.repLoad(preSelectLists, true)
+            // this.repLoad(preSelectLists, true)
           }
         })
 
@@ -2420,8 +2419,8 @@
             this.officeModel = cloneDeep(this.officeData)
           }
 
-          if (this.officeModel.length > 0 && !loadedFromHigher) {
-            this.repLoad(preSelectLists)
+          if (!this.initialPageLoad) {
+            this.repLoad(preSelectLists, true)
           }
         })
 
@@ -2463,6 +2462,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getCloserReps(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), JSON.stringify(offices)).then(res => {
           this.repData = res
+
           this.repDataMaster = cloneDeep(res)
 
           if (preSelectLists) {
@@ -2476,7 +2476,7 @@
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         })
-
+        this.initialPageLoad = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
@@ -2919,8 +2919,8 @@
               this.repModel = []
               this.repDataSelectAll = false
               this.regionLoad(false)
-              this.officeLoad(false)
-              this.repLoad(false)
+              // this.officeLoad(false)
+              // this.repLoad(false)
               this.districtValuesChanged = false
             }
           }
@@ -2936,7 +2936,7 @@
               this.repModel = []
               this.repDataSelectAll = false
               this.officeLoad(false)
-              this.repLoad(false)
+              // this.repLoad(false)
               this.regionValuesChanged = false
             }
           }
