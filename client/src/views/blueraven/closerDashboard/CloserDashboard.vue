@@ -2318,7 +2318,7 @@
           }
 
           if (preSelectLists) {
-            this.districtModel = cloneDeep(this.districtData)
+            this.districtModel = this.districtData.filter(od => od.active)
           }
 
           // reset these values when the districts change
@@ -2371,7 +2371,7 @@
 
 
           if (preSelectLists) {
-            this.regionModel = cloneDeep(this.regionData)
+            this.regionModel = this.regionData.filter(od => od.active)
           }
           if (!this.initialPageLoad) {
             this.officeLoad(preSelectLists, true)
@@ -2416,7 +2416,7 @@
           this.officeData = res
 
           if (preSelectLists) {
-            this.officeModel = cloneDeep(this.officeData)
+            this.officeModel = this.officeData.filter(od => od.active)
           }
 
           if (!this.initialPageLoad) {
