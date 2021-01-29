@@ -186,6 +186,7 @@
               LEFT JOIN brs.ahj ON ahj.metro_area_id = ocfv.int_value
             WHERE upv.end_date IS NULL
               AND upv.user_archived IS FALSE
+              and upv.archived is not true
               AND upv.primary_flag IS TRUE
               AND o.org_type_id = 8
               AND ahj.id = p.ahj_id) fots
