@@ -2911,7 +2911,7 @@
         () => this.$refs.districtSelect.isMenuActive,
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
-          if(!val && this.districtModel.length > 0) {
+          if(!val) {
             if(this.districtValuesChanged) {
               // reset these values when the districts change
               this.regionModel = []
@@ -2929,7 +2929,7 @@
         () => this.$refs.regionSelect.isMenuActive,
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
-          if(!val && this.regionModel.length > 0) {
+          if(!val) {
             if(this.regionValuesChanged) {
               // reset these values when the regions change
               this.officeModel = []
@@ -2945,7 +2945,7 @@
         () => this.$refs.officeSelect.isMenuActive,
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
-          if(!val && this.officeModel.length > 0) {
+          if(!val) {
             if(this.officeValuesChanged) {
               // reset these values when the offices change
               this.repModel = []
