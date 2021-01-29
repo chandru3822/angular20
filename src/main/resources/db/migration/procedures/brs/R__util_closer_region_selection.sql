@@ -13,6 +13,7 @@ BEGIN
         inner join flow.org_level ol on ol.id = ot.org_level_id
     where up.user_id = p_platform_user_id
         and up.end_date is null
+        and up.archived is not true
         and up.primary_flag is true;
 
     -- org_level_id of 5 = Region
@@ -31,6 +32,7 @@ BEGIN
                     left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
                 where upv.org_id is not null
+                  and upv.archived is not true
                     and  case when p_district_ids::text != '[]'::text then
                                 o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
                                             FROM json_array_elements(p_district_ids) elem)
@@ -53,6 +55,7 @@ BEGIN
                     left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
                 where upv.org_id is not null
+                  and upv.archived is not true
                     and  case when p_district_ids::text != '[]'::text then
                                       o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
                                                           FROM json_array_elements(p_district_ids) elem)

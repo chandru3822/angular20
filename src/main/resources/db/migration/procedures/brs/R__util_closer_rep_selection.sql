@@ -8,7 +8,9 @@ DECLARE
 BEGIN
     select array_agg(position_id) into v_current_position_ids
     from flow.user_position
-    where user_id = p_platform_user_id and end_date is null;
+    where user_id = p_platform_user_id
+      and archived is not true
+      and end_date is null;
 
     select min(ol.level)
     into v_org_level_id
@@ -18,6 +20,7 @@ BEGIN
         inner join flow.org_level ol on ol.id = ot.org_level_id
     where up.user_id = p_platform_user_id
         and up.end_date is null
+        and up.archived is not true
         and up.primary_flag is true;
 
     -- org_level_id of 6 = Office
@@ -44,6 +47,7 @@ BEGIN
                     inner join flow.org o3 on o3.id = o2.parent_org_id  -- district
                     inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 21 --district
                 where upv.org_id is not null
+                  and upv.archived is not true
                     and case when p_office_ids::text != '[]'::text then
                         o.id in (SELECT (elem ->> 'office_id') :: INTEGER
                                        FROM json_array_elements(p_office_ids) elem)
@@ -82,6 +86,7 @@ BEGIN
                         inner join flow.org o3 on o3.id = o2.parent_org_id  -- district
                         inner join flow.org_type ot2 on ot2.id = o3.org_type_id and ot2.id = 21 --district
                     where upv.org_id is not null
+                      and upv.archived is not true
                       and case when p_office_ids::text != '[]'::text then
                                        o.id in (SELECT (elem ->> 'office_id') :: INTEGER
                                                 FROM json_array_elements(p_office_ids) elem)
