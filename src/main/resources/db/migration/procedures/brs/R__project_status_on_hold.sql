@@ -10,9 +10,8 @@ BEGIN
     into v_on_hold
     from flow.project p
              inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where p.id = p_project_id
-      and pst.project_status_type = 'On Hold';
+      and cpst.project_status_type_id = 3;
     if v_on_hold is null then
         v_on_hold = false;
     end if;
