@@ -14,6 +14,7 @@
         inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
       where upv.company_id = :companyId
         and upv.user_id = :userId
+        and upv.archived is not true
       order by upv.start_date desc
   ]]></userPosition.getAll>
 
@@ -45,6 +46,7 @@
                     upv.company_id
     from flow.user_positions_vw upv
     where upv.user_id = :userId
+    and upv.archived is not true
     and upv.primary_flag is true
   ]]></userPosition.getUserPrimaryPosition>
 

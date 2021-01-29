@@ -35,6 +35,7 @@
     from flow.user_position
     where user_id = :leadOwnerUserId
       and primary_flag is true
+      and archived is not true
     limit 1
   ]]></ricochetWebhook.getUserPositionIdByUserId>
 
