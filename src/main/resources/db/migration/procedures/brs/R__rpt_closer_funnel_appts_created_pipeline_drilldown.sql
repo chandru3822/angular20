@@ -30,8 +30,8 @@ BEGIN
                                        inner join flow.project p on p.id = pd.project_id
                                        inner join flow.contact c on c.id = p.contact_id
                                        left outer join flow.user u on pd.closer_user_id = u.id
-                                       left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                       left outer join flow.org o on o.id = up.org_id
+                                       inner join flow.user_position up on up.id = p.user_position_id
+                                       inner join flow.org o on o.id = up.org_id
                                        left outer join flow.company_state cs on cs.id = p.company_state_id
                                        left outer join flow.state s on s.id = cs.state_id
                               where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
@@ -62,8 +62,8 @@ BEGIN
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
                                            left outer join flow.user u on pd.closer_user_id = u.id
-                                           left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                           left outer join flow.org o on o.id = up.org_id
+                                           inner join flow.user_position up on up.id = p.user_position_id
+                                           inner join flow.org o on o.id = up.org_id
                                            left outer join flow.company_state cs on cs.id = p.company_state_id
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
@@ -93,9 +93,9 @@ BEGIN
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
+                                           inner join flow.user_position up on up.id = p.user_position_id
+                                           inner join flow.org o on o.id = up.org_id
                                            left outer join flow.user u on pd.closer_user_id = u.id
-                                           left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                           left outer join flow.org o on o.id = up.org_id
                                            left outer join flow.company_state cs on cs.id = p.company_state_id
                                            left outer join flow.state s on s.id = cs.state_id
                                   where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
