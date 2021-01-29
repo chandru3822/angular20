@@ -109,8 +109,6 @@
       <tr>
         <td>Substantial Completion</td>
         <td>{{rebateDetails.sc}}</td>
-        <td>Entered Into Payment System</td>
-        <td>{{rebateDetails.entered_into_system_date}}</td>
       </tr>
       <tr>
         <td>Financier</td>
@@ -342,7 +340,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import moment from "moment";
-  import {getCompanyStates} from '@/services/stateService'
+  import {getStates} from '@/services/stateService'
 
   export default {
     name: 'RebateDetails',
@@ -405,7 +403,6 @@
           const {data} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
           this.rebateDetails = data[0];
           this.rebateDetails.sc = moment(this.rebateDetails.sc).format('MM/DD/YYYY')
-          this.rebateDetails.entered_into_system_date = moment(this.rebateDetails.entered_into_system_date).format('MM/DD/YYYY')
 
           let payment_amount = 0;
           if (this.rebateDetails.numberofpromotionpayments > 0) {
@@ -666,7 +663,7 @@
       },
       async getStates () {
           try {
-            const {data} = await getCompanyStates()
+            const {data} = await getStates()
             this.states = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {

@@ -67,16 +67,15 @@
             <td class="text-left">
               <router-link :to="`/project/${it.projectId}/details`">{{ it.projectId}}</router-link>
             </td>
-            <td class="text-left">{{ it.substantialCompletionDate | formatDate('date') }}</td>
+            <td class="text-center">{{ it.substantialCompletionDate | formatDate('date') }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>
             <td class="text-left">{{ it.product ? it.product : '' }}</td>
-            <td class="text-left">{{ it.totalPromotionAmount || 0 | currency('$', 2) }}</td>
-            <td v-show="status === 'approval'" class="text-left">{{ it.numberOfPromotionPayments }}</td>
-            <td v-show="status === 'approval'" class="text-left">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
-            <td v-show="status === 'approval'" class="text-left">{{ it.totalPaid || 0 | currency('$', 2) }}</td>
+            <td class="text-center">{{ it.totalPromotionAmount || 0 | currency('$', 2) }}</td>
+            <td v-show="status === 'approval'" class="text-center">{{ it.numberOfPromotionPayments }}</td>
+            <td v-show="status === 'approval'" class="text-center">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
+            <td v-show="status === 'approval'" class="text-center">{{ it.totalPaid || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'approval'" class="text-left">{{ it.lastPaymentDate | formatDate('date') }}</td>
             <td v-show="status === 'invalid' || status === 'approval'" class="text-left">{{ it.balanceOwed || 0 | currency('$', 2) }}</td>
-            <td v-show="status === 'invalid' || status === 'approval'" class="text-left">{{ it.enteredIntoPaymentSystemDate | formatDate('date') }}</td>
             <td v-show="status === 'pending'" class="text-left"><a v-if="userCanEdit" @click="enterPayment(it)" class="mr-3 pay-link">Enter Now</a></td>
           </tr>
         </template>
@@ -247,8 +246,7 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
                 {text: 'Payment Amount', value: 'paymentAmount', show: false},
                 {text: 'Total Paid', value: 'totalPaid', show: false},
                 {text: 'Last Payment Date', value: 'lastPaymentDate', show: false},
-                {text: 'Balance Owed', value: 'balanceOwed', show: false},
-                {text: 'Entered Into Payment System', value: 'enteredIntoPaymentSystemDate', show: true}
+                {text: 'Balance Owed', value: 'balanceOwed', show: false}
             ],
             statuses: [
                 {
@@ -414,11 +412,11 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
           if (this.status === 'approval') {
             filename = 'Needs Approval Payments.csv';
             csvData += ',# of Payments,$ / Promotion Payment,' +
-              'Total Paid,Last Payment Date,Balance Owed,Entered into Payment System Date';
+              'Total Paid,Last Payment Date,Balance Owed';
           }
           else if (this.status === 'invalid') {
             filename = 'Invalid Payments.csv';
-            csvData += ',Balance Owed,Entered into Payment System Date';
+            csvData += ',Balance Owed';
           }
           else if (this.status === 'pending') {
             filename = 'New Pending Payments.csv';
@@ -437,8 +435,7 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
             }
 
             if (this.status === 'approval' || this.status === 'invalid') {
-              csvData += ',' + p.balanceOwed + ',' +
-                (p.enteredIntoPaymentSystemDate != null ? moment(p.enteredIntoPaymentSystemDate).format('MM/DD/YYYY') : '');
+              csvData += ',' + p.balanceOwed;
             }
 
             csvData += '\n';
