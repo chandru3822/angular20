@@ -345,7 +345,7 @@
               </span>
             </template>
             <template v-if="repData.length > 0" v-slot:prepend-item>
-              <v-list-item @click="[repValuesChanged = true, toggleSelectAllReps()]">
+              <v-list-item @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">
                 <v-list-item-action class="mr-2">
                   <v-icon>{{ repSelectIcon }}</v-icon>
                 </v-list-item-action>
@@ -1237,6 +1237,8 @@
         officeData: [],
         repModel: [],
         repData: [],
+        repDataMaster: [],
+        repDataSelectAll: false,
         apptsCreatedPipelineDateRanges: [
           { label: 'Yesterday', value: 'yesterday' },
           { label: 'Last Week', value: 'lastWeek' },
@@ -2113,6 +2115,7 @@
       },
 
       funnelAllReps () {
+        console.log('FUNNEL HAPPENED!')
         this.districtModel = []
         this.regionModel = []
         this.officeModel = []
@@ -2216,7 +2219,7 @@
             //   this.districtModel = []
             //   this.regionModel = []
             //   this.officeModel = []
-              if (this.districtModel?.length === 0 && this.regionModel?.length === 0 && this.officeModel?.length === 0 || this.repData?.length > this.maxRepLimit) {
+              if (this.repDataSelectAll && this.repData?.length > this.maxRepLimit) {
                 this.repModel = [
                   {user_id: -1, name: 'All Reps', active: true}
                 ]
@@ -2460,6 +2463,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getCloserReps(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), JSON.stringify(offices)).then(res => {
           this.repData = res
+          this.repDataMaster = cloneDeep(res)
 
           if (preSelectLists) {
             this.repModel = cloneDeep(this.repData)
@@ -2535,7 +2539,17 @@
           this.updateApptsToFdcPipelineCalendar()
         }
       },
-
+      doRepWatcher() {
+        if(this.repValuesChanged) {
+          // this.repModel = cloneDeep(this.repData)
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+          } else {
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+          }
+          this.repValuesChanged = false
+        }
+      },
       yearToDate (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
           this.appts_created_pipeline_dt1 = moment().startOf('year').format('YYYY-MM-DD')
@@ -2831,10 +2845,11 @@
             this.repModel = []
             this.apptsToFdcPipelineData = []
           }  else {
-            if ((this.districtModel?.length === 0 && this.regionModel?.length === 0 && this.officeModel?.length === 0) || this.repData?.length > this.maxRepLimit) {
+            if (this.repDataSelectAll && this.repData?.length > this.maxRepLimit) {
               this.repModel = [
                 {user_id: -1, name: 'All Reps', active: true}
               ]
+              this.doRepWatcher()
             } else {
               this.repModel = cloneDeep(this.repData)
             }
@@ -2902,6 +2917,7 @@
               this.regionModel = []
               this.officeModel = []
               this.repModel = []
+              this.repDataSelectAll = false
               this.regionLoad(false)
               this.officeLoad(false)
               this.repLoad(false)
@@ -2918,6 +2934,7 @@
               // reset these values when the regions change
               this.officeModel = []
               this.repModel = []
+              this.repDataSelectAll = false
               this.officeLoad(false)
               this.repLoad(false)
               this.regionValuesChanged = false
@@ -2932,6 +2949,7 @@
             if(this.officeValuesChanged) {
               // reset these values when the offices change
               this.repModel = []
+              this.repDataSelectAll = false
               this.repLoad(false)
               this.officeValuesChanged = false
             }
@@ -2942,17 +2960,8 @@
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
           if(!val && this.repModel.length > 0) {
-            if(this.repValuesChanged) {
-              // this.repModel = cloneDeep(this.repData)
-              if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
-                this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
-              } else {
-                this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
-              }
-              this.repValuesChanged = false
-            }
+            this.doRepWatcher()
           }
-
         })
     },
     beforeDestroy () {
