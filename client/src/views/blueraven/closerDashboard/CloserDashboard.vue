@@ -345,7 +345,7 @@
               </span>
             </template>
             <template v-if="repData.length > 0" v-slot:prepend-item>
-              <v-list-item @click="toggleSelectAllReps()">
+              <v-list-item @click="[repValuesChanged = true, toggleSelectAllReps()]">
                 <v-list-item-action class="mr-2">
                   <v-icon>{{ repSelectIcon }}</v-icon>
                 </v-list-item-action>
