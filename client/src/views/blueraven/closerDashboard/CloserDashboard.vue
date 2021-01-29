@@ -621,6 +621,7 @@
                   </router-link>
                   <div v-else>{{ item.project_id || '' }}</div>
                 </td>
+<!--                <td :class="item.stage">{{ item.stage || '' }}</td>-->
                 <td :class="item.source_name_class">{{ item.source_name || '' }}</td>
                 <td :class="item.system_size_class">{{ item.system_size || '' }}</td>
                 <td :class="item.financier_class">{{ item.financier || '' }}</td>
@@ -1290,7 +1291,7 @@
           { text: 'State', value: 'state', show: true, width: 75, optional: false }, // 2
           { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false }, // 3
           { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false }, // 4
-          { text: 'Stage', value: 'Stage', show: true, width: 75, optional: false }, // 2
+          // { text: 'Stage', value: 'Stage', show: true, width: 75, optional: false }, // 2
           { text: 'Source', value: 'source_name', show: true, width: 85, optional: false }, // 5
           { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false }, // 6
           { text: 'Financier', value: 'financier', show: true, width: 95, optional: false }, // 7
@@ -2317,7 +2318,7 @@
           if (res?.length > 0) {
             this.districtData = res
           }
-          
+
           if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
             this.districtModel = this.districtData.filter(od => od.active)
           } else if (preSelectLists) {
