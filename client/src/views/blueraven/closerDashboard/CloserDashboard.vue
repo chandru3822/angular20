@@ -1290,6 +1290,7 @@
           { text: 'State', value: 'state', show: true, width: 75, optional: false }, // 2
           { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false }, // 3
           { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false }, // 4
+          { text: 'Stage', value: 'Stage', show: true, width: 75, optional: false }, // 2
           { text: 'Source', value: 'source_name', show: true, width: 85, optional: false }, // 5
           { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false }, // 6
           { text: 'Financier', value: 'financier', show: true, width: 95, optional: false }, // 7
@@ -2316,9 +2317,11 @@
           if (res?.length > 0) {
             this.districtData = res
           }
-
-          if (preSelectLists) {
+          
+          if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
             this.districtModel = this.districtData.filter(od => od.active)
+          } else if (preSelectLists) {
+            this.districtModel = cloneDeep(this.districtData)
           }
 
           // reset these values when the districts change
@@ -2370,9 +2373,12 @@
           this.regionData = res
 
 
-          if (preSelectLists) {
+          if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
             this.regionModel = this.regionData.filter(od => od.active)
+          } else if (preSelectLists) {
+            this.regionModel = cloneDeep(this.regionData)
           }
+
           if (!this.initialPageLoad) {
             this.officeLoad(preSelectLists, true)
             // this.repLoad(preSelectLists, true)
@@ -2415,8 +2421,10 @@
         await getCloserOffices(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), false).then(res => {
           this.officeData = res
 
-          if (preSelectLists) {
+          if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
             this.officeModel = this.officeData.filter(od => od.active)
+          } else if (preSelectLists) {
+            this.officeModel = cloneDeep(this.officeData)
           }
 
           if (!this.initialPageLoad) {

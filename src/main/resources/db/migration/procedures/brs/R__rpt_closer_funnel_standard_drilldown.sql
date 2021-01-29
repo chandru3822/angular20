@@ -35,8 +35,9 @@ BEGIN
                                   inner join flow.project p on p.id = pd.project_id
                                   inner join flow.contact c on c.id = p.contact_id
                                   left outer join flow.user u on pd.closer_user_id = u.id
-                                  left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                  left outer join flow.org o on o.id = up.org_id
+                                  inner join flow.contact c on c.id = p.contact_id
+                                  inner join flow.user_position up on up.id = p.user_position_id
+                                  inner join flow.org o on o.id = up.org_id
                                   left outer join flow.company_state cs on cs.id = p.company_state_id
                                   left outer join flow.state s on s.id = cs.state_id
                                   inner join flow.project_process_step pps
@@ -70,8 +71,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -113,8 +115,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -156,8 +159,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -208,8 +212,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pps.process_step_id = 1
@@ -242,8 +247,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -287,8 +293,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -335,8 +342,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -380,8 +388,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -429,8 +438,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -474,8 +484,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -523,8 +534,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -568,8 +580,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -617,8 +630,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -662,8 +676,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -711,8 +726,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -758,8 +774,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -809,8 +826,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -852,8 +870,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -901,8 +920,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -933,8 +953,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -967,8 +988,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -1001,8 +1023,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.credit_decision_date :: DATE between p_start_date and p_end_date
@@ -1036,8 +1059,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.installation_agreement_signed_date :: DATE between p_start_date and p_end_date
@@ -1068,8 +1092,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.installation_agreement_signed_date :: DATE between p_start_date and p_end_date
@@ -1100,8 +1125,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.site_survey_verified_date :: DATE between p_start_date and p_end_date
@@ -1131,8 +1157,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.site_survey_verified_date :: DATE between p_start_date and p_end_date
@@ -1164,8 +1191,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone
@@ -1197,8 +1225,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone
@@ -1234,8 +1263,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_signed_date :: DATE between p_start_date and p_end_date
@@ -1269,8 +1299,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_signed_date :: DATE between p_start_date and p_end_date
@@ -1301,8 +1332,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_complete_date is not null
@@ -1332,8 +1364,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.final_design_complete_date is not null
@@ -1364,8 +1397,9 @@ BEGIN
                                       inner join flow.project p on p.id = pd.project_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
+                                      inner join flow.contact c on c.id = p.contact_id
+                                      inner join flow.user_position up on up.id = p.user_position_id
+                                      inner join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where pd.substantial_completion_date :: DATE between p_start_date and p_end_date
@@ -1400,8 +1434,6 @@ BEGIN
                                   inner join flow.org o on o.id = up.org_id
                                   inner join flow.contact c on c.id = p.contact_id
                                   left outer join flow.user u on pd.closer_user_id = u.id
-                                  left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                  left outer join flow.org o on o.id = up.org_id
                                   left outer join flow.company_state cs on cs.id = p.company_state_id
                                   left outer join flow.state s on s.id = cs.state_id
                                   inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1440,8 +1472,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1487,8 +1517,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1535,8 +1563,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1583,8 +1609,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1632,8 +1656,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1682,8 +1704,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1736,8 +1756,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1786,8 +1804,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1840,8 +1856,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1890,8 +1904,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1944,8 +1956,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -1994,8 +2004,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -2048,8 +2056,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -2098,8 +2104,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -2152,8 +2156,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -2204,8 +2206,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -2260,8 +2260,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -2307,8 +2305,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                                       inner join flow.project_process_step pps on pps.project_id = pd.project_id
@@ -2360,8 +2356,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2397,8 +2391,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2436,8 +2428,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2476,8 +2466,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2516,8 +2504,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2553,8 +2539,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2590,8 +2574,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2626,8 +2608,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2664,8 +2644,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2702,8 +2680,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2744,8 +2720,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2784,8 +2758,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2821,8 +2793,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2856,8 +2826,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
@@ -2892,8 +2860,6 @@ BEGIN
                                       inner join flow.org o on o.id = up.org_id
                                       inner join flow.contact c on c.id = p.contact_id
                                       left outer join flow.user u on pd.closer_user_id = u.id
-                                      left outer join flow.user_position up on pd.closer_user_position_id = up.id
-                                      left outer join flow.org o on o.id = up.org_id
                                       left outer join flow.company_state cs on cs.id = p.company_state_id
                                       left outer join flow.state s on s.id = cs.state_id
                              where up.user_id = any (p_user_ids)
