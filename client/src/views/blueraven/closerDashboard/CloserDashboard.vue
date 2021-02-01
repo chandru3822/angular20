@@ -36,6 +36,14 @@
 
     <!---------------------------------- FUNNEL TAB START ---------------------------------->
     <!-- APPOINTMENTS CREATED PIPELINE START -->
+<!--    1: {{this.showFunnels}}-->
+<!--    2: {{this.apptsCreatedPipelineLoaded}}-->
+<!--    3: {{this.apptsToFdcPipelineLoaded}}-->
+<!--    4: {{this.showDashboard}}-->
+<!--    5: {{this.rankingTablesLoaded}}-->
+<!--    6: {{this.showIncentive}}-->
+<!--    7: {{this.incentiveDataLoaded}}-->
+
     <div v-show="showFunnels" id="appts-created-pipeline-container" class="mb-8">
       <div class="pipeline-header-container">
         <v-icon class="pipeline-icon">mdi-poll</v-icon>
@@ -44,9 +52,11 @@
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-show="apptsCreatedPipelineData.length > 0"
-             id="appts-created-pipeline-funnel-background"></div>
-        <table class="funnel-table">
+        <div v-if="apptsCreatedPipelineDataLoading" class="pipeline-data-loading-container">
+          <SpinnerInline :size="50" :spinner-color="`primaryCustom`" :transparent="true" :centered="true"/>
+        </div>
+        <div v-if="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"></div>
+        <table class="funnel-table" v-if="apptsCreatedPipelineData.length > 0">
           <tr class="funnel-tr">
             <th class="funnel-th"></th>
             <th class="funnel-th">SOURCE</th>
@@ -187,6 +197,7 @@
         <!-- DROPDOWNS -->
         <div id="pipeline-header-right-side">
           <v-autocomplete class="appts-to-fdc-pipeline-dropdown"
+                          ref="districtSelect"
                           v-model="districtModel"
                           :items="districtData"
                           item-text="org_name"
@@ -197,16 +208,16 @@
                           multiple
                           dense
                           hide-details
-                          return-object
-                          @input="regionLoad(false)">
+                          @input="districtValuesChanged = true"
+                          return-object>
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ districtModel.length }} Checked
               </span>
             </template>
             <template v-if="districtData.length > 0" v-slot:prepend-item>
-              <v-list-item @click="toggleSelectAllDistricts">
-                <v-list-item-action>
+              <v-list-item @click="[districtValuesChanged = true, toggleSelectAllDistricts()]">
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ districtSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -216,7 +227,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -238,17 +249,18 @@
                           outlined
                           multiple
                           dense
+                          @input="regionValuesChanged = true"
                           hide-details
                           return-object
-                          @input="officeLoad(false)">
+                          ref="regionSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ regionModel.length }} Checked
               </span>
             </template>
             <template v-if="regionData.length > 0" v-slot:prepend-item>
-              <v-list-item @click="toggleSelectAllRegions">
-                <v-list-item-action>
+              <v-list-item @click="[regionValuesChanged = true, toggleSelectAllRegions()]">
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ regionSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -258,7 +270,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -280,17 +292,18 @@
                           outlined
                           multiple
                           dense
+                          @input="officeValuesChanged = true"
                           hide-details
                           return-object
-                          @input="repLoad(false)">
+                          ref="officeSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ officeModel.length }} Checked
               </span>
             </template>
             <template v-if="officeData.length > 0" v-slot:prepend-item>
-              <v-list-item @click="toggleSelectAllOffices">
-                <v-list-item-action>
+              <v-list-item @click="[officeValuesChanged = true, toggleSelectAllOffices()]">
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ officeSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -300,7 +313,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -316,24 +329,24 @@
                           v-model="repModel"
                           :items="repData"
                           item-text="name"
-                          item-value="user_id"
+                          item-key="user_position_id"
                           label="Rep"
                           no-data-text="No reps available"
                           outlined
                           multiple
                           dense
+                          @input="repValuesChanged = true"
                           hide-details
                           return-object
-                          @input="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_to_fdc_pipeline_dt2, false)"
-                          :menu-props="{closeOnContentClick: true}">
+                          ref="repSelect">
             <template v-slot:selection="{ item, index }">
               <span v-if="index === 0" class="grey--text caption">
                 {{ repModel.length }} Checked
               </span>
             </template>
             <template v-if="repData.length > 0" v-slot:prepend-item>
-              <v-list-item @click="toggleSelectAllReps()">
-                <v-list-item-action>
+              <v-list-item @click="[repValuesChanged = true, repDataSelectAll = !repDataSelectAll, toggleSelectAllReps()]">
+                <v-list-item-action class="mr-2">
                   <v-icon>{{ repSelectIcon }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
@@ -343,7 +356,7 @@
               <v-divider class="mt-2"></v-divider>
             </template>
             <template v-slot:item="data">
-              <v-list-item-action>
+              <v-list-item-action class="mr-2">
                 <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
                 <v-icon v-else>check_box_outline_blank</v-icon>
               </v-list-item-action>
@@ -599,6 +612,7 @@
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
                 </td>
                 <td>{{ item.owner_name || '' }}</td>
+                <td>{{ item.office || '' }}</td>
                 <td>{{ item.state || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
@@ -607,6 +621,7 @@
                   </router-link>
                   <div v-else>{{ item.project_id || '' }}</div>
                 </td>
+<!--                <td :class="item.stage">{{ item.stage || '' }}</td>-->
                 <td :class="item.source_name_class">{{ item.source_name || '' }}</td>
                 <td :class="item.system_size_class">{{ item.system_size || '' }}</td>
                 <td :class="item.financier_class">{{ item.financier || '' }}</td>
@@ -1122,10 +1137,14 @@
   import constants from '@/helpers/constants'
   import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
+  import SpinnerInline from '@/components/SpinnerInline'
   import { getCloserDistricts, getCloserRegions, getCloserOffices, getCloserReps } from '@/services/dashboardService'
 
   export default {
     name: 'closerDashboard',
+    components: {
+      SpinnerInline,
+    },
     data () {
       return {
         snackbar: {},
@@ -1196,6 +1215,7 @@
         userRow: [],
         userRowIndex: -1,
         numOffices: 0,
+        apptsCreatedPipelineDataLoading: true,
         apptsCreatedPipelineData: [],
         apptsToFdcPipelineData: [],
         apptsCreatedPipelineCustomSelectorIsOpen: false,
@@ -1218,6 +1238,8 @@
         officeData: [],
         repModel: [],
         repData: [],
+        repDataMaster: [],
+        repDataSelectAll: false,
         apptsCreatedPipelineDateRanges: [
           { label: 'Yesterday', value: 'yesterday' },
           { label: 'Last Week', value: 'lastWeek' },
@@ -1238,6 +1260,14 @@
           { label: 'Year to Date', value: 'YTD' },
           { label: 'Custom', value: 'Custom' }
         ],
+        initialPageLoad: true,
+        //if we allow users to "Select All" when there are more than this the UI slows to a halt
+        maxRepLimit: 1000,
+        //without these the ui keeps reloading the dropdowns when nothing has changed
+        districtValuesChanged: false,
+        regionValuesChanged: false,
+        officeValuesChanged: false,
+        repValuesChanged: false,
         apptsToFdcPipelineDateRange: { label: 'Month to Date', value: 'MTD' },
         showApptsToFdcPipelineCustomDates: false,
         viewSelect: 'standard',
@@ -1257,9 +1287,11 @@
         funnelDrilldownHeaders: [
           { text: '', value: '', show: true, sortable: false, width: 25, optional: false }, // 0
           { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false }, // 1
+          { text: 'Office', value: 'office', show: true, width: 75, optional: false }, // 2
           { text: 'State', value: 'state', show: true, width: 75, optional: false }, // 2
           { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false }, // 3
           { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false }, // 4
+          // { text: 'Stage', value: 'Stage', show: true, width: 75, optional: false }, // 2
           { text: 'Source', value: 'source_name', show: true, width: 85, optional: false }, // 5
           { text: 'System Size', value: 'system_size', show: true, width: 110, optional: false }, // 6
           { text: 'Financier', value: 'financier', show: true, width: 95, optional: false }, // 7
@@ -2065,16 +2097,22 @@
         return moment(date, 'M/D/YY').format('YYYY-MM-DD')
       },
 
-      loadFunnels () {
+      async loadFunnels () {
         if (this.apptsCreatedPipelineData?.length === 0) {
           this.loadSources()
         }
 
         if (this.apptsToFdcPipelineData?.length === 0) {
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
-            this.districtLoad(true)
+            await this.districtLoad(true)
+            await this.regionLoad(true, true)
+            await this.officeLoad(true, true)
+            this.repLoad(true)
           } else {
-            this.districtLoad(false)
+            await this.districtLoad(false)
+            await this.regionLoad(false, true)
+            await this.officeLoad(false, true)
+            this.repLoad(false)
           }
         }
       },
@@ -2105,7 +2143,6 @@
             getRequest('/closerDashboard/getSelfGenSources', 'blueraven').then(res => {
               this.selfGenSourceData = res.data
               this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
-
               this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
             })
           })
@@ -2141,7 +2178,7 @@
           end: moment(end).format('YYYY-MM-DD')
         }
 
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.apptsCreatedPipelineDataLoading = true
         try {
           await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven').then(res => {
             this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
@@ -2150,18 +2187,18 @@
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             if (this.apptsToFdcPipelineData.length > 0) {
               this.apptsCreatedPipelineLoaded = true
-              this.$store.commit(AppMutations.SET_LOADING, false)
             }
+            this.apptsCreatedPipelineDataLoading = false
           } else {
             this.apptsCreatedPipelineLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.apptsCreatedPipelineDataLoading = false
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments Created Pipeline data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.apptsCreatedPipelineLoaded = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.apptsCreatedPipelineDataLoading = false
         }
       },
 
@@ -2180,17 +2217,19 @@
         if (useRepDataInstead) {
           this.repData.forEach((rep, index) => {
             reps.push(rep.user_id)
-            // if (index === this.repData.length - 1) {
+            if (index === this.repData.length - 1) {
             //   this.districtModel = []
             //   this.regionModel = []
             //   this.officeModel = []
-            //   this.repModel = [
-            //     {user_id: -1, name: 'All Reps', active: true}
-            //   ]
-            //   this.repData = [
-            //     {user_id: -1, name: 'All Reps', active: true}
-            //   ]
-            // }
+              if (this.repDataSelectAll && this.repData?.length > this.maxRepLimit) {
+                this.repModel = [
+                  {user_id: -1, name: 'All Reps', active: true}
+                ]
+                this.repData = [
+                  {user_id: -1, name: 'All Reps', active: true}
+                ]
+              }
+            }
           })
         } else {
           this.repModel.forEach(rep => reps.push(rep.user_id))
@@ -2251,10 +2290,8 @@
             this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
             this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
-            if (this.apptsCreatedPipelineData.length > 0) {
-              this.apptsToFdcPipelineLoaded = true
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
+            this.apptsToFdcPipelineLoaded = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
           })
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -2282,21 +2319,31 @@
             this.districtData = res
           }
 
-          if (preSelectLists) {
+          if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
+            this.districtModel = this.districtData.filter(od => od.active)
+          } else if (preSelectLists) {
             this.districtModel = cloneDeep(this.districtData)
           }
 
-          if (this.districtModel.length > 0) {
-            this.regionLoad(preSelectLists)
+          // reset these values when the districts change
+          this.regionModel = []
+          this.officeModel = []
+          this.repModel = []
+
+          if (!this.initialPageLoad) {
+            this.regionLoad(preSelectLists, true)
+            // this.officeLoad(preSelectLists, true)
+            // this.repLoad(preSelectLists, true)
           }
         })
+
 
         this.apptsToFdcPipelineData = []
         this.apptsToFdcPipelineLoaded = true
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
-      async regionLoad (preSelectLists) {
+      async regionLoad (preSelectLists, loadedFromHigher) {
         if (!this.currentUserId) return
 
         let districts = this.districtModel.map(function (district) {
@@ -2305,30 +2352,37 @@
           }
         })
 
-        if (!this.selectAllDistricts) {
-          this.regionModel = []
-          this.regionData = []
-          this.officeModel = []
-          this.officeData = []
-          this.repModel = []
-          this.repData = []
-          this.apptsToFdcPipelineData = []
+        // if (!this.selectAllDistricts) {
+        //   this.regionModel = []
+        //   this.regionData = []
+        //   this.officeModel = []
+        //   this.officeData = []
+        //   this.repModel = []
+        //   this.repData = []
+        //   this.apptsToFdcPipelineData = []
+        //
+        //   // if (districts?.length === 0) return
+        // }
 
-          if (districts?.length === 0) return
-        }
+        // reset these values when the regions change
+        this.officeModel = []
+        this.repModel = []
 
-        this.repModel = [] // in case the user previously clicked the 'All Reps' button
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         await getCloserRegions(this.currentUserId, JSON.stringify(districts), false).then(res => {
           this.regionData = res
 
-          if (preSelectLists) {
+
+          if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
+            this.regionModel = this.regionData.filter(od => od.active)
+          } else if (preSelectLists) {
             this.regionModel = cloneDeep(this.regionData)
           }
 
-          if (this.regionModel.length > 0) {
-            this.officeLoad(preSelectLists)
+          if (!this.initialPageLoad) {
+            this.officeLoad(preSelectLists, true)
+            // this.repLoad(preSelectLists, true)
           }
         })
 
@@ -2336,8 +2390,14 @@
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
-      async officeLoad (preSelectLists) {
+      async officeLoad (preSelectLists, loadedFromHigher) {
         if (!this.currentUserId) return
+
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.org_id
+          }
+        })
 
         let regions = this.regionModel.map(function (region) {
           return {
@@ -2345,37 +2405,48 @@
           }
         })
 
-        if (!this.selectAllRegions) {
-          this.officeModel = []
-          this.officeData = []
-          this.repModel = []
-          this.repData = []
-          this.apptsToFdcPipelineData = []
+        // if (!this.selectAllRegions) {
+        //   this.officeModel = []
+        //   this.officeData = []
+        //   this.repModel = []
+        //   this.repData = []
+        //   this.apptsToFdcPipelineData = []
+        //
+        //   // if (regions?.length === 0) return
+        // }
 
-          if (regions?.length === 0) return
-        }
+        // reset these values when the offices change
+        this.repModel = []
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserOffices(this.currentUserId, JSON.stringify(regions), false).then(res => {
+        await getCloserOffices(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), false).then(res => {
           this.officeData = res
 
-          if (preSelectLists) {
+          if (preSelectLists && (this.isCloserMgr || this.isCloserRegional)) {
+            this.officeModel = this.officeData.filter(od => od.active)
+          } else if (preSelectLists) {
             this.officeModel = cloneDeep(this.officeData)
           }
 
-          if (this.officeModel.length > 0) {
-            this.repLoad(preSelectLists)
+          if (!this.initialPageLoad) {
+            this.repLoad(preSelectLists, true)
           }
         })
 
         this.apptsToFdcPipelineData = []
-        this.repData = []
+        // this.repData = []
         this.repModel = []
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       async repLoad (preSelectLists) {
         if (!this.currentUserId) return
+
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.org_id
+          }
+        })
 
         let regions = this.regionModel.map(function (region) {
           return {
@@ -2389,17 +2460,19 @@
           }
         })
 
-        if (!this.selectAllOffices) {
-          this.repModel = []
-          this.repData = []
-          this.apptsToFdcPipelineData = []
-
-          if (offices?.length === 0) return
-        }
+        // if (!this.selectAllOffices) {
+        //   this.repModel = []
+        //   this.repData = []
+        //   this.apptsToFdcPipelineData = []
+        //
+        //   // if (offices?.length === 0) return
+        // }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await getCloserReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
+        await getCloserReps(this.currentUserId, JSON.stringify(districts), JSON.stringify(regions), JSON.stringify(offices)).then(res => {
           this.repData = res
+
+          this.repDataMaster = cloneDeep(res)
 
           if (preSelectLists) {
             this.repModel = cloneDeep(this.repData)
@@ -2410,8 +2483,9 @@
           if (this.repModel.length > 0) {
             this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
           }
+          this.$store.commit(AppMutations.SET_LOADING, false)
         })
-
+        this.initialPageLoad = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
@@ -2474,7 +2548,17 @@
           this.updateApptsToFdcPipelineCalendar()
         }
       },
-
+      doRepWatcher() {
+        if(this.repValuesChanged) {
+          // this.repModel = cloneDeep(this.repData)
+          if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+          } else {
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+          }
+          this.repValuesChanged = false
+        }
+      },
       yearToDate (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
           this.appts_created_pipeline_dt1 = moment().startOf('year').format('YYYY-MM-DD')
@@ -2729,7 +2813,7 @@
           } else {
             this.districtModel = cloneDeep(this.districtData)
             this.repModel = [] // in case the user previously clicked the 'All Reps' button
-            this.regionLoad(false)
+            // this.regionLoad(false)
           }
         })
       },
@@ -2745,7 +2829,7 @@
             this.apptsToFdcPipelineData = []
           } else {
             this.regionModel = cloneDeep(this.regionData)
-            this.officeLoad(false)
+            // this.officeLoad(false)
           }
         })
       },
@@ -2759,7 +2843,7 @@
             this.apptsToFdcPipelineData = []
           } else {
             this.officeModel = cloneDeep(this.officeData)
-            this.repLoad(false)
+            // this.repLoad(false)
           }
         })
       },
@@ -2769,15 +2853,14 @@
           if (this.selectAllReps) {
             this.repModel = []
             this.apptsToFdcPipelineData = []
-          } else {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-
-            if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
-              this.repModel = cloneDeep(this.repData)
-              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
+          }  else {
+            if (this.repDataSelectAll && this.repData?.length > this.maxRepLimit) {
+              this.repModel = [
+                {user_id: -1, name: 'All Reps', active: true}
+              ]
+              this.doRepWatcher()
             } else {
               this.repModel = cloneDeep(this.repData)
-              this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
             }
           }
         })
@@ -2829,6 +2912,66 @@
       this.checkWindowWidth()
       $(window).bind('resize', this.fixApptsCreatedFunnelTopMargin)
       $(window).bind('resize', this.fixApptsToFdcFunnelTopMargin)
+
+      //vuetify selects/autocompletes have a bug with the select all feature being used at the same time as the @blur event
+      //the @blur event should only be called when the menu is closed, but in a select all it is called when the select all button is clicked. wreaks havoc.
+      //this sucks but fixes that issue re: https://github.com/vuetifyjs/vuetify/issues/11488
+      this.myDynamicDistrictWatcher = this.$watch(
+        () => this.$refs.districtSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val) {
+            if(this.districtValuesChanged) {
+              // reset these values when the districts change
+              this.regionModel = []
+              this.officeModel = []
+              this.repModel = []
+              this.repDataSelectAll = false
+              this.regionLoad(false)
+              // this.officeLoad(false)
+              // this.repLoad(false)
+              this.districtValuesChanged = false
+            }
+          }
+        })
+      this.myDynamicRegionWatcher = this.$watch(
+        () => this.$refs.regionSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val) {
+            if(this.regionValuesChanged) {
+              // reset these values when the regions change
+              this.officeModel = []
+              this.repModel = []
+              this.repDataSelectAll = false
+              this.officeLoad(false)
+              // this.repLoad(false)
+              this.regionValuesChanged = false
+            }
+          }
+        })
+      this.myDynamicOfficeWatcher = this.$watch(
+        () => this.$refs.officeSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val) {
+            if(this.officeValuesChanged) {
+              // reset these values when the offices change
+              this.repModel = []
+              this.repDataSelectAll = false
+              this.repLoad(false)
+              this.officeValuesChanged = false
+            }
+          }
+        })
+      this.myDynamicRepWatcher = this.$watch(
+        () => this.$refs.repSelect.isMenuActive,
+        (val) => {
+          // if val is false = blur aka the menu is being closed. true = menu is being opened
+          if(!val && this.repModel.length > 0) {
+            this.doRepWatcher()
+          }
+        })
     },
     beforeDestroy () {
       $(window).unbind('resize')
@@ -2841,6 +2984,10 @@
     font-family: 'Roboto Condensed', sans-serif !important;
     letter-spacing: 0.02em !important;
     overflow: auto;
+  }
+
+  .pipeline-data-loading-container {
+    height: 225px;
   }
 
   #closer-dash-container.incentive-tab-override {

@@ -1,20 +1,9 @@
--- drop function flow.set_closer_appointment(integer, integer, timestamp, int[])
-CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
-                                                       p_current_user_id integer,
-                                                       p_project_process_step_id integer,
-                                                       p_appointment_start_time timestamp,
-                                                       p_users integer array)
-    RETURNS table
-            (
-                success                boolean,
-                user_id                integer,
-                appointment_start_time timestamp,
-                appointment_end_time   timestamp,
-                user_full_name         text,
-                user_email             text
-            )
-AS
-$BODY$
+-- drop function if exists flow.set_closer_appointment(integer, integer, timestamp, int[])
+create or replace function flow.set_closer_appointment(p_project_id integer, p_current_user_id integer, p_project_process_step_id integer, p_appointment_start_time timestamp without time zone, p_users integer[])
+    returns TABLE(success boolean, user_id integer, appointment_start_time timestamp without time zone, appointment_end_time timestamp without time zone, user_full_name text, user_email text)
+    language plpgsql
+as
+$$
 declare
     v_user_id                                    integer;
     v_project_process_step_id                    integer;
@@ -125,7 +114,7 @@ BEGIN
                                   when pd.primary_financier = 721 then
                                       pd.first_cash_payment_paid_date is not null
                                   else
-                                      1 = 1
+                                          1 = 1
                                                                        end
                           AND ((pd.cancelled_date is null) or
                                (pd.cancelled_date is not null and pd.cancelled_date > now()))
@@ -209,8 +198,8 @@ BEGIN
                                                                  when (select count(1) > 0 as count
                                                                        from flow.user_position up
                                                                        where ((up.user_id = foo.user_id
-                                                                         and up.primary_flag is true
-                                                                         and up.position_id = 2) or (foo.user_id in (2392516,2394370,2402401)))) then
+                                                                           and up.primary_flag is true
+                                                                           and up.position_id = 2) or (foo.user_id in (2392516,2394370,2402401)))) then
                                                                      1.5
                                                                  else
                                                                      1 end
@@ -295,12 +284,12 @@ BEGIN
         from flow."user"
         where id = v_user_id;
 
-        select id
+        select up.id
         into v_user_position_id
         from flow.user_position up
+                 inner join flow.custom_field cf on up.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
         where up.user_id = v_user_id
-          and up.primary_flag is true
-          and up.position_id in (1, 2, 3);
+          and up.primary_flag is true;
 
         select count(1)
         into v_user_already_assigned
@@ -420,6 +409,6 @@ BEGIN
 
 
 END
-$BODY$
-    LANGUAGE plpgsql VOLATILE
-                     COST 100;
+$$;
+
+

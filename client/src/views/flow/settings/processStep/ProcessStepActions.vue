@@ -495,6 +495,14 @@
               v-model="newAction.timeBasedTrigger"
               label="Time Based"
             />
+            <v-checkbox
+              class="pl-3 pt-0"
+              dense
+              v-if="newAction.triggerAutomatically"
+              hide-details
+              v-model="newAction.hidden"
+              label="Hide From UI"
+            />
             <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                    @click="saveNewAction">
               <v-icon>save</v-icon>
@@ -572,6 +580,16 @@
                       hide-details
                       v-model="item.timeBasedTrigger"
                       label="Time Based"
+                    />
+                    <v-checkbox
+                      class="pl-3 pt-0 pb-3"
+                      dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-if="item.triggerAutomatically"
+                      hide-details
+                      v-model="item.hidden"
+                      label="Hide From UI"
                     />
 
                     <!-- LINK -->
@@ -1524,6 +1542,8 @@
           if(!this.newAction.triggerAutomatically) {
             //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
             this.newAction.timeBasedTrigger = false
+            //same with hidden
+            this.newAction.hidden = false
           }
           this.newAction.processStepId = this.processStepId
           const {data} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
@@ -1549,6 +1569,8 @@
           if(!action.triggerAutomatically) {
             //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
             action.timeBasedTrigger = false
+            //same with hidden
+            action.hidden = false
           }
 
           // build the list of psr's that need to be set to immutable  do that if the save is successful

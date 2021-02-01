@@ -83,32 +83,32 @@ BEGIN
         v_off_hold_date = now();
     elsif v_new_project_status_type_id = 2 and v_old_project_status_type_id = 1 then
         v_cancelled_date = now();
-        insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
-        select 99999999,
-               concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
-               (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
-               (select u.phone_number from flow.user_position up
-                                               inner join flow."user" u on up.user_id = u.id
-                where up.id = p.user_position_id),
-               now(), 1
-        from flow.project p
-                 inner join flow.company_state cs on cs.id = p.company_state_id
-                 inner join flow.state s on cs.state_id = s.id
-        where p.id = new.id;
+--         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+--         select 99999999,
+--                concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
+--                (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
+--                (select u.phone_number from flow.user_position up
+--                                                inner join flow."user" u on up.user_id = u.id
+--                 where up.id = p.user_position_id),
+--                now(), 1
+--         from flow.project p
+--                  inner join flow.company_state cs on cs.id = p.company_state_id
+--                  inner join flow.state s on cs.state_id = s.id
+--         where p.id = new.id;
     elsif v_new_project_status_type_id = 2 and v_old_project_status_type_id = 3 then
         v_cancelled_date = now();
-        insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
-        select 99999999,
-               concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
-               (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
-               (select u.phone_number from flow.user_position up
-                                               inner join flow."user" u on up.user_id = u.id
-                where up.id = p.user_position_id),
-               now(), 1
-        from flow.project p
-                 inner join flow.company_state cs on cs.id = p.company_state_id
-                 inner join flow.state s on cs.state_id = s.id
-        where p.id = new.id;
+--         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id)
+--         select 99999999,
+--                concat('Project ID ', p.id, ' for ', p.project_name, ' at ', p.street1, ', ', p.city, ', ', s.abbreviation, ' has been canceled.'),
+--                (SELECT md5(random()::text || clock_timestamp()::text)::uuid),
+--                (select u.phone_number from flow.user_position up
+--                                                inner join flow."user" u on up.user_id = u.id
+--                 where up.id = p.user_position_id),
+--                now(), 1
+--         from flow.project p
+--                  inner join flow.company_state cs on cs.id = p.company_state_id
+--                  inner join flow.state s on cs.state_id = s.id
+--         where p.id = new.id;
     elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 1 then
         v_on_hold_date = now();
     elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 2 then

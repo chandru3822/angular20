@@ -9,5 +9,5 @@ public class UserStatusType {
 
     private Long id, companyId;
     private String userStatusType;
-    private Boolean hasAccess, archived;
+    private Boolean hasAccess, archived, newUserDefault;
 }

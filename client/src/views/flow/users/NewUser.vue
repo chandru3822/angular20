@@ -194,9 +194,9 @@
     },
     created() {
       //todo: use only for testing
-      if (VUE_APP_ENV === 'local') {
-        this.setFakeUser()
-      }
+      // if (VUE_APP_ENV === 'local') {
+      //   this.setFakeUser()
+      // }
       this.getUserStatusTypes()
       this.getCompanyStates()
       this.getCountries()
@@ -228,6 +228,9 @@
         try {
           const {data} = await getUserStatusTypes()
           this.userStatusTypes = data
+
+          //set the user status to the default if there is one
+          this.user.userStatusTypeId = this.userStatusTypes?.find(ust => ust.newUserDefault)?.id
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
