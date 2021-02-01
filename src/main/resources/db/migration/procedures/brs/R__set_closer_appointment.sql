@@ -1,4 +1,5 @@
-create or replace function set_closer_appointment(p_project_id integer, p_current_user_id integer, p_project_process_step_id integer, p_appointment_start_time timestamp without time zone, p_users integer[])
+-- drop function if exists flow.set_closer_appointment(integer, integer, timestamp, int[])
+create or replace function flow.set_closer_appointment(p_project_id integer, p_current_user_id integer, p_project_process_step_id integer, p_appointment_start_time timestamp without time zone, p_users integer[])
     returns TABLE(success boolean, user_id integer, appointment_start_time timestamp without time zone, appointment_end_time timestamp without time zone, user_full_name text, user_email text)
     language plpgsql
 as
