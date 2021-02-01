@@ -1,56 +1,60 @@
 CREATE OR REPLACE FUNCTION brs.util_setter_region_selection(p_platform_user_id integer, p_district_ids json)
-	  RETURNS SETOF json
+    RETURNS SETOF json
     LANGUAGE plpgsql
-AS $function$
+AS
+$function$
 DECLARE
     v_org_level_id integer;
 BEGIN
     select min(ol.level)
     into v_org_level_id
     from flow.user_position up
-        inner join flow.org o on o.id = up.org_id
-        inner join flow.org_type ot on o.org_type_id = ot.id
-        inner join flow.org_level ol on ol.id = ot.org_level_id
+             inner join flow.org o on o.id = up.org_id
+             inner join flow.org_type ot on o.org_type_id = ot.id
+             inner join flow.org_level ol on ol.id = ot.org_level_id
     where up.user_id = p_platform_user_id
-        and up.end_date is null
-        and up.primary_flag is true;
+      and up.archived is not true
+      and up.end_date is null
+      and up.primary_flag is true;
 
     -- org_level_id of 5 = Region
-	  case when (v_org_level_id < 5) OR (p_platform_user_id in (99999999)) then
-		    RETURN QUERY
-		        select array_to_json(array_agg(row_to_json(sub_rows)))
-		        from (
-                select upv.org_id,
-                       concat(o.org_name, ' - ', ot.org_type) as org_name,
-                       o.active_flag as active
-                from flow.user_positions_vw upv
-                    inner join flow.org o on o.id = upv.org_id
-                    inner join flow.org_type ot on ot.id = o.org_type_id
-                where upv.org_id is not null
-                    and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
-                                            FROM json_array_elements(p_district_ids) elem)
-                group by upv.org_id, o.org_name, ot.org_type, o.active_flag
-                order by o.active_flag desc, o.org_name, ot.org_type
-            ) as sub_rows;
-    else
+    case when (v_org_level_id < 5) OR (p_platform_user_id in (99999999)) then
         RETURN QUERY
             select array_to_json(array_agg(row_to_json(sub_rows)))
             from (
-                select upv.org_id,
-                       concat(o.org_name, ' - ', ot.org_type) as org_name,
-                       o.active_flag as active
-                from flow.user_positions_vw upv
-                    inner join flow.org o on o.id = upv.org_id
-                    inner join flow.org_type ot on ot.id = o.org_type_id
-                where upv.org_id is not null
-                    and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
-                                            FROM json_array_elements(p_district_ids) elem)
-                    and upv.user_id = p_platform_user_id
-                group by upv.org_id, o.org_name, ot.org_type, o.active_flag
-                order by o.active_flag desc, o.org_name, ot.org_type
-            ) as sub_rows;
+                     select upv.org_id,
+                            concat(o.org_name, ' - ', ot.org_type) as org_name,
+                            o.active_flag                          as active
+                     from flow.user_positions_vw upv
+                              inner join flow.org o on o.id = upv.org_id
+                              inner join flow.org_type ot on ot.id = o.org_type_id
+                     where upv.org_id is not null
+                       and upv.archived is not true
+                       and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
+                                               FROM json_array_elements(p_district_ids) elem)
+                     group by upv.org_id, o.org_name, ot.org_type, o.active_flag
+                     order by o.active_flag desc, o.org_name, ot.org_type
+                 ) as sub_rows;
+        else
+            RETURN QUERY
+                select array_to_json(array_agg(row_to_json(sub_rows)))
+                from (
+                         select upv.org_id,
+                                concat(o.org_name, ' - ', ot.org_type) as org_name,
+                                o.active_flag                          as active
+                         from flow.user_positions_vw upv
+                                  inner join flow.org o on o.id = upv.org_id
+                                  inner join flow.org_type ot on ot.id = o.org_type_id
+                         where upv.org_id is not null
+                           and upv.archived is not true
+                           and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
+                                                   FROM json_array_elements(p_district_ids) elem)
+                           and upv.user_id = p_platform_user_id
+                         group by upv.org_id, o.org_name, ot.org_type, o.active_flag
+                         order by o.active_flag desc, o.org_name, ot.org_type
+                     ) as sub_rows;
 
-    end case;
+        end case;
 
 END
 $function$

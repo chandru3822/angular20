@@ -10,9 +10,8 @@ BEGIN
     into v_cancelled
     from flow.project p
              inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
     where p.id = p_project_id
-      and pst.project_status_type = 'Cancelled';
+      and cpst.project_status_type_id = 2;
 
     return v_cancelled;
 

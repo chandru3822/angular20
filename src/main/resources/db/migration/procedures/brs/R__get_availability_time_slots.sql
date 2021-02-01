@@ -94,8 +94,15 @@ BEGIN
                           from (
                                    select pczu.user_id,
                                           generate_series(
-                                                  ($$'$$ || p_available_date || $$'$$ || rsa.start_time)::timestamp,
+                                                  (case when rsa.end_time between '00:00:00'::time and '08:00:00'::time
+                                                      and rsa.start_time between '00:00:00'::time and '08:00:00'::time then
+                                                            ($$'$$ || p_available_date::date + 1 || $$'$$ || rsa.start_time)::timestamp
+                                                        else
+                                                            ($$'$$ || p_available_date::date || $$'$$ || rsa.start_time)::timestamp end ),
                                                   (case
+                                                       when rsa.end_time between '00:00:00'::time and '08:00:00'::time
+                                                           and rsa.start_time between '00:00:00'::time and '08:00:00'::time then
+                                                                   $$'$$ || p_available_date::date + 1 || $$'$$
                                                        when rsa.end_time > rsa.start_time
                                                            then $$'$$ || p_available_date::date || $$'$$
                                                        else $$'$$ || p_available_date::date + 1 || $$'$$ end ||

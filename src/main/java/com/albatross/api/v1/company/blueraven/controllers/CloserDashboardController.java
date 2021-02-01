@@ -89,9 +89,10 @@ public class CloserDashboardController {
 
   @GetMapping(value = "/getOffices")
   public String getOffices(@RequestParam int userId,
+                           @RequestParam String districts,
                            @RequestParam String regions,
                            @RequestParam Boolean setterOverride) {
-    return closerDashboardService.getOffices(userId, regions, setterOverride);
+    return closerDashboardService.getOffices(userId, districts, regions, setterOverride);
   }
 
   @PostMapping(value = "/getReps")

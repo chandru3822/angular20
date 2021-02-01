@@ -90,6 +90,7 @@ public class ProcessStepActionService {
     params.put("id", action.getId());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
+    params.put("hidden", action.getHidden() != null && action.getHidden());
 
     Long id = sqlCache.updateReturningId("processStepAction.updateAction", params, "id").longValue();
 
@@ -146,6 +147,7 @@ public class ProcessStepActionService {
     params.put("companyProjectStatusTypeId", action.getCompanyProjectStatusTypeId());
     params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
     params.put("timeBasedTrigger", action.getTimeBasedTrigger() != null && action.getTimeBasedTrigger());
+    params.put("hidden", action.getHidden() != null && action.getHidden());
 
     Long id = sqlCache.updateReturningId("processStepAction.insertAction", params, "id").longValue();
     return getActionById(id);

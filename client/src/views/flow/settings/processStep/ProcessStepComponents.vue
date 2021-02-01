@@ -5,8 +5,8 @@
         <v-row class="mb-2">
           <v-col cols="12">
             <v-text-field color="primaryCustom"
-                          :readonly="true"
-                          :disabled="true"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
             <div>

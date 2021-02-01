@@ -129,16 +129,6 @@ public class RebateService {
 
   public void createRecurringPayment(RebatePayment rebatePayment){
     User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", rebatePayment.getProjectId());
-
-    Calendar calendar = Calendar.getInstance();
-    java.util.Date now = calendar.getTime();
-    java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(now.getTime());
-
-    params.put("dateValue", currentTimestamp);
-    sqlCache.update("rebate.updateEnteredIntoSystemDate", params);
-
     String sqlQuery = "select brs.create_rebate_payments(:projectId::integer, :createdById::integer, :totalAmount::numeric , :promotionPayments::integer)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();

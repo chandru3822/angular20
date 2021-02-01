@@ -1,7 +1,10 @@
-CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline_drilldown(p_start_date date, p_end_date date, p_funnel_id integer, p_source_ids integer[])
+CREATE OR REPLACE FUNCTION brs.rpt_closer_funnel_appts_created_pipeline_drilldown(p_start_date date, p_end_date date,
+                                                                                  p_funnel_id integer,
+                                                                                  p_source_ids integer[])
     RETURNS SETOF json
-LANGUAGE plpgsql
-AS $function$
+    LANGUAGE plpgsql
+AS
+$function$
 declare
     v_company_id integer;
 BEGIN
@@ -10,90 +13,99 @@ BEGIN
     --BRS-provided appointments created
     case when p_funnel_id = 12 then
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
-            from (
-                select concat(u.first_name, ' ', u.last_name) owner_name,
-                       s.abbreviation state,
-                       concat(c.first_name, ' ', c.last_name) customer_name,
-                       c.id contact_id,
-                       pd.project_id,
-                       pd.source_name,
-                       pd.system_size,
-                       pd.primary_financier_name financier,
-                       pd.closer_appointment_start appointment_date,
-                       pd.cancelled_date,
-                       p.date_created
-                from brs.project_details pd
-                    inner join flow.project p on p.id = pd.project_id
-                    inner join flow.contact c on c.id = p.contact_id
-                    left outer join flow.user u on pd.closer_user_id = u.id
-                    left outer join flow.company_state cs on cs.id = p.company_state_id
-                    left outer join flow.state s on s.id = cs.state_id
-                where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date and
-                    pd.closer_appointment_start is not null and
-                    pd.source is not null and
-                    pd.source = any(p_source_ids)
-                and pd.company_id = v_company_id
-order by owner_name, p.date_created
-            ) as funnel_rows;
+                     from (
+                              select concat(u.first_name, ' ', u.last_name) owner_name,
+                                     o.org_name                             office,
+                                     s.abbreviation                         state,
+                                     concat(c.first_name, ' ', c.last_name) customer_name,
+                                     c.id                                   contact_id,
+                                     pd.project_id,
+                                     pd.source_name,
+                                     pd.system_size,
+                                     pd.primary_financier_name              financier,
+                                     pd.closer_appointment_start            appointment_date,
+                                     pd.cancelled_date,
+                                     p.date_created
+                              from brs.project_details pd
+                                       inner join flow.project p on p.id = pd.project_id
+                                       inner join flow.contact c on c.id = p.contact_id
+                                       left outer join flow.user u on pd.closer_user_id = u.id
+                                       inner join flow.user_position up on up.id = p.user_position_id
+                                       inner join flow.org o on o.id = up.org_id
+                                       left outer join flow.company_state cs on cs.id = p.company_state_id
+                                       left outer join flow.state s on s.id = cs.state_id
+                              where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                                and pd.closer_appointment_start is not null
+                                and pd.source is not null
+                                and pd.source = any (p_source_ids)
+                                and pd.company_id = v_company_id
+                              order by owner_name, p.date_created
+                          ) as funnel_rows;
 
-    --Self-gen appointments created
-    when p_funnel_id = 13 then
-        RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
-            from (
-                select concat(u.first_name, ' ', u.last_name) owner_name,
-                       s.abbreviation state,
-                       concat(c.first_name, ' ', c.last_name) customer_name,
-                       c.id contact_id,
-                       pd.project_id,
-                       pd.source_name,
-                       pd.system_size,
-                       pd.primary_financier_name financier,
-                       pd.closer_appointment_start appointment_date,
-                       pd.cancelled_date,
-                       p.date_created
-                from brs.project_details pd
-                    inner join flow.project p on p.id = pd.project_id
-                    inner join flow.contact c on c.id = p.contact_id
-                    left outer join flow.user u on pd.closer_user_id = u.id
-                    left outer join flow.company_state cs on cs.id = p.company_state_id
-                    left outer join flow.state s on s.id = cs.state_id
-                where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date and
-                    pd.closer_appointment_start is not null and
-                    pd.source is not null and
-                    pd.source = any(p_source_ids)
-                and pd.company_id = v_company_id
-order by owner_name, p.date_created
-            ) as funnel_rows;
+        --Self-gen appointments created
+        when p_funnel_id = 13 then
+            RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
+                         from (
+                                  select concat(u.first_name, ' ', u.last_name) owner_name,
+                                         o.org_name                             office,
+                                         s.abbreviation                         state,
+                                         concat(c.first_name, ' ', c.last_name) customer_name,
+                                         c.id                                   contact_id,
+                                         pd.project_id,
+                                         pd.source_name,
+                                         pd.system_size,
+                                         pd.primary_financier_name              financier,
+                                         pd.closer_appointment_start            appointment_date,
+                                         pd.cancelled_date,
+                                         p.date_created
+                                  from brs.project_details pd
+                                           inner join flow.project p on p.id = pd.project_id
+                                           inner join flow.contact c on c.id = p.contact_id
+                                           left outer join flow.user u on pd.closer_user_id = u.id
+                                           inner join flow.user_position up on up.id = p.user_position_id
+                                           inner join flow.org o on o.id = up.org_id
+                                           left outer join flow.company_state cs on cs.id = p.company_state_id
+                                           left outer join flow.state s on s.id = cs.state_id
+                                  where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                                    and pd.closer_appointment_start is not null
+                                    and pd.source is not null
+                                    and pd.source = any (p_source_ids)
+                                    and pd.company_id = v_company_id
+                                  order by owner_name, p.date_created
+                              ) as funnel_rows;
 
-    --Total Appointments Created
-    when p_funnel_id = 10 then
-        RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
-            from (
-                select concat(u.first_name, ' ', u.last_name) owner_name,
-                       s.abbreviation state,
-                       concat(c.first_name, ' ', c.last_name) customer_name,
-                       c.id contact_id,
-                       pd.project_id,
-                       pd.source_name,
-                       pd.system_size,
-                       pd.primary_financier_name financier,
-                       pd.closer_appointment_start appointment_date,
-                       pd.cancelled_date,
-                       p.date_created
-                from brs.project_details pd
-                    inner join flow.project p on p.id = pd.project_id
-                    inner join flow.contact c on c.id = p.contact_id
-                    left outer join flow.user u on pd.closer_user_id = u.id
-                    left outer join flow.company_state cs on cs.id = p.company_state_id
-                    left outer join flow.state s on s.id = cs.state_id
-                where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date and
-                    pd.closer_appointment_start is not null and
-                    pd.source is not null
-                and pd.company_id = v_company_id
-order by owner_name, p.date_created
-            ) as funnel_rows;
+        --Total Appointments Created
+        when p_funnel_id = 10 then
+            RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
+                         from (
+                                  select concat(u.first_name, ' ', u.last_name) owner_name,
+                                         o.org_name                             office,
+                                         s.abbreviation                         state,
+                                         concat(c.first_name, ' ', c.last_name) customer_name,
+                                         c.id                                   contact_id,
+                                         pd.project_id,
+                                         pd.source_name,
+                                         pd.system_size,
+                                         pd.primary_financier_name              financier,
+                                         pd.closer_appointment_start            appointment_date,
+                                         pd.cancelled_date,
+                                         p.date_created
+                                  from brs.project_details pd
+                                           inner join flow.project p on p.id = pd.project_id
+                                           inner join flow.contact c on c.id = p.contact_id
+                                           inner join flow.user_position up on up.id = p.user_position_id
+                                           inner join flow.org o on o.id = up.org_id
+                                           left outer join flow.user u on pd.closer_user_id = u.id
+                                           left outer join flow.company_state cs on cs.id = p.company_state_id
+                                           left outer join flow.state s on s.id = cs.state_id
+                                  where ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
+                                    and pd.closer_appointment_start is not null
+                                    and pd.source is not null
+                                    and pd.company_id = v_company_id
+                                  order by owner_name, p.date_created
+                              ) as funnel_rows;
 
-    end case;
+        end case;
 
 END
 $function$
