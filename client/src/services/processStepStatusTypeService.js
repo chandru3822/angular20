@@ -13,6 +13,19 @@ export async function getCompanyStatusTypes(projectId, projectProcessStepId) {
   }
 }
 
+export async function getCancelledCompanyStatusTypes(projectId, projectProcessStepId) {
+  try {
+    let params = {
+      projectId,
+      projectProcessStepId
+    }
+    const {data} = await getRequestWithParams(`/processStep/status/company/cancelled`, { params })
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 // these are the root status types
 export async function getStatusTypes(projectId, projectProcessStepId) {
   try {

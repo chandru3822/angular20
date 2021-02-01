@@ -36,6 +36,8 @@
                                     psacp.process_step_action_id as "processStepActionId",
                                     psacp.process_step_id as "processStepId",
                                     psacp.display_order as "displayOrder",
+                                    psacp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                    cpsst.process_step_status_type as "processStepStatusType",
                                     psacp.created_by_id as "createdById",
                                     psacp.modified_by_id as "modifiedById",
                                     ps.process_step_name as "processStepName",
@@ -49,6 +51,7 @@
                                     ) as "autoTriggerActionCount"
                              FROM flow.process_step_action_child_process psacp
                                       inner join flow.process_step ps on ps.id = psacp.process_step_id
+                                      inner join flow.company_process_step_status_type cpsst on cpsst.id = psacp.company_process_step_status_type_id
                              WHERE psacp.process_step_action_id = psa.id
                                and psacp.archived is not true
                              order by psacp.display_order, ps.process_step_name
@@ -144,6 +147,7 @@
     update flow.process_step_action
     set action_name = :actionName,
         trigger_automatically = :triggerAutomatically,
+        multiple_uses = :multipleUses,
         time_based_trigger = :timeBasedTrigger,
         hidden = :hidden,
         action_type_id = :actionTypeId,
@@ -156,8 +160,8 @@
   ]]></processStepAction.updateAction>
 
   <processStepAction.insertAction><![CDATA[
-    insert into flow.process_step_action(process_step_id, action_name, trigger_automatically, action_type_id, company_process_step_status_type_id, company_project_status_type_id, created_by_id, archived, display_order, time_based_trigger, hidden)
-     values (:processStepId, :actionName, :triggerAutomatically, :actionTypeId, :companyProcessStepStatusTypeId, :companyProjectStatusTypeId, :createdById, false, (select coalesce(max(display_order) + 1, 0) from flow.process_step_action where process_step_id = :processStepId and archived is not true), :timeBasedTrigger, :hidden)
+    insert into flow.process_step_action(process_step_id, action_name, multiple_uses, trigger_automatically, action_type_id, company_process_step_status_type_id, company_project_status_type_id, created_by_id, archived, display_order, time_based_trigger, hidden)
+     values (:processStepId, :actionName, :multipleUses, :triggerAutomatically, :actionTypeId, :companyProcessStepStatusTypeId, :companyProjectStatusTypeId, :createdById, false, (select coalesce(max(display_order) + 1, 0) from flow.process_step_action where process_step_id = :processStepId and archived is not true), :timeBasedTrigger, :hidden)
   ]]></processStepAction.insertAction>
 
   <processStepAction.archiveOldLogic><![CDATA[
@@ -177,8 +181,7 @@
   <processStepAction.getChildProcessStepsForAction><![CDATA[
     select ps.*
     from flow.process_step ps
-    where ps.id != :stepId
-      and ps.company_id = :companyId
+    where ps.company_id = :companyId
       and ps.archived is not true
       and not exists (
         select acp.process_step_action_id
@@ -191,9 +194,17 @@
   ]]></processStepAction.getChildProcessStepsForAction>
 
   <processStepAction.addChildStepToAction><![CDATA[
-    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, display_order, created_by_id)
-    values (:processStepActionId, :processStepId, :displayOrder, :createdById)
+    insert into flow.process_step_action_child_process (process_step_action_id, process_step_id, display_order, created_by_id, company_process_step_status_type_id)
+    values (:processStepActionId, :processStepId, :displayOrder, :createdById, :companyProcessStepStatusTypeId)
   ]]></processStepAction.addChildStepToAction>
+
+  <processStepAction.saveChildProcessCancelledStatus><![CDATA[
+    update flow.process_step_action_child_process
+      set company_process_step_status_type_id = :companyProcessStepStatusTypeId,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+    where id = :childProcessStepId
+  ]]></processStepAction.saveChildProcessCancelledStatus>
 
   <processStepAction.getActionChildStep><![CDATA[
     select cp.id,
@@ -203,11 +214,14 @@
        cp.archived,
        cp.date_created,
        cp.date_modified,
+       cp.company_process_step_status_type_id,
+       cpsst.process_step_status_type,
        cp.created_by_id,
        cp.modified_by_id,
        ps.process_step_name
     from flow.process_step_action_child_process cp
         inner join flow.process_step ps on ps.id = cp.process_step_id
+        inner join flow.company_process_step_status_type cpsst on cpsst.id = cp.company_process_step_status_type_id
     where cp.id = :id
   ]]></processStepAction.getActionChildStep>
 
@@ -222,6 +236,7 @@
   <processStepAction.updateActionChildStep><![CDATA[
     update flow.process_step_action_child_process
       set display_order = :displayOrder,
+          company_process_step_status_type_id = :companyProcessStepStatusTypeId,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id

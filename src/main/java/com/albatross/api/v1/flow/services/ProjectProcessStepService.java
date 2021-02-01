@@ -126,7 +126,7 @@ public class ProjectProcessStepService {
     return attachmentService.findById(attachmentId);
   }
 
-  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers) {
+  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers, Long cancelledStatusTypeId) {
     User user = securityService.getCurrentUser();
     ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
 
@@ -135,7 +135,7 @@ public class ProjectProcessStepService {
     }
 
 
-    if (pps.getProcessStepStatusTypeId().equals(processStepStatusTypeId)) {
+    if (pps.getCompanyProcessStepStatusTypeId().equals(companyProcessStepStatusTypeId)) {
         return;
     }
 
@@ -147,6 +147,8 @@ public class ProjectProcessStepService {
     params.put("projectId", pps.getProjectId());
     params.put("processStepId", pps.getProcessStepId());
     params.put("main", pps.getMain());
+//    this determines what is done with existing actives of the same process step
+    params.put("cancelledStatusTypeId", cancelledStatusTypeId);
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
     //check for un-run automatic actions if the new status type is active
@@ -212,7 +214,7 @@ public class ProjectProcessStepService {
     }
   }
 
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Long parentProjectProcessStepId, boolean performAutoTrigger, Long companyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
     Long companyId = user.getCompanyId();
 
@@ -230,6 +232,7 @@ public class ProjectProcessStepService {
     params.put("userId", user.getId());
     params.put("companyId", companyId);
     params.put("parentProjectProcessStepId", parentProjectProcessStepId);
+    params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
 
     Long ppsId =  sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
 
@@ -385,7 +388,7 @@ public class ProjectProcessStepService {
 
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), false);
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId(), false, null);
     }
 
     //update project status if needed
@@ -398,21 +401,22 @@ public class ProjectProcessStepService {
     ArrayList<Long> createdPpsIds = new ArrayList<>();
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false);
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), null, pps.getProjectProcessStepId(), false, childStep.getCompanyProcessStepStatusTypeId());
       createdPpsIds.add(ppsId);
       if (childStep.getAutoTriggerActionCount() > 0) {
           this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
       }
     });
 
-    sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(), "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.getId()));
+    sqlCache.update("projectProcessStep.insertPerformedAction", Map.of("ppsId", pps.getProjectProcessStepId(),
+      "psaId", action.getId(), "autoTriggered", action.getTriggerAutomatically(), "createdById", user.getId(), "allowMultipleUses", action.getMultipleUses()));
 
     return createdPpsIds;
   }
 
   public ProjectProcessStepAction canPerformAction(ProjectProcessStepAction action, ProjectProcessStep pps, List<ProjectProcessStepRequirement> requirements) throws Exception {
     // Allow actions to be triggered only once per PPS
-    if (action.getAlreadyTriggered()) {
+    if (action.getAlreadyTriggered() && !action.getMultipleUses()) {
         action.setCanPerform(false);
         return action;
     }

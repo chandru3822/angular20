@@ -1,6 +1,7 @@
 -- drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer, integer);
 
-CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id integer, p_process_step_id integer, p_user_position_id integer, p_user_id integer, p_company_id integer, p_parent_project_process_step_id integer)
+CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id integer, p_process_step_id integer, p_user_position_id integer, p_user_id integer,
+                                                            p_company_id integer, p_parent_project_process_step_id integer, p_company_process_step_status_type_id integer default null)
 -- i am leaving p_user_position_id as a param in case they ask us to put it back. just needs added to the insert at the bottom
 RETURNS integer
 LANGUAGE plpgsql AS
@@ -33,7 +34,12 @@ with pps1 as (
 cpsst as (
     select status.id
     from flow.company_process_step_status_type status
-    where status.company_id = p_company_id and status.process_step_status_type_id = 3
+--     where status.company_id = p_company_id and status.process_step_status_type_id = 3
+    where status.company_id = p_company_id
+        and case when p_company_process_step_status_type_id is not null then
+          -- we now allow the user to select which cancelled status to use to when adding a new project process step, but sometimes like when creating a project for the first time we wont send this in, but there also shouldn't be any of the same type in this scenario
+            status.id = p_company_process_step_status_type_id else status.process_step_status_type_id = 3 end
+    limit 1 --just in case
 )
 update flow.project_process_step pps
 set

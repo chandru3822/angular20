@@ -56,6 +56,13 @@ public class ProcessStepActionController {
     return processStepActionService.addChildStepToAction(actionId, child);
   }
 
+  @PutMapping(value = "/{actionId}/child/{childProcessStepId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepActionChildProcess saveChildProcessCancelledStatus(@PathVariable Long actionId,
+                                                                       @PathVariable Long childProcessStepId,
+                                                                       @RequestBody ProcessStepActionChildProcess child) {
+    return processStepActionService.saveChildProcessCancelledStatus(actionId, childProcessStepId, child);
+  }
+
   @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateActionOrder(@RequestBody List<ProcessStepAction> actions) {
     processStepActionService.updateActionOrder(actions);
