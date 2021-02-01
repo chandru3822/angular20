@@ -614,6 +614,7 @@
                 <td>{{ item.owner_name || '' }}</td>
                 <td>{{ item.office || '' }}</td>
                 <td>{{ item.state || '' }}</td>
+                <td>{{ item.status_type || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
                   <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
@@ -1289,6 +1290,7 @@
           { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false }, // 1
           { text: 'Office', value: 'office', show: true, width: 75, optional: false }, // 2
           { text: 'State', value: 'state', show: true, width: 75, optional: false }, // 2
+          { text: 'Status', value: 'status_type', show: true, width: 75, optional: false }, // 2
           { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false }, // 3
           { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false }, // 4
           // { text: 'Stage', value: 'Stage', show: true, width: 75, optional: false }, // 2
