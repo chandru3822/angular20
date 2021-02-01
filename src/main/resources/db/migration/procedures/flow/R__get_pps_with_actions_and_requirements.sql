@@ -1,16 +1,17 @@
 -- DROP FUNCTION IF EXISTS flow.get_pps_with_actions_and_requirements(integer);
 
 CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id integer)
-RETURNS json AS
+    RETURNS json AS
 $$
-DECLARE v_json json;
+DECLARE
+    v_json json;
 
 BEGIN
 
-SELECT row_to_json(sub_rows)
-INTO v_json
-FROM (
-         with reqs as (
+    SELECT row_to_json(sub_rows)
+    INTO v_json
+    FROM (
+             with reqs as (
 --         This query is where we'll join in the already run actions and  exclude those
              select array_agg(psl.process_step_requirement_id) as ids
              from flow.process_step_logic psl
@@ -235,6 +236,6 @@ FROM (
 RETURN v_json;
 END;
 $$
-LANGUAGE plpgsql
-VOLATILE
-COST 100;
+    LANGUAGE plpgsql
+    VOLATILE
+    COST 100;

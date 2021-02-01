@@ -181,7 +181,22 @@
                                                 left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
                                                WHERE pswqtpst.process_step_work_queue_type_id = pswqt.id AND pswqtpst.archived is not true
                                                order by pst.project_status_type, cpst.project_status_type
-                                           ) projectStatuses), '[]') AS "projectStatuses"
+                                           ) projectStatuses), '[]') AS "projectStatuses",
+                                           coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(processStepStatuses)))
+                    FROM (
+                             SELECT pswqtpsst.id,
+                                    pswqtpsst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+                                    pswqtpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                    pswqtpsst.process_step_status_type_id as "processStepStatusTypeId",
+                                    pswqtpsst.archived,
+                                    coalesce(cpsst.process_step_status_type, psst.process_step_status_type) as "processStepStatusType"
+                             FROM flow.process_step_work_queue_type_process_step_status_type pswqtpsst
+                                      left join flow.company_process_step_status_type cpsst on pswqtpsst.company_process_step_status_type_id = cpsst.id
+                                      left join flow.process_step_status_type psst on pswqtpsst.process_step_status_type_id = psst.id
+                             WHERE pswqtpsst.process_step_work_queue_type_id = pswqt.id AND pswqtpsst.archived is not true
+                             order by psst.process_step_status_type, cpsst.process_step_status_type
+                         ) processStepStatuses), '[]') AS "processStepStatuses"
                               FROM flow.process_step_work_queue_type pswqt
                                 inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
                                 inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id

@@ -59,13 +59,16 @@ public class WorkQueueTypeController {
   }
 
   @PostMapping(value = "/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepWorkQueueType> insertProcessStepLink(@RequestBody ProcessStepWorkQueueType workQueueType) {
+  public Optional<ProcessStepWorkQueueType> insertProcessStepWorkQueueType(@RequestBody ProcessStepWorkQueueType workQueueType) {
     return workQueueTypeService.insertProcessStepWorkQueueType(workQueueType);
   }
 
-  @PutMapping(value = "/saveProjectStatusTypesToWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueTypeProjectStatus> saveProjectStatusTypesToWorkQueueType(@RequestBody ProcessStepWorkQueueType processStepWorkQueueType) {
-    return workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType);
+  @PutMapping(value = "/saveStatusTypesToWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepWorkQueueType> saveProjectStatusTypesToWorkQueueType(@RequestBody ProcessStepWorkQueueType processStepWorkQueueType) {
+    workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType);
+    workQueueTypeService.saveProcessStepStatusTypesToWorkQueueType(processStepWorkQueueType);
+
+    return workQueueTypeService.getProcessStepWorkQueueType(processStepWorkQueueType.getId());
   }
 
 }

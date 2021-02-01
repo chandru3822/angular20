@@ -72,9 +72,10 @@
         <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
           <v-toolbar-title class="px-5 process-step-name">
             {{ processStep.processStepName }}
-            <v-icon v-if="processStep.processStepStatusTypeId === 1"
-                    size="20" color="green">mdi-circle-slice-8
-            </v-icon>
+            <span v-if="processStep.processStepStatusTypeId" :class="getStatusClass(processStep.processStepStatusTypeId)">({{ processStep.processStepStatusType }})</span>
+<!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
+<!--                    size="20" color="green">mdi-circle-slice-8-->
+<!--            </v-icon>-->
 
             <v-dialog
               v-model="processStep.changeActiveConfirm"
@@ -350,6 +351,9 @@
       this.getAvailableOwners()
     },
     methods: {
+      getStatusClass(rootTypeId) {
+        return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
+      },
       anyGroupNonUnique() {
         let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
         return null != nonUniqueGroups
@@ -731,6 +735,24 @@
 <style lang="scss" scoped>
   .process-step-header {
     border-bottom: solid 1px #EAEAF4;
+  }
+
+  .status-active {
+    color: green;
+    font-weight: normal;
+    font-size: 12px;
+  }
+
+  .status-complete {
+    color: cornflowerblue;
+    font-weight: normal;
+    font-size: 12px;
+  }
+
+  .status-cancelled {
+    color: darkred;
+    font-weight: normal;
+    font-size: 12px;
   }
 
   .process-step-name {

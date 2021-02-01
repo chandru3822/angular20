@@ -18,13 +18,18 @@
     order by cpsst.process_step_status_type
   ]]></processStepStatus.getTypesForCompany>
 
-  <processStepStatus.getCancelledTypeForCompany><![CDATA[
-      select *
-      from flow.company_process_step_status_type
-      where archived is not true and
-            company_id = :companyId and
-            process_step_status_type_id = 3
-    ]]></processStepStatus.getCancelledTypeForCompany>
+  <processStepStatus.getCancelledTypesForCompany><![CDATA[
+    select cpsst.*,
+           psst.process_step_status_type as root_process_step_status_type
+    from flow.company_process_step_status_type cpsst
+    inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+    where cpsst.archived is not true
+    and case when (:isParent and not :parentOverride)
+        then company_id = :parentCompanyId
+        else company_id = :companyId end
+        and cpsst.process_step_status_type_id = 3
+    order by cpsst.process_step_status_type
+  ]]></processStepStatus.getCancelledTypesForCompany>
 
    <processStepStatus.getType>
     <![CDATA[

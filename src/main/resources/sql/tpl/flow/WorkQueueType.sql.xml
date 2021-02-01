@@ -91,7 +91,22 @@
                    left join flow.project_status_type pst on pswqtpst.project_status_type_id = pst.id
                    WHERE pswqtpst.process_step_work_queue_type_id = pswqt.id AND pswqtpst.archived is not true
                    order by pst.project_status_type, cpst.project_status_type
-               ) projectStatuses), '[]') AS "projectStatuses"
+               ) projectStatuses), '[]') AS "projectStatuses",
+              coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(processStepStatuses)))
+                    FROM (
+                             SELECT pswqtpsst.id,
+                                    pswqtpsst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+                                    pswqtpsst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                                    pswqtpsst.process_step_status_type_id as "processStepStatusTypeId",
+                                    pswqtpsst.archived,
+                                    coalesce(cpsst.process_step_status_type, psst.process_step_status_type) as "processStepStatusType"
+                             FROM flow.process_step_work_queue_type_process_step_status_type pswqtpsst
+                                      left join flow.company_process_step_status_type cpsst on pswqtpsst.company_process_step_status_type_id = cpsst.id
+                                      left join flow.process_step_status_type psst on pswqtpsst.process_step_status_type_id = psst.id
+                             WHERE pswqtpsst.process_step_work_queue_type_id = pswqt.id AND pswqtpsst.archived is not true
+                             order by psst.process_step_status_type, cpsst.process_step_status_type
+                         ) processStepStatuses), '[]') AS "processStepStatuses"
     FROM flow.process_step_work_queue_type pswqt
              inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
              inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
@@ -146,4 +161,38 @@
       order by pst.project_status_type, cpst.project_status_type
     ]]>
   </workQueueType.getProjectStatusesForWorkQueueType>
+
+  <workQueueType.insertProcessStepStatusType>
+    <![CDATA[
+      insert into flow.process_step_work_queue_type_process_step_status_type(company_process_step_status_type_id, process_step_status_type_id, process_step_work_queue_type_id, created_by_id)
+      values (:companyProcessStepStatusTypeId, :processStepStatusTypeId, :processStepWorkQueueTypeId, :userId)
+    ]]>
+  </workQueueType.insertProcessStepStatusType>
+
+  <workQueueType.updateProcessStepStatusType>
+    <![CDATA[
+      update flow.process_step_work_queue_type_process_step_status_type
+      set archived = true,
+          modified_by_id = :userId,
+          date_modified = now()
+      where id = :id
+    ]]>
+  </workQueueType.updateProcessStepStatusType>
+
+  <workQueueType.getProcessStepStatusesForWorkQueueType>
+    <![CDATA[
+      SELECT pswqtpst.id,
+       pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+       pswqtpst.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+       pswqtpst.process_step_status_type_id as "processStepStatusTypeId",
+       pswqtpst.archived,
+       coalesce(cpst.process_step_status_type, pst.process_step_status_type) as "processStepStatusType"
+      FROM flow.process_step_work_queue_type_process_step_status_type pswqtpst
+        left join flow.company_process_step_status_type cpst on pswqtpst.company_process_step_status_type_id = cpst.id
+        left join flow.process_step_status_type pst on pswqtpst.process_step_status_type_id = pst.id
+      WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
+        AND pswqtpst.archived is not true
+      order by pst.process_step_status_type, cpst.process_step_status_type
+    ]]>
+  </workQueueType.getProcessStepStatusesForWorkQueueType>
 </sql>
