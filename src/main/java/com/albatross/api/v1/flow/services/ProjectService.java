@@ -329,7 +329,7 @@ public class ProjectService {
       new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
-  public List<CompanyProjectStatus> getCompanyProjectStatuses(Long projectId) {
+  public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
 
@@ -341,10 +341,10 @@ public class ProjectService {
     }
 
     // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
-    List<CompanyProjectStatus> results = sqlCache.query("project.getCompanyStatuses",
-      ImmutableMap.of("companyId", companyId), CompanyProjectStatus.class);
+    List<ProjectStatusType> results = sqlCache.query("project.getCompanyStatuses",
+      ImmutableMap.of("companyId", companyId), ProjectStatusType.class);
 
-    for(CompanyProjectStatus c : results) {
+    for(ProjectStatusType c : results) {
       // set the icon for the status
       Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
       c.setIcon(null != a && null != a.getId() ? a : new Attachment());
@@ -353,9 +353,9 @@ public class ProjectService {
     return results;
   }
 
-  public Optional<CompanyProjectStatus> getOneCompanyProjectStatusType(Long id) {
-    Optional<CompanyProjectStatus> result = sqlCache.get("project.getOneCompanyStatus",
-      ImmutableMap.of("id", id), CompanyProjectStatus.class);
+  public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
+    Optional<ProjectStatusType> result = sqlCache.get("project.getOneCompanyStatus",
+      ImmutableMap.of("id", id), ProjectStatusType.class);
 
     if(result.isPresent()) {
       Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
@@ -376,7 +376,7 @@ public class ProjectService {
     sqlCache.update("project.saveInitialProjectStatusType", params);
   }
 
-  public Optional<CompanyProjectStatus> saveCompanyProjectStatus(CompanyProjectStatus status) {
+  public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.getId());
@@ -399,8 +399,8 @@ public class ProjectService {
     return getOneCompanyProjectStatusType(id);
   }
 
-  public void saveCompanyProjectStatuses(List<CompanyProjectStatus> statuses) {
-    for(CompanyProjectStatus s : statuses) {
+  public void saveCompanyProjectStatuses(List<ProjectStatusType> statuses) {
+    for(ProjectStatusType s : statuses) {
       saveCompanyProjectStatus(s);
     }
   }
@@ -414,8 +414,8 @@ public class ProjectService {
     sqlCache.update("project.deleteCompanyStatus", params);
   }
 
-  public List<CompanyProjectStatus> getProjectStatuses() {
-    List<CompanyProjectStatus> results = sqlCache.query("project.getStatuses", Collections.emptyMap(), CompanyProjectStatus.class);
+  public List<ProjectStatusType> getProjectStatuses() {
+    List<ProjectStatusType> results = sqlCache.query("project.getStatuses", Collections.emptyMap(), ProjectStatusType.class);
 
     return results;
   }

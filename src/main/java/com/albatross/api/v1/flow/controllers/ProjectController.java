@@ -91,7 +91,7 @@ public class ProjectController {
 
   //status stuff
   @GetMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CompanyProjectStatus>> getCompanyProjectStatuses(@RequestParam(required = false) Long projectId) {
+  public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatuses(@RequestParam(required = false) Long projectId) {
       return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
   }
 
@@ -101,12 +101,12 @@ public class ProjectController {
   }
 
   @PutMapping(value = "/companyStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Optional<CompanyProjectStatus>> saveCompanyProjectStatus(@RequestBody CompanyProjectStatus status) {
+  public ResponseEntity<Optional<ProjectStatusType>> saveCompanyProjectStatus(@RequestBody ProjectStatusType status) {
     return new ResponseEntity<>(projectService.saveCompanyProjectStatus(status), HttpStatus.OK);
   }
 
   @PutMapping(value = "/companyStatuses", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveCompanyProjectStatuses(@RequestBody List<CompanyProjectStatus> statuses) {
+  public void saveCompanyProjectStatuses(@RequestBody List<ProjectStatusType> statuses) {
     projectService.saveCompanyProjectStatuses(statuses);
   }
 
@@ -116,7 +116,7 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CompanyProjectStatus>> getProjectStatuses() {
+  public ResponseEntity<List<ProjectStatusType>> getProjectStatuses() {
     return new ResponseEntity<>(projectService.getProjectStatuses(), HttpStatus.OK);
   }
 
