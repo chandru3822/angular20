@@ -1407,7 +1407,7 @@ BEGIN
                          where pps.process_step_id = 1
                            and up.user_id = any (p_user_ids)
 
-                           and o.id = any (p_org_ids)
+                           and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                            and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                            and pd.company_id = v_company_id
                          order by owner_name, ppscfv.timestamp_value
@@ -1451,7 +1451,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value = 4 --(Cancelled)
@@ -1497,7 +1497,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (59, 61, 16685) --(No Go, Low TSRF)
@@ -1543,7 +1543,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value is null or ppscfv1.int_value not in (4, 59, 61, 16685))
@@ -1593,7 +1593,7 @@ BEGIN
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_start_date and p_end_date
 
                                and up.user_id = any (p_user_ids)
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, ppscfv.timestamp_value
                          ) as funnel_rows;
@@ -1636,7 +1636,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
@@ -1687,7 +1687,7 @@ BEGIN
                                                    ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
@@ -1736,7 +1736,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
@@ -1787,7 +1787,7 @@ BEGIN
                                                    ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
@@ -1836,7 +1836,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
@@ -1886,7 +1886,7 @@ BEGIN
                                                    ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
@@ -1935,7 +1935,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') <
                                    (now() AT TIME ZONE 'US/Mountain')
@@ -1986,7 +1986,7 @@ BEGIN
                                                    ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
 
                                and pps.process_step_id = 1
@@ -2035,7 +2035,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
@@ -2086,7 +2086,7 @@ BEGIN
                                                    ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and (ppscfv1.int_value = 60 or (ppscfv1.int_value is null and
@@ -2135,7 +2135,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in
@@ -2188,7 +2188,7 @@ BEGIN
                                                    ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and (ppscfv1.int_value is null or
                                     ppscfv1.int_value not in
@@ -2239,7 +2239,7 @@ BEGIN
                                       left join flow.list_of_value lov on lov.id = ppscfv1.int_value
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (2, 1139, 1140) --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
@@ -2288,7 +2288,7 @@ BEGIN
                                                    ppscfv2.custom_field_group_assignment_id = 1377
                              where up.user_id = any (p_user_ids)
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pps.process_step_id = 1
                                and ppscfv1.int_value in (2, 1139, 1140)
@@ -2328,7 +2328,7 @@ BEGIN
                                and pd.closer_user_id is not null
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.credit_decision_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
                          ) as funnel_rows;
@@ -2363,7 +2363,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.credit_decision_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
@@ -2401,7 +2401,7 @@ BEGIN
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.credit_decision_date is not null
                                and pd.credit_check = 82
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
                          ) as funnel_rows;
@@ -2438,7 +2438,7 @@ BEGIN
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.credit_decision_date is not null
                                and pd.credit_check = 82
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.credit_decision_date
@@ -2474,7 +2474,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.installation_agreement_signed_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, pd.installation_agreement_signed_date
                          ) as funnel_rows;
@@ -2509,7 +2509,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.installation_agreement_signed_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.installation_agreement_signed_date
@@ -2544,7 +2544,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.site_survey_verified_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, pd.site_survey_verified_date
                          ) as funnel_rows;
@@ -2578,7 +2578,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.site_survey_verified_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.site_survey_verified_date
@@ -2614,7 +2614,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_sent_to_homeowner_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_sent_to_homeowner_date
                          ) as funnel_rows;
@@ -2649,7 +2649,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_sent_to_homeowner_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_sent_to_homeowner_date
@@ -2688,7 +2688,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_signed_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_signed_date
                          ) as funnel_rows;
@@ -2726,7 +2726,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.final_design_signed_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_signed_date
@@ -2761,7 +2761,7 @@ BEGIN
 
                                and pd.final_design_complete_date is not null
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.company_id = v_company_id
                              order by owner_name, pd.final_design_complete_date
@@ -2796,7 +2796,7 @@ BEGIN
 
                                and pd.final_design_complete_date is not null
 
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.appointment_check_in is not null
                                and pd.company_id = v_company_id
@@ -2832,7 +2832,7 @@ BEGIN
 
                                and ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') :: date between p_start_date and p_end_date
                                and pd.substantial_completion_date is not null
-                               and o.id = any (p_org_ids)
+                               and case when array_length(p_org_ids, 1) > 0 then o.id = any(p_org_ids) else 1 = 1 end
                                and pd.company_id = v_company_id
                              order by owner_name, pd.substantial_completion_date
                          ) as funnel_rows;

@@ -174,7 +174,6 @@
             userId: selected.id,
           }
           const {data} = await postRequest(`/postalCode/zone/saveScheduleToUser`, params)
-          console.log('randaLogger',data)
           this.zone.scheduleToUsers.push(data)
           this.addUser = false
           this.selectedUser = {}
