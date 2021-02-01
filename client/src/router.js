@@ -62,7 +62,6 @@ export default new Router({
               store.commit(UserMutations.SET_DETAILS, data)
               next()
             } catch (e) {
-              console.log('jkldsajfklalsd',e)
               next('/login')
             }
           } else {

@@ -441,7 +441,6 @@
         }
       },
       resourceMapCallback (newValue) {
-        console.log('testing', newValue)
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {
@@ -606,7 +605,7 @@
 
     },
     zoomToMap(item) {
-      console.log('randaLogger', item)
+      console.log('ZOOM ITEM', item)
     }
   }
 </script>

@@ -1234,7 +1234,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE =
                                                      (now() at time zone 'US/Mountain') :: DATE
                                                 )          as today_count,
@@ -1244,7 +1244,7 @@ BEGIN
                                                (select count(1)
                                                 from  project_data ppscfv
                                        where  ppscfv.user_id = any (p_user_ids)
-                                         and ppscfv.org_id = any(p_org_ids)
+                                         and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end
                                          and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE >=
                                                      ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                               )              as week_to_date_count,
@@ -1254,7 +1254,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE between p_custom_start_date and p_custom_end_date
                                               )            as custom_date_range_count
 
@@ -1274,7 +1274,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 4 --(Cancelled)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 4 --(Cancelled)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                        (now() at time zone 'US/Mountain') :: DATE
                                               ) as today_count,
@@ -1284,7 +1284,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 4 --(Cancelled)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 4 --(Cancelled)
                                                    and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                         ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                               ) as week_to_date_count,
@@ -1294,7 +1294,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 4 --(Cancelled)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 4 --(Cancelled)
                                                    and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                               ) as custom_date_range_count
 
@@ -1314,7 +1314,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                        (now() at time zone 'US/Mountain') :: DATE
                                               ) as today_count,
@@ -1324,7 +1324,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                     ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                               ) as week_to_date_count,
@@ -1334,7 +1334,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (59, 61, 16685) --(No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                               ) as custom_date_range_count
 
@@ -1354,7 +1354,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
 
@@ -1365,7 +1365,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date >=
                                                       ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE)
                                               ) as week_to_date_count,
@@ -1375,7 +1375,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or ppscfv.int_value not in (4, 59, 61, 16685))
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
                                               ) as custom_date_range_count
@@ -1396,7 +1396,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 15327
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 15327
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
 
@@ -1407,7 +1407,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 15327
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 15327
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
 
@@ -1418,7 +1418,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 15327
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 15327
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
                                               ) as custom_date_range_count
@@ -1437,7 +1437,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 56 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
                                                  and ppscfv.checked_in_time is not null
@@ -1447,7 +1447,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 56 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
 
@@ -1456,7 +1456,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 56 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ppscfv.checked_in_time is not null
@@ -1466,7 +1466,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 56 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
 
@@ -1475,7 +1475,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56  --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 56  --Not Pitched: No Show
                                                  and ppscfv.checked_in_time is not null
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
@@ -1484,7 +1484,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 56 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 56 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
                                               ) as custom_date_range_count
@@ -1503,7 +1503,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 3 --Missed
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
                                                  and ppscfv.checked_in_time is not null
@@ -1513,7 +1513,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 3 --Missed
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
 
@@ -1522,7 +1522,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 3 --Missed
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ppscfv.checked_in_time is not null
@@ -1532,7 +1532,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 3 --Missed
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
 
@@ -1541,7 +1541,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 3 --Missed
                                                  and ppscfv.checked_in_time is not null
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
@@ -1550,7 +1550,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 3 --Missed
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 3 --Missed
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
                                               ) as custom_date_range_count
@@ -1569,7 +1569,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: Other
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 58 --Not Pitched: Other
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
                                                  and ppscfv.checked_in_time is not null
@@ -1579,7 +1579,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: Other
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 58 --Not Pitched: Other
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                        (now() at time zone 'US/Mountain') :: DATE
 
@@ -1588,7 +1588,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 58 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ppscfv.checked_in_time is not null
@@ -1598,7 +1598,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 58 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
 
@@ -1607,7 +1607,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 58 --Not Pitched: No Show
                                                  and ppscfv.checked_in_time is not null
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
@@ -1616,7 +1616,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 58 --Not Pitched: No Show
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 58 --Not Pitched: No Show
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
                                               ) as custom_date_range_count
@@ -1635,7 +1635,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                        (now() at time zone 'US/Mountain') :: DATE
                                                  and ppscfv.checked_in_time is not null
@@ -1645,7 +1645,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                        (now() at time zone 'US/Mountain') :: DATE
 
@@ -1654,7 +1654,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ppscfv.checked_in_time is not null
@@ -1664,7 +1664,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
 
@@ -1673,7 +1673,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
                                                  and ppscfv.checked_in_time is not null
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
@@ -1682,7 +1682,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value = 57 --Not Pitched: No Utility Bill
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
                                               ) as custom_date_range_count
@@ -1701,7 +1701,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
@@ -1713,7 +1713,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
@@ -1724,7 +1724,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
@@ -1736,7 +1736,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
@@ -1747,7 +1747,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                                  and ppscfv.checked_in_time is not null
@@ -1758,7 +1758,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value = 60 or (ppscfv.int_value is null and
                                                  ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  <
                                                  (now() at time zone 'US/Mountain'))) --Non-Dispositioned
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
@@ -1779,7 +1779,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or
                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                        (now() at time zone 'US/Mountain') :: DATE
@@ -1792,7 +1792,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or
                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
@@ -1805,7 +1805,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or
                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
@@ -1818,7 +1818,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or
                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
@@ -1830,7 +1830,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and (ppscfv.int_value is null or
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and (ppscfv.int_value is null or
                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
                                                  and ppscfv.checked_in_time is not null
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
@@ -1841,7 +1841,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids)and (ppscfv.int_value is null or
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end and (ppscfv.int_value is null or
                                                         ppscfv.int_value not in (4,59,61,56,3,58,57,60,2,1139,1140,16685,15327)) --(Cancelled, No Go, Low TSRF)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain')  > (now() at time zone 'US/Mountain')
@@ -1862,7 +1862,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
                                                  and ppscfv.checked_in_time is not null
@@ -1872,7 +1872,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date  =
                                                         (now() at time zone 'US/Mountain') :: DATE
 
@@ -1881,7 +1881,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
                                                  and ppscfv.checked_in_time is not null
@@ -1891,7 +1891,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: DATE
                                                         between date_trunc('week', now() at time zone 'US/Mountain')::date and (now() at time zone 'US/Mountain') ::date
 
@@ -1900,7 +1900,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and ppscfv.checked_in_time is not null
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
@@ -1909,7 +1909,7 @@ BEGIN
                                               (select count(1)
                                                from project_data ppscfv
                                                where  ppscfv.user_id = any (p_user_ids)
-                                                 and ppscfv.org_id = any(p_org_ids) and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
+                                                 and case when array_length(p_org_ids, 1) > 0 then ppscfv.org_id = any(p_org_ids) else 1 = 1 end  and ppscfv.int_value in (2, 1139, 1140)  --(Pitched, Pitched - Proposal Not Shown, Pitched - Proposal Shown)
                                                  and ((ppscfv.timestamp_value at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
 
                                               ) as custom_date_range_count

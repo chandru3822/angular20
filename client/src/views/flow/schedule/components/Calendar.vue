@@ -764,7 +764,6 @@
               return r.id !== renderInfo.resource?.id
             })
           }
-          console.log('randaLogger', this.mapResourceEvents)
           this.callback(this.mapResourceEvents)
         }
 

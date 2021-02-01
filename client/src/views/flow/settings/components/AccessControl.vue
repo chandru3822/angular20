@@ -39,7 +39,7 @@
             <td v-for="acl in item.accessControl">
               <input type="checkbox" :readonly="!userCanEdit"
                      :disabled="!userCanEdit" v-model="acl.enabled" @input="callback(companyFeatureList)">
-              
+
               <v-icon class="ml-2 mb-1" small color="activeBlue"
                       v-if="secondaryFeatureAccess.length > 0 && secondaryHasAccess(item, acl)">
                 mdi-alpha-p-box-outline
@@ -112,9 +112,6 @@
       },
       secondaryHasAccess (item, acl) {
         let matchingAccessLevel = this.secondaryFeatureAccess.find(ac => { return ac.featureId === item.featureId && ac.accessCode === acl.accessCode })
-        if(matchingAccessLevel?.id) {
-          console.log('randaLogger', matchingAccessLevel)
-        }
         return matchingAccessLevel?.enabled ?? false
       },
       populateHeaders () {
