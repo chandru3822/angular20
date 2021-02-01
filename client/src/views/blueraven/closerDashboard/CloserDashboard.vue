@@ -2553,8 +2553,10 @@
           // this.repModel = cloneDeep(this.repData)
           if (this.isCloser || this.isCloserMgr || this.isCloserRegional) {
             this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
-          } else {
+          } else if (this.selectAllReps) {
             this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, true)
+          } else {
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2, false)
           }
           this.repValuesChanged = false
         }
