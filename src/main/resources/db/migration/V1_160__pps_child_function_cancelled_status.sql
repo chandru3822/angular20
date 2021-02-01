@@ -6,7 +6,8 @@ update flow.process_step_action_child_process as t1 set
     company_process_step_status_type_id = (select cpsst.id
                                            from flow.company_process_step_status_type cpsst
                                            where cpsst.process_step_status_type_id = 3
-                                             and cpsst.company_id = ps.company_id)
+                                             and cpsst.company_id = ps.company_id
+                                             and cpsst.archived is not true)
 from flow.process_step ps
     where ps.id = t1.process_step_id;
 
