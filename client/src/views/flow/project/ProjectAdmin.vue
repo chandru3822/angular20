@@ -353,10 +353,11 @@ export default {
       }
     },
     updateStatus: async function (pps) {
-      const selectedStep = this.projectProcessSteps.find(step => step.projectProcessStepId === projectProcessStepId)
+      console.log('randaLogger', pps)
+      const selectedStep = this.projectProcessSteps.find(step => step.projectProcessStepId === pps.projectProcessStepId)
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await postRequest(`/projectProcessStep/${projectProcessStepId}/status/${pps.newStatusToUse.id}`, selectedStep.newStatusToUse)
+        await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/status/${pps.newStatusToUse.id}`, selectedStep.newStatusToUse)
         await this.getProjectProcessSteps()
       } catch (e) {
         logError(e)
