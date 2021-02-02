@@ -256,6 +256,10 @@
           if(updatedRows?.length > 0) {
             const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/userAllocation`, updatedRows)
             this.scheduleToUsers = data
+            this.getTotalManualAllocation()
+            if(this.is7oaksAdmin) {
+              this.getOtherTotals()
+            }
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -270,6 +274,10 @@
         try {
           const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/user/${user.postalCodeZoneUserId}/delete`)
           this.scheduleToUsers = data
+          this.getTotalManualAllocation()
+          if(this.is7oaksAdmin) {
+            this.getOtherTotals()
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -287,6 +295,10 @@
           }
           const {data} = await postRequest(`/postalCode/zone/${this.zoneId}/saveScheduleToUser`, params)
           this.scheduleToUsers = data
+          this.getTotalManualAllocation()
+          if(this.is7oaksAdmin) {
+            this.getOtherTotals()
+          }
           this.addUser = false
           this.selectedUser = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
