@@ -206,7 +206,7 @@
           {text: 'Manually Set Allocation', value: 'manuallySetAllocation', width: '175px', show: true},
           {text: 'Adjusted Allocation', value: 'targetLeadAllocation', show: true},
           {text: '', value: 'icons', show: true},
-        ],
+        ]
       }
     },
     created () {
