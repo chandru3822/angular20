@@ -1,5 +1,6 @@
 <template>
   <v-container class="px-0 py-2" id="postal-code-container">
+    <v-breadcrumbs :items="breadcrumbs" class="pl-3 pt-1 pb-3"></v-breadcrumbs>
     <v-app-bar color="white" tabs flat class="elevation-1">
       <v-toolbar-title class="pt-2">
         <div v-if="editZone">
@@ -89,7 +90,14 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         zoneId: this.$route.params.id,
         dataLoading: true,
-
+        breadcrumbs: [
+          {
+            text: 'Back to Round Robins',
+            disabled: false,
+            exact: true,
+            to: `/settings/postalCodes`
+          },
+        ]
       }
     },
     created () {
