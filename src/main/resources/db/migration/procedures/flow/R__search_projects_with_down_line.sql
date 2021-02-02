@@ -70,6 +70,7 @@ BEGIN
                              select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
                              where up.primary_flag is true
+                               and up.archived is not true
                                and user_id = p_user_id
                          ),
                               org_ids as (
@@ -225,6 +226,7 @@ BEGIN
                              select up.org_id as parent_org_id,up.user_id as user_id
                              from flow.user_position up
                              where up.primary_flag is true
+                               and up.archived is not true
                                and user_id = p_user_id
                          ),
                               org_ids as (

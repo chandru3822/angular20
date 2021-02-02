@@ -22,7 +22,7 @@ BEGIN
                      inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
-                     inner join flow.user_position up on up.user_id = pczu.user_id and primary_flag is true
+                     inner join flow.user_position up on up.user_id = pczu.user_id and primary_flag is true and up.archived is false
                      inner join flow.position p1 on p1.id = up.position_id and p1.schedulable is true
             where p.id = p_project_id
             group  by up.user_id,up.id
@@ -108,8 +108,8 @@ BEGIN
                                                        else $$'$$ || p_available_date::date + 1 || $$'$$ end ||
                                                    rsa.end_time)::timestamp --  - (default_appointment_length || ' minutes')::interval
                                               , interval '30 min')    available_times,
-                                          uc.default_appointment_length,
-                                          (rsa.end_time - (default_appointment_length || ' minutes')::interval) closer_end_time
+                                          90 as default_appointment_length,
+                                          (rsa.end_time - (90 || ' minutes')::interval) closer_end_time
                                    from flow.project p
                                             inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
                                             inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false

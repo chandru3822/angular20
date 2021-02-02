@@ -16,7 +16,7 @@ BEGIN
         select ra.user_id, ra.start_time as start_time, ra.end_time as end_time
         from flow.resource_appointment ra
                  inner join flow.user_position up on up.user_id = ra.user_id
-            and up.primary_flag is true
+            and up.primary_flag is true and up.archived is false
         where up.user_id = p_user_id
           and start_time >= p_start_time
           and end_time <= p_end_time
