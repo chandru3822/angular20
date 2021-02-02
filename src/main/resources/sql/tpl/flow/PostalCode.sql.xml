@@ -27,58 +27,45 @@
     limit 1
   ]]></postalCode.getZoneByPostalCode>
 
+  <postalCode.getScheduleToUsers><![CDATA[
+    select * from brs.get_allocation_by_zone(:zoneId::int)
+  ]]></postalCode.getScheduleToUsers>
+
+  <postalCode.getScheduleByUsers><![CDATA[
+    select pczu.id,
+             pczu.user_id as "userId",
+             u.first_name as "firstName",
+             u.last_name as "lastName",
+             concat(u.first_name, ' ', u.last_name) AS "fullName",
+             pczu.postal_code_zone_id as "postalCodeZoneId",
+             pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
+             pczu.archived
+      from flow.postal_code_zone_user pczu
+        inner join flow.user u on u.id = pczu.user_id
+      where pczu.postal_code_zone_id = :zoneId
+        and pczu.archived is not true
+        and pczu.postal_code_zone_user_type_id = 2
+      order by u.first_name, u.last_name
+  ]]></postalCode.getScheduleByUsers>
+
+  <postalCode.getCodesForZone><![CDATA[
+    select pc.id,
+           pc.postal_code as "postalCode",
+           pc.postal_code_zone_id as "postalCodeZoneId",
+           pc.archived
+    from flow.postal_code pc
+    where pc.postal_code_zone_id = :zoneId
+      and pc.archived is not true
+    order by pc.postal_code
+  ]]></postalCode.getCodesForZone>
+
   <postalCode.getZone><![CDATA[
     select pcz.id,
        pcz.company_id,
        pcz.distribution_time_frame_days,
        pcz.schedulable_future_days,
        pcz.zone_name,
-       pcz.archived,
-       coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
-                 FROM (
-                          select pczu.id,
-                                 pczu.user_id as "userId",
-                                 u.first_name as "firstName",
-                                 u.last_name as "lastName",
-                                 concat(u.first_name, ' ', u.last_name) AS "fullName",
-                                 pczu.postal_code_zone_id as "postalCodeZoneId",
-                                 pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
-                                 pczu.archived
-                          from flow.postal_code_zone_user pczu
-                            inner join flow.user u on u.id = pczu.user_id
-                          where pczu.postal_code_zone_id = pcz.id
-                            and pczu.archived is not true
-                          and pczu.postal_code_zone_user_type_id = 1
-                          order by u.first_name, u.last_name
-                      ) AS users), '[]') AS scheduleToUsers,
-          coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
-                 FROM (
-                          select pczu.id,
-                                 pczu.user_id as "userId",
-                                 u.first_name as "firstName",
-                                 u.last_name as "lastName",
-                                 concat(u.first_name, ' ', u.last_name) AS "fullName",
-                                 pczu.postal_code_zone_id as "postalCodeZoneId",
-                                 pczu.postal_code_zone_user_type_id as "postalCodeZoneUserTypeId",
-                                 pczu.archived
-                          from flow.postal_code_zone_user pczu
-                            inner join flow.user u on u.id = pczu.user_id
-                          where pczu.postal_code_zone_id = pcz.id
-                            and pczu.archived is not true
-                            and pczu.postal_code_zone_user_type_id = 2
-                          order by u.first_name, u.last_name
-                      ) AS users), '[]') AS scheduleByUsers,
-       coalesce((SELECT array_to_json(array_agg(row_to_json(postalCodes)))
-                 FROM (
-                          select pc.id,
-                                 pc.postal_code as "postalCode",
-                                 pc.postal_code_zone_id as "postalCodeZoneId",
-                                 pc.archived
-                          from flow.postal_code pc
-                          where pc.postal_code_zone_id = pcz.id
-                            and pc.archived is not true
-                          order by pc.postal_code
-                      ) AS postalCodes), '[]') AS postalCodes
+       pcz.archived
     from flow.postal_code_zone pcz
     where pcz.id = :id
   ]]></postalCode.getZone>

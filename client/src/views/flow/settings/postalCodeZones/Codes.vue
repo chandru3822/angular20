@@ -111,7 +111,7 @@
     data() {
       return {
         snackbar: {},
-        zone: {},
+        postalCodes: [],
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
@@ -127,17 +127,17 @@
       }
     },
     created () {
-      this.getZoneDetails()
+      this.getCodesForZone()
     },
     methods: {
       filterPostalCodes () {
-        return this.zone.postalCodes?.length ? this.zone.postalCodes.filter(pc => { return !pc.archived}) : []
+        return this.postalCodes?.length ? this.postalCodes.filter(pc => { return !pc.archived}) : []
       },
-      async getZoneDetails () {
+      async getCodesForZone () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}`)
-          this.zone = data
+          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/codes`)
+          this.postalCodes = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -168,7 +168,7 @@
             postalCode: this.newCode
           }
           const {data} = await postRequest(`/postalCode/zone/addCode`, params)
-          this.zone.postalCodes.push(data)
+          this.postalCodes.push(data)
           this.addCode = false
           this.newCode = {}
           this.$store.commit(AppMutations.SET_LOADING, false)

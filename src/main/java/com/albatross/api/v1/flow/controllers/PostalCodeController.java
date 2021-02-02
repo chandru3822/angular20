@@ -37,6 +37,21 @@ public class PostalCodeController {
     return postalCodeService.getZone(id);
   }
 
+  @GetMapping(value = "/zone/{id}/scheduleTo", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeZoneUser> getScheduleToUsers(@PathVariable Long id) {
+    return postalCodeService.getScheduleToUsers(id);
+  }
+
+  @GetMapping(value = "/zone/{id}/scheduleBy", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeZoneUser> getScheduleByUsers(@PathVariable Long id) {
+    return postalCodeService.getScheduleByUsers(id);
+  }
+
+  @GetMapping(value = "/zone/{id}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCode> getCodesForZone(@PathVariable Long id) {
+    return postalCodeService.getCodesForZone(id);
+  }
+
   @PostMapping(value = "/zone", produces = MediaType.APPLICATION_JSON_VALUE)
   public PostalCodeZone saveZone(@RequestBody PostalCodeZone zone) {
     return postalCodeService.saveZone(zone);

@@ -51,8 +51,32 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<PostalCodeZone> result = sqlCache.get("postalCode.getZone", params, new PostalCodeZoneMapper<>(PostalCodeZone.class, om) );
+    Optional<PostalCodeZone> result = sqlCache.get("postalCode.getZone", params, PostalCodeZone.class);
     return result.orElse(null);
+  }
+
+  public List<PostalCodeZoneUser> getScheduleToUsers(Long zoneId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("zoneId", zoneId);
+
+    List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getScheduleToUsers", params, PostalCodeZoneUser.class);
+    return results;
+  }
+
+  public List<PostalCodeZoneUser> getScheduleByUsers(Long zoneId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("zoneId", zoneId);
+
+    List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getScheduleByUsers", params, PostalCodeZoneUser.class);
+    return results;
+  }
+
+  public List<PostalCode> getCodesForZone(Long zoneId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("zoneId", zoneId);
+
+    List<PostalCode> results = sqlCache.query("postalCode.getCodesForZone", params, PostalCode.class);
+    return results;
   }
 
   public PostalCodeZone saveZone(PostalCodeZone zone) {

@@ -115,7 +115,7 @@
     data() {
       return {
         snackbar: {},
-        zone: {},
+        scheduleToUsers: [],
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
@@ -133,17 +133,17 @@
       }
     },
     created () {
-      this.getZoneDetails()
+      this.getScheduleToUsers()
     },
     methods: {
       filterUsers () {
-        return this.zone?.scheduleToUsers?.filter(pczu => { return !pczu.archived})
+        return this.scheduleToUsers?.filter(pczu => { return !pczu.archived})
       },
-      async getZoneDetails () {
+      async getScheduleToUsers () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}`)
-          this.zone = data
+          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleTo`)
+          this.scheduleToUsers = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -174,7 +174,7 @@
             userId: selected.id,
           }
           const {data} = await postRequest(`/postalCode/zone/saveScheduleToUser`, params)
-          this.zone.scheduleToUsers.push(data)
+          this.scheduleToUsers.push(data)
           this.addUser = false
           this.selectedUser = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
