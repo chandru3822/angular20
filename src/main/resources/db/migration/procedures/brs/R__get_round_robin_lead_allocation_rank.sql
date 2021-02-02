@@ -147,32 +147,23 @@ BEGIN
                case when sum(foo1.score) = 0 then
                    0
                 else
-               round(foo1.score / sum(foo1.score) over (), 2)*100
-                end as score
+                    coalesce(foo1.manual_allocation,
+                             (round(foo1.score / sum(foo1.score) over (), 2)) *
+                             ((1 - foo1.sum_manual_allocation::numeric)::numeric)::numeric)*100
+
+                end as score,
+               foo1.manual_allocation,
+               foo1.sum_manual_allocation
         from (
                  select foo.user_id,
                         case when lead_gen_den is null or lead_gen_den = 0 then
                                      (foo.self_gen +
                                      ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
-                                     * case when (select count(1) > 0 as count
-                                                  from flow.user_position up
-                                                  where ((up.user_id = foo.user_id
-                                                      and up.primary_flag is true
-                                                      and up.position_id = 2) or (foo.user_id in (2392516,2394370,2402401)))) then
-                                                1.5
-                                            else
-                                                1 end
+
                              else
                                              ((foo.lead_gen_num / foo.lead_gen_den::numeric * 10000) + foo.self_gen +
                                              ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
-                                     * case when (select count(1) > 0 as count
-                                                  from flow.user_position up
-                                                  where ((up.user_id = foo.user_id
-                                                      and up.primary_flag is true
-                                                      and up.position_id = 2) or (foo.user_id in (2392516,2394370,2402401)))) then
-                                                1.5
-                                            else
-                                                1 end end as score,
+                                      end as score,
                         case
                             when foo.lead_gen_den_fdc is null or foo.lead_gen_den_fdc = 0 then
                                 0
@@ -180,7 +171,9 @@ BEGIN
                                 round((foo.lead_gen_num_fdc / foo.lead_gen_den_fdc::numeric), 2) end   as lead_gen_fdc,
                         ((foo.appointment_count + foo.avail) / 9)                                       as average_availability,
                         foo.self_gen,
-                        foo.closer_name
+                        foo.closer_name,
+                        foo.manual_allocation,
+                        sum(foo.manual_allocation) over ()                        as sum_manual_allocation
                  from (
                           select pczu.user_id,
                              concat(u.first_name, ' ', u.last_name)                as closer_name,
@@ -191,7 +184,8 @@ BEGIN
                                  coalesce(sg.self_gen, 0)                          as self_gen,
                                  ac.appointment_count,
                                  coalesce(ta.avail, 0)                             as avail,
-                                 coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval
+                                 coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
+                                 pczu.manual_allocation
                           from flow.postal_code_zone pcz
                                    inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.archived is false
                                    inner join flow.user u on u.id = pczu.user_id
@@ -210,11 +204,11 @@ BEGIN
                                    lgnfdc.lead_gen_num,lgdfdc.lead_gen_den,
                                    ac.appointment_count,
                                    pcz.distribution_time_frame_days, ta.avail,
-                                   acwi.appointment_count_with_interval) as foo
+                                   acwi.appointment_count_with_interval,pczu.manual_allocation) as foo
                  group by foo.user_id, foo.closer_name, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
                           foo.lead_gen_num_fdc,foo.lead_gen_den_fdc,
                           foo.appointment_count,
-                          foo.avail) as foo1
+                          foo.avail,foo.manual_allocation) as foo1
         group by foo1.score,foo1.average_availability,foo1.user_id, foo1.closer_name, foo1.lead_gen_fdc, foo1.self_gen, coalesce(foo1.average_availability, 0), coalesce(foo1.score, 0);
 END
 $BODY$

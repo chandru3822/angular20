@@ -123,12 +123,12 @@ BEGIN
                                         project_time_zone, project_state_id, project_state_abbreviation, contact_name,
                                         setter_user_position_id, setter_user_id, closer_user_id,
                                         closer_user_position_id, closer_name,
-                                        project_creator, contact_id, cancelled_date, on_hold_date, off_hold_date)
+                                        project_creator, contact_id, cancelled_date, on_hold_date, off_hold_date,project_created_date)
         values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
                 new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
                 v_owner_user_position_id, v_owner_user_id, v_user_id,
                 coalesce(new.user_position_id, v_pd_closer_user_position_id), v_closer_name,
-                v_project_creator, new.contact_id, v_cancelled_date, v_on_hold_date, v_off_hold_date);
+                v_project_creator, new.contact_id, v_cancelled_date, v_on_hold_date, v_off_hold_date, new.date_created);
     elsif (TG_OP = 'UPDATE') THEN
         update brs.project_details
         set contact_email              = v_contact_email,
@@ -150,7 +150,8 @@ BEGIN
             contact_id                 = new.contact_id,
             cancelled_date             = v_cancelled_date,
             on_hold_date               = v_on_hold_date,
-            off_hold_date              = v_off_hold_date
+            off_hold_date              = v_off_hold_date,
+            project_created_date       = new.date_created
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
