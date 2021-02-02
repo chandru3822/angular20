@@ -2,6 +2,7 @@ CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_postal_code_zone_id i
                                                          p_run_manual_allocation boolean default false)
     RETURNS table
             (
+                postal_code_zone_user_id        integer,
                 user_id                         integer,
                 distance_from_actual_to_target  numeric,
                 total_lead_allocation           numeric,
@@ -114,7 +115,7 @@ BEGIN
                  from round_robin_users rru
                           left join brs.cached_appointment ca on rru.user_id = ca.user_id
              )
-        select foo3.user_id,
+        select foo3.postal_code_zone_user_id, foo3.user_id,
                foo3.distance_from_actual_to_target,
                foo3.total_lead_allocation,
                foo3.actual_lead_allocation,
@@ -127,7 +128,7 @@ BEGIN
                foo3.appointment_count,
                foo3.manual_allocation
         from (
-                 select foo2.user_id,
+                 select foo2.postal_code_zone_user_id, foo2.user_id,
                         foo2.actual_lead_allocation - foo2.total_lead_allocation as distance_from_actual_to_target,
                         case
                             when p_run_manual_allocation is true then
@@ -145,7 +146,7 @@ BEGIN
                         foo2.appointment_count,
                         foo2.manual_allocation
                  from (
-                          select foo1.user_id,
+                          select foo1.postal_code_zone_user_id, foo1.user_id,
                                  case
                                      when sum(foo1.score) over () = 0 then
                                          0
@@ -162,7 +163,7 @@ BEGIN
                                  foo1.manual_allocation,
                                  foo1.sum_manual_allocation
                           from (
-                                   select foo.user_id,
+                                   select foo.postal_code_zone_user_id, foo.user_id,
                                           case
                                               when foo.lead_gen_den is null or foo.lead_gen_den = 0 then
                                                   case
@@ -199,7 +200,8 @@ BEGIN
                                           foo.manual_allocation,
                                           sum(foo.manual_allocation) over ()                        as sum_manual_allocation
                                    from (
-                                            select pczu.user_id,
+                                            select pczu.id as postal_code_zone_user_id,
+                                                   pczu.user_id,
                                                    coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
                                                    coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
                                                    coalesce(sg.self_gen, 0)                          as self_gen,
@@ -222,16 +224,16 @@ BEGIN
                                                      left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
                                             where pcz.id = p_postal_code_zone_id
                                               and pc.archived is false
-                                            group by pczu.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
+                                            group by pczu.id, pczu.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                                      ac.appointment_count,
                                                      pcz.distribution_time_frame_days, ta.avail,
                                                      acwi.appointment_count_with_interval,
                                                      pczu.manual_allocation) as foo
-                                   group by foo.user_id, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
+                                   group by foo.postal_code_zone_user_id, foo.user_id, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
                                             foo.appointment_count,
                                             foo.avail, foo.appointment_count_with_interval,
                                             foo.manual_allocation) as foo1) as foo2
-                 group by foo2.user_id, foo2.actual_lead_allocation, foo2.total_lead_allocation,
+                 group by foo2.postal_code_zone_user_id, foo2.user_id, foo2.actual_lead_allocation, foo2.total_lead_allocation,
                           foo2.total_lead_allocation, foo2.actual_lead_allocation, foo2.score,
                           foo2.lead_gen_num,
                           foo2.lead_gen_den,

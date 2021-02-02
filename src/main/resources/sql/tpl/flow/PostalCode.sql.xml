@@ -59,6 +59,14 @@
     order by pc.postal_code
   ]]></postalCode.getCodesForZone>
 
+  <postalCode.saveManualUserAllocation><![CDATA[
+    update flow.postal_code_zone_user
+    set manual_allocation = :manualAllocation,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :pczuId
+  ]]></postalCode.saveManualUserAllocation>
+
   <postalCode.getZone><![CDATA[
     select pcz.id,
        pcz.company_id,
