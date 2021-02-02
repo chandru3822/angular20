@@ -22,14 +22,12 @@ BEGIN
     return query
         with round_robin_users as (
             select pczu.user_id, pcz.distribution_time_frame_days
-            from flow.postal_code pc
-                     inner join flow.postal_code_zone pcz
-                                on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+            from flow.postal_code_zone pcz
                      inner join flow.postal_code_zone_user pczu
                                 on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
                                    pczu.archived is false
             where pcz.id = p_postal_code_zone_id
-              and pc.archived is false),
+            ),
              lead_gen_num as (
                  select rru.user_id, count(pd.id) as lead_gen_num
                  from round_robin_users rru
@@ -209,9 +207,7 @@ BEGIN
                                                    coalesce(ta.avail, 0)                             as avail,
                                                    coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
                                                    pczu.manual_allocation
-                                            from flow.postal_code pc
-                                                     inner join flow.postal_code_zone pcz
-                                                                on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+                                            from flow.postal_code_zone pcz
                                                      inner join flow.postal_code_zone_user pczu
                                                                 on pczu.postal_code_zone_id = pcz.id and
                                                                    pczu.postal_code_zone_user_type_id = 1 and
@@ -223,7 +219,6 @@ BEGIN
                                                      left join total_avail ta on ta.user_id = pczu.user_id
                                                      left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
                                             where pcz.id = p_postal_code_zone_id
-                                              and pc.archived is false
                                             group by pczu.id, pczu.user_id, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                                      ac.appointment_count,
                                                      pcz.distribution_time_frame_days, ta.avail,
