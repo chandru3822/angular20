@@ -149,8 +149,8 @@ BEGIN
                                      when sum(foo1.score) over () = 0 then
                                          0
                                      else
-                                         round(foo1.score / sum(foo1.score) over (), 7) end as total_lead_allocation,
-                                 round(foo1.actual_lead_allocation, 2)                 as actual_lead_allocation,
+                                         round(foo1.score / sum(foo1.score) over (), 10) end as total_lead_allocation,
+                                 round(foo1.actual_lead_allocation, 10)                 as actual_lead_allocation,
                                  foo1.score                                       as score,
                                  foo1.lead_gen_num,
                                  foo1.lead_gen_den,

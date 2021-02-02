@@ -93,7 +93,14 @@
                 <span class="ml-2">%</span>
               </td>
               <td class="text-left">
-                <span v-if="item.targetLeadAllocation || item.targetLeadAllocation === 0">{{item.targetLeadAllocation | percent(1)}}</span>
+                <v-tooltip top v-if="item.targetLeadAllocation || item.targetLeadAllocation === 0">
+                  <template v-slot:activator="{ on }">
+                    <span v-on="on">
+                      {{item.targetLeadAllocation | percent(1)}}
+                    </span>
+                  </template>
+                  <span>{{ getAllocationValue(item.targetLeadAllocation)}}</span>
+                </v-tooltip>
                 <span v-else>--</span>
               </td>
               <td class="text-right">
