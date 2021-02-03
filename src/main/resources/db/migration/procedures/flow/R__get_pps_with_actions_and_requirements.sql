@@ -111,6 +111,7 @@ BEGIN
                     psa.process_step_id as "processStepId",
                     psa.trigger_automatically as "triggerAutomatically",
                     psa.hidden as "hidden",
+                       psa.multiple_uses as "multipleUses",
                     psa.action_name as "actionName",
                     psa.action_type_id as "actionTypeId",
                     psa.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
