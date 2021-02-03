@@ -126,7 +126,7 @@ public class ProjectProcessStepService {
     return attachmentService.findById(attachmentId);
   }
 
-  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers, Long cancelledStatusTypeId) {
+  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId, boolean runAutoTriggers, Long cancelledCompanyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
     ProjectProcessStep pps = getProjectProcessStep(projectProcessStepId);
 
@@ -147,14 +147,18 @@ public class ProjectProcessStepService {
     params.put("projectId", pps.getProjectId());
     params.put("processStepId", pps.getProcessStepId());
     params.put("main", pps.getMain());
-//    this determines what is done with existing actives of the same process step
-    params.put("cancelledStatusTypeId", cancelledStatusTypeId);
+    params.put("cancelledStatusTypeId", cancelledCompanyProcessStepStatusTypeId);
 
     sqlCache.query("projectProcessStep.setStatus", params, String.class);
     //check for un-run automatic actions if the new status type is active
     if(runAutoTriggers && processStepStatusTypeId == 1) {
       performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
     }
+  }
+
+  public void setMain(Long ppsId, CompanyProcessStepStatusType status) {
+    Map<String, Object> params = Map.of("ppsId", ppsId, "activeCompanyProcessStepStatusTypeId", status.getId(), "cancelledCompanyProcessStepStatusTypeId", status.getCancelledCompanyProcessStepStatusTypeId(), "userId", securityService.getCurrentUser().getId());
+    sqlCache.query("projectProcessStep.setMain", params, String.class);
   }
 
   public void setProjectStatus(Long projectId, Long companyProjectStatusTypeId, boolean runAutoTriggers) {

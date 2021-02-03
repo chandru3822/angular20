@@ -107,62 +107,13 @@
             <td class="text-left">
               <div>
                 {{ projectProcessStep.processStepStatusType }}
-                <v-dialog
-                  v-model="projectProcessStep.editConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text color="primaryCustom" v-on="on" @click="getCancelledStatuses()">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                    >
-                      Change Process Step Status
-                    </v-card-title>
-
-                    <v-card-text class="mt-2">
-                      <v-autocomplete
-                        v-model="projectProcessStep.newStatusToUse"
-                        :items="availableProcessStepStatuses"
-                        item-text="processStepStatusType"
-                        item-value="companyProcessStepStatusTypeId"
-                        label="Status To Change To"
-                        return-object
-                        class="mt-2"
-                      />
-                      <div v-if="projectProcessStep.newStatusToUse.processStepStatusTypeId === 1">
-                        When setting a process step to an ACTIVE status. You must select what to do with all existing Active steps of the same type.
-                        <v-autocomplete
-                          v-model="projectProcessStep.cancelledCompanyStatusTypeId"
-                          :items="cancelledCompanyStatuses"
-                          label="Status To Use For Existing"
-                          item-text="processStepStatusType"
-                          item-value="id"
-                        />
-                      </div>
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="projectProcessStep.editConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        :disabled="!projectProcessStep.newStatusToUse || (projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 && !projectProcessStep.cancelledCompanyStatusTypeId)"
-                        color="primaryCustom"
-                        text
-                        @click="[projectProcessStep.editConfirm = true, updateStatus(projectProcessStep)]">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                <v-btn
+                  text
+                  color="primaryCustom"
+                  @click="[showStatusDialog = true, selectedPps = projectProcessStep]"
+                >
+                  <v-icon>edit</v-icon>
+                </v-btn>
               </div>
             </td>
             <td class="text-left">
@@ -184,7 +135,7 @@
                   </v-card-title>
 
                   <v-card-text class="pt-4">
-                    Modifying the primary flag will cancel the current active process step. It will also run any automatic actions that have not yet been run where the criteria is met using values from the new active process step.
+                    Modifying the primary flag will run any automatic actions that have not yet been run where the criteria is met using values from the new active process step.
                     Are you sure you want to set <strong>{{projectProcessStep.processStepName}} - {{projectProcessStep.projectProcessStepId}}</strong> to Primary?
                   </v-card-text>
 
@@ -199,7 +150,8 @@
                     <v-btn
                       color="primaryCustom"
                       text
-                      @click="updateMain(projectProcessStep.projectProcessStepId)">
+                      @click="[projectProcessStep.changeActiveConfirm = false, showMainDialog = true, selectedPps = projectProcessStep]"
+                    >
                       Yes
                     </v-btn>
                   </v-card-actions>
@@ -215,6 +167,26 @@
     </v-col>
   </v-col>
 
+  <ProjectProcessStepStatus
+    v-if="selectedPps"
+    :show-dialog="showStatusDialog"
+    :project-id="projectId"
+    :project-process-step="selectedPps"
+    :available-process-step-statuses="availableProcessStepStatuses"
+    @updateStatus="updateStatus"
+    @dialogClosed="showStatusDialog = false"
+  />
+
+  <ProjectProcessStepStatus
+      v-if="selectedPps"
+      :show-dialog="showMainDialog"
+      :project-id="projectId"
+      :project-process-step="selectedPps"
+      :available-process-step-statuses="availableProcessStepStatuses"
+      :limit-to-active="true"
+      @updateStatus="updateMain"
+      @dialogClosed="showMainDialog = false"
+  />
 </v-row>
 </template>
 
@@ -224,6 +196,7 @@ import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest
 import {getCompanyStatusTypes, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
+import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
 export default {
   name: 'ProjectAdmin.vue',
@@ -252,11 +225,14 @@ export default {
         {text: 'Primary', value: 'main'},
         // {text: '', value: 'delete', sortable: false}
       ],
-      uuid
+      uuid,
+      showStatusDialog: false,
+      showMainDialog: false,
+      selectedPps: null
     }
   },
   components: {
-
+    ProjectProcessStepStatus,
     AddProcessStep
   },
   async created () {
@@ -353,11 +329,11 @@ export default {
       }
     },
     updateStatus: async function (pps) {
-      console.log('randaLogger', pps)
+      this.showStatusDialog = false
       const selectedStep = this.projectProcessSteps.find(step => step.projectProcessStepId === pps.projectProcessStepId)
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/status/${pps.newStatusToUse.id}`, selectedStep.newStatusToUse)
+        await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/status`, selectedStep.newStatusToUse)
         await this.getProjectProcessSteps()
       } catch (e) {
         logError(e)
@@ -376,27 +352,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    createProjectProcessStep: async function () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // Status is 1 (active) because current business logic says new project process steps must be active and primary
-        const {data} = await postRequest(`/projectProcessStep/`, {
-          projectId: this.projectId,
-          processStepId: this.selectedNewProjectProcessStep.processStepId,
-          companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1)?.processStepStatusTypeId,
-          main: true
-        })
-        this.selectedNewProjectProcessStep = null
-        this.getProjectProcessSteps()
-        this.displayDropdown = false
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     deleteProjectProcessStep: async function (projectProcessStepId) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -410,16 +365,17 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    updateMain: async function (projectProcessStepId) {
+    updateMain: async function (pps) {
+        this.showMainDialog = false
+        const selectedStep = this.projectProcessSteps.find(step => step.projectProcessStepId === pps.projectProcessStepId)
         try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1))
+            await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, selectedStep.newStatusToUse)
             await this.getProjectProcessSteps()
         } catch (e) {
             logError(e)
             this.snackbar = getSnackbar('ERROR', 'Unable to update the primary process step')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            const selectedStep = this.projectProcessSteps.find(s => s.projectProcessStepId === projectProcessStepId)
             if (selectedStep) {
                 selectedStep.main = false
             }

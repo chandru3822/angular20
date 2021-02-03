@@ -61,13 +61,18 @@ IF p_process_step_status_type_id = 1
 THEN
 
 update flow.project_process_step
-set main = false
+set main = false,
+    date_modified = now(),
+    modified_by_id = p_user_id
 where
     project_id = p_project_id and
-    process_step_id = p_process_step_id;
+    process_step_id = p_process_step_id and
+    main = true;
 
 update flow.project_process_step
-set main = true
+set main = true,
+    date_modified = now(),
+    modified_by_id = p_user_id
 where project_process_step.id = p_project_process_step_id;
 
 END IF;
