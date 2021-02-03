@@ -148,6 +148,7 @@ BEGIN
                                           SELECT psacp.id,
                                                  psacp.archived,
                                                  psacp.process_step_action_id as "processStepActionId",
+                                                 psacp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
                                                  psacp.process_step_id as "processStepId",
                                                  psacp.display_order as "displayOrder",
                                                  psacp.created_by_id as "createdById",
