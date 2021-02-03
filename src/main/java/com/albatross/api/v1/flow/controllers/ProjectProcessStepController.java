@@ -139,15 +139,23 @@ public class ProjectProcessStepController {
     return projectProcessStepService.updateOwner(projectProcessStepId, owner, true);
   }
 
-  @PostMapping(value = "/{projectProcessStepId}/status/{cancelledStatusIdToUse}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId,
-                                                          @PathVariable Long cancelledStatusIdToUse,
-                                                          @RequestBody CompanyProcessStepStatusType status) {
+  @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
-        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, cancelledStatusIdToUse);
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId(), true, status.getCancelledCompanyProcessStepStatusTypeId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), new RuntimeException());
+        throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+    }
+  }
+
+  @PostMapping(value = "/{ppsId}/main")
+  public ResponseEntity<Void> updateMainProjectProcessStep(@PathVariable Long ppsId, @RequestBody CompanyProcessStepStatusType status) {
+    try {
+      projectProcessStepService.setMain(ppsId, status);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (RuntimeException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
   }
 }

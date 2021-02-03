@@ -37,6 +37,10 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
   select from flow.update_project_process_step_status(:projectId::integer, :processStepId::integer, :projectProcessStepId::integer, :companyProcessStepStatusTypeId::integer, :processStepStatusTypeId::integer, :userId::integer, :cancelledStatusTypeId::integer)
   ]]></projectProcessStep.setStatus>
 
+  <projectProcessStep.setMain><![CDATA[
+    select from flow.set_main_project_process_step(:ppsId::int, :activeCompanyProcessStepStatusTypeId::int, :cancelledCompanyProcessStepStatusTypeId::int, :userId::int)
+ ]]></projectProcessStep.setMain>
+
   <projectProcessStep.getOwners><![CDATA[
     with positions as (
       select array(

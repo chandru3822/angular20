@@ -444,7 +444,6 @@
       },
       async cancelProjectProcessStep() {
         try {
-          console.log('randaLogger',this.selectedProject)
           await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/status`, this.selectedProject.cancelledCompanyStatusType)
           // this.selectedProject.unscheduleConfirm = false
           this.projects = this.projects.filter(p => p.projectProcessStepId !== this.selectedProject.projectProcessStepId)

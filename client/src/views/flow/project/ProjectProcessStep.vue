@@ -98,9 +98,8 @@
                 </v-card-title>
 
                 <v-card-text class="pt-4">
-                  Modifying the primary flag will cancel the current active process step. It will also run any automatic
-                  actions that have not yet been run where the criteria is met using values from the new active process
-                  step.
+                  Modifying the primary flag will run any automatic actions that have not yet been run where
+                  the criteria is met using values from the new active process step.
                   Are you sure you want to set this process step to Primary?
                 </v-card-text>
 
@@ -115,7 +114,7 @@
                   <v-btn
                     color="primaryCustom"
                     text
-                    @click="[processStep.changeActiveConfirm = false, updateMain(processStep.projectProcessStepId)]">
+                    @click="[processStep.changeActiveConfirm = false, showMainDialog = true]">
                     Yes
                   </v-btn>
                 </v-card-actions>
@@ -274,6 +273,16 @@
       </v-col>
 
     </v-row>
+
+    <ProjectProcessStepStatus
+        :show-dialog="showMainDialog"
+        :project-id="parseInt(projectId)"
+        :project-process-step="processStep"
+        :available-process-step-statuses="availableProcessStepStatuses"
+        :limit-to-active="true"
+        @updateStatus="updateMain"
+        @dialogClosed="showMainDialog = false"
+    />
   </v-main>
 </template>
 
@@ -285,12 +294,12 @@
   import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
   import Links from '@/views/flow/components/Links'
-  // import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment-timezone'
   import {DateTime} from 'luxon'
+  import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
   export default {
     name: 'ProjectProcessStep',
@@ -298,9 +307,9 @@
       ActionButton,
       Links,
       Attachments,
-      // NotesAndActivity,
       CustomValueInput,
-      DatetimePickerInput
+      DatetimePickerInput,
+      ProjectProcessStepStatus
     },
     data() {
       return {
@@ -339,6 +348,7 @@
         uniqueAlreadyHasValue: false,
         psHasEventCfg: false,
         psRequiresResource: false,
+        showMainDialog: false
       }
     },
     async created() {
@@ -372,7 +382,7 @@
       getProcessStep: async function () {
         try {
           const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
-          this.processStep = data
+          this.processStep = {...data, newStatusToUse: {}}
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`
         } catch (e) {
@@ -628,10 +638,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async updateMain(projectProcessStepId) {
+      async updateMain(pps) {
+        this.showMainDialog = false
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1))
+          await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
