@@ -581,7 +581,7 @@ export default {
       }
     },
     calculateAvailableFields () {
-      this.availableFields = this.fetchedAvailableFields.filter(f => f.name).sort((a, b) => a.name.localeCompare(b.name))
+      this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
       if (this.newField.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newField.processStepId || field.smartlistFieldId !== null)
       }

@@ -566,7 +566,7 @@ export default {
       this.$emit('delete', requirement)
     },
     calculateAvailableFields () {
-      this.availableFields = this.fetchedAvailableFields.sort((a, b) => a.name.localeCompare(b.name))
+      this.availableFields = this.fetchedAvailableFields.filter(f => f.name !== null).sort((a, b) => a.name.localeCompare(b.name))
       if (this.newRequirement.processStepId) {
         this.availableFields = this.availableFields.filter(field => field.processStepId === this.newRequirement.processStepId || field.smartlistFieldId !== null)
       }
