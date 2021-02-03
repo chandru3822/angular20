@@ -222,8 +222,8 @@
     methods: {
       getAllocationValue(value) {
         //4 = leading '0.' + 2 more digits it being a % number (0.0132)
-        let valueLength = value.toString().length - 4
-        return value === 0 || value === null ? value : this.$filters.percent(value, valueLength)
+          let valueLength = value.toString().length - 4
+          return valueLength <= 0 || value === 0 || value === null ? value : this.$filters.percent(value, valueLength)
       },
       filterUsers () {
         return this.scheduleToUsers?.filter(pczu => { return !pczu.archived})
