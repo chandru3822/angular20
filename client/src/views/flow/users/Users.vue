@@ -188,7 +188,7 @@
             <tr
               :class="{'shaded-row': index % 2}"
             >
-              <td><v-checkbox v-model="item.selected"></v-checkbox></td>
+              <td><v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox></td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.firstName}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.lastName}}</td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.email}}</td>
@@ -356,7 +356,6 @@
           { text: 'User Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
           { text: 'Position', value: 'position', positionFilter: true, show: true, width: '175px' },
         ],
-        // search: '',
         filters: {
           search: '',
           firstName: '',
@@ -368,6 +367,7 @@
           positions: []
         },
         selectAllUsers: false,
+        selectedUsers: [],
         msgDialog: false,
         messageTab: 1,
         fromEmail: '',
@@ -406,7 +406,7 @@
               return this.allUsers.length;
           }
           else {
-              return this.users.filter(u => u.selected === true).length;
+              return this.selectedUsers.length;
           }
       },
       disableSendEmail() {
@@ -414,9 +414,6 @@
       },
       disableSendText() {
           return !(this.textMessage.trim().length > 0)
-      },
-      textCharCount() {
-          return this.textMessage.trim().length
       }
     },
     beforeRouteEnter(to, from, next) {
@@ -436,16 +433,7 @@
         vm.getStatuses(useSavedSearch)
       });
     },
-    watch: {
-      // options: {
-      //   handler () {
-      //     this.getUsers(false)
-      //   },
-      //   deep: true,
-      // },
-    },
     created () {
-
       this.getPositions()
       this.getOrgFilters(true)
       this.getEmailSenders()
@@ -483,6 +471,13 @@
                 const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
                 this.users = data.content
                 this.totalUsers = data.totalElements
+
+                this.users.forEach(u => {
+                  // If the user isn't already a selected user, add to list of selected users
+                  if (this.selectedUsers.indexOf(u.id) !== -1) {
+                    u.selected = true;
+                  }
+                })
             }
             this.dataLoading = false
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -602,13 +597,29 @@
           }
         })
       },
+      toggleSingleSelect(item) {
+        if (item.selected) {
+          this.selectedUsers.push(item.id)
+        } else {
+          this.selectedUsers = this.selectedUsers.filter(u => u !== item.id)
+          this.selectAllUsers = false
+        }
+      },
       toggleSelectAllUsers () {
         if (this.selectAllUsers) {
           this.getUsers(true);
         }
+        else {
+          this.selectedUsers = []
+        }
 
         this.users.forEach(u => {
           u.selected = this.selectAllUsers
+
+          // If the user isn't already a selected user, add to list of selected users
+          if (this.selectAllUsers && this.selectedUsers.indexOf(u.id) === -1) {
+            this.selectedUsers.push(u.id)
+          }
         })
       },
       getOrgNameForFilter(hierarchy, filterOrgLevelId) {

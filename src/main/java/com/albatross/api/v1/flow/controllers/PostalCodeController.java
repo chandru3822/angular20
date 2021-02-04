@@ -2,10 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.v1.flow.enums.PostalCodeZoneUserType;
-import com.albatross.api.v1.flow.model.PostalCode;
-import com.albatross.api.v1.flow.model.PostalCodeZone;
-import com.albatross.api.v1.flow.model.PostalCodeZoneUser;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.PostalCodeService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +34,27 @@ public class PostalCodeController {
     return postalCodeService.getZone(id);
   }
 
+  @GetMapping(value = "/zone/{id}/scheduleTo", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeAllocationUser> getScheduleToUsers(@PathVariable Long id) {
+    return postalCodeService.getScheduleToUsers(id);
+  }
+
+  @GetMapping(value = "/zone/{id}/scheduleBy", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeZoneUser> getScheduleByUsers(@PathVariable Long id) {
+    return postalCodeService.getScheduleByUsers(id);
+  }
+
+  @GetMapping(value = "/zone/{id}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCode> getCodesForZone(@PathVariable Long id) {
+    return postalCodeService.getCodesForZone(id);
+  }
+
+  @PutMapping(value = "/zone/{id}/userAllocation", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeAllocationUser> saveManualUserAllocation(@PathVariable Long id,
+                                                                 @RequestBody List<PostalCodeAllocationUser> allocationUsers) {
+    return postalCodeService.saveManualUserAllocations(id, allocationUsers);
+  }
+
   @PostMapping(value = "/zone", produces = MediaType.APPLICATION_JSON_VALUE)
   public PostalCodeZone saveZone(@RequestBody PostalCodeZone zone) {
     return postalCodeService.saveZone(zone);
@@ -47,9 +65,10 @@ public class PostalCodeController {
     postalCodeService.deleteZone(id);
   }
 
-  @PostMapping(value = "/zone/saveScheduleToUser", produces = MediaType.APPLICATION_JSON_VALUE)
-  public PostalCodeZoneUser insertScheduleToUser(@RequestBody PostalCodeZoneUser user) {
-    return postalCodeService.insertUser(user, PostalCodeZoneUserType.SCHEDULE_TO.id);
+  @PostMapping(value = "/zone/{id}/saveScheduleToUser", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeAllocationUser> insertScheduleToUser(@PathVariable Long id,
+                                                             @RequestBody PostalCodeZoneUser user) {
+    return postalCodeService.insertAllocationUser(id, user);
   }
 
   @PostMapping(value = "/zone/saveScheduleByUser", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,6 +79,12 @@ public class PostalCodeController {
   @DeleteMapping(value = "/zone/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteUser(@PathVariable Long id) {
     postalCodeService.deleteUser(id);
+  }
+
+  @PutMapping(value = "/zone/{id}/user/{userId}/delete", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<PostalCodeAllocationUser> deleteAllocationUser(@PathVariable Long id,
+                                   @PathVariable Long userId) {
+    return postalCodeService.deleteAllocationUser(id, userId);
   }
 
   @PostMapping(value = "/zone/addCode", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -13,15 +13,16 @@ export async function getCloserRegions (userId, districts, setterOverride) {
   return data
 }
 
-export async function getCloserOffices (userId, regions, setterOverride) {
+export async function getCloserOffices (userId, districts, regions, setterOverride) {
+  districts = encodeURI(districts)
   regions = encodeURI(regions)
-  const params = {userId, regions, setterOverride}
+  const params = {userId, regions, districts, setterOverride}
   const {data} = await getRequestWithParams('/closerDashboard/getOffices', {params}, 'blueraven')
   return data
 }
 
-export async function getCloserReps (userId, regions, offices) {
-  const requestBody = {userId, regions, offices}
+export async function getCloserReps (userId, districts, regions, offices) {
+  const requestBody = {userId, districts, regions, offices}
   const {data} = await postRequest('/closerDashboard/getReps', requestBody, 'blueraven')
   return data
 }

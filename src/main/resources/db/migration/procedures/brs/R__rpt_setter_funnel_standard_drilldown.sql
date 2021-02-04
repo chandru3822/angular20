@@ -46,7 +46,7 @@ BEGIN
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     inner join flow.user su on su.id = pd.setter_user_id
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
                     inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
@@ -112,7 +112,7 @@ BEGIN
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     inner join flow.user su on su.id = pd.setter_user_id
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
                     inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
@@ -200,7 +200,7 @@ BEGIN
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     inner join flow.user su on su.id = pd.setter_user_id
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
                     inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
@@ -269,7 +269,7 @@ BEGIN
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     inner join flow.user su on su.id = pd.setter_user_id
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
                     inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
@@ -337,7 +337,7 @@ BEGIN
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     inner join flow.user su on su.id = pd.setter_user_id
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
                     inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id
@@ -427,7 +427,7 @@ BEGIN
                     inner join flow.project p on p.id = pd.project_id
                     inner join flow.contact c on c.id = p.contact_id
                     inner join flow.user su on su.id = pd.setter_user_id
-                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5))
+                    inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (4,5) and up.archived is not true)
                     inner join flow.org o on o.id = up.org_id
                     left join flow.user cu on cu.id = pd.closer_user_id
                     left outer join flow.company_state cs on cs.id = p.company_state_id

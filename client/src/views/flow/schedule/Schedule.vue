@@ -180,6 +180,7 @@
                 <template #activator="{ on }">
                   <v-btn color="secondaryCustom"
                          class="ml-3"
+                         @click="getCancelledStatuses"
                          v-on="on">Unschedule Event</v-btn>
                 </template>
                 <v-card>
@@ -190,6 +191,13 @@
                   </v-card-title>
 
                   <v-card-text class="pt-4">
+                    <v-select :items="cancelledCompanyStatuses"
+                              v-model="selectedProject.cancelledCompanyStatusType"
+                              item-value="id"
+                              return-object
+                              label="Status to set this project to:"
+                              item-text="processStepStatusType"></v-select>
+
                     Are you sure you want to unschedule this event?
                   </v-card-text>
 
@@ -202,6 +210,7 @@
                       No
                     </v-btn>
                     <v-btn
+                        :disabled="!selectedProject.cancelledCompanyStatusType || !selectedProject.cancelledCompanyStatusType.id"
                         color="primaryCustom"
                         text
                         @click="cancelProjectProcessStep">
@@ -280,7 +289,7 @@
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getCompanyStatusTypes, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
   import constants from "@/helpers/constants";
@@ -325,6 +334,7 @@
         selectedEventTypes: [],
         //used for single select
         selectedProject: {},
+        cancelledCompanyStatuses: [],
         //used for search
         searchEventType: {},
         searchProcessStepStatusType: {},
@@ -387,6 +397,21 @@
       }
     },
     methods: {
+      getCancelledStatuses: async function () {
+        try {
+          const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+          this.cancelledCompanyStatuses = data
+          if(data?.length === 1) {
+            this.selectedProject.cancelledCompanyStatusType = data[0]
+          }
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.fetchingSteps = false
+        }
+      },
       validateSaveEvent () {
         if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
           || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
@@ -419,10 +444,10 @@
       },
       async cancelProjectProcessStep() {
         try {
-          await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/cancel`, this.selectedProject)
+          await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/status`, this.selectedProject.cancelledCompanyStatusType)
           // this.selectedProject.unscheduleConfirm = false
           this.projects = this.projects.filter(p => p.projectProcessStepId !== this.selectedProject.projectProcessStepId)
-          this.selectedProject.processStepStatusTypeId = 3
+          this.selectedProject.processStepStatusTypeId = this.selectedProject?.cancelledCompanyStatusType?.id
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -441,7 +466,6 @@
         }
       },
       resourceMapCallback (newValue) {
-        console.log('testing', newValue)
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {
@@ -606,7 +630,7 @@
 
     },
     zoomToMap(item) {
-      console.log('randaLogger', item)
+      console.log('ZOOM ITEM', item)
     }
   }
 </script>

@@ -7,7 +7,7 @@
     @click="completeAction"
   >
   {{ label }}
-    <v-icon v-if="actionResult.alreadyTriggered" class="ml-1" size="20">check</v-icon>
+    <v-icon :color="getColor()" v-if="actionResult.alreadyTriggered" class="ml-1" size="20">check</v-icon>
     <v-icon v-if="actionResult.triggerAutomatically">mdi-alpha-a</v-icon>
 </v-btn>
 </template>
@@ -34,13 +34,16 @@ export default {
     }
   },
   methods: {
+    getColor () {
+      return this.proceed ? 'white' : null
+    },
     getActionResult: async function() {
       try {
         this.isResultLoading = true
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/actionResult/${this.actionId}`)
         //verifying that a user has edit permissions to process steps to be able to click a button, might have to add an Actions permission eventually
         this.actionResult = data
-        this.proceed = !data.alreadyTriggered && !data.triggerAutomatically && data.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
+        this.proceed = data.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
       } catch (e) {
         logError(e)
       } finally {

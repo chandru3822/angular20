@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CompanyProjectStatus {
+public class ProjectStatusType {
 
   //oh boy. this is confusing af.  id = companyProjectStatusTypeId.  projectStatusTypeId = rootProjectStatusTypeId
     private Long id, projectStatusTypeId, displayOrder;

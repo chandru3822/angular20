@@ -45,7 +45,7 @@
     "vue-mapbox": "^0.4.1",
     "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.4.3",
-    "vue2-filters": "^0.6.0",
+    "vue2-filters": "^0.11.1",
     "vuedraggable": "^2.23.0",
     "vuetify": "^2.3.16",
     "vuex": "^3.1.0"
@@ -69,6 +69,7 @@
     "stylus": "^0.54.8",
     "stylus-loader": "^3.0.2",
     "vue-cli-plugin-vuetify": "^2.0.7",
+    "vue-mentionable": "^0.2.4",
     "vue-template-compiler": "^2.6.12",
     "vuetify-loader": "^1.6.0"
   }

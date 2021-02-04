@@ -83,7 +83,6 @@ export default {
             )
           }
         } catch (e) {
-          console.log('randaLogger',e)
           this.loginLoading = false
           this.$store.commit(
             UserMutations.LOGIN_ERROR,

@@ -72,9 +72,10 @@
         <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
           <v-toolbar-title class="px-5 process-step-name">
             {{ processStep.processStepName }}
-            <v-icon v-if="processStep.processStepStatusTypeId === 1"
-                    size="20" color="green">mdi-circle-slice-8
-            </v-icon>
+            <span v-if="processStep.processStepStatusTypeId" :class="getStatusClass(processStep.processStepStatusTypeId)">({{ processStep.processStepStatusType }})</span>
+<!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
+<!--                    size="20" color="green">mdi-circle-slice-8-->
+<!--            </v-icon>-->
 
             <v-dialog
               v-model="processStep.changeActiveConfirm"
@@ -97,9 +98,8 @@
                 </v-card-title>
 
                 <v-card-text class="pt-4">
-                  Modifying the primary flag will cancel the current active process step. It will also run any automatic
-                  actions that have not yet been run where the criteria is met using values from the new active process
-                  step.
+                  Modifying the primary flag will run any automatic actions that have not yet been run where
+                  the criteria is met using values from the new active process step.
                   Are you sure you want to set this process step to Primary?
                 </v-card-text>
 
@@ -114,7 +114,7 @@
                   <v-btn
                     color="primaryCustom"
                     text
-                    @click="[processStep.changeActiveConfirm = false, updateMain(processStep.projectProcessStepId)]">
+                    @click="[processStep.changeActiveConfirm = false, showMainDialog = true]">
                     Yes
                   </v-btn>
                 </v-card-actions>
@@ -248,7 +248,7 @@
         </v-toolbar>
         <v-col v-for="action in processStep.actions" :key="action.id" class="pt-0">
           <ActionButton
-            v-if="action.actionTypeId === 2"
+            v-if="action.actionTypeId === 2 && !action.hidden"
             :actionId="action.id"
             :projectProcessStepId="parseInt(projectProcessStepId)"
             :label="action.actionName"
@@ -273,6 +273,16 @@
       </v-col>
 
     </v-row>
+
+    <ProjectProcessStepStatus
+        :show-dialog="showMainDialog"
+        :project-id="parseInt(projectId)"
+        :project-process-step="processStep"
+        :available-process-step-statuses="availableProcessStepStatuses"
+        :limit-to-active="true"
+        @updateStatus="updateMain"
+        @dialogClosed="showMainDialog = false"
+    />
   </v-main>
 </template>
 
@@ -284,12 +294,12 @@
   import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import Attachments from '@/views/flow/components/Attachments'
   import Links from '@/views/flow/components/Links'
-  // import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
   import CustomValueInput from '@/views/flow/components/CustomValueInput'
   import {getCustomFieldReadOnly} from '@/services/customFieldService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import moment from 'moment-timezone'
   import {DateTime} from 'luxon'
+  import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
 
   export default {
     name: 'ProjectProcessStep',
@@ -297,9 +307,9 @@
       ActionButton,
       Links,
       Attachments,
-      // NotesAndActivity,
       CustomValueInput,
-      DatetimePickerInput
+      DatetimePickerInput,
+      ProjectProcessStepStatus
     },
     data() {
       return {
@@ -338,6 +348,7 @@
         uniqueAlreadyHasValue: false,
         psHasEventCfg: false,
         psRequiresResource: false,
+        showMainDialog: false
       }
     },
     async created() {
@@ -350,6 +361,9 @@
       this.getAvailableOwners()
     },
     methods: {
+      getStatusClass(rootTypeId) {
+        return rootTypeId === 1 ? 'status-active' : rootTypeId === 2 ? 'status-complete' : 'status-cancelled'
+      },
       anyGroupNonUnique() {
         let nonUniqueGroups = this.customFieldGroups.find(cfg => cfg.uniqueBehaviorTypeId === null)
         return null != nonUniqueGroups
@@ -368,7 +382,7 @@
       getProcessStep: async function () {
         try {
           const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
-          this.processStep = data
+          this.processStep = {...data, newStatusToUse: {}}
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`
         } catch (e) {
@@ -561,7 +575,7 @@
           if (cameFromUnique) {
             this.setCfgValues()
             if (resourceId) {
-              console.log('AUDIT saving', resourceId)
+              // console.log('AUDIT saving', resourceId)
               let params = {
                 projectId: this.projectId,
                 projectProcessStepId: this.projectProcessStepId,
@@ -624,10 +638,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async updateMain(projectProcessStepId) {
+      async updateMain(pps) {
+        this.showMainDialog = false
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === 1))
+          await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
@@ -731,6 +746,24 @@
 <style lang="scss" scoped>
   .process-step-header {
     border-bottom: solid 1px #EAEAF4;
+  }
+
+  .status-active {
+    color: green;
+    font-weight: normal;
+    font-size: 12px;
+  }
+
+  .status-complete {
+    color: cornflowerblue;
+    font-weight: normal;
+    font-size: 12px;
+  }
+
+  .status-cancelled {
+    color: darkred;
+    font-weight: normal;
+    font-size: 12px;
   }
 
   .process-step-name {

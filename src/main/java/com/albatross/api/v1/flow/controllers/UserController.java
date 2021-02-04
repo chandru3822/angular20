@@ -59,7 +59,7 @@ public class UserController {
         if (userService.usernameExists(user.getUsername(), user.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use", new Exception());
         }
-        if(null != user.getNewPassword() && user.getNewPassword().length() < 8) {
+        if(null != user.getNewPassword() && user.getNewPassword().length() < 8 && user.getNewPassword().length() > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
         }
         if(user.getUsername().length() < 3) {
@@ -219,5 +219,10 @@ public class UserController {
 
 
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping(value = "/mentionableUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getMentionableUsers() {
+      return userService.getMentionableUsers();
     }
 }

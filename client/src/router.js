@@ -62,7 +62,6 @@ export default new Router({
               store.commit(UserMutations.SET_DETAILS, data)
               next()
             } catch (e) {
-              console.log('jkldsajfklalsd',e)
               next('/login')
             }
           } else {
@@ -331,7 +330,7 @@ export default new Router({
               meta: {title: 'Albatross - Round Robin'},
               component: () => {
                 if (store.getters.userHasFeature('ROUND_ROBIN')) {
-                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCodes.vue')
+                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/PostalCodes.vue')
                 } else {
                   return accessDenied()
                 }
@@ -341,11 +340,24 @@ export default new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCode.vue')
+                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/PostalCode.vue')
                 } else {
                   return accessDenied()
                 }
               },
+              children: [
+                {
+                  path: 'scheduleTo',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/postalCodeZones/ScheduleTo.vue'),
+                }, {
+                  path: 'scheduleBy',
+                  component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/postalCodeZones/ScheduleBy.vue'),
+                }, {
+                  path: 'codes',
+                  component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/postalCodeZones/Codes.vue'),
+                }
+              ]
             }, {
               path: 'orgTypes',
               meta: {title: 'Albatross - Settings'},

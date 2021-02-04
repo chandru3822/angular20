@@ -8,5 +8,5 @@ import lombok.Data;
 @Data
 public class DashboardUserRequest {
     private Long userId;
-    private String regions, offices;
+    private String districts, regions, offices;
 }

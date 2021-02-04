@@ -27,6 +27,7 @@
             <td class="text-left">{{item.processStepName}}</td>
             <td class="text-left">{{ item.dateCreated | formatDate('timestamp') }}</td>
             <td class="text-left">{{ item.owner && item.owner.fullName }}</td>
+            <td class="text-left">{{item.processStepStatusType}}</td>
           </tr>
         </template>
 
@@ -51,6 +52,7 @@ export default {
       {text: 'Name', value: 'processStepName', show: true},
       {text: 'Created', value: 'dateCreated', show: true},
       {text: 'Owner', value: 'owner', show: true},
+      {text: 'Status', value: 'processStepStatusType', show: true},
     ]
     }
   }

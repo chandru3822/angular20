@@ -60,25 +60,27 @@
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
             <!-- if it is a process step custom field -->
-            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
-                            v-model="parent"
-                            :items="parentObjects"
-                            label="Parent Object"
-                            return-object
-                            item-text="processStepName"
-                            @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
+            <v-autocomplete
+              v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
+              v-model="parent"
+              :items="parentObjects"
+              label="Parent Object"
+              return-object
+              item-text="processStepName"
+              @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-autocomplete>
             <!-- if it is a process step custom field it needs parent, other custom fields do not-->
-            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
-                            v-model="selectedCustomField"
-                            :items="customFields"
-                            label="Custom Field"
-                            return-object
-                            item-text="fieldName"
-                            @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
+            <v-autocomplete
+              v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
+              v-model="selectedCustomField"
+              :items="customFields"
+              label="Custom Field"
+              return-object
+              item-text="fieldName"
+              @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
@@ -86,13 +88,13 @@
             ></v-autocomplete>
             <!-- if it is a function -->
             <v-select
-                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
-                v-model="selectedFunction"
-                :items="availableFunctions"
-                label="Function"
-                item-text="companyFunctionName"
-                returnObject
-                @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"
+              v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
+              v-model="selectedFunction"
+              :items="availableFunctions"
+              label="Function"
+              item-text="companyFunctionName"
+              returnObject
+              @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"
             ></v-select>
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
@@ -106,7 +108,7 @@
                     v-model="fp.dynamicValue"
                     @input="validateRequirementForm()"
                     :label="fp.parameterName"></v-text-field>
-                <v-text-field
+                  <v-text-field
                     :key="index"
                     v-else
                     placeholder="Enter a dynamic value"
@@ -117,60 +119,61 @@
               </v-card>
             </div>
             <v-select
-                v-if="(newRequirement.processStepRequirementTypeId !== 2 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
-                v-model="newRequirement.operatorTypeId"
-                :items="operatorTypes"
-                label="Operator"
-                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm(), operatorDataTypeCheck()]"
-                item-text="operatorType"
-                item-value="id"
+              v-if="(newRequirement.processStepRequirementTypeId !== 2 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
+              v-model="newRequirement.operatorTypeId"
+              :items="operatorTypes"
+              label="Operator"
+              @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm(), operatorDataTypeCheck()]"
+              item-text="operatorType"
+              item-value="id"
             ></v-select>
             <v-switch
-                v-if="newRequirement.operatorTypeId"
-                v-model="newRequirement.customValue"
-                :readonly="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
-                :disabled="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
-                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
-                class="mx-2"
-                label="Custom"
+              v-if="newRequirement.operatorTypeId"
+              v-model="newRequirement.customValue"
+              :readonly="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
+              :disabled="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
+              @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
+              class="mx-2"
+              label="Custom"
             ></v-switch>
-            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.companySystemListId === null"
-                          v-model="newRequirement.requirementValue"
-                          placeholder="Enter a value"
-                          @input="validateRequirementForm()"
-                          label="Value">
+            <v-text-field
+              v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.companySystemListId === null"
+              v-model="newRequirement.requirementValue"
+              placeholder="Enter a value"
+              @input="validateRequirementForm()"
+              label="Value">
             </v-text-field>
             <v-select
-                v-else-if="newRequirement.operatorTypeId
+              v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
                               && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.companySystemListId !== null)
                               && !selectedCustomField.allowMultiple"
-                v-model="selectedListValue"
-                :items="selectedCustomField.listOfValues"
-                @change="validateRequirementForm()"
-                label="Available Values"
-                item-text="name"
-                return-object
+              v-model="selectedListValue"
+              :items="selectedCustomField.listOfValues"
+              @change="validateRequirementForm()"
+              label="Available Values"
+              item-text="name"
+              return-object
             ></v-select>
             <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
             <v-select
-                v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
-                v-model="selectedListOfValues"
-                :items="selectedCustomField.listOfValues"
-                label="Available Values"
-                multiple
-                @change="validateRequirementForm()"
-                item-text="name"
-                return-object
+              v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
+              v-model="selectedListOfValues"
+              :items="selectedCustomField.listOfValues"
+              label="Available Values"
+              multiple
+              @change="validateRequirementForm()"
+              item-text="name"
+              return-object
             ></v-select>
             <v-select
-                v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
-                v-model="selectedDataTypeRequirement"
-                :items="dataTypeRequirements"
-                label="Available Values"
-                @change="validateRequirementForm()"
-                item-text="dataTypeValue"
-                return-object
+              v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
+              v-model="selectedDataTypeRequirement"
+              :items="dataTypeRequirements"
+              label="Available Values"
+              @change="validateRequirementForm()"
+              item-text="dataTypeValue"
+              return-object
             ></v-select>
             <v-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"
                           type="number"
@@ -189,14 +192,14 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
-                :headers="headers"
-                :items="filterRequirements()"
-                :items-per-page="-1"
-                :mobile-breakpoint="0"
-                single-expand
-                :expanded.sync="expanded"
-                hide-default-footer
-                class="elevation-1 fix-column-width-bug"
+              :headers="headers"
+              :items="filterRequirements()"
+              :items-per-page="-1"
+              :mobile-breakpoint="0"
+              single-expand
+              :expanded.sync="expanded"
+              hide-default-footer
+              class="elevation-1 fix-column-width-bug"
             >
               <template #no-data>
                 No requirements for this process step
@@ -213,50 +216,50 @@
                     <v-card flat color="transparent">
                       <div v-for="(fp, index) in item.requirementParamDynamicValues" :key="index">
                         <v-text-field
-                            v-if="fp.dataTypeId === 1"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            placeholder="Enter a date"
-                            type="date"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                          v-if="fp.dataTypeId === 1"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          placeholder="Enter a date"
+                          type="date"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
                         <v-text-field
-                            v-if="fp.dataTypeId === 2"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            placeholder="Enter a timestamp"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                          v-if="fp.dataTypeId === 2"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          placeholder="Enter a timestamp"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
                         <v-text-field
-                            v-if="fp.dataTypeId === 3"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            placeholder="Enter a boolean"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                          v-if="fp.dataTypeId === 3"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          placeholder="Enter a boolean"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
                         <v-text-field
-                            v-if="fp.dataTypeId === 4"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            placeholder="Enter a number"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                          v-if="fp.dataTypeId === 4"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          placeholder="Enter a number"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
                         <v-text-field
-                            v-if="fp.dataTypeId === 6"
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            placeholder="Enter an integer"
-                            type="number"
-                            step="1"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                          v-if="fp.dataTypeId === 6"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          placeholder="Enter an integer"
+                          type="number"
+                          step="1"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
                         <v-text-field
-                            v-else
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
-                            placeholder="Enter a dynamic value"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                          v-else
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          placeholder="Enter a dynamic value"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
                       </div>
                     </v-card>
                   </div>
@@ -277,68 +280,69 @@
                             label="Custom"
                   ></v-switch>
                   <!-- single text field for non list custom values -->
-                  <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
-                                v-model="item.requirementValue"
-                                :disabled="item.immutable || !userCanEdit"
-                                :readonly="item.immutable || !userCanEdit"
-                                placeholder="Enter a value"
-                                label="Value">
+                  <v-text-field
+                    v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
+                    v-model="item.requirementValue"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
+                    placeholder="Enter a value"
+                    label="Value">
                   </v-text-field>
                   <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
-                      v-else-if="item.customValue && item.customField
+                    v-else-if="item.customValue && item.customField
                             && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null || item.customField.companySystemListId !== null) && !item.customField.allowMultiple)"
-                      v-model="item.listOfValueId"
-                      :disabled="item.immutable || !userCanEdit"
-                      :readonly="item.immutable || !userCanEdit"
-                      :items="item.availableListOfValues"
-                      label="Available Values"
-                      item-text="name"
-                      item-value="id"
+                    v-model="item.listOfValueId"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
+                    :items="item.availableListOfValues"
+                    label="Available Values"
+                    item-text="name"
+                    item-value="id"
                   ></v-select>
                   <v-select
-                      v-else-if="item.customValue && item.systemListId"
-                      v-model="item.systemListOptionId"
-                      :disabled="item.immutable || !userCanEdit"
-                      :readonly="item.immutable || !userCanEdit"
-                      :items="item.availableListOfValues"
-                      label="Available Values"
-                      item-text="name"
-                      item-value="id"
+                    v-else-if="item.customValue && item.systemListId"
+                    v-model="item.systemListOptionId"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
+                    :items="item.availableListOfValues"
+                    label="Available Values"
+                    item-text="name"
+                    item-value="id"
                   ></v-select>
                   <!-- not sure what to do with this custom sql one yet -->
                   <v-select
-                      v-else-if="item.customValue && item.customFieldSqlKey"
-                      v-model="item.listOfValueId"
-                      :disabled="item.immutable || !userCanEdit"
-                      :readonly="item.immutable || !userCanEdit"
-                      :items="item.availableListOfValues"
-                      label="Available Values"
-                      item-text="name"
-                      item-value="id"
+                    v-else-if="item.customValue && item.customFieldSqlKey"
+                    v-model="item.listOfValueId"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
+                    :items="item.availableListOfValues"
+                    label="Available Values"
+                    item-text="name"
+                    item-value="id"
                   ></v-select>
                   <!-- at this point it should only show for multiselects -->
                   <v-select
-                      v-else-if="item.customValue && item.customField && item.customField.allowMultiple"
-                      v-model="item.listOfValues"
-                      :disabled="item.immutable || !userCanEdit"
-                      :readonly="item.immutable || !userCanEdit"
-                      :items="item.availableListOfValues"
-                      label="Available Values"
-                      item-text="name"
-                      multiple
-                      return-object
+                    v-else-if="item.customValue && item.customField && item.customField.allowMultiple"
+                    v-model="item.listOfValues"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
+                    :items="item.availableListOfValues"
+                    label="Available Values"
+                    item-text="name"
+                    multiple
+                    return-object
                   ></v-select>
                   <v-select
-                      v-else
-                      v-model="item.dataTypeRequirement"
-                      :items="dataTypeRequirements"
-                      :disabled="item.immutable || !userCanEdit"
-                      :readonly="item.immutable || !userCanEdit"
-                      label="Available Values"
-                      item-text="dataTypeValue"
-                      item-value="id"
-                      return-object
+                    v-else
+                    v-model="item.dataTypeRequirement"
+                    :items="dataTypeRequirements"
+                    :disabled="item.immutable || !userCanEdit"
+                    :readonly="item.immutable || !userCanEdit"
+                    label="Available Values"
+                    item-text="dataTypeValue"
+                    item-value="id"
+                    return-object
                   ></v-select>
                   <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
                                 type="number"
@@ -399,9 +403,9 @@
                              v-if="expanded.includes(item)">cancel
                       </v-btn>
                       <v-dialog
-                          v-if="userCanEdit"
-                          v-model="item.deleteConfirm"
-                          width="500">
+                        v-if="userCanEdit"
+                        v-model="item.deleteConfirm"
+                        width="500">
                         <template #activator="{ on }">
                           <v-btn small text v-on="on">
                             <v-icon>delete</v-icon>
@@ -409,8 +413,8 @@
                         </template>
                         <v-card>
                           <v-card-title
-                              class="headline grey lighten-2"
-                              primary-title>
+                            class="headline grey lighten-2"
+                            primary-title>
                             Confirm
                           </v-card-title>
 
@@ -423,13 +427,13 @@
                           <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn
-                                @click="item.deleteConfirm = false">
+                              @click="item.deleteConfirm = false">
                               No
                             </v-btn>
                             <v-btn
-                                color="primaryCustom"
-                                text
-                                @click="deleteRequirement(item)">
+                              color="primaryCustom"
+                              text
+                              @click="deleteRequirement(item)">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -484,7 +488,15 @@
             <v-checkbox
               dense
               hide-details
+              v-model="newAction.multipleUses"
+              @change="newAction.triggerAutomatically = false"
+              label="Allow Multiple Uses"
+            />
+            <v-checkbox
+              dense
+              hide-details
               v-model="newAction.triggerAutomatically"
+              @change="newAction.multipleUses = false"
               label="Trigger Automatically"
             />
             <v-checkbox
@@ -495,6 +507,14 @@
               v-model="newAction.timeBasedTrigger"
               label="Time Based"
             />
+            <v-checkbox
+              class="pl-3 pt-0"
+              dense
+              v-if="newAction.triggerAutomatically"
+              hide-details
+              v-model="newAction.hidden"
+              label="Hide From UI"
+            />
             <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                    @click="saveNewAction">
               <v-icon>save</v-icon>
@@ -503,16 +523,16 @@
           </v-card>
           <v-card flat>
             <v-data-table
-                :headers="actionHeaders"
-                :items="filterActions()"
-                :items-per-page="-1"
-                single-expand
-                :sort-desc="[false]"
-                :sort-by="['displayOrder']"
-                :mobile-breakpoint="0"
-                :expanded.sync="actionExpanded"
-                hide-default-footer
-                class="action-table elevation-1 fix-column-width-bug"
+              :headers="actionHeaders"
+              :items="filterActions()"
+              :items-per-page="-1"
+              single-expand
+              :sort-desc="[false]"
+              :sort-by="['displayOrder']"
+              :mobile-breakpoint="0"
+              :expanded.sync="actionExpanded"
+              hide-default-footer
+              class="action-table elevation-1 fix-column-width-bug"
             >
               <template #no-data>
                 No actions for this process step
@@ -560,7 +580,17 @@
                       hide-details
                       :readonly="!userCanEdit"
                       :disabled="!userCanEdit"
+                      v-model="item.multipleUses"
+                      @change="item.triggerAutomatically = false"
+                      label="Allow Multiple Uses"
+                    />
+                    <v-checkbox
+                      dense
+                      hide-details
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
                       v-model="item.triggerAutomatically"
+                      @change="item.multipleUses = false"
                       label="Trigger Automatically"
                     />
                     <v-checkbox
@@ -572,6 +602,16 @@
                       hide-details
                       v-model="item.timeBasedTrigger"
                       label="Time Based"
+                    />
+                    <v-checkbox
+                      class="pl-3 pt-0 pb-3"
+                      dense
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      v-if="item.triggerAutomatically"
+                      hide-details
+                      v-model="item.hidden"
+                      label="Hide From UI"
                     />
 
                     <!-- LINK -->
@@ -589,7 +629,8 @@
                           </v-btn>
                         </v-toolbar-items>
                       </v-toolbar>
-                      <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildLink">
+                      <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
+                              v-if="addChildLink">
                         <h3>Add Child Link</h3>
                         <v-select v-model="selectedLink"
                                   :items="availableLinks"
@@ -608,7 +649,7 @@
                   <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
 
                   <v-row justify="center" class="pl-3 pr-3"
-                          v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
+                         v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
                     <v-col cols="12">
                       <v-list v-for="(al, index) in filterBy(item.processStepActionLinks, false, 'archived')"
                               :key="index"
@@ -618,98 +659,9 @@
                             {{al.link}}
                           </v-list-item-content>
                           <v-dialog
-                              v-if="userCanEdit"
-                              v-model="al.deleteConfirm"
-                              width="500">
-                            <template v-slot:activator="{ on }">
-                              <v-list-item-action class="clickable" v-on="on">
-                                <v-icon>delete</v-icon>
-                              </v-list-item-action>
-                            </template>
-                            <v-card>
-                              <v-card-title
-                                  class="headline grey lighten-2"
-                                  primary-title
-                              >
-                                Confirm
-                              </v-card-title>
-
-                              <v-card-text>
-                                Are you sure you want to delete <strong>{{ al.link }}</strong> from <strong>{{
-                                item.actionName }}</strong>?
-                              </v-card-text>
-
-                              <v-divider></v-divider>
-
-                              <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                    @click="al.deleteConfirm = false">
-                                  No
-                                </v-btn>
-                                <v-btn
-                                    color="primaryCustom"
-                                    text
-                                    @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
-                                  Yes
-                                </v-btn>
-                              </v-card-actions>
-                            </v-card>
-                          </v-dialog>
-                        </v-list-item>
-                      </v-list>
-                    </v-col>
-                  </v-row>
-                  <!-- BUTTON -->
-                  <div v-if="item.actionTypeId === 2">
-                  <v-divider></v-divider>
-                  <v-toolbar flat color="transparent">
-                    <v-toolbar-title class="app-title">
-                      Child Process Steps
-                    </v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-toolbar-items>
-                      <v-btn text v-if="!addChildProcess && userCanAdd"
-                             @click="[addChildProcess = true, loadChildProcessSteps(item.id)]">
-                        <v-icon>add</v-icon>
-                      </v-btn>
-                    </v-toolbar-items>
-                  </v-toolbar>
-                  <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
-                    <h3>Add Child Process Step</h3>
-                    <v-autocomplete v-model="selectedProcessStep"
-                              :items="childProcessSteps"
-                              label="Process Step"
-                              item-text="processStepName"
-                              return-object
-                    ></v-autocomplete>
-                    <div class="mt-3">
-                      <v-btn :disabled="!selectedProcessStep.id"
-                             @click="saveProcessStepToAction(item)">
-                        <v-icon>save</v-icon>
-                        Save
-                      </v-btn>
-                      <v-btn class="ml-3" @click="addChildProcess = false">
-                        <v-icon>remove</v-icon>
-                        Cancel
-                      </v-btn>
-                    </div>
-                  </v-card>
-                </div>
-                  <v-row justify="center" class="pl-3 pr-3"
-                         v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
-                    <v-col cols="12" class="pt-0">
-                      <v-list v-for="(cp, index) in filterBy(item.processStepActionChildProcesses, false, 'archived')"
-                              :key="index"
-                              :class="{ 'shaded-row': index % 2 }">
-                        <v-list-item>
-                          <v-list-item-content class="text-left">
-                            <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
-                          </v-list-item-content>
-                          <v-dialog
-                              v-if="userCanEdit"
-                              v-model="cp.deleteConfirm"
-                              width="500">
+                            v-if="userCanEdit"
+                            v-model="al.deleteConfirm"
+                            width="500">
                             <template v-slot:activator="{ on }">
                               <v-list-item-action class="clickable" v-on="on">
                                 <v-icon>delete</v-icon>
@@ -724,7 +676,7 @@
                               </v-card-title>
 
                               <v-card-text>
-                                Are you sure you want to delete <strong>{{ cp.processStepName }}</strong> from <strong>{{
+                                Are you sure you want to delete <strong>{{ al.link }}</strong> from <strong>{{
                                 item.actionName }}</strong>?
                               </v-card-text>
 
@@ -733,13 +685,13 @@
                               <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                  @click="cp.deleteConfirm = false">
+                                  @click="al.deleteConfirm = false">
                                   No
                                 </v-btn>
                                 <v-btn
                                   color="primaryCustom"
                                   text
-                                  @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
+                                  @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -747,6 +699,136 @@
                           </v-dialog>
                         </v-list-item>
                       </v-list>
+                    </v-col>
+                  </v-row>
+                  <!-- BUTTON -->
+                  <div v-if="item.actionTypeId === 2">
+                    <v-divider></v-divider>
+                    <v-toolbar flat color="transparent">
+                      <v-toolbar-title class="app-title">
+                        Child Process Steps
+                      </v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-toolbar-items>
+                        <v-btn text v-if="!addChildProcess && userCanAdd"
+                               @click="[addChildProcess = true, getCancelledStatuses(), loadChildProcessSteps(item.id)]">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-toolbar-items>
+                    </v-toolbar>
+                    <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
+                            v-if="addChildProcess">
+                      <h3>Add Child Process Step</h3>
+                      <v-autocomplete v-model="selectedProcessStep"
+                                      :items="childProcessSteps"
+                                      label="Process Step"
+                                      item-text="processStepName"
+                                      return-object
+                      ></v-autocomplete>
+                      <v-autocomplete v-model="selectedStatus"
+                                      :items="cancelledCompanyStatuses"
+                                      label="Status to Use"
+                                      item-text="processStepStatusType"
+                                      return-object
+                      ></v-autocomplete>
+                      <div class="mt-3">
+                        <v-btn :disabled="!selectedProcessStep.id || !selectedStatus.id"
+                               @click="saveProcessStepToAction(item)">
+                          <v-icon>save</v-icon>
+                          Save
+                        </v-btn>
+                        <v-btn class="ml-3" @click="addChildProcess = false">
+                          <v-icon>remove</v-icon>
+                          Cancel
+                        </v-btn>
+                      </div>
+                    </v-card>
+                  </div>
+                  <v-row justify="center" class="pl-3 pr-3"
+                         v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
+                    <v-col cols="12" class="pt-0">
+                      <v-data-table
+                        :headers="childProcessStepHeaders"
+                        :items="filterItems(item.processStepActionChildProcesses)"
+                        :fixed-header="true"
+                        :items-per-page="100"
+                        hide-default-footer
+                        disable-sort
+                        single-expand
+                        :expanded.sync="cpExpanded"
+                        class="elevation-1"
+                      >
+
+                        <template #expanded-item="{ headers, item:cp }">
+                          <tr>
+                            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': item.processStepActionChildProcesses.indexOf(cp) % 2}">
+                              <h3>Edit Status To Use</h3>
+                              <h4>{{cp.processStepName}}</h4>
+                              <v-autocomplete v-model="cp.companyProcessStepStatusTypeId"
+                                              :items="cancelledCompanyStatuses"
+                                              label="Status to Use"
+                                              item-text="processStepStatusType"
+                                              item-value="id"
+                              ></v-autocomplete>
+                              <v-btn color="primaryCustom" dark class="white--text"
+                                     :disabled="!cp.companyProcessStepStatusTypeId"
+                                     @click="saveChildProcessCancelledStatus(item, cp)">Save Changes</v-btn>
+                            </td>
+                          </tr>
+                        </template>
+
+                        <template #item="{ item:cp, index }">
+                          <tr :class="{'shaded-row': index % 2}">
+                            <td class="text-left">{{cp.processStepName}}</td>
+                            <td class="text-left">{{cp.processStepStatusType}}</td>
+                            <td class="text-right">
+                              <v-btn text v-if="!cpExpanded.includes(cp)" @click="[ cpExpanded = [cp], getCancelledStatuses()]">
+                                <v-icon>edit</v-icon>
+                              </v-btn>
+                              <v-btn small text v-if="cpExpanded.includes(cp)" @click="cpExpanded = []">cancel</v-btn>
+                              <v-dialog v-if="userCanEdit" v-model="cp.deleteConfirm" width="500">
+                                <template v-slot:activator="{ on }">
+                                  <v-btn text v-on="on">
+                                    <v-icon>delete</v-icon>
+                                  </v-btn>
+                                </template>
+                                <v-card>
+                                  <v-card-title
+                                    class="headline grey lighten-2"
+                                    primary-title
+                                  >
+                                    Confirm
+                                  </v-card-title>
+
+                                  <v-card-text>
+                                    Are you sure you want to delete <strong>{{ cp.processStepName }}</strong> from
+                                    <strong>{{
+                                      item.actionName }}</strong>?
+                                  </v-card-text>
+
+                                  <v-divider></v-divider>
+
+                                  <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn
+                                      @click="cp.deleteConfirm = false">
+                                      No
+                                    </v-btn>
+                                    <v-btn
+                                      color="primaryCustom"
+                                      text
+                                      @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
+                                      Yes
+                                    </v-btn>
+                                  </v-card-actions>
+                                </v-card>
+                              </v-dialog>
+                            </td>
+
+                          </tr>
+                        </template>
+                      </v-data-table>
+
                     </v-col>
                   </v-row>
                   <!-- FUNCTIONS CAN ONLY BE ADDED TO BUTTONS -->
@@ -764,14 +846,15 @@
                         </v-btn>
                       </v-toolbar-items>
                     </v-toolbar>
-                    <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildFunction">
+                    <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}"
+                            v-if="addChildFunction">
                       <h3>Add Child Function</h3>
                       <v-autocomplete v-model="selectedChildFunction"
-                                :items="childFunctions"
-                                label="Function"
-                                item-text="companyFunctionName"
-                                return-object
-                                @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
+                                      :items="childFunctions"
+                                      label="Function"
+                                      item-text="companyFunctionName"
+                                      return-object
+                                      @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
                       ></v-autocomplete>
                       <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
                         <h5 class="text-left">Dynamic Function Parameters</h5>
@@ -784,12 +867,12 @@
                               placeholder="Enter a dynamic value (number)"
                               v-model="fp.dynamicValue"
                               :label="fp.parameterName"></v-text-field>
-                          <v-text-field
-                            v-else
-                            :key="index"
-                            placeholder="Enter a dynamic value"
-                            v-model="fp.dynamicValue"
-                            :label="fp.parameterName"></v-text-field>
+                            <v-text-field
+                              v-else
+                              :key="index"
+                              placeholder="Enter a dynamic value"
+                              v-model="fp.dynamicValue"
+                              :label="fp.parameterName"></v-text-field>
                           </div>
                         </v-card>
                       </div>
@@ -815,7 +898,8 @@
                         <v-list-item>
                           <v-list-item-content class="text-left">
                             <v-list-item-title>{{cp.companyFunctionName}}</v-list-item-title>
-                            <div class="mt-2" v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
+                            <div class="mt-2"
+                                 v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
                               <h5 class="text-left">Dynamic Function Parameters</h5>
                               <v-card flat color="transparent">
                                 <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
@@ -880,9 +964,9 @@
                             <v-icon v-else>edit</v-icon>
                           </v-btn>
                           <v-dialog
-                              v-if="userCanEdit"
-                              v-model="cp.deleteConfirm"
-                              width="500">
+                            v-if="userCanEdit"
+                            v-model="cp.deleteConfirm"
+                            width="500">
                             <template v-slot:activator="{ on }">
                               <v-list-item-action class="clickable" v-on="on">
                                 <v-icon>delete</v-icon>
@@ -926,8 +1010,10 @@
                   <v-toolbar flat dense color="transparent">
                     <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-toolbar-items v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
-                      <v-btn text @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = false]">
+                    <v-toolbar-items
+                      v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
+                      <v-btn text
+                             @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = false]">
                         <v-icon>clear</v-icon>
                         Clear All
                       </v-btn>
@@ -1000,9 +1086,9 @@
                              v-if="actionExpanded.includes(item)">cancel
                       </v-btn>
                       <v-dialog
-                          v-if="userCanEdit"
-                          v-model="item.deleteConfirm"
-                          width="500">
+                        v-if="userCanEdit"
+                        v-model="item.deleteConfirm"
+                        width="500">
                         <template #activator="{ on }">
                           <v-btn small text v-on="on">
                             <v-icon>delete</v-icon>
@@ -1010,8 +1096,8 @@
                         </template>
                         <v-card>
                           <v-card-title
-                              class="headline grey lighten-2"
-                              primary-title>
+                            class="headline grey lighten-2"
+                            primary-title>
                             Confirm
                           </v-card-title>
 
@@ -1024,13 +1110,13 @@
                           <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn
-                                @click="item.deleteConfirm = false">
+                              @click="item.deleteConfirm = false">
                               No
                             </v-btn>
                             <v-btn
-                                color="primaryCustom"
-                                text
-                                @click="[item.archived = true, deleteAction(item)]">
+                              color="primaryCustom"
+                              text
+                              @click="[item.archived = true, deleteAction(item)]">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -1055,7 +1141,15 @@
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
+  import {
+    getRequest,
+    deleteRequest,
+    putRequest,
+    postRequest,
+    getRequestWithParams,
+    getSnackbar
+  } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
   import {getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
   import Sortable from "sortablejs";
@@ -1069,7 +1163,7 @@
       const _self = this
       Sortable.create(table, {
         handle: '.handle',
-        onEnd({ newIndex, oldIndex }) {
+        onEnd({newIndex, oldIndex}) {
           const rowSelected = _self.actions.splice(oldIndex, 1)[0]
           _self.actions.splice(newIndex, 0, rowSelected)
           let rowsClone = cloneDeep(_self.actions)
@@ -1082,7 +1176,7 @@
             //update display order
             r.displayOrder = idx
             //save only rows that changed
-            if(save) {
+            if (save) {
               _self.actions[idx].newDisplayOrder = idx
               rowsToSave.push(r)
             }
@@ -1108,11 +1202,16 @@
           {text: null, value: 'icons', show: true}
         ],
         actionHeaders: [
-          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
+          {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
           {text: 'Name', value: 'actionName', show: true},
           {text: 'Type', value: 'actionType', show: true},
           {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
           {text: 'Project Status Change', value: 'projectStatusType', show: true},
+          {text: null, value: 'icons', show: true}
+        ],
+        childProcessStepHeaders: [
+          {text: 'Child Step', value: 'processStepName', show: true},
+          {text: 'Status', value: 'companyProcessStepStatusTypeId', show: true},
           {text: null, value: 'icons', show: true}
         ],
         addNewRequirement: false,
@@ -1148,6 +1247,7 @@
         statusTypes: [],
         companyProjectStatusTypes: [],
         expanded: [],
+        cpExpanded: [],
         actionExpanded: [],
         //todo: get these from endpoint but i am lazy right now
         actionTypes: [
@@ -1157,6 +1257,8 @@
         addChildProcess: false,
         addChildFunction: false,
         selectedProcessStep: {},
+        selectedStatus: {},
+        cancelledCompanyStatuses: [],
         selectedChildFunction: {},
         selectedChildRequirementParamDynamicValues: [],
 
@@ -1251,9 +1353,9 @@
       async loadParentObjects() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-            const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
-            this.parentObjects = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
+          this.parentObjects = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1291,7 +1393,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
-          if(isRequirement) {
+          if (isRequirement) {
             this.newRequirement.requirementParamDynamicValues = data
           } else {
             this.selectedChildRequirementParamDynamicValues = data
@@ -1342,7 +1444,7 @@
         }
 
         //check validity of initial value
-        let invalidValue = (!this.newRequirement.requirementValue && !this.selectedDataTypeRequirement.id && !this.selectedListValue.id && this.selectedListOfValues.length === 0 )
+        let invalidValue = (!this.newRequirement.requirementValue && !this.selectedDataTypeRequirement.id && !this.selectedListValue.id && this.selectedListOfValues.length === 0)
 
         //if a secondary requirement is required check for a value there
         let invalidSecondaryValue = (this.selectedDataTypeRequirement.secondaryRequirement && !this.newRequirement.secondaryRequirementValue)
@@ -1358,7 +1460,7 @@
 
           //todo: holy crap figure out how to fix the object being sent up so i dont have to do all this validation
           //adjust value of requirementValue as needed:
-          if(this.newRequirement.customValue && this.selectedCustomField.listOfValueId && this.selectedCustomField.allowMultiple) {
+          if (this.newRequirement.customValue && this.selectedCustomField.listOfValueId && this.selectedCustomField.allowMultiple) {
             // if from list of values and allow multiple build the json array of selected ids
             this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
 
@@ -1444,7 +1546,7 @@
           requirement.secondaryRequirementValue = !requirement.customValue && requirement.dataTypeRequirement.secondaryRequirement ? requirement.secondaryRequirementValue : null
 
           //adjust value of requirementValue as needed:
-          if(requirement.customValue && requirement.listOfValues) {
+          if (requirement.customValue && requirement.listOfValues) {
             // if from list of values and allow multiple build the json array of selected ids
             requirement.listOfValueIds = requirement.listOfValues.map(v => v.id)
             //reset this in case they changed values around
@@ -1500,6 +1602,24 @@
         }
       },
       //ACTIONS
+      filterItems(items) {
+        return items.filter(i => !i.archived)
+      },
+      async getCancelledStatuses() {
+        if (this.cancelledCompanyStatuses?.length === 0) {
+          try {
+            const {data} = await getCancelledCompanyStatusTypes(this.projectId)
+            this.cancelledCompanyStatuses = data
+            if (data?.length === 1) {
+              this.selectedStatus = data[0]
+            }
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          }
+        }
+      },
       async getActions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -1521,9 +1641,11 @@
       async saveNewAction() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if(!this.newAction.triggerAutomatically) {
+          if (!this.newAction.triggerAutomatically) {
             //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
             this.newAction.timeBasedTrigger = false
+            //same with hidden
+            this.newAction.hidden = false
           }
           this.newAction.processStepId = this.processStepId
           const {data} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
@@ -1546,9 +1668,11 @@
           action.processStepLogicList = action.processStepLogicList.filter(l => {
             return !l.archived
           })
-          if(!action.triggerAutomatically) {
+          if (!action.triggerAutomatically) {
             //if they unset the trigger automatically flag, then unset the timeBasedTrigger too.  has to be both to be time based
             action.timeBasedTrigger = false
+            //same with hidden
+            action.hidden = false
           }
 
           // build the list of psr's that need to be set to immutable  do that if the save is successful
@@ -1567,7 +1691,7 @@
           this.actionExpanded = []
 
           //update the necessary psr's to immutable
-          if(psrListToUpdate.length > 0){
+          if (psrListToUpdate.length > 0) {
             psrListToUpdate.forEach(psr => {
               let match = this.requirements.find(r => r.id === psr.processStepRequirementId)
               match.immutable = true
@@ -1643,15 +1767,35 @@
         const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/childProcessSteps`)
         this.childProcessSteps = data
       },
+      async saveChildProcessCancelledStatus(action, cp) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/processStep/${this.processStepId}/action/${action.id}/child/${cp.id}/status`, {
+            companyProcessStepStatusTypeId: cp.companyProcessStepStatusTypeId,
+          })
+          this.cpExpanded = []
+          cp.processStepStatusType = data.processStepStatusType
+          this.snackbar = getSnackbar('SUCCESS', 'Child Process Status Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Child Process Status')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async saveProcessStepToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
             processStepId: this.selectedProcessStep.id,
+            companyProcessStepStatusTypeId: this.selectedStatus.id,
             displayOrder: 0
           })
           action.processStepActionChildProcesses.push(data)
           this.selectedProcessStep = {}
+          this.selectedStatus = this.cancelledCompanyStatuses?.length === 1 ? this.cancelledCompanyStatuses[0] : {}
           this.addChildProcess = false
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Added To Action')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -1790,12 +1934,12 @@
       },
       getListValueName(item) {
         let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
-                      item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
+          item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
         let match = item.availableListOfValues.find(i => i.id === idToUse)
         return match ? match.name : 'unknown'
       },
       async saveRowChanges(rows) {
-        if(rows?.length > 0) {
+        if (rows?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             const {data} = await putRequest(`/processStep/${this.processStepId}/action/order`, rows)

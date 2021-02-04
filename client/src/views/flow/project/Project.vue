@@ -344,7 +344,6 @@
         }
       },
       getOwners: async function () {
-        console.log('hello')
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/project/owners`)

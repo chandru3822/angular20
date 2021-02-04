@@ -235,7 +235,8 @@ public class CloserDashboardService {
     parameters.addValue("userId", userId);
     parameters.addValue("setterOverride", setterOverride);
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return results;
   }
 
   public String getRegions(int userId, String districts, Boolean setterOverride) {
@@ -248,31 +249,37 @@ public class CloserDashboardService {
     parameters.addValue("districts", districts);
     parameters.addValue("setterOverride", setterOverride);
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return results;
   }
 
-  public String getOffices(int userId, String regions, Boolean setterOverride) {
+  public String getOffices(int userId, String districts, String regions, Boolean setterOverride) {
     regions = regions.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
+    districts = districts.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
 
-    String sqlQuery = "SELECT * FROM brs.util_closer_office_selection(:userId, :regions::JSON, :setterOverride::BOOLEAN)";
+    String sqlQuery = "SELECT * FROM brs.util_closer_office_selection(:userId, :districts::JSON, :regions::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", userId);
+    parameters.addValue("districts", districts);
     parameters.addValue("regions", regions);
     parameters.addValue("setterOverride", setterOverride);
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return null == results ? "[]" : results;
   }
 
   public String getReps(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_closer_rep_selection(:userId::int, :regions::JSON, :offices::JSON)";
+    String sqlQuery = "SELECT * FROM brs.util_closer_rep_selection(:userId::int, :districts::JSON, :regions::JSON, :offices::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
     parameters.addValue("userId", req.getUserId());
+    parameters.addValue("districts", req.getDistricts());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("offices", req.getOffices());
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return results;
   }
 
   public String funnelStandard(FunnelRequest funnelRequest) {

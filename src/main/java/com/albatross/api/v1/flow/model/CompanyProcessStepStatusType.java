@@ -14,5 +14,8 @@ public class CompanyProcessStepStatusType {
   private Long id, companyId, processStepStatusTypeId, createdById, modifiedById;
   private String processStepStatusType, rootProcessStepStatusType;
   private Boolean archived, isDefault;
+
+  // This status type ID represents what status to change current active steps to (when changing the new status to active)
+  private Long cancelledCompanyProcessStepStatusTypeId;
 }
 

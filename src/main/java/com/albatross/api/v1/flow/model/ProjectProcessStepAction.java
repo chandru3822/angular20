@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class ProjectProcessStepAction extends ProcessStepAction {
 
-    private Boolean alreadyTriggered, canPerform;
+    private Boolean alreadyTriggered, multipleUses, canPerform;
 }
