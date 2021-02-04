@@ -5,11 +5,12 @@
         Add Contact
         <v-spacer></v-spacer>
         <v-btn v-if="!constants.IS_MOBILE" text class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn v-if="!constants.IS_MOBILE" color="primaryCustom" dark @click="validate">Save</v-btn>
+        <v-btn v-if="!constants.IS_MOBILE" color="primaryCustom white--text" :disabled="loadingInsertFields" @click="validate">Save</v-btn>
       </v-card-title>
       <v-card-text  v-if="constants.IS_MOBILE">
         <v-btn text class="mr-3" to="/contacts">Cancel</v-btn>
-        <v-btn color="primaryCustom" dark @click="validate">Save</v-btn>
+        <v-btn color="primaryCustom white--text" :disabled="loadingInsertFields"
+               @click="validate" >Save</v-btn>
       </v-card-text>
 
       <v-form ref="contactForm">
@@ -63,14 +64,17 @@
             </v-col>
           </v-row>
         </v-container>
+        <SpinnerInline v-if="loadingInsertFields" :text="'Checking For Additional Fields...'" :size="20" color="primaryCustom"/>
+        <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+          <h3>{{cfg.groupName}}</h3>
+          <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                            :key="idx"
+                            :callback="populateDirtyCfvs"
+                            :required="cf.requireOnInsert"
+                            :readonly="getReadOnly(cf)"
+                            :field="cf"></CustomValueInput>
+        </v-container>
       </v-form>
-      <v-container class="text-left" v-for="cfg in customFieldGroups" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
-        <h3>{{cfg.groupName}}</h3>
-        <CustomValueInput v-for="cf in cfg.customFieldValues"
-                          :readonly="getReadOnly(cf)"
-                          :callback="populateDirtyCfvs"
-                          :field="cf"></CustomValueInput>
-      </v-container>
     </v-card>
 
   </v-container>
@@ -78,7 +82,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-
+import SpinnerInline from '@/components/SpinnerInline'
 import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
@@ -91,7 +95,7 @@ const { VUE_APP_ENV } = process.env
 export default {
   name: 'NewContact',
   components: {
-
+    SpinnerInline,
     CustomValueInput
   },
   data () {
@@ -100,6 +104,7 @@ export default {
       constants,
       contact: {},
       states: [],
+      loadingInsertFields: true,
       countries: [],
       dirtyCfvs: [],
       customFieldGroups: [],
@@ -124,6 +129,7 @@ export default {
       }
     },
     async getCustomFieldGroups () {
+      this.loadingInsertFields = true
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequestWithParams(`/customFieldGroup/getContactInsertFields`, {
@@ -132,9 +138,11 @@ export default {
           }
         })
         this.customFieldGroups = data
+        this.loadingInsertFields = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
+        this.loadingInsertFields = false
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
