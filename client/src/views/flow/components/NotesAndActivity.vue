@@ -9,12 +9,11 @@
       </v-toolbar>
       <v-divider></v-divider>
       <v-card class="px-3 elevation-0 square-card">
-        <mentionable-textarea class="py-2"
-          ref="mentionableTextarea"
-          @onMention="onMention(instance, $event)"
-          :modeIdentifiers="modeIdentifiers"
-          :isLoading="isLoading"
-          v-model="note.note"/>
+        <v-textarea class="py-2" hide-details
+                    auto-grow
+                    rows="4"
+                    background-color="#F2F6F8"
+                    filled v-model="note.note"></v-textarea>
         <div class="text-left mb-2">
           <v-btn color="primaryCustom" class="white--text"
                  :disabled="!note.note || savingNote"
@@ -252,6 +251,7 @@
 
       </v-data-table>
 
+
     </v-card>
 
   </div>
@@ -262,8 +262,6 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
 import {AppMutations} from '@/stores/AppStore'
 
 import Vue2Filters from "vue2-filters";
-import debounce from 'lodash.debounce'
-import MentionableUser from "./MentionableUser.vue";
 
 export default {
   name: 'NotesAndActivity',
@@ -275,32 +273,9 @@ export default {
     secondaryId: Number,
     isWqtNote: Boolean,
     notes: Array,
-    users: Array,
     type: String
   },
-  computed: {
-    filteredUserList() {
-      if (this.searchParam != null && this.searchParam.length > 2) {
-        return this.users.filter(user => user.fullName.toLowerCase().indexOf(this.searchParam.toLowerCase()) > -1);
-      }
-      else {
-        return [];
-      }
-    },
-    instance() {
-      return this;
-    },
-    modeIdentifiers() {
-      return [
-        {...{
-            mode: 0,
-            key: '@',
-            comp: MentionableUser,
-            valueKey: 'fullName'
-          }, suggestions: this.filteredUserList}
-      ]
-    }
-  },
+
   data () {
     return {
       snackbar: {},
@@ -320,16 +295,9 @@ export default {
         { text: null, value: 'icons', show: true, width: '50px' }
       ],
       expanded: [],
-      isLoading: false,
-      currentMode: 0,
-      searchParam: '',
     }
   },
   methods: {
-    onMention: debounce((self, event) => {
-      self.currentMode = event.mode;
-      self.searchParam = event.searchParam;
-    }, 250),
     async deleteNote(n, isChildNote, item) {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
@@ -371,7 +339,6 @@ export default {
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$refs.mentionableTextarea.selection = ''
         this.savingNote = false
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -382,17 +349,6 @@ export default {
     },
     filterNotes() {
       return this.notes.filter(n => { return !n.archived})
-    },
-    getUsers: async function () {
-      try {
-        const {data} = await getRequest('/user/mentionableUsers')
-        this.users = data;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
     }
   }
 }

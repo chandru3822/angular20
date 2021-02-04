@@ -51,13 +51,6 @@
           </v-text-field>
         </v-col>
         <v-col cols="12" md="6">
-          <v-select v-model="user.notificationTypeId"
-                    :items="userNotificationTypes"
-                    label="Notification"
-                    item-text="userNotificationType"
-                    item-value="id"
-                    autocomplete="off">
-          </v-select>
           <v-text-field v-model="user.newPassword"
                         placeholder="Enter a new password"
                         required
@@ -161,17 +154,7 @@ export default {
       savingUserImage: false,
       attachmentTypeId: 9,
       userId: this.$store.state.user.details.id,
-      profileImage: {},
-      userNotificationTypes: [
-        {
-          id: 1,
-          userNotificationType: 'Email'
-        },
-        {
-          id: 2,
-          userNotificationType: 'SMS'
-        }
-      ]
+      profileImage: {}
     }
   },
   computed: {},

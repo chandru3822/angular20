@@ -224,7 +224,6 @@
       <v-col cols="12" md="6" class="text-left">
         <NotesAndActivity :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(contactId)"
-                          :users="allUsers"
                           type="Contact"
         ></NotesAndActivity>
       </v-col>
@@ -261,6 +260,7 @@ import {getCustomFieldReadOnly} from '@/services/customFieldService'
 export default {
   name: 'Contact',
   components: {
+
     CustomValueInput,
     NotesAndActivity,
     DatetimePickerInput
@@ -278,7 +278,6 @@ export default {
       fieldsSaving: false,
       dirtyCfvs: [],
       owners: [],
-      allUsers: [],
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADMIN'),
@@ -303,7 +302,6 @@ export default {
     this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
-    this.getUsers()
   },
   methods: {
     async saveContact() {
@@ -422,17 +420,6 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    getUsers: async function () {
-      try {
-        const {data} = await getRequest('/user/mentionableUsers')
-        this.allUsers = data;
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

@@ -22,8 +22,10 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 
 /**
@@ -33,9 +35,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserService {
-
-  @Autowired
-  AttachmentService attachmentService;
 
   @Autowired
   SqlCache sqlCache;
@@ -121,7 +120,6 @@ public class UserService {
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
     params.put("email", user.getEmail());
-    params.put("notificationTypeId", user.getNotificationTypeId());
     params.put("username", user.getUsername());
     params.put("companyId", currentUser.getCompanyId());
     params.put("homePageCompanyFeatureId", user.getHomePageCompanyFeatureId());
@@ -402,29 +400,6 @@ public class UserService {
     user.setExpiryDate(null);
     saveForgotPasswordFields(user, true);
     return "{\"result\":\"Success\"}";
-  }
-
-  public List<User> getMentionableUsers() {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", currentUser.getCompanyId());
-    List<User> results = sqlCache.query("user.mentionableUsers", params, new UserMapper<>(User.class, om));
-
-    List<Long> userIds = results.stream()
-      .map(User::getId)
-      .collect(Collectors.toList());
-    Map<Long, String> userImageUrls = attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
-
-    for (User u : results) {
-      if (userImageUrls.get(u.getId()) != null) {
-        u.setAwsBucket(userImageUrls.get(u.getId()));
-        u.setTitle("Photo of " + u.getFullName() + ", a Blue Raven Solar employee");
-      } else {
-        u.setTitle("User photo placeholder");
-      }
-    }
-
-    return results;
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

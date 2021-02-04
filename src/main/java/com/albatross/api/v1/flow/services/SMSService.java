@@ -116,7 +116,7 @@ public class SMSService {
         source.addValue("mediaUrls", null);
         source.addValue("recipientTypeId", recipientType.ordinal());
 
-        if (mediaURLs != null && !mediaURLs.isEmpty()) {
+        if (!mediaURLs.isEmpty()) {
 
             try (Connection connection = dataSource.getConnection()) {
                 String[] mediaUrls = mediaURLs.stream().map(URI::toString).toArray(String[]::new);
