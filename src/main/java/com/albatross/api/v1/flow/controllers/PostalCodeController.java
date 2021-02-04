@@ -25,8 +25,8 @@ public class PostalCodeController {
 
 
   @GetMapping(value = "/zones", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<PostalCodeZone> getZones() {
-    return postalCodeService.getZones();
+  public List<PostalCodeZone> getZones(@RequestParam(required=false) String searchQuery) {
+    return postalCodeService.getZones(searchQuery);
   }
 
   @GetMapping(value = "/zone/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

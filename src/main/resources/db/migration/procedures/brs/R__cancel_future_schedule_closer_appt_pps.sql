@@ -21,7 +21,7 @@ BEGIN
                                                     from flow.company_process_step_status_type
                                                     where company_id = v_company_id
                                                       -- cancelled = 3
-                                                    and process_step_status_type_id = 3
+                                                    and id = 3
                                                 )
     where id in (
         select pps.id

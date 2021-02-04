@@ -116,8 +116,8 @@
   <org.getOne><![CDATA[
     select o.*,
            p.org_name as parent_org_name,
-           p.org_type_id as parent_org_type_id,
-           ot.org_type
+           ot.org_type,
+           ot.org_parent_type_id as parent_org_type_id
     from flow.org o
         left join flow.org p on p.id = o.parent_org_id
         inner join flow.org_type ot on ot.id = o.org_type_id

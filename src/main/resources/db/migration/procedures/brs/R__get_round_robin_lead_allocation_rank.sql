@@ -137,33 +137,48 @@ BEGIN
                      left join brs.cached_appointment ca on rru.user_id = ca.user_id
              )
 
-
+        select
+            foo2.user_id,
+            foo2.closer_name,
+            foo2.lead_gen_fdc,
+            foo2.self_gen,
+            foo2.average_availability,
+            coalesce(foo2.manual_allocation,
+                     foo2.score *
+                     (1 - foo2.sum_manual_allocation::numeric)::numeric)::numeric as score
+    from (
 
         select foo1.user_id,
                foo1.closer_name,
-               foo1.lead_gen_fdc * 100,
+               foo1.lead_gen_fdc * 100 as lead_gen_fdc,
                foo1.self_gen,
                foo1.average_availability,
                case when sum(foo1.score) = 0 then
                    0
                 else
-                    coalesce(foo1.manual_allocation,
-                             (round(foo1.score / sum(foo1.score) over (), 2)) *
-                             ((1 - foo1.sum_manual_allocation::numeric)::numeric)::numeric)*100
-
+                 (round(foo1.score / sum(foo1.score) over (), 10))
                 end as score,
                foo1.manual_allocation,
                foo1.sum_manual_allocation
         from (
                  select foo.user_id,
                         case when lead_gen_den is null or lead_gen_den = 0 then
+                                 case
+                                     when foo.manual_allocation is not null then
+                                         0
+                                 else
                                      (foo.self_gen +
                                      ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
+                                 end
 
                              else
+                                 case
+                                     when foo.manual_allocation is not null then
+                                         0
+                                else
                                              ((foo.lead_gen_num / foo.lead_gen_den::numeric * 10000) + foo.self_gen +
                                              ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
-                                      end as score,
+                                      end end as score,
                         case
                             when foo.lead_gen_den_fdc is null or foo.lead_gen_den_fdc = 0 then
                                 0
@@ -209,7 +224,11 @@ BEGIN
                           foo.lead_gen_num_fdc,foo.lead_gen_den_fdc,
                           foo.appointment_count,
                           foo.avail,foo.manual_allocation) as foo1
-        group by foo1.score,foo1.average_availability,foo1.user_id, foo1.closer_name, foo1.lead_gen_fdc, foo1.self_gen, coalesce(foo1.average_availability, 0), coalesce(foo1.score, 0);
+        group by foo1.score,foo1.average_availability,foo1.user_id, foo1.closer_name, foo1.lead_gen_fdc, foo1.self_gen,foo1.manual_allocation,
+                 foo1.sum_manual_allocation, coalesce(foo1.average_availability, 0), coalesce(foo1.score, 0)) as foo2
+    group by foo2.user_id, foo2.closer_name, foo2.lead_gen_fdc, foo2.self_gen, foo2.average_availability, coalesce(foo2.manual_allocation,
+                     foo2.score *
+                     (1 - foo2.sum_manual_allocation::numeric)::numeric)::numeric;
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE
