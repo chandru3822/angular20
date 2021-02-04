@@ -19,6 +19,8 @@
               :format="'MM/DD/YYYY'"
               label="End Date"
             />
+            <label>Make Primary:</label>
+            <input type="checkbox" class="ml-3 mb-4" v-model="newPosition.primaryFlag">
             <v-autocomplete v-model="newPosition.positionId"
                             :items="positions"
                             label="Positions"
