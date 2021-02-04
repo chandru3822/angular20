@@ -36,10 +36,11 @@ public class PostalCodeService {
   private final SecurityService securityService;
   private final ObjectMapper om;
 
-  public List<PostalCodeZone> getZones() {
+  public List<PostalCodeZone> getZones(String searchQuery) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    params.put("searchQuery", searchQuery);
 
     List<PostalCodeZone> results = sqlCache.query("postalCode.getZones", params, PostalCodeZone.class);
     return results;
