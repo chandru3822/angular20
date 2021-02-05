@@ -2,7 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-toolbar flat class="app-toolbar" v-if="constants.SHOW_NEW_PSST">
+        <v-toolbar flat class="app-toolbar">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -20,13 +20,12 @@
                           label="Status Type">
             </v-text-field>
             <v-autocomplete single-line
-                            v-if="constants.SHOW_NEW_PSST"
                             :items="rootStatusTypes"
                             v-model="newType.processStepStatusTypeId"
                             item-value="id"
                             label="Select a Category"
                             item-text="processStepStatusType"></v-autocomplete>
-            <v-btn :disabled="(constants.SHOW_NEW_PSST && !newType.processStepStatusTypeId) || !newType.processStepStatusType" @click="addNewType">Save</v-btn>
+            <v-btn :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType" @click="addNewType">Save</v-btn>
           </v-card>
           <v-data-table
             :headers="headers"
@@ -50,7 +49,6 @@
                 ></v-text-field>
                 <v-autocomplete
                   :items="rootStatusTypes"
-                  v-if="constants.SHOW_NEW_PSST"
                   v-model="item.processStepStatusTypeId"
                   item-value="id"
                   :readonly="!userCanEdit"
@@ -59,11 +57,10 @@
                   item-text="processStepStatusType"></v-autocomplete>
 
                 <v-btn color="primaryCustom" dark class="white--text mr-4"
-                       :disabled="!item.processStepStatusType || (constants.SHOW_NEW_PSST && !item.processStepStatusTypeId)"
+                       :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
                        @click="saveType(item, false)">Save</v-btn>
                 <div  v-if="!item.isDefault" class="mb-3 d-inline-block">
                   <v-dialog
-                    v-if="constants.SHOW_NEW_PSST"
                     v-model="item.setInitialConfirm"
                     width="500">
                     <template #activator="{ on }">
@@ -120,7 +117,7 @@
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                  <v-dialog v-if="constants.SHOW_NEW_PSST && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                  <v-dialog v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                             v-model="item.deleteConfirm" width="500">
                     <template #activator="{ on }">
                       <v-btn small text v-on="on">
