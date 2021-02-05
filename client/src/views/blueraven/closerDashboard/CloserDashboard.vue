@@ -609,7 +609,7 @@
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
                   :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 <td style="text-align: center">
-                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
+                  {{ index + 1 }}
                 </td>
                 <td>{{ item.owner_name || '' }}</td>
                 <td>{{ item.office || '' }}</td>
@@ -2713,9 +2713,9 @@
             this.funnelDrilldownData = data?.length > 0 ? data : []
 
             if (this.funnelDrilldownData?.length > 0) {
-              for (let i = 0; i < this.funnelDrilldownData.length; i++) {
-                this.funnelDrilldownData[i].rowNum = i + 1
-              }
+              // for (let i = 0; i < this.funnelDrilldownData.length; i++) {
+              //   this.funnelDrilldownData[i].rowNum = i + 1
+              // }
 
               this.markMissingDrilldownData()
             }
