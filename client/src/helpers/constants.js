@@ -2,9 +2,6 @@ const {VUE_APP_ENV, VUE_APP_BASE_API, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE}
 
 let constants = {}
 
-//todo: randa temporary var to hide new process step status stuff from the ui
-constants.SHOW_NEW_PSST = VUE_APP_ENV === 'local'  || VUE_APP_ENV === 'stage'
-
 constants.VUE_APP_BASE_API = VUE_APP_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'
 constants.MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN || '***REMOVED***'
