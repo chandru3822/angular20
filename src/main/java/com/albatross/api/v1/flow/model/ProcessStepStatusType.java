@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class ProcessStepStatusType {
 
-  private Long id, createdById, modifiedById;
+  private Long id, createdById, modifiedById, processStepStatusTypeId;
   private String processStepStatusType;
   private Boolean archived;
 }

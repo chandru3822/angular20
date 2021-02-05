@@ -34,6 +34,7 @@
                 label="Search"
                 single-line
                 hide-details
+                @input="debounceSearch"
               ></v-text-field>
             </v-card-title>
             <v-data-table
@@ -42,7 +43,7 @@
               :fixed-header="true"
               :items-per-page="-1"
               disable-sort
-              :search="search"
+              :loading="dataLoading"
               hide-default-footer
               class="elevation-1 round-robin-table"
             >
@@ -109,8 +110,8 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import debounce from 'lodash.debounce'
+  import { getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'PostalCodes',
@@ -120,8 +121,9 @@
       return {
         snackbar: {},
         addNew: false,
-        search: '',
+        search: null,
         newZone: {},
+        dataLoading: true,
         selectedZoneId: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
@@ -140,6 +142,11 @@
     computed: {
     },
     methods: {
+      debounceSearch: debounce( function () {
+        //don't allow search to be null - causes issues
+        // this.search = this.search || ''
+        this.getPostalCodeZones()
+      }, 500),
       filterPostalCodeZones () {
         return this.postalCodeZones.filter(pcz => { return !pcz.archived})
       },
@@ -147,13 +154,16 @@
         this.$router.push({path: `/settings/postalCode/${zoneId}/scheduleTo`})
       },
       async getPostalCodeZones () {
+        this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zones`)
+          const {data} = await getRequestWithParams(`/postalCode/zones`, { params: { searchQuery: this.search}})
           this.postalCodeZones = data
+          this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
+          this.dataLoading = false
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)

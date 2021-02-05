@@ -3,10 +3,8 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.PostalCode;
-import com.albatross.api.v1.flow.model.PostalCodeZone;
-import com.albatross.api.v1.flow.model.PostalCodeZoneUser;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.enums.PostalCodeZoneUserType;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +36,11 @@ public class PostalCodeService {
   private final SecurityService securityService;
   private final ObjectMapper om;
 
-  public List<PostalCodeZone> getZones() {
+  public List<PostalCodeZone> getZones(String searchQuery) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    params.put("searchQuery", searchQuery);
 
     List<PostalCodeZone> results = sqlCache.query("postalCode.getZones", params, PostalCodeZone.class);
     return results;
@@ -51,8 +50,47 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<PostalCodeZone> result = sqlCache.get("postalCode.getZone", params, new PostalCodeZoneMapper<>(PostalCodeZone.class, om) );
+    Optional<PostalCodeZone> result = sqlCache.get("postalCode.getZone", params, PostalCodeZone.class);
     return result.orElse(null);
+  }
+
+  public List<PostalCodeAllocationUser> getScheduleToUsers(Long zoneId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("zoneId", zoneId);
+
+    List<PostalCodeAllocationUser> results = sqlCache.query("postalCode.getScheduleToUsers", params, PostalCodeAllocationUser.class);
+    return results;
+  }
+
+  public List<PostalCodeZoneUser> getScheduleByUsers(Long zoneId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("zoneId", zoneId);
+
+    List<PostalCodeZoneUser> results = sqlCache.query("postalCode.getScheduleByUsers", params, PostalCodeZoneUser.class);
+    return results;
+  }
+
+  public List<PostalCode> getCodesForZone(Long zoneId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("zoneId", zoneId);
+
+    List<PostalCode> results = sqlCache.query("postalCode.getCodesForZone", params, PostalCode.class);
+    return results;
+  }
+
+  public List<PostalCodeAllocationUser> saveManualUserAllocations(Long zoneId, List<PostalCodeAllocationUser> allocationUsers) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.getId());
+
+    for(PostalCodeAllocationUser u : allocationUsers) {
+      params.put("pczuId", u.getPostalCodeZoneUserId());
+      params.put("manualAllocation", u.getManualAllocation());
+
+      sqlCache.update("postalCode.saveManualUserAllocation", params);
+    }
+    return getScheduleToUsers(zoneId);
   }
 
   public PostalCodeZone saveZone(PostalCodeZone zone) {
@@ -101,6 +139,21 @@ public class PostalCodeService {
     return getZoneUser(id);
   }
 
+  public List<PostalCodeAllocationUser> insertAllocationUser(Long zoneId, PostalCodeZoneUser zoneUser) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
+    params.put("userId", zoneUser.getUserId());
+    params.put("createdById", user.getId());
+    params.put("postalCodeZoneUserTypeId", PostalCodeZoneUserType.SCHEDULE_TO.id);
+
+    sqlCache.update("postalCode.insertZoneUser", params);
+
+    //adding an allocation user requires sending back the full allocation list instead of just the one user
+    return getScheduleToUsers(zoneId);
+  }
+
   public void deleteUser(Long id) {
     User user = securityService.getCurrentUser();
 
@@ -109,6 +162,12 @@ public class PostalCodeService {
     params.put("modifiedById", user.getId());
 
     sqlCache.update("postalCode.deleteZoneUser", params);
+  }
+
+  public List<PostalCodeAllocationUser> deleteAllocationUser(Long zoneId, Long postalCodeZoneUserId) {
+    //delete the user like normal but return the adjusted allocation values
+    deleteUser(postalCodeZoneUserId);
+    return getScheduleToUsers(zoneId);
   }
 
   public PostalCodeZoneUser getZoneUser(Long id) {

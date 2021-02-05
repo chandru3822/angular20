@@ -48,6 +48,8 @@
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
+          single-expand
+          :expanded.sync="expanded"
           :search="search"
           :loading="dataLoading"
           class="elevation-0"
@@ -63,7 +65,45 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.fullName}}</td>
-              <td>
+              <td class="text-left">
+                <v-tooltip top>
+                  <template v-slot:activator="{ on }">
+                    <span v-on="on">
+                      {{item.prescribedAllocation | percent(1)}}
+                    </span>
+                  </template>
+                  <span>{{ getAllocationValue(item.prescribedAllocation)}}</span>
+                </v-tooltip>
+
+              </td>
+              <td class="text-left">
+                <input type="checkbox" v-if="item.manualAllocationWhole || item.manualAllocationWhole === 0" checked disabled readonly>
+                <input type="checkbox" v-else disabled readonly>
+                <v-text-field text
+                              type="number"
+                              solo
+                              single-line
+                              dense
+                              hide-details
+                              :disabled="!userCanEdit"
+                              :readonly="!userCanEdit"
+                              @input="[item.dirty = true, valuesUpdated = true, getTotalManualAllocation()]"
+                              class="ml-2 allocation-input d-inline-block"
+                              v-model.number="item.manualAllocationWhole"></v-text-field>
+                <span class="ml-2">%</span>
+              </td>
+              <td class="text-left">
+                <v-tooltip top v-if="item.targetLeadAllocation || item.targetLeadAllocation === 0">
+                  <template v-slot:activator="{ on }">
+                    <span v-on="on">
+                      {{item.targetLeadAllocation | percent(1)}}
+                    </span>
+                  </template>
+                  <span>{{ getAllocationValue(item.targetLeadAllocation)}}</span>
+                </v-tooltip>
+                <span v-else>--</span>
+              </td>
+              <td class="text-right">
                 <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanDelete">
                   <template v-slot:activator="{ on }">
                     <v-btn text v-on="on">
@@ -99,6 +139,39 @@
               </td>
             </tr>
           </template>
+
+          <template v-slot:body.append="{headers}">
+            <tr>
+              <td v-for="(header,i) in headers" :key="i" class="font-weight-bold">
+
+                <div v-if="header.value === 'manuallySetAllocation'">
+                  Total Manual: {{ totalManualAllocation }}%
+                  <div v-if="totalManualAllocation > 100" class="error-text">
+                    * ERROR: Total Cannot Exceed 100
+                  </div>
+                </div>
+
+                <div v-if="is7oaksAdmin && header.value === 'prescribedAllocation'">
+                  {{ totalPrescribedAllocation }}
+                </div>
+
+                <div v-if="is7oaksAdmin && header.value === 'targetLeadAllocation'">
+                  {{ totalTargetLeadAllocation }}
+                </div>
+
+                <div v-if="header.value === 'icons'">
+                  <v-btn @click="saveAllocationChanges"
+                         color="primaryCustom"
+                         :class="{'white--text': userCanEdit && totalManualAllocation <= 100 && valuesUpdated}"
+                         :disabled="!userCanEdit || totalManualAllocation > 100 || !valuesUpdated">
+                    Save Changes
+                  </v-btn>
+                </div>
+
+              </td>
+            </tr>
+          </template>
+
         </v-data-table>
       </v-col>
     </v-row>
@@ -108,6 +181,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import sumBy from "lodash.sumby"
 
   export default {
     name: 'ScheduleTo',
@@ -115,7 +189,8 @@
     data() {
       return {
         snackbar: {},
-        zone: {},
+        scheduleToUsers: [],
+        is7oaksAdmin: this.$store.getters.isFullAdmin || this.$store.state.user.details.id === 2350555,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
@@ -124,27 +199,52 @@
         selectedUser: {},
         users: [],
         usersLoading: false,
+        valuesUpdated: false,
         addUser: false,
         search: '',
+        expanded: [],
+        selectedIndex: null,
+        totalManualAllocation: null,
+        totalTargetLeadAllocation: null,
+        totalPrescribedAllocation: null,
         userHeaders: [
           {text: 'Name', value: 'fullName', show: true},
+          {text: 'Prescribed Allocation', value: 'prescribedAllocation', show: true},
+          {text: 'Manually Set Allocation', value: 'manuallySetAllocation', width: '175px', show: true},
+          {text: 'Adjusted Allocation', value: 'targetLeadAllocation', show: true},
           {text: '', value: 'icons', show: true},
-        ],
+        ]
       }
     },
     created () {
-      this.getZoneDetails()
+      this.getScheduleToUsers()
     },
     methods: {
-      filterUsers () {
-        return this.zone?.scheduleToUsers?.filter(pczu => { return !pczu.archived})
+      getAllocationValue(value) {
+        //4 = leading '0.' + 2 more digits it being a % number (0.0132)
+          let valueLength = value.toString().length - 4
+          return valueLength <= 0 || value === 0 || value === null ? value : this.$filters.percent(value, valueLength)
       },
-      async getZoneDetails () {
+      filterUsers () {
+        return this.scheduleToUsers?.filter(pczu => { return !pczu.archived})
+      },
+      getTotalManualAllocation() {
+        this.totalManualAllocation = sumBy(this.scheduleToUsers,  function(o) { return o.manualAllocationWhole ? o.manualAllocationWhole : 0 })
+      },
+      getOtherTotals() {
+        this.totalPrescribedAllocation = sumBy(this.scheduleToUsers,  function(o) { return o.prescribedAllocation })
+        this.totalTargetLeadAllocation = sumBy(this.scheduleToUsers,  function(o) { return o.targetLeadAllocation })
+      },
+      async getScheduleToUsers () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}`)
-          this.zone = data
+          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleTo`)
+          this.scheduleToUsers = data
           this.dataLoading = false
+          this.getTotalManualAllocation()
+          if(this.is7oaksAdmin) {
+            this.getOtherTotals()
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -153,11 +253,38 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async saveAllocationChanges () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let updatedRows = this.scheduleToUsers.filter(u => u.dirty)
+          updatedRows.forEach(r => {
+            r.manualAllocation = r.manualAllocationWhole ? r.manualAllocationWhole / 100 : null
+          })
+          if(updatedRows?.length > 0) {
+            const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/userAllocation`, updatedRows)
+            this.scheduleToUsers = data
+            this.getTotalManualAllocation()
+            if(this.is7oaksAdmin) {
+              this.getOtherTotals()
+            }
+          }
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Allocation Changes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async deleteUserFromZone (user) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/postalCode/zone/user/${user.id}`)
-          user.archived = true
+          const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/user/${user.postalCodeZoneUserId}/delete`)
+          this.scheduleToUsers = data
+          this.getTotalManualAllocation()
+          if(this.is7oaksAdmin) {
+            this.getOtherTotals()
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -173,8 +300,12 @@
             postalCodeZoneId: this.zoneId,
             userId: selected.id,
           }
-          const {data} = await postRequest(`/postalCode/zone/saveScheduleToUser`, params)
-          this.zone.scheduleToUsers.push(data)
+          const {data} = await postRequest(`/postalCode/zone/${this.zoneId}/saveScheduleToUser`, params)
+          this.scheduleToUsers = data
+          this.getTotalManualAllocation()
+          if(this.is7oaksAdmin) {
+            this.getOtherTotals()
+          }
           this.addUser = false
           this.selectedUser = {}
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -211,6 +342,8 @@
 </style>
 
 <style lang="scss" scoped>
-
+.allocation-input {
+  width: 100px;
+}
 </style>
 

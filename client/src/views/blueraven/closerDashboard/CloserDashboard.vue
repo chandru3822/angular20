@@ -609,11 +609,12 @@
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
                   :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 <td style="text-align: center">
-                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
+                  {{ index + 1 }}
                 </td>
                 <td>{{ item.owner_name || '' }}</td>
                 <td>{{ item.office || '' }}</td>
                 <td>{{ item.state || '' }}</td>
+                <td>{{ item.status_type || '' }}</td>
                 <td class="customer-name">{{ item.customer_name || '' }}</td>
                 <td>
                   <router-link text v-if="item.project_id && $store.getters.userHasFeature('PROJECTS')" :to="`/project/${item.project_id}`">
@@ -777,7 +778,10 @@
             <td class="center-text">{{ row.leadGenFdc || 0 }}%</td>
             <td class="center-text">{{ row.selfGen || 0 }}</td>
             <td class="center-text">{{ row.averageAvailability || 0 }}</td>
-            <td class="center-text">{{ row.score || 0 }}%</td>
+            <td class="center-text">
+              <span v-if="row.score || row.score === 0">{{ row.score | percent(1) }}</span>
+              <span v-else>--</span>
+            </td>
           </tr>
         </table>
         <div v-if="!selectedRoundRobin" class="ranking-tables-no-data left-text">
@@ -1289,6 +1293,7 @@
           { text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false }, // 1
           { text: 'Office', value: 'office', show: true, width: 75, optional: false }, // 2
           { text: 'State', value: 'state', show: true, width: 75, optional: false }, // 2
+          { text: 'Status', value: 'status_type', show: true, width: 75, optional: false }, // 2
           { text: 'Name', value: 'customer_name', show: true, width: 90, optional: false }, // 3
           { text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false }, // 4
           // { text: 'Stage', value: 'Stage', show: true, width: 75, optional: false }, // 2
@@ -2708,9 +2713,9 @@
             this.funnelDrilldownData = data?.length > 0 ? data : []
 
             if (this.funnelDrilldownData?.length > 0) {
-              for (let i = 0; i < this.funnelDrilldownData.length; i++) {
-                this.funnelDrilldownData[i].rowNum = i + 1
-              }
+              // for (let i = 0; i < this.funnelDrilldownData.length; i++) {
+              //   this.funnelDrilldownData[i].rowNum = i + 1
+              // }
 
               this.markMissingDrilldownData()
             }

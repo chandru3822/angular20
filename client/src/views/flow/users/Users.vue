@@ -434,7 +434,6 @@
       });
     },
     created () {
-
       this.getPositions()
       this.getOrgFilters(true)
       this.getEmailSenders()
@@ -472,6 +471,13 @@
                 const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
                 this.users = data.content
                 this.totalUsers = data.totalElements
+
+                this.users.forEach(u => {
+                  // If the user isn't already a selected user, add to list of selected users
+                  if (this.selectedUsers.indexOf(u.id) !== -1) {
+                    u.selected = true;
+                  }
+                })
             }
             this.dataLoading = false
             this.$store.commit(AppMutations.SET_LOADING, false)

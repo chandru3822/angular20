@@ -12,6 +12,7 @@
       :class="customClass"
       :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
       :label="label"
+      :rules="getRequiredRule()"
       :prepend-icon="hidePrependIcon ? '' : 'event'"
       :append-icon="showAppendIcon ? 'event' : ''"
       readonly
@@ -55,6 +56,7 @@
 
 import {DateTime} from 'luxon'
 import moment from 'moment'
+import constants from '@/helpers/constants'
 
 export default {
   name: 'DatetimePickerInput',
@@ -76,6 +78,10 @@ export default {
     allowedMinutes: Function,
     showAppendIcon: Boolean,
     changeCallback: Function,
+    required: {
+      type: Boolean,
+      default: false
+    },
     readonly: {
       type: Boolean,
       default: false
@@ -86,6 +92,7 @@ export default {
     utcDate: null,
     time: null,
     menu: false,
+    requiredRules: constants.BASIC_REQUIRED_RULE,
     showDate: false,
     showTime: false,
     //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
@@ -115,6 +122,11 @@ export default {
     }
   },
   methods: {
+    getRequiredRule() {
+      if(this.required) {
+        return this.requiredRules
+      }
+    },
     setFunction(date) {
       this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
       // this date will be used in case the time selected pushes the utc date to the next day

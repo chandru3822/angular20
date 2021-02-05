@@ -121,6 +121,7 @@ public class WorkQueueTypeService {
     //handle pst on new wqt
     wqt.setId(id);
     saveProjectStatusTypesToWorkQueueType(wqt);
+    saveProcessStepStatusTypesToWorkQueueType(wqt);
 
     return getProcessStepWorkQueueType(id);
   }
@@ -156,11 +157,40 @@ public class WorkQueueTypeService {
     return getProjectStatusTypesForWorkQueueType(processStepWorkQueueType.getId());
   }
 
+  public List<WorkQueueTypeProcessStepStatus> saveProcessStepStatusTypesToWorkQueueType(ProcessStepWorkQueueType processStepWorkQueueType) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
+    params.put("userId", currentUser.getId());
+
+    for(WorkQueueTypeProcessStepStatus ps : processStepWorkQueueType.getProcessStepStatuses()) {
+      if(null != ps.getId() && ps.getArchived()) {
+        params.put("archived", ps.getArchived());
+        params.put("id", ps.getId());
+        sqlCache.update("workQueueType.updateProcessStepStatusType", params);
+      } else if (null == ps.getId()) {
+        params.put("companyProcessStepStatusTypeId", ps.getCompanyProcessStepStatusTypeId());
+        params.put("processStepStatusTypeId", ps.getProcessStepStatusTypeId());
+        sqlCache.update("workQueueType.insertProcessStepStatusType", params);
+      }
+    }
+
+    return getProcessStepStatusTypesForWorkQueueType(processStepWorkQueueType.getId());
+  }
+
   public List<WorkQueueTypeProjectStatus> getProjectStatusTypesForWorkQueueType (Long processStepWorkQueueTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepWorkQueueTypeId", processStepWorkQueueTypeId);
 
     List<WorkQueueTypeProjectStatus> results = sqlCache.query("workQueueType.getProjectStatusesForWorkQueueType", params, WorkQueueTypeProjectStatus.class);
+    return results;
+  }
+
+  public List<WorkQueueTypeProcessStepStatus> getProcessStepStatusTypesForWorkQueueType (Long processStepWorkQueueTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepWorkQueueTypeId", processStepWorkQueueTypeId);
+
+    List<WorkQueueTypeProcessStepStatus> results = sqlCache.query("workQueueType.getProcessStepStatusesForWorkQueueType", params, WorkQueueTypeProcessStepStatus.class);
     return results;
   }
 
@@ -177,6 +207,10 @@ public class WorkQueueTypeService {
       TypeReference<List<WorkQueueTypeProjectStatus>> projectStatusesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "projectStatuses",
               new JsonCollectionDeserializer(projectStatusesRef, objectMapper));
+
+      TypeReference<List<WorkQueueTypeProcessStepStatus>> processStepStatusesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "processStepStatuses",
+        new JsonCollectionDeserializer(processStepStatusesRef, objectMapper));
     }
   }
 

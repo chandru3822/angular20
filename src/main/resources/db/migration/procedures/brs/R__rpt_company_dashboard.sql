@@ -402,16 +402,17 @@ BEGIN
                                           12                  as milestone_type_id,
                                           (select count(1) as count
                                            from brs.project_details pd
-                                           where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone
-                                                  'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+
+                                           where least(((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),
+                                               permit_pack_submittal_verified_date) :: date between p_custom_start_date and p_custom_end_date
                                              and pd.company_id = v_company_id
                                           )                   as company_count,
                                           case
                                               when p_company_id = 2 then
                                                   (select count(1) as count
                                                    from brs.project_details pd
-                                                   where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone
-                                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                                   where least(((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),
+                                                               permit_pack_submittal_verified_date) :: date between p_custom_start_date and p_custom_end_date
                                                      and pd.company_id != 3
                                                   )
                                               else 0 end      as partner_count,

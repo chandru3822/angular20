@@ -44,7 +44,6 @@
         </v-toolbar>
 
         <v-divider/>
-
         <v-data-table
           v-if="selectedSmartlistId === 0"
           class="elevation-1 fix-column-width-bug"
@@ -128,6 +127,7 @@
     },
     data() {
       return {
+        initialLoad: true,
         options: {
           itemsPerPage: 100
         },
@@ -154,11 +154,13 @@
       }
     },
     watch: {
-      // options: {
-      //   handler() {
-      //     this.getProjects()
-      //   }
-      // }
+      options: {
+        handler() {
+          if(!this.initialLoad) {
+            this.getProjects()
+          }
+        }
+      }
     },
     created() {
       if (this.$store.getters.userHasFeature('SMARTLIST')) {
@@ -179,6 +181,7 @@
           })
           this.projects = data.content
           this.totalProjects = data.totalElements
+          this.initialLoad = false
         } catch (e) {
           logError(e)
         } finally {

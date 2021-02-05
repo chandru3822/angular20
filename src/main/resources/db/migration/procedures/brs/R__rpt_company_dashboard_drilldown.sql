@@ -284,15 +284,16 @@ BEGIN
                                          pd.project_id,
                                          s.abbreviation                         state,
                                          pd.source_name,
-                                         pd.permit_pack_submittal_end_time as   date_value,
+                                         least(((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),
+                                               permit_pack_submittal_verified_date) :: date as   date_value,
                                          'Permit Submitted Date'           as   date_label
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
                                            inner join flow.contact c on c.id = p.contact_id
                                            left outer join flow.company_state cs on cs.id = c.company_state_id
                                            left outer join flow.state s on s.id = cs.state_id
-                                  where ((pd.permit_pack_submittal_end_time at time zone 'UTC') at time zone
-                                         'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                  where least(((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),
+                                              permit_pack_submittal_verified_date) :: date between p_custom_start_date and p_custom_end_date
                                     and case
                                             when p_company_id is not null and p_company_id != 2
                                                 then pd.company_id = p_company_id
