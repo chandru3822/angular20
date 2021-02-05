@@ -54,11 +54,14 @@
                   v-model="item.processStepStatusTypeId"
                   item-value="id"
                   :readonly="!userCanEdit"
-                  :disabled="!userCanEdit"
+                  :disabled="!userCanEdit || item.processStepStatusTypeId === 3"
                   label="Select a Category"
                   item-text="processStepStatusType"></v-autocomplete>
 
-                <div  v-if="!item.isDefault" class="mb-3">
+                <v-btn color="primaryCustom" dark class="white--text mr-4"
+                       :disabled="!item.processStepStatusType || (constants.SHOW_NEW_PSST && !item.processStepStatusTypeId)"
+                       @click="saveType(item, false)">Save</v-btn>
+                <div  v-if="!item.isDefault" class="mb-3 d-inline-block">
                   <v-dialog
                     v-if="constants.SHOW_NEW_PSST"
                     v-model="item.setInitialConfirm"
@@ -98,9 +101,7 @@
                   </v-dialog>
                 </div>
 
-                <v-btn color="primaryCustom" dark class="white--text"
-                       :disabled="!item.processStepStatusType || (constants.SHOW_NEW_PSST && !item.processStepStatusTypeId)"
-                       @click="saveType(item, false)">Save</v-btn>
+
               </td>
             </template>
             <template #item="{ item, index }">

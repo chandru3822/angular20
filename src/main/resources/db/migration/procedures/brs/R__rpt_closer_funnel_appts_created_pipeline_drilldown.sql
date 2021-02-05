@@ -17,6 +17,7 @@ BEGIN
                               select concat(u.first_name, ' ', u.last_name) owner_name,
                                      o.org_name                             office,
                                      s.abbreviation                         state,
+cpst.project_status_type as status_type,
                                      concat(c.first_name, ' ', c.last_name) customer_name,
                                      c.id                                   contact_id,
                                      pd.project_id,
@@ -28,6 +29,7 @@ BEGIN
                                      p.date_created
                               from brs.project_details pd
                                        inner join flow.project p on p.id = pd.project_id
+inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
                                        inner join flow.contact c on c.id = p.contact_id
                                        left outer join flow.user u on pd.closer_user_id = u.id
                                        inner join flow.user_position up on up.id = p.user_position_id
@@ -49,6 +51,7 @@ BEGIN
                                   select concat(u.first_name, ' ', u.last_name) owner_name,
                                          o.org_name                             office,
                                          s.abbreviation                         state,
+cpst.project_status_type as status_type,
                                          concat(c.first_name, ' ', c.last_name) customer_name,
                                          c.id                                   contact_id,
                                          pd.project_id,
@@ -60,6 +63,7 @@ BEGIN
                                          p.date_created
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
+inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
                                            inner join flow.contact c on c.id = p.contact_id
                                            left outer join flow.user u on pd.closer_user_id = u.id
                                            inner join flow.user_position up on up.id = p.user_position_id
@@ -81,6 +85,7 @@ BEGIN
                                   select concat(u.first_name, ' ', u.last_name) owner_name,
                                          o.org_name                             office,
                                          s.abbreviation                         state,
+cpst.project_status_type as status_type,
                                          concat(c.first_name, ' ', c.last_name) customer_name,
                                          c.id                                   contact_id,
                                          pd.project_id,
@@ -92,6 +97,7 @@ BEGIN
                                          p.date_created
                                   from brs.project_details pd
                                            inner join flow.project p on p.id = pd.project_id
+inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
                                            inner join flow.contact c on c.id = p.contact_id
                                            inner join flow.user_position up on up.id = p.user_position_id
                                            inner join flow.org o on o.id = up.org_id

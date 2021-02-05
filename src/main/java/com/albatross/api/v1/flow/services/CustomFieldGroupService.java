@@ -299,14 +299,15 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public void updateFieldShowOnInsert(CustomFieldObjectType customFieldObjectType) {
+  public void updateFieldShowOrRequireOnInsert(CustomFieldObjectType customFieldObjectType) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldObjectType.getId());
     params.put("modifiedById", user.getId());
     params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
+    params.put("requireOnInsert", customFieldObjectType.getRequireOnInsert());
 
-    sqlCache.update("customFieldGroup.updateFieldShowOnInsert", params);
+    sqlCache.update("customFieldGroup.updateFieldShowOrRequireOnInsert", params);
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

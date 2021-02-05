@@ -164,9 +164,6 @@ BEGIN
                          from search_contacts sc
                          group by 1
                          order by count(1) desc, sum(rank)
-                         limit p_limit
-                         offset
-                         p_offset
                      ),
                      user_position_ids as (
                          select array_agg(up.id) as user_position_ids
@@ -217,7 +214,10 @@ BEGIN
                          left join flow.state s on s.id = cs.state_id
                          left join flow.user_position up on up.id = c.owner_user_position_id
                          left join flow."user" u on u.id = up.user_id
-                where c.archived is not true;
+                where c.archived is not true
+            limit p_limit
+                offset
+                p_offset;
         end case;
 END;
 $function$

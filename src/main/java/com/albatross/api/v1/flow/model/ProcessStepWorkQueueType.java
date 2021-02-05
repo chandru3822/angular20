@@ -14,4 +14,5 @@ public class ProcessStepWorkQueueType {
     private String workQueueType, workQueueCategory, projectStatusType;
     private Boolean archived;
     private List<WorkQueueTypeProjectStatus> projectStatuses;
+    private List<WorkQueueTypeProcessStepStatus> processStepStatuses;
 }
