@@ -43,7 +43,7 @@ BEGIN
     select pcz.id
     into v_postal_code_zone_id
     from flow.project p
-             inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+             inner join flow.postal_code pc on pc.postal_code = substr(trim ( both ',' from trim( both ' ' from trim(both '	' from p.postal_code))),1,5) and pc.archived is false
              inner join flow.postal_code_zone pcz
                         on pcz.id = pc.postal_code_zone_id and pcz.archived is false
              inner join flow.postal_code_zone_user pczu

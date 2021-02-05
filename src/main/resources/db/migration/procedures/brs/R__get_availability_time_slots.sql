@@ -19,7 +19,7 @@ BEGIN
                                       from flow.user_position up2
                                       where user_id = up.user_id) as user_position_ids
             from flow.project p
-                     inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+                     inner join flow.postal_code pc on pc.postal_code = substr(trim ( both ',' from trim( both ' ' from trim(both '	' from p.postal_code))),1,5) and pc.archived is false
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                      inner join flow.user_position up on up.user_id = pczu.user_id and primary_flag is true and up.archived is false
@@ -111,7 +111,7 @@ BEGIN
                                           90 as default_appointment_length,
                                           (rsa.end_time - (90 || ' minutes')::interval) closer_end_time
                                    from flow.project p
-                                            inner join flow.postal_code pc on pc.postal_code = p.postal_code and pc.archived is false
+                                            inner join flow.postal_code pc on pc.postal_code = substr(trim ( both ',' from trim( both ' ' from trim(both '	' from p.postal_code))),1,5) and pc.archived is false
                                             inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
                                             inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and pczu.archived is false
                                             inner join flow.resource_schedule rs on rs.user_id = pczu.user_id and rs.archived is false
