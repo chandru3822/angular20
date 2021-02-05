@@ -19,6 +19,12 @@ constants.EMAIL_RULES = [
   v => !!v || "E-mail is required",
   v => /.+@.+/.test(v) || "E-mail must be valid"
 ]
+
+constants.POSTAL_CODE_RULES = [
+  v => (!v || (v && (v.length === 0 || v.length === 5 || v.length === 10))) || 'Must be 5 or 10 characters',
+  v => /^\d{5}(?:[-\s]\d{4})?$/.test(v) || "Postal Code must be a valid format: ##### or #####-####"
+]
+
 constants.BASIC_REQUIRED_RULE = [
   v => !!v || 'Field is required'
 ]
