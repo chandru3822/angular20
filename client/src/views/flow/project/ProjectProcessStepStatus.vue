@@ -20,8 +20,8 @@
         return-object
         class="mt-2"
       />
-      <div v-if="projectProcessStep.newStatusToUse.processStepStatusTypeId === 1">
-        When setting a process step to an ACTIVE status. You must select what to do with all existing Active steps of the same type.
+      <div v-if="projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 || newStatusOptional === true">
+        Please select what to do with all existing Active steps of the same type.
         <v-autocomplete
           v-model="projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId"
           :items="cancelledCompanyStatuses"
@@ -68,6 +68,10 @@ export default {
       default: false
     },
     showDialog: {
+      type: Boolean,
+      default: false
+    },
+    newStatusOptional: {
       type: Boolean,
       default: false
     }

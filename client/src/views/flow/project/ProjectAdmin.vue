@@ -184,8 +184,9 @@
       :project-process-step="selectedPps"
       :available-process-step-statuses="availableProcessStepStatuses"
       :limit-to-active="true"
+      :new-status-optional="selectedPps.selectedProcessStepStatusType.processStepStatusTypeId !== 3"
       @updateStatus="updateMain"
-      @dialogClosed="showMainDialog = false"
+      @dialogClosed="[showMainDialog = false, selectedPps.main = false, selectedPps.newStatusToUse = {NEW_STATUS_TO_USE}]"
   />
 </v-row>
 </template>
@@ -197,6 +198,8 @@ import {getCompanyStatusTypes, getCancelledCompanyStatusTypes} from '@/services/
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
+
+const NEW_STATUS_TO_USE = {id: null}
 
 export default {
   name: 'ProjectAdmin.vue',
@@ -228,7 +231,8 @@ export default {
       uuid,
       showStatusDialog: false,
       showMainDialog: false,
-      selectedPps: null
+      selectedPps: null,
+      NEW_STATUS_TO_USE
     }
   },
   components: {
@@ -259,7 +263,7 @@ export default {
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
         this.projectProcessSteps = data.map(step => {
           step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.id === step.companyProcessStepStatusTypeId)
-          step.newStatusToUse = {}
+          step.newStatusToUse = {NEW_STATUS_TO_USE}
           return step
         })
       } catch (e) {

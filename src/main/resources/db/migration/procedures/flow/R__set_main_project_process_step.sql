@@ -30,10 +30,11 @@ BEGIN
       main = true
   returning id, company_process_step_status_type_id into v_previous_main_project_process_step_id, v_previous_main_company_process_step_status_type_id;
 
-  -- set main flag and active status on current step
+  -- set main flag
+  -- Set active status on current step if given new status isn't null (if the new main step is already complete, it can stay that way or become active)
   update flow.project_process_step
   set main = true,
-      company_process_step_status_type_id = p_active_company_process_step_status_type_id,
+      company_process_step_status_type_id = coalesce(p_active_company_process_step_status_type_id, company_process_step_status_type_id),
       modified_by_id = p_user_id,
       date_modified = now()
   where project_process_step.id = p_project_process_step_id;
@@ -50,7 +51,6 @@ BEGIN
 
   IF v_previous_main_company_process_step_status_type_id = any(v_company_active_status_ids)
   THEN
-
     update flow.project_process_step
     set company_process_step_status_type_id = p_cancelled_company_process_step_status_type_id
     where id = v_previous_main_project_process_step_id;

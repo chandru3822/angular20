@@ -280,8 +280,9 @@
         :project-process-step="processStep"
         :available-process-step-statuses="availableProcessStepStatuses"
         :limit-to-active="true"
+        :new-status-optional="processStep.processStepStatusTypeId !== 3"
         @updateStatus="updateMain"
-        @dialogClosed="showMainDialog = false"
+        @dialogClosed="[showMainDialog = false, processStep.main = false, processStep.newStatusToUse = {NEW_STATUS_TO_USE}]"
     />
   </v-main>
 </template>
@@ -300,6 +301,8 @@
   import moment from 'moment-timezone'
   import {DateTime} from 'luxon'
   import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
+
+  const NEW_STATUS_TO_USE = {id: null}
 
   export default {
     name: 'ProjectProcessStep',
@@ -348,7 +351,8 @@
         uniqueAlreadyHasValue: false,
         psHasEventCfg: false,
         psRequiresResource: false,
-        showMainDialog: false
+        showMainDialog: false,
+        NEW_STATUS_TO_USE
       }
     },
     async created() {
@@ -382,7 +386,7 @@
       getProcessStep: async function () {
         try {
           const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
-          this.processStep = {...data, newStatusToUse: {}}
+          this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.processStep.processStepName}`
             : `${this.processStep.processStepName}`
         } catch (e) {
@@ -643,6 +647,7 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await postRequest(`/projectProcessStep/${pps.projectProcessStepId}/main`, pps.newStatusToUse)
+          await this.getProcessStep()
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')

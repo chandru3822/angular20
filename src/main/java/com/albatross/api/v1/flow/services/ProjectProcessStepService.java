@@ -157,7 +157,11 @@ public class ProjectProcessStepService {
   }
 
   public void setMain(Long ppsId, CompanyProcessStepStatusType status) {
-    Map<String, Object> params = Map.of("ppsId", ppsId, "activeCompanyProcessStepStatusTypeId", status.getId(), "cancelledCompanyProcessStepStatusTypeId", status.getCancelledCompanyProcessStepStatusTypeId(), "userId", securityService.getCurrentUser().getId());
+    Map<String, Object> params = new HashMap<>();
+    params.put("ppsId", ppsId);
+    params.put("activeCompanyProcessStepStatusTypeId", status.getId());
+    params.put("cancelledCompanyProcessStepStatusTypeId", status.getCancelledCompanyProcessStepStatusTypeId());
+    params.put("userId", securityService.getCurrentUser().getId());
     sqlCache.query("projectProcessStep.setMain", params, String.class);
   }
 
