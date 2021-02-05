@@ -16,7 +16,7 @@
         :items="statuses"
         item-text="processStepStatusType"
         item-value="companyProcessStepStatusTypeId"
-        label="Status To Change To"
+        :label="`Status To Change To (${newStatusOptional === true ? 'Optional' : 'Required'})`"
         return-object
         class="mt-2"
       />
@@ -25,7 +25,7 @@
         <v-autocomplete
           v-model="projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId"
           :items="cancelledCompanyStatuses"
-          label="Status To Use For Existing"
+          label="Status To Use For Existing (Required)"
           item-text="processStepStatusType"
           item-value="id"
         />
@@ -38,14 +38,14 @@
       <v-spacer></v-spacer>
       <v-btn
         @click="$emit('dialogClosed')">
-        No
+        Cancel
       </v-btn>
       <v-btn
         :disabled="!projectProcessStep.newStatusToUse || (projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 && !projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId)"
         color="primaryCustom"
         text
         @click="$emit('updateStatus', projectProcessStep)">
-        Yes
+        Save
       </v-btn>
     </v-card-actions>
   </v-card>
