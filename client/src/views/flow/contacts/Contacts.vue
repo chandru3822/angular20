@@ -128,6 +128,7 @@ export default {
   },
   data () {
     return {
+      initialLoad: true,
       delay: 500,
       constants,
       menuOpen: false,
@@ -159,12 +160,14 @@ export default {
     }
   },
   watch: {
-    // options: {
-    //   handler () {
-    //     this.getContacts()
-    //   },
-    //   deep: true,
-    // },
+    options: {
+      handler () {
+        if(!this.initialLoad) {
+          this.getContacts()
+        }
+      },
+      deep: true,
+    },
   },
   beforeRouteEnter(to, from, next) {
     //if coming to this page from the contact details - use the previously used search
@@ -212,6 +215,7 @@ export default {
         this.contacts = data.content
         this.totalContacts = data.totalElements
         this.dataLoading = false
+        this.initialLoad = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
