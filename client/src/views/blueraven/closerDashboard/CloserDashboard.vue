@@ -778,7 +778,10 @@
             <td class="center-text">{{ row.leadGenFdc || 0 }}%</td>
             <td class="center-text">{{ row.selfGen || 0 }}</td>
             <td class="center-text">{{ row.averageAvailability || 0 }}</td>
-            <td class="center-text">{{ row.score || 0 }}%</td>
+            <td class="center-text">
+              <span v-if="row.score || row.score === 0">{{ row.score | percent(1) }}</span>
+              <span v-else>--</span>
+            </td>
           </tr>
         </table>
         <div v-if="!selectedRoundRobin" class="ranking-tables-no-data left-text">
