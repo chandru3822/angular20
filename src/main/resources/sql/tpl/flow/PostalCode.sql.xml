@@ -145,7 +145,7 @@
 
   <postalCode.addZoneCode><![CDATA[
     insert into flow.postal_code(postal_code_zone_id, postal_code, date_created, created_by_id)
-    values (:postalCodeZoneId, :postalCode, now(), :createdById)
+    values (:postalCodeZoneId, trim(:postalCode), now(), :createdById)
   ]]></postalCode.addZoneCode>
 
   <postalCode.deleteZoneCode><![CDATA[

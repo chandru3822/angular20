@@ -20,9 +20,10 @@
         return-object
         class="mt-2"
       />
-      <div v-if="projectProcessStep.newStatusToUse.processStepStatusTypeId === 1 || newStatusOptional === true">
+      <div v-if="(projectProcessStep.newStatusToUse && projectProcessStep.newStatusToUse.processStepStatusTypeId === 1) || newStatusOptional === true">
         Please select what to do with all existing Active steps of the same type.
         <v-autocomplete
+          v-if="projectProcessStep.newStatusToUse"
           v-model="projectProcessStep.newStatusToUse.cancelledCompanyProcessStepStatusTypeId"
           :items="cancelledCompanyStatuses"
           label="Status To Use For Existing (Required)"

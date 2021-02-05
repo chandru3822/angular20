@@ -9,6 +9,12 @@ export function getSnackbar(type, text) {
   return snackbar
 }
 
+export function isNumberOrHyphen (val) {
+  if (val.key !== '-' && isNaN(Number(val.key))) {
+    return val.preventDefault();
+  }
+}
+
 export function formatPhoneNumber(phoneNumberString) {
   let cleaned = ('' + phoneNumberString).replace(/\D/g, '')
   let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/)
