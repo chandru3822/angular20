@@ -132,6 +132,16 @@
     order by cfga.field_order, cf.field_name
   ]]></customFieldGroupAssignment.getCustomFieldsInGroup>
 
+  <customFieldGroupAssignment.getNonEventCustomFieldGroupsByProcessStep><![CDATA[
+    select cfg.id,
+       cfg.group_name
+    from flow.custom_field_group cfg
+    where cfg.process_step_id = :processStepId
+      and cfg.event_type_id is null
+      and cfg.archived is not true
+    order by cfg.group_name
+  ]]></customFieldGroupAssignment.getNonEventCustomFieldGroupsByProcessStep>
+
   <customFieldGroupAssignment.getEventTypesAndFields><![CDATA[
     select sft.id,
            sft.field_type,

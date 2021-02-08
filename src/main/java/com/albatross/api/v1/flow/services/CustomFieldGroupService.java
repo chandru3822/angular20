@@ -160,6 +160,14 @@ public class CustomFieldGroupService {
     return results;
   }
 
+  public List<CustomFieldGroup> getNonEventCustomFieldGroupsByProcessStep(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<CustomFieldGroup> results = sqlCache.query("customFieldGroupAssignment.getNonEventCustomFieldGroupsByProcessStep", params, CustomFieldGroup.class);
+    return results;
+  }
+
   public List<ScheduleFieldType> getEventTypesAndFields() {
     User currentUser = securityService.getCurrentUser();
 
