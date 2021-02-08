@@ -73,7 +73,7 @@ public class ProjectService {
     return projectId;
   }
 
-  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, Pageable pageable) {
+  public Page<Project> searchProjects(String query, Long companyProjectStatusTypeId, String sortColumn, String sortDirection, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", List.of("VIEW_ALL"));
@@ -89,6 +89,8 @@ public class ProjectService {
     params.put("companyProjectStatusTypeId", companyProjectStatusTypeId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
+    params.put("sortColumn", sortColumn);
+    params.put("sortDirection", sortDirection);
     params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
