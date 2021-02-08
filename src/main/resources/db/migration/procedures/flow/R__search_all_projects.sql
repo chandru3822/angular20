@@ -1,7 +1,10 @@
+-- drop function if exists flow.search_all_projects(character varying, integer, boolean, integer, integer, integer, character varying, character varying);
 CREATE OR REPLACE FUNCTION flow.search_all_projects(p_searchterm character varying, p_company_id integer,
                                                     p_is_parent boolean,
                                                     p_limit integer default null, p_offset integer default null,
-                                                    p_company_project_status_type_id integer default null)
+                                                    p_company_project_status_type_id integer default null,
+                                                    p_sort_column character varying default null,
+                                                    p_sort_direction character varying default null)
     RETURNS TABLE
             (
                 id                             integer,
@@ -98,7 +101,11 @@ BEGIN
                        and case when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
                             else 1=1 end
-                     order by p.date_created desc
+                     ORDER BY (case when p_sort_column is null OR p_sort_direction is null then p.date_created end) desc,
+                              (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc' then p.project_name end) asc nulls last,
+                              (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'desc' then p.project_name end) desc nulls last,
+                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.project_name end) asc,
+                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.project_name end) desc
                      limit p_limit offset p_offset
                  ) as limited_projects;
         else
@@ -208,7 +215,11 @@ BEGIN
                            and case when p_company_project_status_type_id is not null then
                                             cpst.id = p_company_project_status_type_id
                                     else 1=1 end
-                         order by p.date_created desc
+                         ORDER BY (case when p_sort_column is null OR p_sort_direction is null then p.date_created end) desc,
+                                  (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc' then p.project_name end) asc nulls last,
+                                  (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'desc' then p.project_name end) desc nulls last,
+                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.project_name end) asc,
+                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.project_name end) desc
                          limit p_limit offset p_offset
                      ) as limited_projects;
         end case;
