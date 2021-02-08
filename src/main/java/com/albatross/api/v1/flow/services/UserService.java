@@ -408,6 +408,7 @@ public class UserService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
     List<User> results = sqlCache.query("user.mentionableUsers", params, new UserMapper<>(User.class, om));
 
     List<Long> userIds = results.stream()
