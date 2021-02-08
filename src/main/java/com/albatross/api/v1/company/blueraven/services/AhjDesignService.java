@@ -57,7 +57,7 @@ public class AhjDesignService {
   }
 
   @SuppressWarnings("Duplicates")
-  public Optional<AhjDesignDetail> saveAhjDesign(Long ahjId, Long designId, AhjDesign design) {
+  public Optional<AhjDesignDetail> saveAhjDesign(Long ahjId, Long designId, AhjDesign design, Boolean returnValue) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -70,23 +70,23 @@ public class AhjDesignService {
     params.put("windSpeed", design.getWindSpeed());
     params.put("roofSnowLoad", design.getRoofSnowLoad());
 
-    if (design.getUpdateAllInState() != null && !design.getUpdateAllInState()) {
-      params.put("ahjId", ahjId);
-
-      if (designId == null) {
-        designId = sqlCache.updateReturningId("ahj.design.create", params, "id").longValue();
-      } else {
-        params.put("id", designId);
-        sqlCache.update("ahj.design.update", params);
-      }
-      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(design.getCustomFieldGroups(), designId);
-    } else {
+    if (design.getUpdateAllInState() != null && design.getUpdateAllInState()) {
       params.put("ahjIds", design.getAhjIds());
       sqlCache.update("ahj.design.updateAllAhjDesignsInState", params);
       blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(design.getCustomFieldGroups(), design.getDesignIds());
+    } else {
+      params.put("ahjId", ahjId);
+
+      if (designId == null) {
+        sqlCache.updateReturningId("ahj.design.create", params, "id").longValue();
+      } else {
+        params.put("id", designId);
+        sqlCache.update("ahj.design.update", params);
+        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(design.getCustomFieldGroups(), designId);
+      }
     }
 
-    return getAhjDesignDetailByAhjId(ahjId);
+    return returnValue ? getAhjDesignDetailByAhjId(ahjId) : Optional.empty();
   }
 
   public List<AhjDesign> searchAhjsByState(Long stateId) {

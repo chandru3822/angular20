@@ -44,15 +44,16 @@
                                 dense
                                 hide-details
                   ></v-text-field>
-                  <v-select v-else-if="ahjFilters[header.value].type === 'select'"
+                  <v-autocomplete v-else-if="ahjFilters[header.value].type === 'select'"
                             :items="states"
                             v-model="ahjFilters[header.value].value"
                             :placeholder="'Select a ' + header.text.toLowerCase()"
                             clearable
                             filled
+                            item-text="state"
                             dense
                             hide-details
-                  ></v-select>
+                  ></v-autocomplete>
                 </div>
               </th>
             </tr>
@@ -101,19 +102,31 @@
                             required
                             filled
               ></v-text-field>
-              <v-select label="Metro Area"
+              <v-autocomplete label="Metro Area"
                         :items="metroAreas"
                         v-model="editedItem.metroAreaId"
+                        item-text="metroArea"
+                        item-value="id"
                         required
                         filled
-              ></v-select>
+              ></v-autocomplete>
+              <v-autocomplete label="State"
+                              :items="states"
+                              v-model="editedItem.companyStateId"
+                              item-text="state"
+                              item-value="id"
+                              autocomplete="off"
+                              required
+                              filled
+              ></v-autocomplete>
+
             </v-card-text>
 
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
               <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
-                     :disabled="!editedItem.name || !editedItem.metroAreaId">
+                     :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId">
                 {{ ahjBtnTxt }}
               </v-btn>
             </v-card-actions>
@@ -147,6 +160,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import {getActiveStates} from '@/services/stateService'
   import { AppMutations } from '@/stores/AppStore'
 
   const FILTER_DEFAULTS = {
@@ -256,13 +270,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest('/metro/getActive', 'blueraven')
-          data.forEach(item => {
-            let option = {
-              text: item.metroArea,
-              value: item.id
-            }
-            this.metroAreas.push(option)
-          })
+          this.metroAreas = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -347,13 +355,18 @@
         }
 
       },
-      fetchStates () {
-        this.states = ['']
-        this.ahjs.forEach(ahj => {
-          if (ahj.state && this.states.indexOf(ahj.state) === -1) {
-            this.states.push(ahj.state)
-          }
-        })
+      async fetchStates () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getActiveStates()
+          this.states = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     created () {

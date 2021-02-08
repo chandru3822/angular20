@@ -32,14 +32,14 @@ public class AhjInspectionController {
     @PostMapping(value = "")
     public Optional<AhjInspection> createAhjInspection(@PathVariable Long ahjId,
                                                        @RequestBody AhjInspection inspection) {
-        return ahjInspectionService.saveAhjInspection(ahjId, null, inspection);
+        return ahjInspectionService.saveAhjInspection(ahjId, null, inspection, true);
     }
 
     @PutMapping(value = "/{id}")
     public Optional<AhjInspection> updateAhjInspection(@PathVariable Long ahjId,
                                                        @PathVariable Long id,
                                                        @RequestBody AhjInspection inspection) {
-        return ahjInspectionService.saveAhjInspection(ahjId, id, inspection);
+        return ahjInspectionService.saveAhjInspection(ahjId, id, inspection, true);
     }
 
     @GetMapping(value = "/searchAhjsByState/{stateId}")

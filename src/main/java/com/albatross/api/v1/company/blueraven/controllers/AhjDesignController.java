@@ -28,14 +28,14 @@ public class AhjDesignController {
     @PostMapping(value = "")
     public Optional<AhjDesignDetail> createAhjDesign(@PathVariable Long ahjId,
                                                @RequestBody AhjDesign design) {
-        return ahjDesignService.saveAhjDesign(ahjId, null, design);
+        return ahjDesignService.saveAhjDesign(ahjId, null, design, true);
     }
 
     @PutMapping(value = "/{id}")
     public Optional<AhjDesignDetail> updateAhjDesign(@PathVariable Long ahjId,
                                                      @PathVariable Long id,
                                                      @RequestBody AhjDesign design) {
-        return ahjDesignService.saveAhjDesign(ahjId, id, design);
+        return ahjDesignService.saveAhjDesign(ahjId, id, design, true);
     }
 
     @GetMapping(value = "/searchAhjsByState/{stateId}")
