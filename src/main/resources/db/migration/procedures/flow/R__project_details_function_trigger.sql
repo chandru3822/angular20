@@ -111,8 +111,10 @@ BEGIN
 --         where p.id = new.id;
     elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 1 then
         v_on_hold_date = now();
+        v_off_hold_date = null;
     elsif v_new_project_status_type_id = 3 and v_old_project_status_type_id = 2 then
         v_on_hold_date = now();
+        v_off_hold_date = null;
         v_cancelled_date = null;
     end if;
 
