@@ -220,4 +220,9 @@ public class UserController {
 
         return ResponseEntity.ok(user);
     }
+
+  @GetMapping(value = "/mentionableUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<User> getMentionableUsers() {
+    return userService.getMentionableUsers();
+  }
 }

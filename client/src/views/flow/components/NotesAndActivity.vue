@@ -9,11 +9,33 @@
       </v-toolbar>
       <v-divider></v-divider>
       <v-card class="px-3 elevation-0 square-card">
-        <v-textarea class="py-2" hide-details
-                    auto-grow
-                    rows="4"
-                    background-color="#F2F6F8"
-                    filled v-model="note.note"></v-textarea>
+          <Mentionable
+            :keys="['@']"
+            :items="users"
+            offset="6"
+            insert-space
+          >
+            <v-textarea class="py-2" hide-details
+                        auto-grow
+                        rows="4"
+                        background-color="#F2F6F8"
+                        filled v-model="note.note">
+            </v-textarea>
+
+            <template #no-result>
+              <div class="dim">
+                No result
+              </div>
+            </template>
+
+            <template #item-@="{ item }">
+              <div class="user">
+                <span class="dim">
+                  ({{ item.value }})
+                </span>
+              </div>
+            </template>
+          </Mentionable>
         <div class="text-left mb-2">
           <v-btn color="primaryCustom" class="white--text"
                  :disabled="!note.note || savingNote"
@@ -49,11 +71,32 @@
         <template #item="{ item, index }">
           <tr class="text-left" :class="{'shaded-row': index % 2}" v-if="item.edit" >
             <td class="py-2 pl-5" colspan="3">
-              <v-textarea class="py-2" hide-details
-                          auto-grow
-                          rows="4"
-                          background-color="#F2F6F8"
-                          filled v-model="item.note"></v-textarea>
+              <Mentionable
+                :keys="['@']"
+                :items="users"
+                offset="6"
+                insert-space
+              >
+                <v-textarea class="py-2" hide-details
+                            auto-grow
+                            rows="4"
+                            background-color="#F2F6F8"
+                            filled v-model="item.note"></v-textarea>
+
+                <template #no-result>
+                  <div class="dim">
+                    No result
+                  </div>
+                </template>
+
+                <template #item-@="{ item }">
+                  <div class="user">
+                <span class="dim">
+                  ({{ item.value }})
+                </span>
+                  </div>
+                </template>
+              </Mentionable>
               <div class="text-left mb-2">
                 <v-btn color="primaryCustom" class="white--text"
                        :disabled="!item.note"
@@ -275,7 +318,6 @@ export default {
     notes: Array,
     type: String
   },
-
   data () {
     return {
       snackbar: {},
@@ -295,7 +337,11 @@ export default {
         { text: null, value: 'icons', show: true, width: '50px' }
       ],
       expanded: [],
+      users: []
     }
+  },
+  created () {
+    this.getUsers()
   },
   methods: {
     async deleteNote(n, isChildNote, item) {
@@ -349,6 +395,21 @@ export default {
     },
     filterNotes() {
       return this.notes.filter(n => { return !n.archived})
+    },
+    getUsers: async function () {
+      try {
+        const {data} = await getRequest('/user/mentionableUsers')
+        this.users = data;
+        this.users.forEach(u => {
+          u.value = u.fullName
+        })
+
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }
@@ -383,6 +444,10 @@ export default {
 .reply-button-dots {
   display: flex;
   align-items: center;
+}
+.dim:hover {
+  color: var(--v-primary-base);
+  font-weight: bold;
 }
 </style>
 <style lang="scss">
