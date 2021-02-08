@@ -32,6 +32,7 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left underline" @click="clickRow(item)">{{item.projectName}}</td>
               <td class="text-left">{{item.processStepName}}</td>
+              <td class="text-left">{{item.processStepStatusType}}</td>
               <td class="text-left">{{item.daysInQueue}}</td>
               <td class="text-left">{{item.stateAbbreviation}}</td>
               <td class="text-left" v-if="[98,99,106].includes(parseInt(workQueueTypeId))">{{item.proposalDueDate  | formatDate('timestamp')}}</td>
@@ -135,6 +136,7 @@
         headers: [
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
+          { text: 'Status', value: 'processStepStatus', show: true },
           { text: 'Days In Queue', value: 'daysInQueue', show: true },
           { text: 'State', value: 'stateAbbreviation', show: true },
           { text: 'Proposal Due Date', value: 'proposalDueDate', show: [98,99,106].includes(parseInt(this.$route.params.id)), width: 175 },
