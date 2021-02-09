@@ -186,11 +186,32 @@
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length" class="py-4 px-10">
             <div v-if="item.showReply">
-              <v-textarea solo v-model="item.reply"
-                          hide-details
-                          auto-grow
-                          rows="1"
-                          placeholder="Add a comment..." class="mt-1"></v-textarea>
+              <Mentionable
+                :keys="['@']"
+                :items="users"
+                offset="6"
+                insert-space
+              >
+                <v-textarea solo v-model="item.reply"
+                            hide-details
+                            auto-grow
+                            rows="1"
+                            placeholder="Add a comment..." class="mt-1"></v-textarea>
+
+                <template #no-result>
+                  <div class="dim">
+                    No result
+                  </div>
+                </template>
+
+                <template #item-@="{ item }">
+                  <div class="user">
+                    <span class="dim">
+                      ({{ item.value }})
+                    </span>
+                  </div>
+                </template>
+              </Mentionable>
               <div class="text-left py-2">
                 <v-btn color="primaryCustom white--text" @click="saveNote(item)"
                        :disabled="!item.reply"
@@ -204,11 +225,33 @@
             </div>
             <div v-for="(cn, index) in filterBy(item.childNotes, false, 'archived')" :key="index">
               <div v-if="cn.edit">
-                <v-textarea class="py-2" hide-details
-                            auto-grow
-                            rows="4"
-                            background-color="#F2F6F8"
-                            filled v-model="cn.note"></v-textarea>
+                <Mentionable
+                  :keys="['@']"
+                  :items="users"
+                  offset="6"
+                  insert-space
+                >
+                  <v-textarea class="py-2" hide-details
+                              auto-grow
+                              rows="4"
+                              background-color="#F2F6F8"
+                              filled v-model="cn.note"></v-textarea>
+
+                  <template #no-result>
+                    <div class="dim">
+                      No result
+                    </div>
+                  </template>
+
+                  <template #item-@="{ item }">
+                    <div class="user">
+                      <span class="dim">
+                        ({{ item.value }})
+                      </span>
+                    </div>
+                  </template>
+                </Mentionable>
+
                 <div class="text-left mb-2">
                   <v-btn color="primaryCustom" class="white--text"
                          :disabled="!cn.note"
