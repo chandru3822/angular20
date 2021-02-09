@@ -481,7 +481,7 @@ public class SmartlistService {
             final String uuid = joinTables.stream()
               .filter(t -> t.getProcessStepId() != null && t.getProcessStepId().equals(f.getProcessStepId()))
               .map(t -> {
-                if (Objects.equals(t.getReferenceTable(), "flow.user") || Objects.equals(t.getReferenceTable(), "flow.process_step")) {
+                if (Objects.equals(t.getReferenceTable(), "flow.user") || Objects.equals(t.getReferenceTable(), "flow.process_step") || Objects.equals(f.getReferenceTable(), "flow.project_process_step")) {
                   return t.getPpsTable();
                 } else {
                   return t.getReferenceTable();
