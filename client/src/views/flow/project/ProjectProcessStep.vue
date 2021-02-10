@@ -259,9 +259,8 @@
         <v-col v-for="action in filteredActions" :key="action.id" class="pt-0">
           <ActionButton
             v-if="action.actionTypeId === 2 && !action.hidden"
-            :actionId="action.id"
+            :action-result="action"
             :projectProcessStepId="parseInt(projectProcessStepId)"
-            :label="action.actionName"
             :handleOnComplete="handleActionCompleted"
             :handleOnCompleteError="handleOnCompleteError"
           />
@@ -614,7 +613,7 @@
           }
           //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it shouldn't matter if it always gets updated. hows this for the longest comment ever?
           this.closerApptSaved = true
-          this.$root.$emit('projectProcessStep:checkAction')
+          await this.getProcessStep()
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
@@ -739,7 +738,7 @@
             this.timeSlots = []
             this.selectedTimeSlot = {}
           }
-          this.$root.$emit('projectProcessStep:checkAction')
+          await this.getProcessStep()
         } catch (e) {
           logError(e)
           let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
