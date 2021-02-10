@@ -315,6 +315,7 @@ public class ProjectProcessStepService {
     ProjectProcessStepAction minimalResult = new ProjectProcessStepAction();
 
     minimalResult.setId(actionId);
+    minimalResult.setActionName(actionResult.getActionName());
     minimalResult.setCanPerform(pps.getProcessStepStatusTypeId() == 1 && actionResult.getCanPerform());
     minimalResult.setMultipleUses(actionResult.getMultipleUses());
     minimalResult.setAlreadyTriggered(actionResult.getAlreadyTriggered());
