@@ -366,6 +366,12 @@
                             </div>
                             <div v-else>
                               {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                              <div v-if="cf.edit" class="mt-3">
+                                <label>Use Parent Data: </label>
+                                <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
+                                       @change="saveUseParentData(cf)"
+                                       :readonly="!userCanEdit" :disabled="!userCanEdit">
+                              </div>
                             </div>
                           </v-list-item-content>
                           <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
@@ -748,6 +754,18 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveUseParentData (field) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/customFieldGroup/saveUseParentData`, field)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
