@@ -126,8 +126,8 @@ BEGIN
                      ORDER BY (case when p_sort_column is null OR p_sort_direction is null then p.date_created end) desc,
                               (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc' then p.project_name end) asc nulls last,
                               (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'desc' then p.project_name end) desc nulls last,
-                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.project_name end) asc,
-                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.project_name end) desc
+                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.date_created end) asc,
+                              (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.date_created end) desc
                      limit p_limit
                      offset
                      p_offset
@@ -265,8 +265,8 @@ BEGIN
                          ORDER BY (case when p_sort_column is null OR p_sort_direction is null then p.date_created end) desc,
                                   (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc' then p.project_name end) asc nulls last,
                                   (case when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'desc' then p.project_name end) desc nulls last,
-                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.project_name end) asc,
-                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.project_name end) desc
+                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'asc' then p.date_created end) asc,
+                                  (case when lower(p_sort_column) = 'date_created' and lower(p_sort_direction) = 'desc' then p.date_created end) desc
                          limit p_limit
                          offset
                          p_offset
