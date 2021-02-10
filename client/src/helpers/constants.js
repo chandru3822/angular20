@@ -9,7 +9,8 @@ constants.MAPBOX_STYLE = VUE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10
 constants.IS_MOBILE = window.innerWidth <= 768
 constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
-constants.MAX_FILE_SIZE = 209715200 //200 mb
+// constants.MAX_FILE_SIZE = 209715200 //200 mb
+constants.MAX_FILE_SIZE = 1048576000 //1 gb
 constants.STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
 constants.STANDARD_IMAGES_ONLY = 'image/*'
 constants.STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
