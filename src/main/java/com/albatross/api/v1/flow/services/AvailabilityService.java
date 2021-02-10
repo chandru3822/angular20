@@ -529,7 +529,7 @@ public class AvailabilityService {
               context.put("from", "Blue Raven Solar Sales HR");
               context.put("projectAddress", projectAddress);
 
-              communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com");
+              communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
             }
             //i need these back the same way we get them for normal cfgs on the frontend
             List<CustomFieldGroup> cfgs = customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROCESS_STEP.textValue(), request.getProjectProcessStepId());

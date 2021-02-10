@@ -169,7 +169,7 @@ public class NoteService {
           context.put("noteContents", note.getNote());
           String emailSubject = currentUser.getFirstName() + " " + currentUser.getLastName() +
             " mentioned you in a note on " + noteRefName;
-          communicationService.sendEmail(emailSubject, emailAddress, template, context, "noreply@myblueraven.albatross.com");
+          communicationService.sendEmail(emailSubject, emailAddress, template, context, "noreply@albatross.myblueraven.com", "Albatross");
         }
         else {
           String groupId = UUID.randomUUID().toString();
