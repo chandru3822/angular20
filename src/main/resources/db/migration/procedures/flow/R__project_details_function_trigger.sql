@@ -20,6 +20,7 @@ declare
     v_cancelled_date             timestamp;
     v_on_hold_date               timestamp;
     v_off_hold_date              timestamp;
+    v_company_project_status     character varying(100);
 BEGIN
     select company_id
     into v_company_id
@@ -31,6 +32,11 @@ BEGIN
     into v_project_creator
     from flow."user" u3
     where u3.id = new.created_by_id;
+
+    select project_status_type
+    into v_company_project_status
+    from flow.company_project_status_type
+    where id = new.company_project_status_type_id;
 
     if new.user_position_id is not null then
         select u.id, first_name || ' ' || last_name
@@ -125,12 +131,14 @@ BEGIN
                                         project_time_zone, project_state_id, project_state_abbreviation, contact_name,
                                         setter_user_position_id, setter_user_id, closer_user_id,
                                         closer_user_position_id, closer_name,
-                                        project_creator, contact_id, cancelled_date, on_hold_date, off_hold_date,project_created_date)
+                                        project_creator, contact_id, cancelled_date, on_hold_date, off_hold_date,project_created_date,
+                                        company_project_status_type_id,company_project_status_type)
         values (new.id, v_company_id, v_contact_email, v_contact_phone, v_contact_mobile_phone,
                 new.street1, new.city, new.postal_code, new.time_zone, v_state_id, v_state_abbrev, v_contact_name,
                 v_owner_user_position_id, v_owner_user_id, v_user_id,
                 coalesce(new.user_position_id, v_pd_closer_user_position_id), v_closer_name,
-                v_project_creator, new.contact_id, v_cancelled_date, v_on_hold_date, v_off_hold_date, new.date_created);
+                v_project_creator, new.contact_id, v_cancelled_date, v_on_hold_date, v_off_hold_date, new.date_created,
+                new.company_project_status_type_id,v_company_project_status);
     elsif (TG_OP = 'UPDATE') THEN
         update brs.project_details
         set contact_email              = v_contact_email,
@@ -153,7 +161,9 @@ BEGIN
             cancelled_date             = v_cancelled_date,
             on_hold_date               = v_on_hold_date,
             off_hold_date              = v_off_hold_date,
-            project_created_date       = new.date_created
+            project_created_date       = new.date_created,
+            company_project_status_type_id = new.company_project_status_type_id,
+            company_project_status_type = v_company_project_status
         where project_id = new.id;
 
     elsif (TG_OP = 'DELETE') THEN
