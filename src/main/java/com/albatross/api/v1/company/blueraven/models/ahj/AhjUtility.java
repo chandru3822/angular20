@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class AhjUtility {
     private Long id;
-    private Long ahjUtilityId, ahjId, stateId, metroAreaId, financierId;
+    private Long ahjUtilityId, ahjId, stateId, metroAreaId, financierId, companyStateId;
     private String name, metroArea, state, timelinesAndStages, regulatedBy, monthlyFacilityCharge,
                    populationOfService, netMeteringRate, rebateRates, utilityRateNotes,
                    customerSignatureInstructions, expectedApprovalTimeline, rejectionInstructions, notes,

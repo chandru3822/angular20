@@ -56,7 +56,7 @@ public class AhjInspectionService {
     return null;
   }
 
-  public Optional<AhjInspection> saveAhjInspection(Long ahjId, Long inspectionId, AhjInspection inspection) {
+  public Optional<AhjInspection> saveAhjInspection(Long ahjId, Long inspectionId, AhjInspection inspection, Boolean returnValue) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -90,7 +90,11 @@ public class AhjInspectionService {
     params.put("documentationNote", inspection.getDocumentationNote());
     params.put("mpuInspectionNote", inspection.getMpuInspectionNote());
 
-    if (inspection.getUpdateAllInState() != null && !inspection.getUpdateAllInState()) {
+    if (inspection.getUpdateAllInState() != null && inspection.getUpdateAllInState()) {
+      params.put("ahjIds", inspection.getAhjIds());
+      sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
+      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspection.getInspectionIds());
+    } else {
       params.put("ahjId", ahjId);
 
       if (inspectionId == null) {
@@ -98,17 +102,13 @@ public class AhjInspectionService {
       } else {
         params.put("id", inspectionId);
         sqlCache.update("ahj.inspection.update", params);
+        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspectionId);
       }
-      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspectionId);
-    } else {
-      params.put("ahjIds", inspection.getAhjIds());
-      sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
-      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspection.getInspectionIds());
     }
 
     HashMap<String, Object> keyParam = new HashMap<>();
     keyParam.put("id", inspectionId);
-    return sqlCache.get("ahj.inspection.findById", keyParam, AhjInspection.class);
+    return returnValue ? sqlCache.get("ahj.inspection.findById", keyParam, AhjInspection.class) : Optional.empty();
   }
 
   public List<AhjInspection> searchAhjsByState(Long stateId) {

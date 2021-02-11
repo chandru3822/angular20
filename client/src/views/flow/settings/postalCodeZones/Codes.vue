@@ -17,10 +17,13 @@
         <v-divider></v-divider>
         <v-card v-if="addCode" class="square-card text-left pa-5">
           <v-text-field text
-                        type="text"
                         label="Postal Code"
+                        counter
+                        type="number"
+                        maxlength="5"
                         v-model="newCode">
           </v-text-field>
+          <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addCodeToZone()"
                  :disabled="!newCode">
             Add
@@ -112,6 +115,8 @@
       return {
         snackbar: {},
         postalCodes: [],
+        showError: false,
+        errorMsg: '',
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
@@ -161,23 +166,30 @@
         }
       },
       async addCodeToZone () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            postalCodeZoneId: this.zoneId,
-            postalCode: this.newCode
+        if(this.newCode?.toString()?.length === 5) {
+          this.showError = false
+          this.errorMsg = ''
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            let params = {
+              postalCodeZoneId: this.zoneId,
+              postalCode: this.newCode
+            }
+            const {data} = await postRequest(`/postalCode/zone/addCode`, params)
+            this.postalCodes.push(data)
+            this.addCode = false
+            this.newCode = {}
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
+            this.snackbar = getSnackbar('ERROR', msg)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          const {data} = await postRequest(`/postalCode/zone/addCode`, params)
-          this.postalCodes.push(data)
-          this.addCode = false
-          this.newCode = {}
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        } else {
+          this.showError = true
+          this.errorMsg = 'ERROR: Postal Code must be 5 digits'
         }
       },
     }

@@ -35,6 +35,55 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="showMoveDialog"
+    >
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>
+          Move Custom Field
+        </v-card-title>
+
+        <v-card-text class="mt-4">
+
+          <v-autocomplete label="Process Step to Move To"
+                          :items="moveableProcessSteps"
+                          v-model="moveToItem.processStepId"
+                          item-text="processStepName"
+                          item-value="id"
+                          autocomplete="off"
+                          required
+                          @input="getMoveCustomFieldGroups()"
+                          filled
+          ></v-autocomplete>
+          <v-autocomplete label="Custom Field Group to Move To"
+                          :items="moveableCustomFieldGroups"
+                          v-model="moveToItem.customFieldGroupId"
+                          item-text="groupName"
+                          item-value="id"
+                          autocomplete="off"
+                          required
+                          filled
+          ></v-autocomplete>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text
+            @click="[fieldToMove = {}, showMoveDialog = false, moveableProcessSteps = [], moveableCustomFieldGroups = []]"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primaryCustom white--text"
+            @click="moveFieldToOtherGroup(moveToItem.customFieldGroupId)"
+            :disabled="!moveToItem.customFieldGroupId || !moveToItem.processStepId"
+          >
+            Move
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12" class="pt-0">
         <v-toolbar flat>
@@ -322,25 +371,29 @@
                           <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
                             <v-icon>edit</v-icon>
                           </v-btn>
-                          <v-menu offset-y v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                            <template v-slot:activator="{ on: menu }">
-                              <v-tooltip bottom>
-                                <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small v-on="{...tooltip, ...menu}">
-                                    <v-icon>mdi-cursor-move</v-icon>
-                                  </v-btn>
-                                </template>
-                                <span>Move to Other Group</span>
-                              </v-tooltip>
-                            </template>
-                              <v-list>
-                                <v-list-item
-                                  v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"
-                                  :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
-                                  <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
-                                </v-list-item>
-                              </v-list>
-                            </v-menu>
+                          <v-btn text small v-if="!item.eventTypeId && userCanEdit"
+                                 @click="[showMoveDialog = true, fieldToMove = cf, getMoveProcessSteps()]">
+                            <v-icon>mdi-cursor-move</v-icon>
+                          </v-btn>
+<!--                          <v-menu offset-y v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">-->
+<!--                            <template v-slot:activator="{ on: menu }">-->
+<!--                              <v-tooltip bottom>-->
+<!--                                <template v-slot:activator="{ on: tooltip }">-->
+<!--                                  <v-btn text small v-on="{...tooltip, ...menu}">-->
+<!--                                    <v-icon>mdi-cursor-move</v-icon>-->
+<!--                                  </v-btn>-->
+<!--                                </template>-->
+<!--                                <span>Move to Other Group</span>-->
+<!--                              </v-tooltip>-->
+<!--                            </template>-->
+<!--                              <v-list>-->
+<!--                                <v-list-item-->
+<!--                                  v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"-->
+<!--                                  :key="index" @click="moveFieldToOtherGroup(cf, cfg)">-->
+<!--                                  <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>-->
+<!--                                </v-list-item>-->
+<!--                              </v-list>-->
+<!--                            </v-menu>-->
 
 
                           <v-dialog
@@ -461,6 +514,12 @@
         fieldsInUse: [],
         positions: [],
         positionsLoading: false,
+        showMoveDialog: false,
+        selectedMoveItem: {},
+        moveToItem: {},
+        moveableProcessSteps: [],
+        moveableCustomFieldGroups: [],
+        fieldToMove: {},
         constants,
         newGroup: {
           schedulingFields: [],
@@ -521,6 +580,36 @@
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
+      },
+      async getMoveProcessSteps () {
+        if(this.moveableProcessSteps?.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/processStep`)
+            this.moveableProcessSteps = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async getMoveCustomFieldGroups () {
+        if(this.moveToItem?.processStepId !== null) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/customFieldGroup/getNonEventCustomFieldGroupsByProcessStep/${this.moveToItem.processStepId}`)
+            this.moveableCustomFieldGroups = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
       },
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -597,11 +686,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async moveFieldToOtherGroup (field, newGroup) {
+      async moveFieldToOtherGroup (groupId) {
+        console.log('randaLogger', this.fieldToMove)
+        console.log('randaLogger', groupId)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
+          await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${groupId}`, this.fieldToMove)
           this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
+          this.showMoveDialog = false
+          this.moveableCustomFieldGroups = []
+          this.fieldToMove = {}
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
           window.location.reload()

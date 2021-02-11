@@ -10,7 +10,7 @@ import java.util.List;
  */
 @Data
 public class AhjInspection {
-    private Long id, ahjId, stateId;
+    private Long id, ahjId, stateId, companyStateId;
     private Double inspectionFee, reInspectionFee;
     private String paymentMethod, inspectionTimeWindow, brsInspectionRep, portalUrl, portalUsername,
                    portalPassword, ladderRequired, obtainingResultsMethod, approvalDocumentMethod,

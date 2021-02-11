@@ -63,6 +63,11 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getCustomFieldsInGroup(groupId);
   }
 
+  @GetMapping(value = "/getNonEventCustomFieldGroupsByProcessStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getNonEventCustomFieldGroupsByProcessStep (@PathVariable Long id) {
+    return customFieldGroupService.getNonEventCustomFieldGroupsByProcessStep(id);
+  }
+
   @GetMapping(value = "/getEventTypesAndFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleFieldType> getEventTypesAndFields () {
     return customFieldGroupService.getEventTypesAndFields();

@@ -1,7 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +24,22 @@ public class ProjectProcessStepController {
   private final ProjectProcessStepService projectProcessStepService;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
-  private final ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
-    return new ResponseEntity<>(projectProcessStepService.getProjectProcessStep(projectProcessStepId), HttpStatus.OK);
+    try {
+      ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(projectProcessStepId);
+
+      int index = 0;
+      for (ProjectProcessStepAction a : pps.getActions()) {
+        pps.getActions().set(index, projectProcessStepService.getActionResult(a.getId(), projectProcessStepId));
+        index++;
+      }
+
+      return new ResponseEntity<>(pps, HttpStatus.OK);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+    }
   }
 
   @DeleteMapping(value = "/{projectProcessStepId}")
@@ -45,32 +55,7 @@ public class ProjectProcessStepController {
   @GetMapping(value = "/{ppsId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStepAction> getActionResult(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
-      ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
-      ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
-
-      if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
-          ProjectProcessStepAction actionResult = new ProjectProcessStepAction();
-          actionResult.setCanPerform(false);
-          actionResult.setMultipleUses(null != action && action.getMultipleUses());
-          actionResult.setAlreadyTriggered(null != action && action.getAlreadyTriggered());
-          actionResult.setTriggerAutomatically(null != action && action.getTriggerAutomatically());
-          return new ResponseEntity<>(actionResult, HttpStatus.OK);
-      }
-
-      List<Long> requirementIds = action.getProcessStepLogicList().stream()
-          .filter(step -> step.getProcessStepRequirementId() != null)
-          .map(ProcessStepLogic::getProcessStepRequirementId)
-          .collect(Collectors.toList());
-      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
-      ProjectProcessStepAction actionResult = projectProcessStepService.canPerformAction(action, pps, requirements);
-
-      ProjectProcessStepAction actionResponse = new ProjectProcessStepAction();
-      actionResponse.setCanPerform(actionResult.getCanPerform());
-      actionResponse.setMultipleUses(actionResult.getMultipleUses());
-      actionResponse.setAlreadyTriggered(actionResult.getAlreadyTriggered());
-      actionResponse.setTriggerAutomatically(actionResult.getTriggerAutomatically());
-
-      return new ResponseEntity<>(actionResponse, HttpStatus.OK);
+      return new ResponseEntity<>(projectProcessStepService.getActionResult(actionId, ppsId), HttpStatus.OK);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }

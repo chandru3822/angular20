@@ -33,14 +33,14 @@ public class AhjPermitController {
     @PostMapping(value = "")
     public Optional<AhjPermitDetail> createAhjPermit(@PathVariable Long ahjId,
                                                      @RequestBody AhjPermit permit) {
-        return ahjPermitService.saveAhjPermit(ahjId, null, permit);
+        return ahjPermitService.saveAhjPermit(ahjId, null, permit, true);
     }
 
     @PutMapping(value = "/{permitId}")
     public Optional<AhjPermitDetail> updateAhjPermit(@PathVariable Long ahjId,
                                                      @PathVariable Long permitId,
                                                      @RequestBody AhjPermit permit) {
-        return ahjPermitService.saveAhjPermit(ahjId, permitId, permit);
+        return ahjPermitService.saveAhjPermit(ahjId, permitId, permit, true);
     }
 
     @GetMapping(value = "/searchAhjsByState/{stateId}")

@@ -116,6 +116,7 @@
       set first_name = :firstName,
           last_name = :lastName,
           email = :email,
+          notification_type_id = :notificationTypeId,
           username = :username,
           phone_number = :phone,
           modified_by_id = :modifiedById,
@@ -146,12 +147,13 @@
       select u.id,
        u.phone_number,
        u.email,
+       u.notification_type_id,
        u.username,
        u.created_by_id,
        u.first_name,
        u.last_name,
        u.login_attempts,
-        p.position as primary_position,
+       p.position as primary_position,
        concat(u.first_name, ' ', u.last_name) AS full_name,
        uc.company_id,
        u.modified_by_id,
@@ -194,6 +196,7 @@
       select u.id,
              u.phone_number,
              u.email,
+             u.notification_type_id,
              u.username,
              u.created_by_id,
              u.login_attempts,
@@ -359,10 +362,16 @@
        u.last_name,
        u.password,
        u.email,
+       ust.has_access,
+       ust.user_status_type,
+       u.notification_type_id,
        u.username,
        u.phone_number,
        concat(u.first_name, ' ', u.last_name) AS full_name
     from flow.user u
+      left join flow.user_company uc on uc.user_id = u.id
+      left join flow.company_user_status cus on cus.user_id = u.id
+      left join flow.user_status_type ust on ust.company_id = uc.company_id and ust.id = cus.user_status_type_id
     where lower(:usernameOrEmail::text) = lower(username)
           OR lower(:usernameOrEmail::text) = lower(email)
     limit 1
@@ -567,4 +576,20 @@
     where u.uuid = :uuid
     limit 1
   ]]></user.findByUserUuid>
+
+  <user.mentionableUsers><![CDATA[
+      select u.id, u.first_name,
+             concat(u.first_name, ' ', u.last_name, ' (', u.email, ')') AS full_name,
+             u.email
+      from flow."user" u
+               inner join flow.user_company uc on u.id = uc.user_id
+               inner join flow.company c on c.id = uc.company_id
+               inner join flow.user_status_type ust on ust.company_id = uc.company_id
+               inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
+      where (uc.company_id = :companyId or (c.parent_company_id = :parentCompanyId and :parentCompanyId != 1))
+        and u.archived = false
+        and ust.has_access is true
+      group by u.id, last_name, first_name
+      order by last_name, first_name desc
+  ]]></user.mentionableUsers>
 </sql>

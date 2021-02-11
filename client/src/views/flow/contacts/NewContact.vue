@@ -54,6 +54,8 @@
                             label="Zip Code"
                             counter
                             maxlength="10"
+                            @keypress="isNumberOrHyphen"
+                            :rules="postalCodeRules"
                             v-model="contact.postalCode"></v-text-field>
               <v-select v-model="contact.companyCountryId"
                         :items="countries"
@@ -83,7 +85,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
-import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams, isNumberOrHyphen, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getCompanyStates} from '@/services/stateService'
@@ -103,7 +105,9 @@ export default {
       snackbar: {},
       constants,
       contact: {},
+      isNumberOrHyphen,
       states: [],
+      postalCodeRules: constants.POSTAL_CODE_RULES,
       loadingInsertFields: true,
       countries: [],
       dirtyCfvs: [],

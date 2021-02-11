@@ -35,14 +35,29 @@
               <th v-for="header in headers" :key="header.text"
                   :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
               >
-                <v-text-field v-if="ahjUtilityFilters[header.value]" class="pt-2 table-filter"
-                              v-model="ahjUtilityFilters[header.value].value"
-                              :placeholder="'Enter a ' + header.text.toLowerCase()"
-                              clearable
-                              filled
-                              dense
-                              hide-details
-                ></v-text-field>
+                <div v-if="ahjUtilityFilters[header.value]" class="pt-2 table-filter">
+                  <v-text-field v-if="ahjUtilityFilters[header.value].type === 'text'" class="pt-2 table-filter"
+                                v-model="ahjUtilityFilters[header.value].value"
+                                :placeholder="'Enter a ' + header.text.toLowerCase()"
+                                clearable
+                                filled
+                                type="search"
+                                dense
+                                hide-details
+                  ></v-text-field>
+                  <v-autocomplete v-else-if="ahjUtilityFilters[header.value].type === 'select'"
+                            :items="states"
+                            v-model="ahjUtilityFilters[header.value].value"
+                            :placeholder="'Select a ' + header.text.toLowerCase()"
+                            clearable
+                            filled
+                            class="mt-2"
+                            type="search"
+                            item-text="state"
+                            dense
+                            hide-details
+                  ></v-autocomplete>
+                </div>
               </th>
             </tr>
           </template>
@@ -81,15 +96,26 @@
                 label="Name"
                 v-model="editedItem.name"
                 required
+                type="search"
                 filled
               ></v-text-field>
-              <v-select
+              <v-autocomplete
                 label="Metro Area"
                 :items="metroAreas"
                 v-model="editedItem.metroAreaId"
                 required
                 filled
-              ></v-select>
+              ></v-autocomplete>
+              <v-autocomplete label="State"
+                              :items="states"
+                              v-model="editedItem.companyStateId"
+                              item-text="state"
+                              item-value="id"
+                              type="search"
+                              autocomplete="off"
+                              required
+                              filled
+              ></v-autocomplete>
               <v-checkbox
                 v-if="!addMode"
                 label="Archived"
@@ -101,7 +127,7 @@
               <v-spacer></v-spacer>
               <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
               <v-btn color="primaryButton" class="white--text" raised @click="saveAhjUtility"
-                     :disabled="!editedItem.name || !editedItem.metroAreaId">
+                     :disabled="!editedItem.name || !editedItem.metroAreaId || !editedItem.companyStateId">
                 {{ ahjUtilityBtnTxt }}
               </v-btn>
             </v-card-actions>
@@ -117,11 +143,12 @@
   import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
+  import {getActiveStates} from '@/services/stateService'
 
   const FILTER_DEFAULTS = {
     name: {value: '', type: 'text', model: 'name'},
     metroArea: {value: '', type: 'text', model: 'metroArea'},
-    state: {value: '', type: 'select', model: 'state'}
+    state: {value: [], type: 'select', model: 'state'}
   }
 
   export default {
@@ -150,6 +177,7 @@
         { text: null, value: null, sortable: false, show: true, width: 120 }
       ],
       ahjUtilities: [],
+      states: [],
       editedItem: {
         utilityName: '',
         metroAreaId: '',
@@ -174,8 +202,10 @@
               return false
             }
 
-            if (filter.value !== null) {
+            if (filter.value !== null && filter.value !== undefined) {
               return utility[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            } else if (filter.value === undefined) {
+              filter.value = []
             } else {
               filter.value = ''
             }
@@ -195,6 +225,19 @@
       }
     },
     methods: {
+      async fetchStates () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getActiveStates()
+          this.states = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async fetchAhjUtilities () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -284,6 +327,7 @@
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.initFilters()
+      this.fetchStates()
       this.fetchAhjUtilities().then(() => this.$store.commit(AppMutations.SET_LOADING, false))
     }
   }
@@ -328,6 +372,12 @@
       font-size: 0.875rem;
       margin-left: 15px;
       margin-bottom: 10px;
+
+      .v-text-field,
+      .v-select {
+        font-size: 0.875rem;
+        margin-left: 15px;
+      }
     }
   }
 

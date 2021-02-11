@@ -75,6 +75,7 @@ public class AhjUtilityService {
     params.put("currentUser", currentUser.getId());
     params.put("utilityName", utility.getName());
     params.put("metroAreaId", utility.getMetroAreaId());
+    params.put("companyStateId", utility.getCompanyStateId());
     params.put("timelinesAndStages", utility.getTimelinesAndStages());
     params.put("regulatedBy", utility.getRegulatedBy());
     params.put("monthlyFacilityCharge", utility.getMonthlyFacilityCharge());
