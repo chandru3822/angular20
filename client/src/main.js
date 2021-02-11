@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuetify from './plugins/vuetify'
 import Chat from 'vue-beautiful-chat'
 import VueQuillEditor from 'vue-quill-editor'
+import Mentionable  from 'vue-mention'
 import Vue2Filters from 'vue2-filters'
 import App from './App.vue'
 import router from './router'
@@ -121,3 +122,4 @@ new Vue({
 
 Vue.use(Chat)
 Vue.use(VueQuillEditor)
+Vue.use(Mentionable)

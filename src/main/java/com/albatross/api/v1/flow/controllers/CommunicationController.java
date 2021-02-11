@@ -113,7 +113,7 @@ public class CommunicationController {
                     if (user.isPresent() && user.get().getUserStatusType() != null && user.get().getHasAccess()) {
                         Future<Void> future = communicationService.sendEmail(subject, user.get().getEmail(), user.get(),
                             template, Maps.transformValues(temporaryFiles, FileDataSource::new),
-                            getUnsubscribeURLForEmails(request), from);
+                            getUnsubscribeURLForEmails(request), from, "Blue Raven Sales Operation");
 
                         future.get();
                     }
@@ -156,7 +156,7 @@ public class CommunicationController {
             communicationService.sendEmail(subject, emailAddress, user, templateContent,
                     Maps.transformValues(temporaryFiles, FileDataSource::new),
                     getUnsubscribeURLForEmails(request),
-                    "SalesOps@blueravensolar.com");
+                    "SalesOps@blueravensolar.com", "Blue Raven Sales Operation");
         } finally {
             for (File temporaryFile : temporaryFiles.values()) {
                 if (temporaryFile.exists()) {

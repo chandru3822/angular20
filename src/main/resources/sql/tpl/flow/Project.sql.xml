@@ -50,7 +50,8 @@
                                                             :userId::int,
                                                             :isParent::boolean,
                                                             :limit::int, :offset::int,
-                                                            :companyProjectStatusTypeId::int)
+                                                            :companyProjectStatusTypeId::int,
+                                                            :sortColumn::character varying, :sortDirection::character varying)
   ]]></project.searchDownline>
 
 
@@ -66,7 +67,8 @@
     select *
     from flow.search_all_projects(:query::character varying, :companyId::int,
                               :isParent::boolean,:limit::int, :offset::int,
-                                                            :companyProjectStatusTypeId::int)
+                                                            :companyProjectStatusTypeId::int,
+                                                            :sortColumn::character varying, :sortDirection::character varying)
   ]]></project.search>
 
   <project.searchCount><![CDATA[
@@ -78,7 +80,8 @@
     select *
     from flow.search_projects_by_user(:query::character varying, :companyId::int,
                                  :userId::int,  :isParent::boolean,:limit::int, :offset::int,
-                                                            :companyProjectStatusTypeId::int)
+                                                            :companyProjectStatusTypeId::int,
+                                                            :sortColumn::character varying, :sortDirection::character varying)
   ]]></project.searchByOwner>
 
   <project.searchByOwnerCount><![CDATA[
@@ -197,7 +200,7 @@
   <project.insert>
     <![CDATA[
       insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id, street1, city, company_state_id, company_country_id, postal_code)
-      values (:contactId, :processId, trim(:projectName), :createdById, :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, :postalCode)
+      values (:contactId, :processId, trim(:projectName), :createdById, :companyProjectStatusTypeId, :street1, :city, :companyStateId, :companyCountryId, trim(:postalCode))
     ]]>
   </project.insert>
 

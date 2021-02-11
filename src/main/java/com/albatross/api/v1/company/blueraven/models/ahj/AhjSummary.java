@@ -7,6 +7,6 @@ import lombok.Data;
  */
 @Data
 public class AhjSummary {
-  private Long id, stateId, metroAreaId;
+  private Long id, stateId, metroAreaId, companyStateId;
   private String name, state, metroArea;
 }

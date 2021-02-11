@@ -29,11 +29,11 @@ public class MailService {
         this.propConfig = propConfig;
     }
 
-    public void sendMessage(String to, String subject, String message, String sentByEmail) {
-        sendMessage(to, subject, message, null, sentByEmail);
+    public void sendMessage(String to, String subject, String message, String sentByEmail, String sentByName) {
+        sendMessage(to, subject, message, null, sentByEmail, sentByName);
     }
 
-    public void sendMessage(String to, String subject, String message, Map<String, DataSource> attachments, String sentByEmail) {
+    public void sendMessage(String to, String subject, String message, Map<String, DataSource> attachments, String sentByEmail, String sentByName) {
         // log.info("Sending message to {}: {}\n{}\n\n", to, subject, message);
 
         // NOTE: if email is for amy or jessica then you should send in SalesOps@blueravensolar.com as the email address
@@ -60,7 +60,7 @@ public class MailService {
 
             // TODO: 4/10/17 move to props file
             Message msg = new MimeMessage(session);
-            InternetAddress salesOperationsEmail = new InternetAddress(sentByEmail, "Blue Raven Sales Operations");
+            InternetAddress salesOperationsEmail = new InternetAddress(sentByEmail, sentByName);
 
             msg.setFrom(salesOperationsEmail);
             msg.setReplyTo(new Address[]{salesOperationsEmail});
@@ -97,62 +97,4 @@ public class MailService {
             log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
         }
     }
-
-    public void sendMessage(List<String> to, String subject, String message, Map<String, DataSource> attachments, InternetAddress sentByEmail, List<String> cc) throws Exception {
-        // log.info("Sending message to {}: {}\n{}\n\n", to, subject, message);
-
-        // NOTE: if email is for amy or jessica then you should send in SalesOps@blueravensolar.com as the email address
-
-        Properties props = new Properties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.host", propConfig.getSmtpServer());
-        props.put("mail.smtp.port", propConfig.getSmtpPort());
-        Session session;
-        if (!StringUtils.isEmpty(propConfig.getSmtpUser()) && !StringUtils.isEmpty(propConfig.getSmtpPassword())) {
-            props.put("mail.smtp.user", propConfig.getSmtpUser());
-            props.put("mail.smtp.auth", "true");
-            session = Session.getInstance(props, new SMTPAuthenticator(propConfig.getSmtpUser(),
-                    propConfig.getSmtpPassword()));
-        } else {
-            session = Session.getDefaultInstance(props, null);
-        }
-
-        // TODO: 4/10/17 move to props file
-        Message msg = new MimeMessage(session);
-
-        msg.setFrom(sentByEmail);
-        msg.setReplyTo(new Address[]{sentByEmail});
-        msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(StringUtils.trimAllWhitespace(to.toString().replace("[", "").replace("]", ""))));
-
-        if (cc != null) {
-            msg.addRecipients(Message.RecipientType.CC, InternetAddress.parse(StringUtils.trimAllWhitespace(cc.toString().replace("[", "").replace("]", ""))));
-        }
-
-        msg.setSubject(subject);
-
-        Multipart multiPart = new MimeMultipart();
-
-        MimeBodyPart bodyPart = new MimeBodyPart();
-        bodyPart.setContent(message, "text/html; charset=utf-8");
-        multiPart.addBodyPart(bodyPart);
-
-        if (attachments != null && attachments.size() > 0) {
-
-            for (String attachmentName : attachments.keySet()) {
-
-                DataSource attachment = attachments.get(attachmentName);
-
-                MimeBodyPart attachmentPart = new MimeBodyPart();
-                attachmentPart.setDataHandler(new DataHandler(attachment));
-                attachmentPart.setFileName(attachmentName);
-                multiPart.addBodyPart(attachmentPart);
-            }
-        }
-
-        msg.setContent(multiPart);
-        Transport.send(msg);
-
-        log.info("EMAIL: MESSAGE SENT");
-    }
-
 }

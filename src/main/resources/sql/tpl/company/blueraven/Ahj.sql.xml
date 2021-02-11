@@ -1,79 +1,61 @@
 <sql>
   <ahj.list>
     <![CDATA[
-      WITH metroAreasWithStates AS (
-        select lov.id as "metro_area_id",
-               lov.name as "metro_area",
-               s.id as "state_id",
-               s.state
-        from flow.list_of_value lov
-          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
-        where lov.parent_id = 172
-          and lov.archived is false
-      )
       SELECT
-        ahj.id,
-        ahj.name,
-        ahj.metro_area_id,
-        maws.metro_area,
-        maws.state_id,
-        maws.state,
-        ahj.archived
+          ahj.id,
+          ahj.name,
+          ahj.metro_area_id,
+          lov.name as metro_area,
+          cs.id as company_state_id,
+          cs.state_id,
+          s.state,
+          s.abbreviation as state_abbreviation,
+          ahj.archived
       FROM brs.ahj ahj
-        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
+               LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+               left join flow.company_state cs on cs.id = ahj.company_state_id
+               left join flow.state s on s.id = cs.state_id
       WHERE ahj.archived IS NOT TRUE
-      ORDER BY maws.state, maws.metro_area, ahj.name
+      ORDER BY s.state, lov.name, ahj.name
     ]]>
   </ahj.list>
 
   <ahj.findById>
     <![CDATA[
-      WITH metroAreasWithStates AS (
-        select lov.id as "metro_area_id",
-               lov.name as "metro_area",
-               s.id as "state_id",
-               s.state
-        from flow.list_of_value lov
-          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
-        where lov.parent_id = 172
-          and lov.archived is false
-      )
       SELECT
-        ahj.id,
-        ahj.name,
-        ahj.metro_area_id,
-        maws.metro_area,
-        maws.state_id,
-        maws.state,
-        ahj.archived
+          ahj.id,
+          ahj.name,
+          ahj.metro_area_id,
+          lov.name as metro_area,
+          cs.id as company_state_id,
+          cs.state_id,
+          s.state,
+          s.abbreviation as state_abbreviation,
+          ahj.archived
       FROM brs.ahj ahj
-        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
+               LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+               left join flow.company_state cs on cs.id = ahj.company_state_id
+               left join flow.state s on s.id = cs.state_id
       WHERE ahj.id = :id
     ]]>
   </ahj.findById>
 
   <ahj.checkForDuplicate>
     <![CDATA[
-      WITH metroAreasWithStates AS (
-        select lov.id as "metro_area_id",
-               lov.name as "metro_area",
-               s.id as "state_id",
-               s.state
-        from flow.list_of_value lov
-          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
-        where lov.parent_id = 172
-          and lov.archived is false
-      )
       SELECT
-        ahj.id,
-        ahj.name,
-        ahj.metro_area_id,
-        maws.metro_area,
-        maws.state_id,
-        maws.state,
-        ahj.archived
+          ahj.id,
+          ahj.name,
+          ahj.metro_area_id,
+          lov.name as metro_area,
+          cs.id as company_state_id,
+          cs.state_id,
+          s.state,
+          s.abbreviation as state_abbreviation,
+          ahj.archived
       FROM brs.ahj ahj
-        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
+               LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+               left join flow.company_state cs on cs.id = ahj.company_state_id
+               left join flow.state s on s.id = cs.state_id
       WHERE ahj.name = :name
         AND ahj.metro_area_id = :metroAreaId
         AND ahj.archived IS NOT TRUE
@@ -82,8 +64,8 @@
 
   <ahj.create>
     <![CDATA[
-      INSERT INTO brs.ahj (name, metro_area_id, date_created, created_by_id, date_modified, modified_by_id)
-      VALUES (:name, :metroAreaId, now(), :currentUser, now(), :currentUser)
+      INSERT INTO brs.ahj (name, metro_area_id, date_created, created_by_id, date_modified, modified_by_id, company_state_id)
+      VALUES (:name, :metroAreaId, now(), :currentUser, now(), :currentUser, :companyStateId)
     ]]>
   </ahj.create>
 
@@ -93,6 +75,7 @@
       SET
         name = :name,
         metro_area_id = :metroAreaId,
+        company_state_id = :companyStateId,
         date_modified = now(),
         modified_by_id = :currentUser
       WHERE id = :id

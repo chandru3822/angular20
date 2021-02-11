@@ -18,36 +18,41 @@
               <div class="project-subtitle">
                 <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
                 <div v-else-if="userCanEdit" class="mt-4">
-                  <v-text-field
-                    v-model="project.projectName"
-                    label="ProjectName"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="project.street1"
-                    label="Street"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="project.city"
-                    label="City"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="project.postalCode"
-                    counter
-                    maxlength="10"
-                    label="Postal Code"
-                  ></v-text-field>
-                  <v-select v-model="project.companyStateId"
-                            :items="states"
-                            label="State"
-                            item-text="state"
-                            item-value="id"
-                  ></v-select>
-                  <v-select v-model="project.companyCountryId"
-                            :items="countries"
-                            label="Country"
-                            item-text="country"
-                            item-value="id"
-                  ></v-select>
+                  <v-form ref="projectEditForm">
+                    <v-text-field
+                      v-model="project.projectName"
+                      label="ProjectName"
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="project.street1"
+                      label="Street"
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="project.city"
+                      label="City"
+                    ></v-text-field>
+                    <v-text-field
+                      type="text"
+                      v-model="project.postalCode"
+                      counter
+                      maxlength="10"
+                      @keypress="isNumberOrHyphen"
+                      :rules="postalCodeRules"
+                      label="Postal Code"
+                    ></v-text-field>
+                    <v-select v-model="project.companyStateId"
+                              :items="states"
+                              label="State"
+                              item-text="state"
+                              item-value="id"
+                    ></v-select>
+                    <v-select v-model="project.companyCountryId"
+                              :items="countries"
+                              label="Country"
+                              item-text="country"
+                              item-value="id"
+                    ></v-select>
+                  </v-form>
                 </div>
                 <v-btn x-small text v-if="userCanEdit"
                        @click="[editAddress = !editAddress, project.reloadCoordinates = true, getStatesAndCountries()]">
@@ -56,7 +61,7 @@
                 </v-btn>
                 <v-btn small color="primaryCustom"
                        :disabled="!project.projectName"
-                       class="white--text" v-if="editAddress" @click="saveProjectAddress">
+                       class="white--text" v-if="editAddress" @click="validateForm">
                   Save
                 </v-btn>
               </div>
@@ -178,7 +183,7 @@
 </template>
 
 <script>
-  import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
+  import {getRequest, putRequest, postRequest, isNumberOrHyphen, logError, getRequestWithParams, getSnackbar, formatPhoneNumber } from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
   import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
   import ProjectDetails from '@/views/flow/project/ProjectDetails'
@@ -204,8 +209,10 @@
         tabsLoading: true,
         selectedTab: {},
         secondaryTab: 1,
+        isNumberOrHyphen,
         menuOpen: false,
         constants,
+        postalCodeRules: constants.POSTAL_CODE_RULES,
         formatPhoneNumber,
         projectId: parseInt(this.$route.params.projectId),
         companyId: this.$store.state.user.details.companyId,
@@ -234,6 +241,11 @@
       this.getProjectTabs()
     },
     methods: {
+      validateForm() {
+        if (this.$refs.projectEditForm.validate()) {
+          this.saveProjectAddress()
+        }
+      },
       getProjectTabs: async function () {
         this.tabsLoading = true
         try {

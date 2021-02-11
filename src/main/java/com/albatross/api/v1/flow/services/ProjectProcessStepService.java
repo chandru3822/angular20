@@ -66,6 +66,8 @@ public class ProjectProcessStepService {
 
   private final ObjectMapper om;
 
+  private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -296,6 +298,30 @@ public class ProjectProcessStepService {
       params.put("contactId", contactId);
       params.put("cfgaIds", cfgaIds);
       return sqlCache.query("projectProcessStep.getIdsByAutoTriggerActionsAndReqs", params, new SingleColumnRowMapper<>(Long.class));
+  }
+
+  public ProjectProcessStepAction getActionResult(Long actionId, Long ppsId) throws Exception {
+
+    ProjectProcessStep pps = getProjectProcessStep(ppsId);
+    ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
+
+    List<Long> requirementIds = Objects.requireNonNull(action).getProcessStepLogicList().stream()
+      .filter(step -> step.getProcessStepRequirementId() != null)
+      .map(ProcessStepLogic::getProcessStepRequirementId)
+      .collect(Collectors.toList());
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
+    ProjectProcessStepAction actionResult = canPerformAction(action, pps, requirements);
+
+    ProjectProcessStepAction minimalResult = new ProjectProcessStepAction();
+
+    minimalResult.setId(actionId);
+    minimalResult.setActionName(actionResult.getActionName());
+    minimalResult.setCanPerform(pps.getProcessStepStatusTypeId() == 1 && actionResult.getCanPerform());
+    minimalResult.setMultipleUses(actionResult.getMultipleUses());
+    minimalResult.setAlreadyTriggered(actionResult.getAlreadyTriggered());
+    minimalResult.setTriggerAutomatically(actionResult.getTriggerAutomatically());
+
+    return actionResult;
   }
   /************************************************************* ACTION LOGIC ********************************************************************************/
 

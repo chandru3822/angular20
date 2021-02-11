@@ -236,7 +236,7 @@ public class CloserDashboardService {
     parameters.addValue("setterOverride", setterOverride);
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return results;
+    return null == results ? "[]" : results;
   }
 
   public String getRegions(int userId, String districts, Boolean setterOverride) {
@@ -250,7 +250,7 @@ public class CloserDashboardService {
     parameters.addValue("setterOverride", setterOverride);
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return results;
+    return null == results ? "[]" : results;
   }
 
   public String getOffices(int userId, String districts, String regions, Boolean setterOverride) {
@@ -279,7 +279,7 @@ public class CloserDashboardService {
     parameters.addValue("offices", req.getOffices());
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return results;
+    return null == results ? "[]" : results;
   }
 
   public String funnelStandard(FunnelRequest funnelRequest) {

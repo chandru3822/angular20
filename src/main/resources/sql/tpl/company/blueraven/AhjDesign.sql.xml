@@ -1,20 +1,11 @@
 <sql>
   <ahj.design.detailByAhj>
     <![CDATA[
-      WITH metroAreasWithStates AS (
-        select lov.id as "metro_area_id",
-               s.id as "state_id",
-               s.state
-        from flow.list_of_value lov
-          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
-        where lov.parent_id = 172
-          and lov.archived is false
-      )
       SELECT
         d.*,
         ahj.metro_area_id,
-        maws.state_id,
-        maws.state AS "stateName",
+        cs.state_id,
+        s.state AS "stateName",
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(contacts)))
           FROM (
@@ -178,7 +169,9 @@
         ) AS designRequirements
       FROM brs.ahj_design d
         INNER JOIN brs.ahj ahj ON ahj.id = d.ahj_id
-        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
+        LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+         left join flow.company_state cs on cs.id = ahj.company_state_id
+         left join flow.state s on s.id = cs.state_id
       WHERE d.ahj_id = :ahjId
     ]]>
   </ahj.design.detailByAhj>
@@ -237,19 +230,12 @@
 
   <ahj.design.searchAhjsByState>
     <![CDATA[
-      WITH metroAreasWithStates AS (
-        select lov.id as "metro_area_id",
-               s.id as "state_id"
-        from flow.list_of_value lov
-          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
-        where lov.parent_id = 172
-          and lov.archived is false
-      )
       SELECT d.id, d.ahj_id
       FROM brs.ahj_design d
         INNER JOIN brs.ahj ahj ON ahj.id = d.ahj_id
-        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
-      WHERE maws.state_id = :stateId
+        LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+         left join flow.company_state cs on cs.id = ahj.company_state_id
+      WHERE cs.state_id = :stateId
         AND ahj.archived IS FALSE
     ]]>
   </ahj.design.searchAhjsByState>
