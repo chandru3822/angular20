@@ -182,12 +182,18 @@ export default {
       timezone: this.$store.state.user.details?.timezone?.value
     }
   },
+  // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
+  // computed: {
+    // displayedFieldName () {
+    //   return this.field.useParentData ? this.field.fieldName + ' (Parent)' : this.field.ancillaryCustomFieldGroupAssignmentId ? this.field.fieldName + ' (Primary)' : this.field.fieldName
+    // }
+  // },
   methods: {
     getRequiredRule() {
       if(this.required) {
         return this.requiredRules
       }
-    }
+    },
   }
 }
 </script>
