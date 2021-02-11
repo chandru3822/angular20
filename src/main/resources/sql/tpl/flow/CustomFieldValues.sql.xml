@@ -251,43 +251,50 @@
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 1 then pcfv.date_value
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 2 then ccfv.date_value
                                           when coalesce(cot1.object_type_id, cotAnc.object_type_id) = 4 then
-                                              case when cfga1.id is not null then pcv1.date_value else pcv.date_value end
+                                              case when cfga.use_parent_data is false and cpsst.process_step_status_type_id = 3 then null
+                                                   when cfga1.id is not null then pcv1.date_value else pcv.date_value end
                                           end as "dateValue",
                                       case
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.timestamp_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.timestamp_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
-                                              case when cfga1.id is not null then pcv1.timestamp_value else pcv.timestamp_value end
+                                              case when cfga.use_parent_data is false and cpsst.process_step_status_type_id = 3 then null
+                                                   when cfga1.id is not null then pcv1.timestamp_value else pcv.timestamp_value end
                                           end as "timestampValue",
                                       case
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.boolean_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.boolean_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
-                                              case when cfga1.id is not null then pcv1.boolean_value else pcv.boolean_value end
+                                              case when cfga.use_parent_data is false and cpsst.process_step_status_type_id = 3 then null
+                                                   when cfga1.id is not null then pcv1.boolean_value else pcv.boolean_value end
                                           end as "booleanValue",
                                       case
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.text_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.text_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
-                                              case when cfga1.id is not null then pcv1.text_value else pcv.text_value end
+                                              case when cfga.use_parent_data is false and cpsst.process_step_status_type_id = 3 then null
+                                                   when cfga1.id is not null then pcv1.text_value else pcv.text_value end
                                           end as "textValue",
                                       case
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.numeric_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.numeric_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
-                                              case when cfga1.id is not null then pcv1.numeric_value else pcv.numeric_value end
+                                              case when cfga.use_parent_data is false and cpsst.process_step_status_type_id = 3 then null
+                                                   when cfga1.id is not null then pcv1.numeric_value else pcv.numeric_value end
                                           end as "numericValue",
                                       case
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.int_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.int_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
-                                              case when cfga1.id is not null then pcv1.int_value else pcv.int_value end
+                                              case when cfga.use_parent_data is false and cpsst.process_step_status_type_id = 3 then null
+                                                   when cfga1.id is not null then pcv1.int_value else pcv.int_value end
                                           end as "intValue",
                                       case
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 1 then pcfv.int_array_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 2 then ccfv.int_array_value
                                           when coalesce(cotAnc.object_type_id, cot1.object_type_id) = 4 then
-                                              case when cfga1.id is not null then pcv1.int_array_value else pcv.int_array_value end
+                                              case when cfga.use_parent_data is false and cpsst.process_step_status_type_id = 3 then null
+                                              when cfga1.id is not null then pcv1.int_array_value else pcv.int_array_value end
                                           end as "intArrayValue",
                                       cfga.custom_field_group_id as "customFieldGroupId",
                                       cfga.id as "customFieldGroupAssignmentId",
@@ -295,6 +302,7 @@
                                       cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                       cfga.custom_field_id as "customFieldId",
                                       cfga.field_order as "fieldOrder",
+                                      cfga.use_parent_data as "useParentData",
                                       cfga.schedule_field_type_id as "scheduleFieldTypeId",
                                       cf.list_of_value_id as "listOfValueId",
                                       cf.field_name as "fieldName",
@@ -340,6 +348,7 @@
                                            left join flow.company_object_type cotAnc on cotAnc.id = cfgAnc.company_object_type_id
                                            left join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = cfgAnc.process_step_id and pps1.archived is false
                                                                                 and case when cfga.use_parent_data is true then pps1.id = ( select id from flow.pps_parent_hierarchy(pps.id, cfga.ancillary_custom_field_group_assignment_id)) else pps1.main is true end
+                                           left join flow.company_process_step_status_type cpsst on cpsst.id = pps1.company_process_step_status_type_id
                                            inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
                                            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                            left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :sourceId
