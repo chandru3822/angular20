@@ -91,16 +91,13 @@ $BODY$
 CREATE OR REPLACE FUNCTION flow.refresh_position_records()
     RETURNS trigger AS
 $BODY$
-declare
-    v_user_id integer;
-    v_user_ids integer[];
 BEGIN
 
-    select array_agg(user_id)
-    into v_user_ids
-    from flow.user_position
+    update flow.user_positions_vw
+        set position = new.position,
+            position_scheduler = new.scheduler,
+            position_schedulable = new.schedulable
     where position_id = new.id;
-    perform flow.update_user_org_user_position(v_user_ids);
     RETURN NEW;
 END;
 $BODY$
