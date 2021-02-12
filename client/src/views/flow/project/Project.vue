@@ -4,7 +4,7 @@
       <v-row>
         <v-col cols="12" class="pb-0">
           <v-row class="project-header">
-            <v-col cols="6" class="text-left pl-5">
+            <v-col cols="5" class="text-left pl-5">
               <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
               <div class="project-title">
                 <router-link v-if="$store.getters.userHasFeature('CONTACTS')"
@@ -66,8 +66,20 @@
                 </v-btn>
               </div>
             </v-col>
-            <v-col cols="3" class="lead-owner pb-2 text-right">
-              <div v-if="!displayChangeOwner">
+            <v-col cols="4" class="lead-owner pb-2 text-right">
+              <div class="d-inline-block mr-4" v-if="project.companyId !== this.companyId">
+                <v-avatar
+                  :tile="false"
+                  :size="25"
+                  color="#D6D6D6"
+                  class="account-img mr-2"
+                >
+                  <v-icon color="white" size="20">mdi-office-building</v-icon>
+                </v-avatar>
+                <strong>{{project.companyName}}</strong><br/>
+                <span class="project-company-subheader">Company</span>
+              </div>
+              <div v-if="!displayChangeOwner" class="d-inline-block">
                 <div v-if="project.owner && project.owner.userId">
                   <v-avatar
                     :tile="false"
@@ -384,6 +396,10 @@
     font-size: 12px;
     color: grey;
     font-style: italic;
+  }
+
+  .project-company-subheader {
+    font-size: 12px;
   }
 </style>
 

@@ -14,6 +14,7 @@ public class FeatureAccessControl {
   private Long id, accessControlId, companyFeatureId, featureId;
   private String accessLevel, accessCode, featureName, featureCode;
   private boolean archived, enabled;
+  private boolean dirty = false;
 
 }
 

@@ -49,7 +49,19 @@
         </div>
       </v-col>
       <v-col cols="4" class="contact-owner pb-2">
-        <div v-if="!changeOwner || !userCanEdit">
+        <div class="d-inline-block mr-4" v-if="contact.companyId !== this.companyId">
+          <v-avatar
+            :tile="false"
+            :size="25"
+            color="#D6D6D6"
+            class="account-img mr-2"
+          >
+            <v-icon color="white" size="20">mdi-office-building</v-icon>
+          </v-avatar>
+          <strong>{{contact.companyName}}</strong><br/>
+          <span class="project-company-subheader">Company</span>
+        </div>
+        <div v-if="!changeOwner || !userCanEdit" class="d-inline-block">
           <div v-if="contact.owner">
             <v-avatar
                 :tile="false"

@@ -143,6 +143,7 @@
         p.created_by_id,
         concat(u.first_name, ' ', u.last_name) as created_by,
         comp.project_owner_readonly,
+        comp.company_name,
         (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
                      u.first_name as "firstName",
