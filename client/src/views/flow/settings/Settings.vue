@@ -1,7 +1,7 @@
 <template>
-  <v-container>
+  <v-container class="pt-0">
     <v-row>
-      <v-col cols="12" md="3" class="text-left">
+      <v-col cols="12" md="3" class="text-left pt-0 px-0 left-column">
         <v-menu data-app left
                 v-if="constants.IS_MOBILE"
                 offset-y
@@ -47,8 +47,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-card class="px-5 py-2" v-else>
-          <v-list dense>
+        <v-card class="px-5 py-2 left-menu square-card" color="#F6F7F8" v-else>
+          <v-list dense color="transparent">
             <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
 
@@ -76,10 +76,8 @@
           </v-list>
         </v-card>
       </v-col>
-      <v-col cols="12" md="9" class="pa-4">
-        <v-sheet color="#fff" class="elevation-2 text-left">
+      <v-col cols="12" md="9" class="px-4 pt-0 main-section">
           <router-view/>
-        </v-sheet>
       </v-col>
     </v-row>
   </v-container>
@@ -260,5 +258,18 @@ export default {
 <style scoped lang="scss">
 a {
   text-decoration: none;
+}
+
+.left-menu {
+  height: 100vh;
+  overflow: auto;
+}
+
+.left-column {
+  background-color: #F6F7F8;
+}
+
+.main-section {
+  background-color: #fff;
 }
 </style>
