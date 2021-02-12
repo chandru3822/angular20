@@ -2,27 +2,44 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-toolbar color="white" flat>
-          <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-        </v-toolbar>
-        <v-toolbar flat class="app-toolbar">
-            {{  processStep.processStepName }}
-          <v-spacer></v-spacer>
-          <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
-            <v-tabs>
-              <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
-              <v-tab :to="`/settings/processStep/${processStepId}/components`">
-                UI Components
-              </v-tab>
-              <v-tab :to="`/settings/processStep/${processStepId}/customFieldGroups`">
-                Custom Field Groups
-              </v-tab>
-              <v-tab :to="`/settings/processStep/${processStepId}/actions`">
-                Actions
-              </v-tab>
-            </v-tabs>
-          </v-toolbar-items>
-        </v-toolbar>
+        <v-btn text class="pl-1 pr-2" :to="'/settings/processSteps'">
+          <v-icon>arrow_left</v-icon>
+          <span>Back</span>
+        </v-btn>
+        <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
+          <div style="width: 100%">
+            <span class="page-title" v-if="!editName">{{ processStep.processStepName }}</span>
+            <v-text-field v-else color="primaryCustom"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          v-model="processStep.processStepName"
+                          label="Process Step Name"></v-text-field>
+            <div>
+              <label class="mt-4">Allow Non-Admin to Add to Project:</label>
+              <input class="ml-3" type="checkbox" :readonly="!userCanEdit" @input="saveProcessStep(false)"
+                     :disabled="!userCanEdit" v-model="processStep.nonAdminAdd">
+            </div>
+          </div>
+          <div class="text-right" v-if="userCanEdit">
+            <v-btn text v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
+              <v-icon>edit</v-icon>
+            </v-btn>
+            <v-btn text class="" v-else @click="saveProcessStep(true)">
+              <v-icon>save</v-icon>
+            </v-btn>
+            <v-btn text  v-if="editName" class="" @click="[processStep.processStepName = oldName, editName = !editName]">
+              cancel
+            </v-btn>
+          </div>
+        </div>
+        <v-tabs class="tabs-bar">
+          <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
+                 class="text-capitalize ma-0"
+                 :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+            {{ tab.label }}
+          </v-tab>
+        </v-tabs>
+
         <router-view/>
       </v-col>
 
@@ -48,16 +65,25 @@
       return {
         snackbar: {},
         constants,
+        editName: false,
+        oldName: null,
         processStepId: this.$route.params.id,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         companyId: this.$store.state.user.details.companyId,
         processStep: {},
-        breadcrumbs: [
+        tabs: [
           {
-            text: 'Back',
-            disabled: false,
-            exact: true,
-            to: `/settings/processSteps`
+            label: 'UI Components',
+            path: `/settings/processStep/${this.$route.params.id}/components`,
           },
+          {
+            label: 'Custom Field Groups',
+            path: `/settings/processStep/${this.$route.params.id}/customFieldGroups`,
+          },
+          {
+            label: 'Actions',
+            path: `/settings/processStep/${this.$route.params.id}/actions`,
+          }
         ]
       }
     },
@@ -80,7 +106,21 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-
+      async saveProcessStep(closeEditor) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/processStep`, this.processStep)
+          this.editName = !closeEditor
+          this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
 
   }
@@ -90,5 +130,18 @@
 .name-container {
   background-color: var(--v-rowShadeCustom-base) !important;
   border-radius: 5px;
+}
+.page-title {
+  font-size: 18px;
+  font-weight: 200;
+}
+
+.tabs-bar {
+  top: -12px;
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
+  .v-tab:hover {
+    color: var(--v-primaryCustom-base);
+  }
 }
 </style>
